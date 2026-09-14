@@ -1,0 +1,83 @@
+{
+  "source": "Overpass API (OpenStreetMap)",
+  "center": [
+    37.5735,
+    126.979
+  ],
+  "center_name": "서울 종로구청",
+  "radius_m": 3000,
+  "total_buildings": 19036,
+  "before": {
+    "미분류": 14152,
+    "상업·업무": 2082,
+    "주거": 1642,
+    "공공·교육": 373,
+    "종교·문화": 58,
+    "공업": 10,
+    "기타·부속": 719
+  },
+  "after": {
+    "미분류": 8589,
+    "상업·업무": 5834,
+    "주거": 2134,
+    "공공·교육": 795,
+    "종교·문화": 938,
+    "공업": 17,
+    "기타·부속": 729
+  },
+  "levels": [
+    {
+      "code": "L1",
+      "label": "building=* 값",
+      "gained": 4884,
+      "left": 14152
+    },
+    {
+      "code": "L2",
+      "label": "동일 객체의 용도 태그",
+      "gained": 966,
+      "left": 13186
+    },
+    {
+      "code": "L3",
+      "label": "건물명 키워드",
+      "gained": 204,
+      "left": 12982
+    },
+    {
+      "code": "L4",
+      "label": "건물 내부 POI 공간결합",
+      "gained": 2520,
+      "left": 10462
+    },
+    {
+      "code": "L5",
+      "label": "최근접 POI 스냅(<=10m)",
+      "gained": 517,
+      "left": 9945
+    },
+    {
+      "code": "L6",
+      "label": "상위 용도영역 포함관계",
+      "gained": 1356,
+      "left": 8589
+    }
+  ],
+  "level_counts": {
+    "L1": 4884,
+    "L2": 966,
+    "L3": 204,
+    "L4": 2520,
+    "L5": 517,
+    "L6": 1356,
+    "-": 8589
+  },
+  "poi": {
+    "inside": 8631,
+    "snapped": 1237,
+    "unused": 3327
+  },
+  "areas_used": 1058,
+  "unknown_before_pct": 74.3,
+  "unknown_after_pct": 45.1
+}

@@ -1,0 +1,14 @@
+{
+ "zoom": 16,
+ "width": 3584,
+ "height": 3584,
+ "lonWest": 126.9415283203125,
+ "lonEast": 127.0184326171875,
+ "latNorth": 37.60552821745789,
+ "latSouth": 37.54457732085582,
+ "center": [
+  37.5735,
+  126.979
+ ],
+ "attribution": "Esri, Maxar, Earthstar Geographics"
+}

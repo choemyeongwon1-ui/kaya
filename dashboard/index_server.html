@@ -1,0 +1,968 @@
+<title>종로 반경별 건물밀도 판독</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --panel-2:#F7F9FB; --rule:#D9DFE8; --rule-soft:#E7ECF3;
+  --text:#1B2434; --text-2:#5A6578; --text-3:#8A94A6;
+  --navy:#1B3A6B; --navy-2:#2C5490; --navy-ink:#0E2144; --accent:#C4570F; --accent-soft:#F4E3D6;
+  --c0:#1F4E79; --c1:#2E75B6; --c2:#8EAADB; --c3:#9C6BB0; --c4:#6E7787; --c5:#BFC5CE; --c6:#C4570F;
+  --outside:#C3CAD4;
+  --shadow:0 1px 2px rgba(20,35,66,.06), 0 6px 18px rgba(20,35,66,.05);
+}
+:root:not([data-theme="light"]){ color-scheme:light; }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0C1220; --panel:#151E2E; --panel-2:#111926; --rule:#26324A; --rule-soft:#1E2839;
+    --text:#E3E9F3; --text-2:#98A4B8; --text-3:#6C7A91;
+    --navy:#8FB2E8; --navy-2:#6E97D6; --navy-ink:#C9DBF6; --accent:#E8873D; --accent-soft:#3A2415;
+    --c0:#5C93CF; --c1:#3E86D0; --c2:#8EAADB; --c3:#B48BC8; --c4:#8792A3; --c5:#59657A; --c6:#E8873D;
+    --outside:#3A465C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0C1220; --panel:#151E2E; --panel-2:#111926; --rule:#26324A; --rule-soft:#1E2839;
+  --text:#E3E9F3; --text-2:#98A4B8; --text-3:#6C7A91;
+  --navy:#8FB2E8; --navy-2:#6E97D6; --navy-ink:#C9DBF6; --accent:#E8873D; --accent-soft:#3A2415;
+  --c0:#5C93CF; --c1:#3E86D0; --c2:#8EAADB; --c3:#B48BC8; --c4:#8792A3; --c5:#59657A; --c6:#E8873D;
+  --outside:#3A465C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1440px; margin:0 auto; padding-inline:20px; padding-block:22px 44px}
+h1,h2,h3{font-family:"Gothic A1","Malgun Gothic",sans-serif; text-wrap:balance}
+
+.rail{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding-bottom:12px; border-bottom:2px solid var(--navy)}
+.rail .tick{width:5px; height:17px; background:var(--navy); flex:none}
+.rail .eyebrow{font-weight:600; font-size:11.5px; letter-spacing:.18em; color:var(--navy);
+  text-transform:uppercase}
+.rail .spacer{flex:1 1 40px}
+.rail .course{font-size:11.5px; color:var(--text-2)}
+.rail .chip{background:var(--navy); color:#fff; font-family:"IBM Plex Mono",monospace;
+  font-size:12px; padding:2px 9px; border-radius:2px; font-weight:500}
+
+h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-spacing:-.02em;
+  color:var(--navy-ink); line-height:1.18}
+.deck{max-width:72ch; color:var(--text-2); margin:0; font-size:15px}
+.deck b{color:var(--text); font-weight:600}
+.underbar{width:56px; height:4px; background:var(--navy); margin:18px 0 24px}
+
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule);
+  border:1px solid var(--rule); border-radius:3px; overflow:hidden; margin-bottom:18px}
+.kpi{background:var(--panel); padding:16px 18px 15px}
+.kpi .k{font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--text-3);
+  font-weight:600}
+.kpi .v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:clamp(23px,2.4vw,31px); font-weight:600; color:var(--navy-ink); line-height:1.2;
+  margin-top:6px; letter-spacing:-.01em}
+.kpi .v small{font-size:.5em; font-weight:500; color:var(--text-2); margin-left:3px}
+.kpi .d{font-size:12px; color:var(--text-2); margin-top:3px}
+.kpi.hot .v{color:var(--accent)}
+.delta{display:inline-block; font-size:11.5px; font-weight:600;
+  font-family:"IBM Plex Mono",monospace; color:var(--accent); background:var(--accent-soft);
+  padding:1px 6px; border-radius:2px; margin-right:5px}
+
+.grid{display:grid; grid-template-columns:minmax(0,2.05fr) minmax(0,1fr); gap:18px; align-items:start}
+.card{background:var(--panel); border:1px solid var(--rule); border-radius:3px; box-shadow:var(--shadow)}
+.card > header{display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:13px 18px 11px; border-bottom:1px solid var(--rule-soft)}
+.card h2{margin:0; font-size:15.5px; font-weight:700; color:var(--navy-ink); letter-spacing:-.01em}
+.card .hint{font-size:12px; color:var(--text-3); margin-left:auto}
+.body{padding:16px 18px 18px}
+
+/* ---- control bar ---- */
+.controls{display:flex; align-items:center; gap:16px 20px; flex-wrap:wrap;
+  padding:11px 18px; background:var(--panel-2); border-bottom:1px solid var(--rule-soft)}
+.ctl{display:flex; align-items:center; gap:9px}
+.ctl > .lab{font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--text-3);
+  font-weight:600; white-space:nowrap}
+#rad{-webkit-appearance:none; appearance:none; width:190px; height:4px; border-radius:2px;
+  background:var(--rule); outline:none; cursor:pointer}
+#rad::-webkit-slider-thumb{-webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--panel); box-shadow:0 0 0 1px var(--accent);
+  cursor:pointer}
+#rad::-moz-range-thumb{width:14px; height:14px; border-radius:50%; background:var(--accent);
+  border:2px solid var(--panel); cursor:pointer}
+#rad:focus-visible{box-shadow:0 0 0 3px var(--accent-soft)}
+#radout{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:14px; font-weight:600; color:var(--accent); min-width:62px}
+.seg{display:inline-flex; border:1px solid var(--navy); border-radius:2px; overflow:hidden}
+.seg button{appearance:none; border:0; background:transparent; color:var(--navy);
+  font-family:inherit; font-size:12.5px; font-weight:600; padding:5px 13px; cursor:pointer;
+  line-height:1.5; white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--navy); color:#fff}
+.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.seg.tiny button{font-size:11.5px; padding:4px 11px}
+
+/* ---- map ---- */
+.mapwrap{position:relative; background:var(--panel-2); border-bottom:1px solid var(--rule-soft)}
+#map{display:block; width:100%; height:clamp(560px,76vh,820px); cursor:crosshair; touch-action:none}
+.zoomers{position:absolute; left:12px; top:12px; display:flex; flex-direction:column;
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden; background:var(--panel); width:30px;
+  z-index:4}
+.zoomers button{appearance:none; border:0; border-bottom:1px solid var(--rule-soft);
+  background:var(--panel); color:var(--navy); font-size:15px; font-weight:700; height:29px;
+  cursor:pointer; font-family:"IBM Plex Mono",monospace; padding:0}
+.zoomers button:last-child{border-bottom:0; font-size:11px}
+.zoomers button:hover{background:var(--panel-2)}
+.mapfoot{position:absolute; left:12px; bottom:12px; display:flex; align-items:flex-end; gap:14px;
+  z-index:4}
+.scalebar{color:var(--text-2); font-size:11px; font-family:"IBM Plex Mono",monospace}
+.scalebar i{display:block; height:3px; background:currentColor; margin-bottom:3px}
+.credit{font-size:10px; color:var(--text-3); font-family:"IBM Plex Mono",monospace;
+  padding-bottom:1px}
+.mapwrap.sat .scalebar{color:#FFFFFF; text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.mapwrap.sat .credit{color:#DCE3EC; text-shadow:0 1px 3px rgba(0,0,0,.9)}
+
+#tip{position:absolute; pointer-events:none; opacity:0; transition:opacity .1s;
+  background:var(--panel); border:1px solid var(--rule); border-left:3px solid var(--navy);
+  box-shadow:var(--shadow); padding:8px 11px; max-width:290px; font-size:12.5px; line-height:1.5;
+  border-radius:2px; z-index:8}
+#tip .t-cls{font-weight:700; color:var(--navy-ink); font-family:"Gothic A1",sans-serif}
+#tip .t-name{font-weight:600; margin-top:1px}
+#tip .t-why{color:var(--text-2); margin-top:4px; font-size:11.5px}
+#tip .t-lvl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-3);
+  letter-spacing:.06em; margin-top:4px}
+
+/* ---- charts as map insets ---- */
+.inset{position:absolute; right:12px; width:252px; pointer-events:none; z-index:5;
+  background:color-mix(in srgb, var(--panel) 93%, transparent);
+  border:1px solid var(--rule); border-top:3px solid var(--navy); border-radius:2px;
+  box-shadow:var(--shadow); padding:10px 12px 11px}
+.inset h3{margin:0 0 8px; font-size:12px; font-weight:700; color:var(--navy-ink);
+  display:flex; align-items:baseline; gap:6px}
+.inset h3 span{margin-left:auto; font-weight:500; font-size:10.5px; color:var(--text-3);
+  font-family:"IBM Plex Mono",monospace; letter-spacing:.04em}
+.inset.dens{top:12px}
+.inset.bars{bottom:12px}
+.dens .top{display:flex; align-items:center; gap:11px; margin-bottom:9px}
+.dens svg{flex:none}
+.pnote{margin:0; font-size:11px; line-height:1.5; color:var(--text-2)}
+.pnote b{display:block; font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600;
+  color:var(--navy-ink); line-height:1.15}
+.pnote em{font-style:normal; font-family:"IBM Plex Mono",monospace; color:var(--text-3);
+  font-size:10.5px}
+
+.ring{display:grid; grid-template-columns:auto 1fr auto; gap:4px 7px; align-items:center;
+  font-size:11px; padding:2.5px 0; border-bottom:1px solid var(--rule-soft)}
+.ring:last-child{border-bottom:0}
+.ring .band{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-2);
+  white-space:nowrap}
+.ring .bar{height:8px}
+.ring b{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:11px;
+  font-weight:600; color:var(--text); text-align:right; white-space:nowrap}
+
+.wfrow{padding:3px 0 5px; border-bottom:1px solid var(--rule-soft)}
+.wfrow:last-child{border-bottom:0}
+.wfhead{display:flex; align-items:baseline; gap:6px; font-size:11px; margin-bottom:3px}
+.wfhead .code{font-family:"IBM Plex Mono",monospace; color:var(--navy); font-weight:600;
+  font-size:10.5px; flex:none}
+.wfhead .lab{color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wfhead b{margin-left:auto; font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums; font-size:11px; font-weight:600}
+.bar{position:relative; display:block; height:7px; background:var(--rule-soft); border-radius:1px;
+  overflow:hidden}
+.bar i{position:absolute; inset:0 auto 0 0; background:var(--navy-2)}
+.wfrow.rest .wfhead .code,.wfrow.rest .wfhead .lab,.wfrow.rest .wfhead b{color:var(--accent)}
+.wfrow.rest .bar i{background:var(--accent)}
+
+.legend{display:flex; flex-wrap:wrap; gap:6px; padding:13px 18px 15px}
+.lg{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--rule);
+  background:var(--panel); border-radius:2px; padding:4px 9px 4px 7px; cursor:pointer;
+  font-size:12.5px; font-family:inherit; color:var(--text); line-height:1.5}
+.lg:hover{border-color:var(--navy-2)}
+.lg[aria-pressed="false"]{opacity:.4}
+.lg:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+.lg i{width:11px; height:11px; border-radius:1px; flex:none}
+.lg b{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-weight:500;
+  color:var(--text-2); font-size:11.5px}
+
+.insight{border-left:4px solid var(--navy); background:var(--panel-2)}
+.insight .tag{font-size:10.5px; letter-spacing:.2em; font-weight:700; color:var(--navy)}
+.insight .lede{font-family:"Gothic A1",sans-serif; font-weight:700; font-size:17px; line-height:1.45;
+  color:var(--navy-ink); margin:8px 0 16px; letter-spacing:-.01em}
+.insight .lede em{font-style:normal; color:var(--accent)}
+.ins{display:grid; grid-template-columns:22px 1fr; gap:11px; padding:11px 0;
+  border-top:1px solid var(--rule-soft)}
+.ins .n{width:22px; height:22px; border-radius:50%; background:var(--navy); color:#fff;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; display:grid;
+  place-items:center; margin-top:1px}
+.ins h3{margin:0 0 2px; font-size:13px; font-weight:700; color:var(--text)}
+.ins p{margin:0; font-size:12.5px; color:var(--text-2); line-height:1.62}
+.ins p b{color:var(--text); font-weight:600}
+.ins .live{font-family:"IBM Plex Mono",monospace; color:var(--accent); font-weight:600}
+
+.loading{position:absolute; inset:0; z-index:7; background:var(--panel-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px}
+.loading b{font-family:"Gothic A1",sans-serif; font-size:15px; color:var(--navy-ink)}
+.loading span{font-size:12px; color:var(--text-3)}
+.loaderr{position:absolute; inset:0; z-index:9; background:var(--panel); padding:26px 28px;
+  display:flex; flex-direction:column; justify-content:center; gap:9px;
+  border-left:4px solid var(--accent)}
+.loaderr h3{margin:0 0 4px; font-size:17px; font-weight:800; color:var(--accent)}
+.loaderr p{margin:0; max-width:60ch; font-size:13px; color:var(--text-2); line-height:1.7}
+.loaderr b{color:var(--text)}
+.loaderr code,.note code{font-family:"IBM Plex Mono",monospace; font-size:12px;
+  background:var(--panel-2); border:1px solid var(--rule-soft); padding:1px 5px; border-radius:2px;
+  color:var(--text)}
+
+.notes{margin-top:18px; border-top:1px solid var(--rule); padding-top:14px;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px}
+.note h4{margin:0 0 3px; font-size:12px; font-weight:700; color:var(--text)}
+.note p{margin:0; font-size:12px; color:var(--text-2); line-height:1.6}
+.src{margin-top:16px; font-size:11.5px; color:var(--text-3); font-style:italic}
+
+@media (max-width:1080px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:820px){
+  .mapwrap{display:grid; grid-template-columns:minmax(0,1fr)}
+  #map{height:clamp(360px,52vh,520px)}
+  .inset{position:static; width:auto; border:0; border-top:1px solid var(--rule-soft);
+    box-shadow:none; background:var(--panel); border-radius:0; pointer-events:auto}
+  .inset.dens{border-top:3px solid var(--navy)}
+  .mapfoot{flex-wrap:wrap; gap:8px; right:12px}
+  .credit{flex-basis:100%}
+}
+@media (max-width:560px){
+  .wrap{padding-inline:16px}
+  .kpis{grid-template-columns:1fr}
+  #rad{width:140px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+
+<div class="wrap">
+  <div class="rail">
+    <span class="tick"></span>
+    <span class="eyebrow">Section 1 · 데이터를 가져오기 전에 알아야 할 것</span>
+    <span class="spacer"></span>
+    <span class="course">스마트도시계획(캡스톤디자인)</span>
+    <span class="chip">28R</span>
+  </div>
+
+  <h1>반경을 줄여 가며 읽는 종로 도심의 건물밀도</h1>
+  <p class="deck">슬라이드 28p는 반경 3 km 한 덩어리의 <b>용도 구성비</b>를 봤습니다. 구성비는 반경을 바꿔도 잘 안 움직이지만 <b>밀도</b>는 크게 움직입니다 — 도심은 중심에 가까울수록 조밀하기 때문입니다. 아래 슬라이더로 반경을 줄이면 <b>원 안에 들어오는 건물만으로</b> 밀도·용도·판정근거가 전부 다시 계산됩니다.</p>
+  <div class="underbar"></div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="k">원 안의 건물</div>
+      <div class="v" id="kpi-n">—</div>
+      <div class="d" id="kpi-n-d">—</div>
+    </div>
+    <div class="kpi">
+      <div class="k">건물 밀도</div>
+      <div class="v" id="kpi-dens">—</div>
+      <div class="d" id="kpi-dens-d">—</div>
+    </div>
+    <div class="kpi hot">
+      <div class="k">미분류 비중</div>
+      <div class="v" id="kpi-unk">—</div>
+      <div class="d" id="kpi-unk-d">—</div>
+    </div>
+    <div class="kpi">
+      <div class="k">상업·업무 ÷ 주거</div>
+      <div class="v" id="kpi-ratio">—</div>
+      <div class="d" id="kpi-ratio-d">—</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <header>
+        <h2>반경별 건물밀도 지도</h2>
+        <span class="hint">드래그 이동 · 더블클릭/Ctrl+휠 확대 · 건물에 올리면 판정근거</span>
+      </header>
+
+      <div class="controls">
+        <div class="ctl">
+          <label class="lab" for="rad">반경</label>
+          <input type="range" id="rad" min="300" max="3000" step="100" value="3000"
+                 aria-describedby="radout">
+          <output id="radout" for="rad">3.0 km</output>
+        </div>
+        <div class="ctl">
+          <span class="lab">배경</span>
+          <div class="seg tiny" role="group" aria-label="배경 지도">
+            <button type="button" id="bg-sat" aria-pressed="true">위성사진</button>
+            <button type="button" id="bg-osm" aria-pressed="false">OpenStreetMap</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <span class="lab">판정</span>
+          <div class="seg" role="group" aria-label="판정 기준">
+            <button type="button" id="btn-before" aria-pressed="false">기존</button>
+            <button type="button" id="btn-after" aria-pressed="true">보완</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mapwrap">
+        <canvas id="map" aria-label="반경별 건물 밀도 및 용도 판정 지도"></canvas>
+        <div id="loading" class="loading">
+          <b>건물 19,036동을 그리는 중…</b>
+          <span>파일이 7 MB라 처음 열 때 몇 초 걸립니다</span>
+        </div>
+        <div class="zoomers">
+          <button type="button" id="zin" aria-label="확대">+</button>
+          <button type="button" id="zout" aria-label="축소">−</button>
+          <button type="button" id="zreset" aria-label="반경에 맞추기">맞춤</button>
+        </div>
+
+        <section class="inset dens" aria-label="거리대별 건물밀도">
+          <h3>건물밀도 <span id="dens-state">원 안 기준</span></h3>
+          <div class="top">
+            <svg id="rings" width="104" height="104" viewBox="0 0 104 104" role="img"
+                 aria-label="중심에서의 거리대별 밀도 동심원"></svg>
+            <p class="pnote" id="dens-note">—</p>
+          </div>
+          <div id="ringlist"></div>
+        </section>
+
+        <section class="inset bars" aria-label="판정 근거별 해소량">
+          <h3>판정 근거 <span>원 안 · 동</span></h3>
+          <div id="wf"></div>
+        </section>
+
+        <div class="mapfoot">
+          <div class="scalebar"><i id="sb-bar" style="width:90px"></i><span id="sb-txt">1 km</span></div>
+          <div class="credit" id="credit">위성 © Esri, Maxar, Earthstar Geographics</div>
+        </div>
+        <div id="tip" role="status"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <aside class="card insight">
+      <div class="body">
+        <div class="tag">INSIGHT</div>
+        <p class="lede">밀도는 반경에 따라 크게 흔들립니다 — <em>어디까지를 대상지로 잡았는지</em> 밝히지 않은 밀도 수치는 읽을 수 없습니다</p>
+        <div class="ins">
+          <div class="n">1</div>
+          <div>
+            <h3>반경을 줄이면 밀도가 올라간다</h3>
+            <p>반경 3 km에서 <span class="live" id="live-a">—</span>이던 밀도가 반경 1 km에서는 <span class="live" id="live-b">—</span>이 됩니다. 같은 도시를 같은 데이터로 재도, <b>경계를 어디에 긋느냐가 결론을 만듭니다</b>.</p>
+          </div>
+        </div>
+        <div class="ins">
+          <div class="n">2</div>
+          <div>
+            <h3>거리대별로 봐야 구조가 보인다</h3>
+            <p>합계 밀도 하나로는 도심 구조가 안 보입니다. 왼쪽 동심원은 중심에서 500 m씩 끊어 각 거리대의 밀도를 따로 잽니다 — 종로 도심은 중심부가 아니라 <b>중간 거리대에서 가장 조밀</b>합니다. 산지(북악·남산)가 바깥 거리대의 밀도를 끌어내리기 때문입니다.</p>
+          </div>
+        </div>
+        <div class="ins">
+          <div class="n">3</div>
+          <div>
+            <h3>OSM 밀도는 하한값이다</h3>
+            <p>여기 밀도는 <b>OSM에 등재된 건물</b>의 밀도이므로 실제보다 낮습니다. 그 불확실성의 크기가 판정근거 막대 맨 아래의 <b>미분류</b>인데, 반경 3 km에서 <span class="live" id="live-c">—</span>이던 것이 반경 1 km에서는 <span class="live" id="live-d">—</span>로 떨어집니다. <b>도심 코어일수록 OSM 기재가 촘촘합니다.</b></p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <h4>밀도 정의</h4>
+      <p>건물 동수 ÷ 원(또는 거리대 링)의 면적. 면적에는 산지·하천·도로가 모두 포함된 <b>총면적</b>을 씁니다. 시가화 면적 기준이 아니므로 값이 보수적으로 나옵니다.</p>
+    </div>
+    <div class="note">
+      <h4>혼합용도는 상업 쪽으로 기운다</h4>
+      <p>1층 근생 + 상층 주거인 종로 일대 건물은 POI가 상업만 잡히므로 상업·업무로 판정됩니다. 상업 비중은 상한값으로 읽어야 합니다.</p>
+    </div>
+    <div class="note">
+      <h4>배경은 위성사진</h4>
+      <p>기본 배경은 Esri World Imagery(z16) 타일 196장을 미리 받아 한 장으로 합쳐 동봉한 것입니다. 위성은 Web Mercator, 지도 좌표계는 지역 등장방형이라 위도 24개 스트립으로 나눠 그려 오차를 1 m 미만으로 맞췄습니다. OpenStreetMap 스타일 배경으로도 전환됩니다.</p>
+    </div>
+    <div class="note">
+      <h4>건물 단위로 추적된다</h4>
+      <p>판정근거를 건물마다 남겼습니다. 지도에서 아무 건물에나 올려 보면 어떤 태그·POI로 판정했는지 그대로 나옵니다.</p>
+    </div>
+  </div>
+
+  <p class="src">출처: Overpass API(OpenStreetMap) · 서울 종로구청(37.5735, 126.9790) 중심 · 조회 2026-09-14 · 위성 이미지 © Esri, Maxar, Earthstar Geographics · 상명대학교 그린스마트시티학과</p>
+</div>
+
+<script>
+/* 종로 반경별 건물밀도 판독.
+   Geometry arrives delta-encoded in half-metre integers relative to the study
+   centre; it is decoded to metres once, and the canvas transform does the rest.
+   Every figure on the page is recomputed from the buildings inside the radius. */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return Math.round(n || 0).toLocaleString("ko-KR"); };
+  var pct = function (n, t) { return t ? (100 * n / t).toFixed(1) : "0.0"; };
+  var CVARS = ["--c0", "--c1", "--c2", "--c3", "--c4", "--c5", "--c6"];
+  var UNK = 6, COM = 0, RES = 1;
+
+  var D = null, BM = null, polys = [], dist = null, grid = null, GCELL = 120;
+  var state = "after", hidden = {}, paths = null, outPath = null, pathKey = "";
+  var R = 3000, MAXR = 3000, FULL_N = 0, FULL_DENS = 0;
+  var view = { x: 0, y: 0, s: 1 }, raf = 0;
+  var canvas, ctx, W = 0, H = 0, dpr = 1;
+  var bg = "sat";   // satellite is the base map; OSM is the alternate
+  var sat = { img: null, meta: null, strips: null, STRIPS: 24, west: 0, east: 0 };
+
+  // OpenStreetMap-carto-ish palette: the background stays light in both themes,
+  // the way a printed map sheet does.
+  var OSM = {
+    ground: "#F2EFE9", green: "#CDE5B2", water: "#AAD3DF",
+    minorFill: "#FFFFFF", minorCase: "#CFC8BD",
+    majorFill: "#F8D5A3", majorCase: "#D8AA6E",
+    rail: "#9C9C9C", ring: "#8B93A0"
+  };
+
+  function css(n) {
+    return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  }
+  function cols() { return CVARS.map(css); }
+
+  var BUNDLE = window.__BUNDLE__ || null;
+  function loadJSON(name) {
+    if (BUNDLE) return Promise.resolve(BUNDLE[name] || null);
+    return fetch("data/" + name + ".json").then(function (r) {
+      if (!r.ok) throw new Error(name + ".json " + r.status);
+      return r.json();
+    });
+  }
+
+  Promise.all([
+    loadJSON("buildings"), loadJSON("basemap"),
+    loadJSON("satellite").catch(function () { return null; })
+  ]).then(function (res) {
+    D = res[0]; BM = res[1]; sat.meta = res[2];
+    MAXR = D.meta.radius_m;
+    decode();
+    for (var i = 0; i < dist.length; i++) if (dist[i] <= MAXR) FULL_N++;
+    FULL_DENS = FULL_N / (Math.PI * MAXR * MAXR / 1e6);
+    buildGrid(); setupMap(); loadSatellite(); refresh();
+    var ld = $("loading");
+    if (ld) ld.parentNode.removeChild(ld);
+    window.addEventListener("resize", resize);
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", themed); else mq.addListener(themed);
+    new MutationObserver(themed).observe(document.documentElement,
+      { attributes: true, attributeFilter: ["data-theme"] });
+  }).catch(function (e) {
+    var local = location.protocol === "file:";
+    var ld = $("loading");
+    if (ld) ld.parentNode.removeChild(ld);
+    var box = document.createElement("div");
+    box.className = "loaderr";
+    box.innerHTML = "<h3>데이터를 불러오지 못했습니다</h3>" +
+      (local
+        ? "<p>이 파일을 <code>file://</code>로 직접 열면 브라우저가 보안 정책(CORS)상 " +
+          "<code>data/</code> 폴더 읽기를 막습니다. 데이터가 없는 게 아니라 접근이 차단된 것입니다.</p>" +
+          "<p><b>해결 1</b> 같은 폴더의 <code>dashboard_standalone.html</code>을 여세요. " +
+          "데이터와 위성 이미지가 파일 안에 들어 있어 더블클릭으로 바로 열립니다.</p>" +
+          "<p><b>해결 2</b> 이 폴더에서 <code>py -m http.server 8000</code> 을 실행한 뒤 " +
+          "<code>http://localhost:8000</code> 으로 여세요.</p>"
+        : "<p>" + esc(e.message) + "</p>");
+    $("map").parentNode.appendChild(box);
+  });
+
+  function themed() { pathKey = ""; refresh(); }
+
+  function decode() {
+    var U = D.meta.unit, g = D.geom, c = D.counts, gi = 0, ci = 0, n = D.cls.length;
+    dist = new Float32Array(n);
+    for (var b = 0; b < n; b++) {
+      var nr = c[ci++], rings = [];
+      for (var r = 0; r < nr; r++) {
+        var np = c[ci++], a = new Float32Array(np * 2), x = 0, y = 0;
+        for (var p = 0; p < np; p++) {
+          x += g[gi++]; y += g[gi++];
+          a[p * 2] = x / U; a[p * 2 + 1] = y / U;
+        }
+        rings.push(a);
+      }
+      polys.push(rings);
+      var cx = D.cent[b * 2] / U, cy = D.cent[b * 2 + 1] / U;
+      dist[b] = Math.sqrt(cx * cx + cy * cy);
+    }
+  }
+
+  function decodeFlat(flat, counts, U) {
+    var out = [], i = 0;
+    for (var k = 0; k < counts.length; k++) {
+      var np = counts[k], a = new Float32Array(np * 2), x = 0, y = 0;
+      for (var p = 0; p < np; p++) {
+        x += flat[i++]; y += flat[i++];
+        a[p * 2] = x / U; a[p * 2 + 1] = y / U;
+      }
+      out.push(a);
+    }
+    return out;
+  }
+
+  function buildGrid() {
+    grid = {};
+    var U = D.meta.unit;
+    for (var i = 0; i < D.cls.length; i++) {
+      var k = Math.floor(D.cent[i * 2] / U / GCELL) + "|" + Math.floor(D.cent[i * 2 + 1] / U / GCELL);
+      (grid[k] || (grid[k] = [])).push(i);
+    }
+  }
+
+  function loadSatellite() {
+    if (!sat.meta) return;
+    var M = sat.meta, TO = Math.PI / 180;
+    var mercY = function (lat) { return Math.log(Math.tan(Math.PI / 4 + lat * TO / 2)); };
+    var latAt = function (my) { return (2 * Math.atan(Math.exp(my)) - Math.PI / 2) / TO; };
+    var y0 = mercY(M.latNorth), y1 = mercY(M.latSouth);
+    var K = Math.cos(M.center[0] * TO) * 111320.0, N = sat.STRIPS;
+    sat.strips = [];
+    for (var i = 0; i < N; i++) {
+      var latA = latAt(y0 + (y1 - y0) * i / N), latB = latAt(y0 + (y1 - y0) * (i + 1) / N);
+      sat.strips.push({
+        sy: M.height * i / N, sh: M.height / N,
+        top: (latA - M.center[0]) * 111320.0, bot: (latB - M.center[0]) * 111320.0
+      });
+    }
+    sat.west = (M.lonWest - M.center[1]) * K;
+    sat.east = (M.lonEast - M.center[1]) * K;
+    var img = new Image();
+    img.onload = function () { sat.img = img; draw(); };
+    img.src = (BUNDLE && BUNDLE.satelliteJpg) || "data/satellite.jpg";
+  }
+
+  /* ------------------------------------------------------------- analysis -- */
+  function classOf(i) { return state === "after" ? D.cls[i] : D.cls0[i]; }
+
+  function ringStep() {
+    var steps = [100, 200, 250, 500];
+    for (var i = 0; i < steps.length; i++) if (R / steps[i] <= 7) return steps[i];
+    return 500;
+  }
+
+  /* Everything the page shows comes out of this one pass over the buildings
+     inside the radius - counts by class, by evidence level, and by distance ring. */
+  function analyse() {
+    var step = ringStep(), nr = Math.max(1, Math.ceil(R / step));
+    var byClass = [0, 0, 0, 0, 0, 0, 0], byClass0 = [0, 0, 0, 0, 0, 0, 0];
+    var byLevel = [0, 0, 0, 0, 0, 0, 0], rings = [], n = 0;
+    for (var r = 0; r < nr; r++) {
+      var r0 = r * step, r1 = Math.min((r + 1) * step, R);
+      rings.push({ r0: r0, r1: r1, n: 0, area: Math.PI * (r1 * r1 - r0 * r0) / 1e6 });
+    }
+    for (var i = 0; i < dist.length; i++) {
+      if (dist[i] > R) continue;
+      n++;
+      byClass[D.cls[i]]++; byClass0[D.cls0[i]]++; byLevel[D.lvl[i]]++;
+      var k = Math.min(nr - 1, Math.floor(dist[i] / step));
+      rings[k].n++;
+    }
+    rings.forEach(function (g) { g.dens = g.area ? g.n / g.area : 0; });
+    return {
+      n: n, area: Math.PI * R * R / 1e6, rings: rings, step: step,
+      after: byClass, before: byClass0, level: byLevel
+    };
+  }
+
+  var A = null;
+  function refresh() {
+    A = analyse();
+    renderKPI(); renderRings(); renderWaterfall(); renderLegend(); draw();
+  }
+
+  /* ------------------------------------------------------------------ map -- */
+  function addRings(path, rings) {
+    for (var r = 0; r < rings.length; r++) {
+      var a = rings[r];
+      path.moveTo(a[0], a[1]);
+      for (var p = 1; p < a.length / 2; p++) path.lineTo(a[p * 2], a[p * 2 + 1]);
+      path.closePath();
+    }
+  }
+  function addLines(path, lines) {
+    for (var r = 0; r < lines.length; r++) {
+      var a = lines[r];
+      path.moveTo(a[0], a[1]);
+      for (var p = 1; p < a.length / 2; p++) path.lineTo(a[p * 2], a[p * 2 + 1]);
+    }
+  }
+
+  function setupMap() {
+    canvas = $("map");
+    ctx = canvas.getContext("2d");
+    resize(); fitRadius();
+
+    var drag = null;
+    canvas.addEventListener("pointerdown", function (e) {
+      drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      hide();
+    });
+    canvas.addEventListener("pointermove", function (e) {
+      if (drag) {
+        view.x = drag.vx - (e.clientX - drag.x) / view.s;
+        view.y = drag.vy + (e.clientY - drag.y) / view.s;
+        draw();
+      } else hover(e);
+    });
+    var end = function () { drag = null; };
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+    canvas.addEventListener("pointerleave", function () { drag = null; hide(); });
+    canvas.addEventListener("wheel", function (e) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      var r = canvas.getBoundingClientRect();
+      zoomAt(e.clientX - r.left, e.clientY - r.top, Math.pow(0.9988, e.deltaY));
+    }, { passive: false });
+    canvas.addEventListener("dblclick", function (e) {
+      var r = canvas.getBoundingClientRect();
+      zoomAt(e.clientX - r.left, e.clientY - r.top, e.shiftKey ? 1 / 1.8 : 1.8);
+    });
+
+    $("zin").onclick = function () { center(1.6); };
+    $("zout").onclick = function () { center(1 / 1.6); };
+    $("zreset").onclick = function () { fitRadius(); draw(); };
+    $("btn-after").onclick = function () { setState("after"); };
+    $("btn-before").onclick = function () { setState("before"); };
+    $("bg-osm").onclick = function () { setBg("osm"); };
+    $("bg-sat").onclick = function () { setBg("sat"); };
+
+    var rad = $("rad");
+    rad.max = MAXR;
+    rad.value = R = MAXR;
+    rad.addEventListener("input", function () {
+      R = +rad.value;
+      $("radout").textContent = (R / 1000).toFixed(1) + " km";
+      pathKey = "";
+      // setTimeout, not rAF: the page must still settle when the tab is hidden
+      if (!raf) raf = setTimeout(function () { raf = 0; refresh(); }, 16);
+    });
+    $("radout").textContent = (R / 1000).toFixed(1) + " km";
+    setBg(bg);
+  }
+
+  function setBg(v) {
+    bg = v;
+    $("bg-osm").setAttribute("aria-pressed", String(v === "osm"));
+    $("bg-sat").setAttribute("aria-pressed", String(v === "sat"));
+    canvas.parentNode.classList.toggle("sat", v === "sat");
+    $("credit").textContent = v === "sat"
+      ? "위성 © Esri, Maxar, Earthstar Geographics"
+      : "지도 데이터 © OpenStreetMap 기여자";
+    draw();
+  }
+
+  function center(k) {
+    var r = canvas.getBoundingClientRect();
+    zoomAt(r.width / 2, r.height / 2, k);
+  }
+
+  function setState(s) {
+    if (state === s) return;
+    state = s;
+    $("btn-after").setAttribute("aria-pressed", String(s === "after"));
+    $("btn-before").setAttribute("aria-pressed", String(s === "before"));
+    $("dens-state").textContent = s === "after" ? "원 안 기준" : "기존 기준";
+    pathKey = "";
+    refresh();
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.round(r.width * dpr); H = Math.round(r.height * dpr);
+    canvas.width = W; canvas.height = H;
+    draw();
+  }
+
+  function fitRadius() {
+    var r = canvas.getBoundingClientRect();
+    view.x = 0; view.y = 0;
+    view.s = Math.min(r.width, r.height) / (2 * R * 1.06);
+  }
+
+  function zoomAt(px, py, k) {
+    var r = canvas.getBoundingClientRect();
+    var wx = view.x + (px - r.width / 2) / view.s;
+    var wy = view.y - (py - r.height / 2) / view.s;
+    var lo = Math.min(r.width, r.height) / (2 * MAXR * 1.5);
+    view.s = Math.min(Math.max(view.s * k, lo), 1.4);
+    view.x = wx - (px - r.width / 2) / view.s;
+    view.y = wy + (py - r.height / 2) / view.s;
+    draw();
+  }
+
+  function draw() {
+    if (!ctx || !D) return;
+    var imagery = bg === "sat" && sat.img;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = OSM.ground;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!BM._d) {
+      var U = D.meta.unit;
+      BM._d = {};
+      ["green", "water"].forEach(function (k) {
+        var p = new Path2D();
+        addRings(p, decodeFlat(BM[k], BM[k + "Counts"], U));
+        BM._d[k] = p;
+      });
+      ["stream", "minor", "major", "rail"].forEach(function (k) {
+        var p = new Path2D();
+        addLines(p, decodeFlat(BM[k] || [], BM[k + "Counts"] || [], U));
+        BM._d[k] = p;
+      });
+    }
+    if (pathKey !== state + "|" + R + "|" + Object.keys(hidden).join(",")) {
+      paths = CVARS.map(function () { return new Path2D(); });
+      outPath = new Path2D();
+      for (var i = 0; i < polys.length; i++) {
+        if (dist[i] > R) { addRings(outPath, polys[i]); continue; }
+        var c = classOf(i);
+        if (!hidden[c]) addRings(paths[c], polys[i]);
+      }
+      pathKey = state + "|" + R + "|" + Object.keys(hidden).join(",");
+    }
+
+    var k = view.s * dpr;
+    ctx.setTransform(k, 0, 0, -k, W / 2 - view.x * k, H / 2 + view.y * k);
+    ctx.lineJoin = ctx.lineCap = "round";
+
+    // The OSM sheet is always drawn: on its own it is the alternate background,
+    // and under the imagery it fills the frame beyond the raster's square edge.
+    ctx.fillStyle = OSM.green; ctx.fill(BM._d.green, "evenodd");
+    ctx.fillStyle = OSM.water; ctx.fill(BM._d.water, "evenodd");
+    ctx.strokeStyle = OSM.water;
+    ctx.lineWidth = Math.max(2 / k, 6); ctx.stroke(BM._d.stream);
+    ctx.strokeStyle = OSM.minorCase;          // casing, then fill, as a street map is drawn
+    ctx.lineWidth = Math.max(2 / k, 11); ctx.stroke(BM._d.minor);
+    ctx.strokeStyle = OSM.majorCase;
+    ctx.lineWidth = Math.max(2 / k, 22); ctx.stroke(BM._d.major);
+    ctx.strokeStyle = OSM.minorFill;
+    ctx.lineWidth = Math.max(1 / k, 8); ctx.stroke(BM._d.minor);
+    ctx.strokeStyle = OSM.majorFill;
+    ctx.lineWidth = Math.max(1 / k, 18); ctx.stroke(BM._d.major);
+    ctx.strokeStyle = OSM.rail;
+    ctx.lineWidth = Math.max(1 / k, 3);
+    ctx.setLineDash([14, 10]); ctx.stroke(BM._d.rail); ctx.setLineDash([]);
+
+    if (imagery) {
+      ctx.imageSmoothingQuality = "high";
+      sat.strips.forEach(function (s) {
+        ctx.drawImage(sat.img, 0, s.sy, sat.meta.width, s.sh,
+          sat.west, s.bot, sat.east - sat.west, s.top - s.bot);
+      });
+      var top = sat.strips[0].top, bot = sat.strips[sat.strips.length - 1].bot;
+      ctx.fillStyle = "rgba(8,14,24,.28)";   // hold the imagery back so the fills read
+      ctx.fillRect(sat.west, bot, sat.east - sat.west, top - bot);
+    }
+
+    // buildings outside the current radius stay as context, not as data
+    ctx.globalAlpha = imagery ? 0.30 : 0.5;
+    ctx.fillStyle = imagery ? "#7C8797" : "#CFC6BB";
+    ctx.fill(outPath);
+    ctx.globalAlpha = 1;
+
+    var C = cols();
+    ctx.globalAlpha = imagery ? 0.9 : 1;
+    [UNK, 5, 4, 2, 3, RES, COM].forEach(function (c) {
+      ctx.fillStyle = C[c];
+      ctx.fill(paths[c]);
+      if (k > 0.3) { ctx.strokeStyle = C[c]; ctx.lineWidth = 1 / k; ctx.stroke(paths[c]); }
+    });
+    ctx.globalAlpha = 1;
+
+    // distance rings, then the radius itself
+    ctx.strokeStyle = imagery ? "rgba(255,255,255,.34)" : "rgba(90,101,120,.36)";
+    ctx.lineWidth = 1 / k;
+    ctx.setLineDash([3 / k, 5 / k]);
+    for (var g = 1; A && g < A.rings.length; g++) {
+      ctx.beginPath();
+      ctx.arc(0, 0, A.rings[g].r0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.strokeStyle = css("--accent");
+    ctx.setLineDash([8 / k, 6 / k]);
+    ctx.lineWidth = 1.8 / k;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    var cx = W / 2 - view.x * k, cy = H / 2 + view.y * k;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4.5 * dpr, 0, Math.PI * 2);
+    ctx.fillStyle = css("--accent"); ctx.fill();
+    ctx.lineWidth = 1.8 * dpr; ctx.strokeStyle = "#fff"; ctx.stroke();
+
+    scalebar();
+  }
+
+  function scalebar() {
+    var m = 92 / view.s, steps = [25, 50, 100, 200, 250, 500, 1000, 2000], pick = steps[0];
+    steps.forEach(function (s) { if (Math.abs(s - m) < Math.abs(pick - m)) pick = s; });
+    $("sb-bar").style.width = Math.round(pick * view.s) + "px";
+    $("sb-txt").textContent = pick >= 1000 ? (pick / 1000) + " km" : pick + " m";
+  }
+
+  /* ---------------------------------------------------------------- hover -- */
+  function hide() { $("tip").style.opacity = 0; }
+
+  function hover(e) {
+    var r = canvas.getBoundingClientRect();
+    var px = e.clientX - r.left, py = e.clientY - r.top;
+    var wx = view.x + (px - r.width / 2) / view.s;
+    var wy = view.y - (py - r.height / 2) / view.s;
+    var lim = Math.max(24, 22 / view.s), best = -1, bd = lim * lim;
+    var gx = Math.floor(wx / GCELL), gy = Math.floor(wy / GCELL), U = D.meta.unit;
+    for (var ax = gx - 1; ax <= gx + 1; ax++) {
+      for (var ay = gy - 1; ay <= gy + 1; ay++) {
+        var cell = grid[ax + "|" + ay];
+        if (!cell) continue;
+        for (var j = 0; j < cell.length; j++) {
+          var i = cell[j];
+          if (dist[i] > R || hidden[classOf(i)]) continue;
+          var dx = D.cent[i * 2] / U - wx, dy = D.cent[i * 2 + 1] / U - wy, d = dx * dx + dy * dy;
+          if (d < bd) { bd = d; best = i; }
+        }
+      }
+    }
+    if (best < 0) return hide();
+    var tip = $("tip"), lv = D.meta.levels[D.lvl[best]];
+    var lab = state === "after"
+      ? (lv === "-" ? "근거 없음" : lv + " 단계에서 판정")
+      : (D.lvl[best] === 0 ? "L1 · building 태그로 판정" : "building 태그만으로는 판정 불가");
+    tip.innerHTML = '<div class="t-cls">' + D.meta.classes[classOf(best)] + "</div>" +
+      (D.names[best] ? '<div class="t-name">' + esc(D.names[best]) + "</div>" : "") +
+      (state === "after" ? '<div class="t-why">' + esc(D.whys[best]) + "</div>" : "") +
+      '<div class="t-lvl">중심에서 ' + fmt(dist[best]) + " m · " + lab + "</div>";
+    tip.style.opacity = 1;
+    tip.style.left = Math.min(Math.max(6, px + 14), r.width - tip.offsetWidth - 6) + "px";
+    tip.style.top = Math.min(Math.max(6, py + 14), r.height - tip.offsetHeight - 6) + "px";
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  /* --------------------------------------------------------------- panels -- */
+  function counts() { return state === "after" ? A.after : A.before; }
+
+  function renderKPI() {
+    var c = counts(), dens = A.area ? A.n / A.area : 0;
+    $("kpi-n").innerHTML = fmt(A.n) + "<small>동</small>";
+    $("kpi-n-d").textContent = "반경 " + (R / 1000).toFixed(1) + " km · 면적 " +
+      A.area.toFixed(2) + " km²";
+    $("kpi-dens").innerHTML = fmt(dens) + "<small>동/km²</small>";
+    $("kpi-dens-d").innerHTML = R === MAXR
+      ? "반경 3 km 전체 기준 · 모집단 " + fmt(FULL_N) + "동"
+      : '<span class="delta">×' + (dens / FULL_DENS).toFixed(2) + "</span>반경 3 km 대비";
+    $("kpi-unk").innerHTML = pct(c[UNK], A.n) + "<small>%</small>";
+    $("kpi-unk-d").textContent = fmt(c[UNK]) + "동이 용도 근거 없음" +
+      (state === "after" ? " (6단계 결합 후)" : " (building 태그만)");
+    $("kpi-ratio").innerHTML = c[RES]
+      ? (c[COM] / c[RES]).toFixed(2) + "<small>배</small>"
+      : "—<small>주거 0동</small>";
+    $("kpi-ratio-d").textContent = "상업 " + fmt(c[COM]) + "동 · 주거 " + fmt(c[RES]) + "동";
+  }
+
+  function renderRings() {
+    var svg = $("rings"), gs = A.rings, out = "";
+    var max = Math.max.apply(null, gs.map(function (g) { return g.dens; })) || 1;
+    var cx = 52, cy = 52, RR = 50;
+    for (var i = gs.length - 1; i >= 0; i--) {     // outermost first so inner ones sit on top
+      var g = gs[i], rr = RR * g.r1 / R;
+      var a = 0.16 + 0.84 * (g.dens / max);
+      out += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rr.toFixed(2) +
+        '" fill="' + css("--navy-2") + '" fill-opacity="' + a.toFixed(3) +
+        '" stroke="' + css("--panel") + '" stroke-width="0.8"></circle>';
+    }
+    svg.innerHTML = out;
+
+    var dens = A.area ? A.n / A.area : 0;
+    var peak = gs.reduce(function (a, b) { return b.dens > a.dens ? b : a; }, gs[0]);
+    $("dens-note").innerHTML = "<b>" + fmt(dens) + "</b>동/km² · 원 전체<br>" +
+      "<em>최고 " + (peak.r0 / 1000).toFixed(1) + "–" + (peak.r1 / 1000).toFixed(1) +
+      " km 대 " + fmt(peak.dens) + "</em>";
+
+    $("ringlist").innerHTML = gs.map(function (g) {
+      return '<div class="ring"><span class="band">' + (g.r0 / 1000).toFixed(1) + "–" +
+        (g.r1 / 1000).toFixed(1) + '</span><span class="bar"><i style="width:' +
+        (100 * g.dens / max).toFixed(1) + '%"></i></span><b>' + fmt(g.dens) + "</b></div>";
+    }).join("");
+  }
+
+  function renderWaterfall() {
+    var el = $("wf"), wf = D.meta.waterfall, lv = A.level;
+    var rows = [], max = 0;
+    for (var i = 0; i < wf.length; i++) {
+      var v = lv[i];
+      rows.push({ code: wf[i].code, label: wf[i].label, v: v });
+      if (v > max) max = v;
+    }
+    rows.push({ code: "—", label: "근거 없음 · 미분류", v: lv[6], rest: true });
+    max = Math.max(max, lv[6]) || 1;
+    el.innerHTML = rows.map(function (r) {
+      return '<div class="wfrow' + (r.rest ? " rest" : "") + '"><div class="wfhead">' +
+        '<span class="code">' + r.code + '</span><span class="lab">' + r.label +
+        "</span><b>" + fmt(r.v) + '</b></div><span class="bar"><i style="width:' +
+        (100 * r.v / max).toFixed(1) + '%"></i></span></div>';
+    }).join("");
+  }
+
+  function renderLegend() {
+    var el = $("legend"), c = counts(), C = cols();
+    el.innerHTML = "";
+    D.meta.classes.forEach(function (name, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "lg";
+      b.setAttribute("aria-pressed", hidden[i] ? "false" : "true");
+      b.innerHTML = '<i style="background:' + C[i] + '"></i>' + name + " <b>" + fmt(c[i]) +
+        " · " + pct(c[i], A.n) + "%</b>";
+      b.onclick = function () {
+        if (hidden[i]) delete hidden[i]; else hidden[i] = true;
+        b.setAttribute("aria-pressed", hidden[i] ? "false" : "true");
+        pathKey = ""; draw();
+      };
+      el.appendChild(b);
+    });
+    liveLine();
+  }
+
+  /* the INSIGHT rail quotes real numbers, so it has to move with the slider */
+  var live = null;
+  function liveLine() {
+    if (live === null) {
+      var n1 = 0, u1 = 0, uF = 0;
+      for (var i = 0; i < dist.length; i++) {
+        if (dist[i] > MAXR) continue;
+        if (D.cls[i] === UNK) uF++;
+        if (dist[i] <= 1000) { n1++; if (D.cls[i] === UNK) u1++; }
+      }
+      live = {
+        d1: n1 / (Math.PI * 1000 * 1000 / 1e6),
+        uF: pct(uF, FULL_N), u1: pct(u1, n1)
+      };
+    }
+    $("live-a").textContent = fmt(FULL_DENS) + "동/km²";
+    $("live-b").textContent = fmt(live.d1) + "동/km²";
+    $("live-c").textContent = live.uF + "%";
+    $("live-d").textContent = live.u1 + "%";
+  }
+})();
+</script>
