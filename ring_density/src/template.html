@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>종로 링별 건물밀도 지도</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+  :root {
+    --navy: #1b3f8b;
+    --blue: #1f5bd6;
+    --bright: #3d7bff;
+    --orange: #d4581c;
+    --ink: #1f2937;
+    --ink-2: #4b5563;
+    --muted: #8a93a3;
+    --line: #e3e6ec;
+    --ground: #f3f4f7;
+    --good: #1b7f4b;
+    --bad: #b42318;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+    color: var(--ink); background: #5b6470; font-size: 14px; overflow: hidden;
+  }
+
+  /* the map is the page background; every panel floats on top of it */
+  #map { position: fixed; inset: 0; background: #5b6470; }
+  #map.nobase { background: #ffffff; }
+
+  .overlay { position: fixed; top: 12px; bottom: 26px; z-index: 900; display: flex; flex-direction: column; gap: 10px;
+    overflow-y: auto; pointer-events: none; scrollbar-width: thin; padding-bottom: 2px; }
+  .overlay > * { pointer-events: auto; flex: none; }
+  .overlay.left { left: 12px; width: 372px; }
+  .overlay.right { right: 12px; width: 356px; }
+  .leaflet-top.leaflet-left { left: 392px; }
+  body.collapsed .overlay { display: none; }
+  body.collapsed .leaflet-top.leaflet-left { left: 0; }
+
+  .glass { background: rgba(255,255,255,.95); border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.28); }
+  .titlecard { padding: 14px 16px; border-top: 4px solid var(--navy); }
+  .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--navy); font-weight: 700; letter-spacing: .1em; font-size: 11px; }
+  .eyebrow::before { content: ""; width: 5px; height: 14px; background: var(--navy); }
+  h1 { margin: 6px 0 4px; font-size: 20px; font-weight: 900; color: #1c2b4a; letter-spacing: -.02em; line-height: 1.3; }
+  .meta { color: var(--muted); font-size: 11.5px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kpi { padding: 10px 12px; }
+  .kpi.hero { box-shadow: inset 4px 0 0 var(--blue), 0 4px 16px rgba(0,0,0,.28); }
+  .kpi .label { font-size: 11.5px; color: var(--ink-2); font-weight: 500; }
+  .kpi .value { font-size: 23px; font-weight: 900; margin-top: 1px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .kpi .value small { font-size: 12px; font-weight: 700; color: var(--ink-2); margin-left: 2px; }
+  .kpi.hero .value { color: var(--blue); }
+  .kpi .sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .verdict-bad { color: var(--bad) !important; }
+  .verdict-good { color: var(--good) !important; }
+
+  .collapse-btn { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 950; border: 0; cursor: pointer;
+    background: rgba(255,255,255,.95); color: var(--navy); font: inherit; font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
+  .collapse-btn:hover { background: var(--blue); color: #fff; }
+
+  .box { padding: 13px 15px; }
+  .box h2 { margin: 0 0 9px; font-size: 13px; font-weight: 700; color: var(--navy); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .box h2 .tag { font-size: 11px; font-weight: 500; color: var(--muted); }
+
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; font-size: 13px; }
+  .row.sub { padding-left: 12px; color: var(--ink-2); }
+  .switch { position: relative; width: 40px; height: 22px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch span { position: absolute; inset: 0; background: #cdd2db; border-radius: 11px; cursor: pointer; transition: .15s; }
+  .switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + span { background: var(--blue); }
+  .switch input:checked + span::after { transform: translateX(18px); }
+  .switch input:focus-visible + span { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .switch input:disabled + span { opacity: .45; cursor: not-allowed; }
+
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg button { flex: 1; border: 0; background: #fff; padding: 5px 8px; font: inherit; font-size: 12px; color: var(--ink-2); cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--blue); color: #fff; font-weight: 700; }
+
+  .radius-val { font-size: 26px; font-weight: 900; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .radius-val small { font-size: 13px; color: var(--ink-2); font-weight: 700; }
+  input[type=range] { width: 100%; accent-color: var(--blue); margin: 6px 0 2px; }
+  .ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .quick { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .quick button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--ink-2); }
+  .quick button.on { border-color: var(--blue); color: var(--blue); font-weight: 700; }
+
+  /* on-map pies + labels */
+  .pie-wrap { display: flex; align-items: center; gap: 6px; }
+  .pie-wrap svg { flex: none; filter: drop-shadow(0 2px 5px rgba(0,0,0,.4)); }
+  .pie-label { background: rgba(255,255,255,.95); color: #1c2b4a; box-shadow: 0 1px 4px rgba(0,0,0,.3); font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 6px; white-space: nowrap; line-height: 1.45; }
+  .pie-label span { display: block; font-weight: 500; font-size: 11px; color: var(--ink-2); }
+  .ring-label { color: #fff; font-size: 12px; font-weight: 700; text-shadow: 0 0 3px #000, 0 1px 2px #000; white-space: nowrap; text-align: center; }
+  .center-pin { display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: var(--bright); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--bright); }
+
+  .mapchart { padding: 12px 14px 10px; }
+  .mapchart h4 { margin: 0; font-size: 13px; font-weight: 700; color: var(--navy); }
+  .mapchart .mc-sub { font-size: 11px; color: var(--muted); margin: 2px 0 6px; line-height: 1.45; }
+  .mapchart svg { display: block; width: 100%; height: auto; }
+  .mapchart .mc-foot { font-size: 11.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.5; }
+  .mapchart .mc-foot b { color: var(--orange); }
+
+  .legend-float { padding: 9px 12px; font-size: 12px; line-height: 1.75; }
+  .legend-float .li { display: flex; align-items: center; gap: 7px; }
+  .legend-float .ring { width: 14px; height: 14px; border-radius: 50%; border: 2px dashed var(--bright); flex: none; }
+  .legend-float .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .scale { display: flex; margin: 3px 0 1px; }
+  .scale div { flex: 1; height: 10px; }
+  .scale-lab { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .analysis { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.6; }
+  .analysis .item { display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
+  .analysis .num { width: 20px; height: 20px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
+  .analysis b { color: #1c2b4a; }
+  .analysis .hl { color: var(--blue); font-weight: 700; }
+  .result { display: inline-block; font-weight: 700; padding: 0 6px; border-radius: 4px; font-size: 12px; }
+  .result.bad { background: #fdecea; color: var(--bad); }
+  .result.good { background: #e7f5ee; color: var(--good); }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 12px; }
+  th, td { padding: 6px 4px; text-align: right; border-bottom: 1px solid #eef0f3; white-space: nowrap; }
+  th { font-size: 11px; color: var(--ink-2); font-weight: 500; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  tr.peak td { background: #fff4ec; }
+  tr.peak td:first-child { box-shadow: inset 3px 0 0 var(--orange); }
+  tfoot td { font-weight: 700; border-top: 1px solid var(--line); border-bottom: 0; }
+  .tablewrap { overflow-x: auto; }
+  .btn { border: 1px solid var(--blue); background: #fff; color: var(--blue); font: inherit; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 5px; cursor: pointer; }
+  .btn:hover { background: var(--blue); color: #fff; }
+  .note { font-size: 11.5px; color: var(--ink-2); line-height: 1.6; margin-top: 8px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .steps li { font-size: 12px; line-height: 1.55; }
+  .steps b { color: #1c2b4a; }
+
+  .catalog { display: grid; grid-template-columns: 70px 1fr; gap: 5px 8px; font-size: 12px; line-height: 1.5; margin: 0; }
+  .catalog dt { color: var(--ink-2); font-weight: 500; }
+  .catalog dd { margin: 0; word-break: break-all; }
+  .catalog code { font-family: Consolas, "D2Coding", monospace; font-size: 11px; background: #f4f5f8; padding: 4px 6px; border-radius: 4px; display: block; }
+  .warn { margin-top: 8px; font-size: 11.5px; background: #fff7e6; border-left: 3px solid #d98a00; padding: 6px 8px; line-height: 1.55; color: #5b4300; }
+  .src { color: var(--muted); font-size: 11px; line-height: 1.6; padding: 9px 13px; }
+
+  .tip { position: fixed; pointer-events: none; z-index: 2000; background: #111827; color: #fff; padding: 6px 9px; border-radius: 5px; font-size: 12px; line-height: 1.5; display: none; white-space: nowrap; }
+
+  /* narrow screens: map on top, cards stacked underneath */
+  @media (max-width: 900px) {
+    body { overflow: auto; background: var(--ground); }
+    #map { position: relative; height: 70vh; }
+    .overlay { position: static; width: auto !important; overflow: visible; padding: 10px 16px 0; }
+    .overlay.right { padding-bottom: 16px; }
+    .leaflet-top.leaflet-left { left: 0; }
+    .collapse-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="map" role="region" aria-label="종로 건물밀도 지도"></div>
+<button class="collapse-btn" id="collapseBtn" type="button">패널 숨기고 지도만 보기</button>
+
+<div class="overlay left">
+  <header class="glass titlecard">
+    <div class="eyebrow">2주차 2차시 · 데이터로 하는 이론 검정</div>
+    <h1>종로구청 중심 링별 건물밀도 — 반경 <span id="titleR">3</span>km</h1>
+    <div class="meta">스마트도시계획(캡스톤디자인) · 상명대학교 그린스마트시티학과</div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="glass mapchart" id="barCard"></div>
+
+  <div class="glass legend-float" id="legend"></div>
+</div>
+
+<div class="overlay right">
+  <div class="glass box">
+    <h2>지도 <span class="tag">토글로 켜고 끔</span></h2>
+    <div class="row"><span>베이스맵 표시</span>
+      <label class="switch"><input type="checkbox" id="baseOn" checked aria-label="베이스맵 켜기/끄기"><span></span></label></div>
+    <div class="row sub"><span>OpenStreetMap으로 보기 <small style="color:var(--muted)">(끄면 위성 영상)</small></span>
+      <label class="switch"><input type="checkbox" id="osmOn" aria-label="OpenStreetMap 전환"><span></span></label></div>
+    <div class="row"><span>밀도 격자</span>
+      <label class="switch"><input type="checkbox" id="gridOn" checked aria-label="밀도 격자 켜기/끄기"><span></span></label></div>
+    <div class="row sub"><span>격자 크기</span>
+      <div class="seg" id="cellSeg"><button data-s="250" class="on">250m</button><button data-s="500">500m</button></div></div>
+    <div class="row"><span>원그래프 · 링별 밀도</span>
+      <label class="switch"><input type="checkbox" id="piesOn" checked aria-label="원그래프 켜기/끄기"><span></span></label></div>
+    <div class="row"><span>막대그래프 · 링별 밀도</span>
+      <label class="switch"><input type="checkbox" id="barsOn" checked aria-label="막대그래프 켜기/끄기"><span></span></label></div>
+    <div class="row"><span>1km 링</span>
+      <label class="switch"><input type="checkbox" id="ringOn" checked aria-label="링 켜기/끄기"><span></span></label></div>
+    <div class="row"><span>건물 점 (파란색)</span>
+      <label class="switch"><input type="checkbox" id="dotsOn" aria-label="건물 점 켜기/끄기"><span></span></label></div>
+  </div>
+
+  <div class="glass box">
+    <h2>반경 조정 <span class="tag">중심 종로구청 · 링 간격 1km</span></h2>
+    <div class="radius-val"><span id="rVal">3.0</span><small> km</small></div>
+    <input type="range" id="rSlider" min="1" max="__MAXR__" step="0.5" value="3" aria-label="반경(km)">
+    <div class="ticks" id="ticks"></div>
+    <div class="quick" id="quick"></div>
+  </div>
+
+  <div class="glass box">
+    <h2>밀도 분석 <span class="tag">원그래프 안의 값 기준</span></h2>
+    <div class="analysis" id="analysis"></div>
+  </div>
+
+  <div class="glass box">
+    <h2>링별 밀도 집계표 <button class="btn" id="csvBtn" type="button">CSV 저장</button></h2>
+    <div class="tablewrap"><table id="ringTable"></table></div>
+    <div class="note">밀도 = 링 안 건물 동수 ÷ 링 면적(km²). 바깥 링일수록 면적이 넓어 동수만 비교하면 항상 바깥이 커 보이므로 밀도로 환산함.</div>
+  </div>
+
+  <div class="glass box">
+    <h2>가설 검정 네 단계</h2>
+    <ol class="steps" id="steps"></ol>
+  </div>
+
+  <div class="glass box">
+    <h2>데이터 카탈로그</h2>
+    <dl class="catalog" id="catalog"></dl>
+    <div class="warn">미러 서버 응답이라 색인이 늦을 수 있음(OSM 기준 __OSMDATE__). 강의자료 조회분(2026.08.26)과 동수가 조금 다름.</div>
+  </div>
+
+  <div class="glass src">건물 © OpenStreetMap contributors (ODbL) · 위성 영상 © Esri, Maxar, Earthstar Geographics · 건물 중심점 기준으로 반경·링·격자에 배정함</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DATA = __DATA__;   // [lat, lon, catIndex(0 = 용도 미기재), buildingTag, name]
+const CENTER = [37.5735, 126.9790];
+const CENTER_NAME = '종로구청';
+const MAX_R = __MAXR__;  // km — how far the downloaded data reaches
+const META = { endpoint: '__ENDPOINT__', fetched: '__FETCHED__', osmBase: '__OSMDATE__', response: __RESPONSE__ };
+const QUERY = `[out:json][timeout:600];(way["building"](around:${MAX_R * 1000},37.5735,126.9790);relation["building"](around:${MAX_R * 1000},37.5735,126.9790););out center tags qt;`;
+
+const BLUES = ['#dce8ff', '#a8c5ff', '#6c9bff', '#3469e6', '#163f9e'];   // light → dark = sparse → dense
+const PEAK = '#e0662a';
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const pct = (a, b, d = 1) => (b ? a / b * 100 : 0).toFixed(d) + '%';
+const signed = (v, d = 0) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(d) + '%';
+const COS_LAT = Math.cos(CENTER[0] * Math.PI / 180);
+const M_LAT = 111320, M_LON = 111320 * COS_LAT;
+
+// metres from the center, computed once
+const PTS = DATA.map(d => {
+  const x = (d[1] - CENTER[1]) * M_LON, y = (d[0] - CENTER[0]) * M_LAT;
+  return { x, y, dist: Math.hypot(x, y), d };
+});
+
+let R = Math.min(3, MAX_R);   // km
+let cell = 250;               // m
+let S = null;                 // current statistics
+
+/* ---------- statistics for the current radius ---------- */
+function compute() {
+  const nR = Math.ceil(R - 1e-9);
+  const rings = Array.from({ length: nR }, (_, k) => {
+    const r0 = k, r1 = Math.min(k + 1, R);
+    return { k, r0, r1, name: `${r0}–${+r1.toFixed(1)}km`, area: Math.PI * (r1 * r1 - r0 * r0), total: 0, classified: 0 };
+  });
+  const inside = [];
+  for (const p of PTS) {
+    if (p.dist > R * 1000) continue;
+    inside.push(p);
+    const ring = rings[Math.min(nR - 1, Math.floor(p.dist / 1000))];
+    ring.total++;
+    if (p.d[2] !== 0) ring.classified++;
+  }
+  rings.forEach(r => { r.density = r.total / r.area; });
+  const peakIdx = rings.reduce((b, r, i) => r.density > rings[b].density ? i : b, 0);
+  const peak = rings[peakIdx].density;
+  rings.forEach((r, i) => {
+    r.rel = r.density / peak;
+    r.change = i ? (r.density / rings[i - 1].density - 1) * 100 : null;
+  });
+  const monotonic = rings.every((r, i) => i === 0 || r.density < rings[i - 1].density);
+  const rebounds = rings.filter((r, i) => i >= 2 && r.density > rings[i - 1].density);
+  const crater = rings.length > 1 && rings[0].density < rings[1].density;
+
+  // Clark (1951): D(r) = D0 · e^(−b·r), fitted on ln(density) against ring mid-distance
+  let clark = null;
+  if (rings.length >= 3) {
+    const xs = rings.map(r => (r.r0 + r.r1) / 2), ys = rings.map(r => Math.log(r.density));
+    const n = xs.length, mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n;
+    const sxy = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0), sxx = xs.reduce((s, x) => s + (x - mx) ** 2, 0);
+    const slope = sxy / sxx, icpt = my - slope * mx;
+    const ssTot = ys.reduce((s, y) => s + (y - my) ** 2, 0);
+    const ssRes = ys.reduce((s, y, i) => s + (y - (icpt + slope * xs[i])) ** 2, 0);
+    clark = { D0: Math.exp(icpt), b: -slope, r2: ssTot ? 1 - ssRes / ssTot : 1 };
+    rings.forEach((r, i) => { r.pred = Math.exp(icpt + slope * xs[i]); r.resid = (r.density / r.pred - 1) * 100; });
+  }
+  const area = Math.PI * R * R;
+  S = { rings, inside, total: inside.length, classified: inside.filter(p => p.d[2] !== 0).length, area, peakIdx, monotonic, rebounds, crater, clark };
+}
+
+/* ---------- map + base layers ---------- */
+const map = L.map('map', { preferCanvas: true, zoomSnap: 0.25, minZoom: 11, maxZoom: 19, zoomControl: false });
+L.control.zoom({ position: 'topleft' }).addTo(map);
+const canvas = L.canvas({ padding: 0.5, tolerance: 4 });
+const OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const BASES = {
+  imagery: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri &mdash; Esri, Maxar, Earthstar Geographics · 건물 ' + OSM_ATTR, maxNativeZoom: 18, maxZoom: 19 }),
+  osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: OSM_ATTR, maxZoom: 19 }),
+};
+const baseKey = () => document.getElementById('osmOn').checked ? 'osm' : 'imagery';
+function syncBase() {
+  Object.values(BASES).forEach(l => map.removeLayer(l));
+  const on = document.getElementById('baseOn').checked;
+  if (on) BASES[baseKey()].addTo(map);
+  document.getElementById('map').classList.toggle('nobase', !on);
+  document.getElementById('osmOn').disabled = !on;
+}
+
+const gridLayer = L.layerGroup();
+const ringLayer = L.layerGroup();
+const dotsLayer = L.featureGroup();
+const pieLayer = L.layerGroup();
+
+function fitRadius() {
+  const narrow = window.innerWidth <= 900;
+  map.fitBounds(L.latLng(CENTER).toBounds(R * 2000), narrow
+    ? { padding: [16, 16] }
+    : { paddingTopLeft: [396, 24], paddingBottomRight: [380, 24] });
+}
+
+/* density grid */
+let breaks = [];
+function renderGrid() {
+  gridLayer.clearLayers();
+  const cells = new Map();
+  for (const p of S.inside) {
+    const key = Math.floor(p.x / cell) + ',' + Math.floor(p.y / cell);
+    cells.set(key, (cells.get(key) || 0) + 1);
+  }
+  const kmArea = (cell / 1000) ** 2;
+  const vals = [...cells.values()].map(n => n / kmArea).sort((a, b) => a - b);
+  const q = t => vals[Math.min(vals.length - 1, Math.floor(t * vals.length))];
+  const nice = v => v >= 1000 ? Math.round(v / 100) * 100 : Math.round(v / 50) * 50;
+  breaks = [q(.2), q(.4), q(.6), q(.8)].map(nice);
+  const cls = v => breaks.findIndex(b => v < b) === -1 ? 4 : breaks.findIndex(b => v < b);
+  cells.forEach((n, key) => {
+    const [gx, gy] = key.split(',').map(Number);
+    const cx = (gx + .5) * cell, cy = (gy + .5) * cell;
+    if (Math.hypot(cx, cy) > R * 1000) return;   // keep the grid inside the radius
+    const dens = n / kmArea;
+    L.rectangle([[CENTER[0] + gy * cell / M_LAT, CENTER[1] + gx * cell / M_LON], [CENTER[0] + (gy + 1) * cell / M_LAT, CENTER[1] + (gx + 1) * cell / M_LON]], {
+      renderer: canvas, stroke: true, color: 'rgba(255,255,255,.35)', weight: 0.5, fillColor: BLUES[cls(dens)], fillOpacity: 0.62,
+    }).bindTooltip(`${cell}m 격자 · ${fmt(n)}동 · ${fmt(dens)}동/km²`, { sticky: true }).addTo(gridLayer);
+  });
+}
+
+/* rings */
+function renderRings() {
+  ringLayer.clearLayers();
+  const radii = S.rings.map(r => r.r1);
+  radii.forEach(r => {
+    const outer = Math.abs(r - R) < 1e-9;
+    L.circle(CENTER, { radius: r * 1000, color: outer ? '#4f8cff' : '#ffffff', weight: outer ? 3 : 1.5, opacity: outer ? 1 : .85, dashArray: outer ? '8 6' : '4 6', fill: false, interactive: false }).addTo(ringLayer);
+    L.marker([CENTER[0] + r * 1000 / M_LAT, CENTER[1]], { interactive: false, keyboard: false,
+      icon: L.divIcon({ className: '', html: `<div class="ring-label">${+r.toFixed(1)}km</div>`, iconSize: [44, 16], iconAnchor: [22, 18] }) }).addTo(ringLayer);
+  });
+}
+
+/* building dots */
+const radiusFor = z => z < 13 ? 1.3 : z < 14 ? 1.8 : z < 15 ? 2.5 : z < 16 ? 3.5 : 5;
+function renderDots() {
+  dotsLayer.clearLayers();
+  const z = map.getZoom();
+  S.inside.forEach(p => {
+    const m = L.circleMarker([p.d[0], p.d[1]], { renderer: canvas, radius: radiusFor(z), stroke: z >= 15, color: '#fff', weight: .8, fillColor: '#3d7bff', fillOpacity: .9 });
+    m._p = p;
+    dotsLayer.addLayer(m);
+  });
+}
+const tip = document.getElementById('tip');
+dotsLayer.on('mouseover', e => { const d = e.layer._p.d; tip.innerHTML = `<b>${d[4] || '이름 없음'}</b><br>building=${d[3]} · 중심에서 ${(e.layer._p.dist / 1000).toFixed(2)}km`; tip.style.display = 'block'; });
+dotsLayer.on('mousemove', e => { tip.style.left = (e.originalEvent.clientX + 14) + 'px'; tip.style.top = (e.originalEvent.clientY + 14) + 'px'; });
+dotsLayer.on('mouseout', () => { tip.style.display = 'none'; });
+
+/* pies: gauge = ring density relative to the peak ring; number inside = density */
+function pieSVG(r, size, isPeak) {
+  const Rr = size / 2, Ro = Rr - 3, r0 = Rr * 0.62;
+  const frac = Math.max(0.001, Math.min(0.9999, r.rel));
+  const a0 = -Math.PI / 2, a1 = a0 + frac * 2 * Math.PI, large = frac > .5 ? 1 : 0;
+  const P = (rad, ang) => `${(Rr + rad * Math.cos(ang)).toFixed(2)},${(Rr + rad * Math.sin(ang)).toFixed(2)}`;
+  const color = isPeak ? PEAK : BLUES[Math.min(4, Math.max(1, Math.round(r.rel * 4)))];
+  const arc = `<path d="M${P(Ro, a0)} A${Ro},${Ro} 0 ${large} 1 ${P(Ro, a1)} L${P(r0, a1)} A${r0},${r0} 0 ${large} 0 ${P(r0, a0)} Z" fill="${color}"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${r.name} ${fmt(r.density)}동/km²">
+    <circle cx="${Rr}" cy="${Rr}" r="${Rr}" fill="rgba(255,255,255,.96)"/>
+    <circle cx="${Rr}" cy="${Rr}" r="${(Ro + r0) / 2}" fill="none" stroke="#e6ebf3" stroke-width="${Ro - r0}"/>${arc}
+    <text x="${Rr}" y="${Rr - size * .04}" text-anchor="middle" dominant-baseline="middle" fill="#1c2b4a" font-size="${size * .2}" font-weight="800">${fmt(r.density)}</text>
+    <text x="${Rr}" y="${Rr + size * .15}" text-anchor="middle" dominant-baseline="middle" fill="#4b5563" font-size="${Math.max(8, size * .11)}">동/km²</text></svg>`;
+}
+function renderPies() {
+  pieLayer.clearLayers();
+  const pxPerKm = map.latLngToContainerPoint(L.latLng(CENTER[0] - 1000 / M_LAT, CENTER[1])).y - map.latLngToContainerPoint(L.latLng(CENTER)).y;
+  const size = Math.round(Math.max(0, Math.min(92, pxPerKm * .86)));
+  if (size < 46) return;   // too zoomed out: pies would pile on top of each other
+  S.rings.forEach((r, i) => {
+    const offKm = i === 0 ? 0 : (r.r0 + r.r1) / 2;
+    const s = i === 0 ? Math.min(96, size + 6) : size;
+    const change = r.change === null ? '중심 링' : `전 링 대비 ${signed(r.change)}`;
+    const html = `<div class="pie-wrap" title="${r.name}: ${fmt(r.total)}동 ÷ ${r.area.toFixed(2)}km² = ${fmt(r.density)}동/km²">
+      ${pieSVG(r, s, i === S.peakIdx)}
+      <div class="pie-label">${i === 0 ? CENTER_NAME + ' · ' : ''}${r.name}<span>정점 대비 ${pct(r.rel, 1, 0)} · ${change}</span></div></div>`;
+    L.marker([CENTER[0] - offKm * 1000 / M_LAT, CENTER[1]], { keyboard: false, zIndexOffset: 1000,
+      icon: L.divIcon({ className: '', html, iconSize: [s + 190, s], iconAnchor: [s / 2, s / 2] }) }).addTo(pieLayer);
+  });
+}
+
+/* ---------- panels ---------- */
+function renderKpis() {
+  const r = S.rings, p = r[S.peakIdx], rejected = S.peakIdx !== 0;
+  document.getElementById('kpis').innerHTML = `
+    <div class="glass kpi"><div class="label">반경 ${R}km 건물</div><div class="value">${fmt(S.total)}<small>동</small></div><div class="sub">면적 ${S.area.toFixed(1)}km²</div></div>
+    <div class="glass kpi hero"><div class="label">평균 건물밀도</div><div class="value">${fmt(S.total / S.area)}<small>동/km²</small></div><div class="sub">링 ${r.length}개 · 간격 1km</div></div>
+    <div class="glass kpi"><div class="label">밀도 정점 링</div><div class="value">${p.name}</div><div class="sub">${fmt(p.density)}동/km²</div></div>
+    <div class="glass kpi"><div class="label">단일중심 가설</div><div class="value ${rejected ? 'verdict-bad' : 'verdict-good'}">${rejected ? '기각' : '기각 못 함'}</div><div class="sub">${S.monotonic ? '거리에 따라 단조 감소' : '단조 감소 아님'}</div></div>`;
+}
+
+function renderBars() {
+  const rings = S.rings, n = rings.length;
+  const W = 340, H = 158, padB = 22, padT = 18;
+  const max = Math.max(...rings.map(r => r.density)) * 1.12;
+  const slot = W / n, bw = Math.min(52, slot * .62);
+  let bars = '', line = '';
+  rings.forEach((r, i) => {
+    const h = (H - padB - padT) * r.density / max, x = slot * i + (slot - bw) / 2, y = H - padB - h;
+    const fill = i === S.peakIdx ? PEAK : '#3d7bff';
+    bars += `<g><title>${r.name}: ${fmt(r.total)}동 ÷ ${r.area.toFixed(2)}km² = ${fmt(r.density)}동/km²</title>
+      <path d="M${x},${H - padB} V${y + 4} Q${x},${y} ${x + 4},${y} H${x + bw - 4} Q${x + bw},${y} ${x + bw},${y + 4} V${H - padB} Z" fill="${fill}"/>
+      <text x="${x + bw / 2}" y="${y - 5}" text-anchor="middle" fill="#1f2937" font-size="11.5" font-weight="700">${fmt(r.density)}</text>
+      <text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" fill="#4b5563" font-size="${n > 4 ? 10 : 11}">${r.name}</text></g>`;
+  });
+  if (S.clark) {
+    const pts = rings.map((r, i) => `${(slot * i + slot / 2).toFixed(1)},${(H - padB - (H - padB - padT) * Math.min(r.pred, max) / max).toFixed(1)}`);
+    line = `<polyline points="${pts.join(' ')}" fill="none" stroke="#1b3f8b" stroke-width="2" stroke-dasharray="5 4"/>`
+      + rings.map((r, i) => `<circle cx="${(slot * i + slot / 2).toFixed(1)}" cy="${(H - padB - (H - padB - padT) * Math.min(r.pred, max) / max).toFixed(1)}" r="3" fill="#1b3f8b"/>`).join('');
+  }
+  document.getElementById('barCard').innerHTML = `<h4>링별 건물밀도 (동/km²)</h4>
+    <div class="mc-sub">왼쪽이 중심에 가까움 · 동수가 아니라 링 면적으로 나눈 밀도${S.clark ? ' · 점선 = 클라크 지수감소 예측' : ''}</div>
+    <svg viewBox="0 0 ${W} ${H}"><line x1="0" x2="${W}" y1="${H - padB}" y2="${H - padB}" stroke="rgba(0,0,0,.25)"/>${bars}${line}</svg>
+    <div class="mc-foot">정점 <b>${rings[S.peakIdx].name}</b> · ${S.monotonic ? '바깥으로 갈수록 단조 감소' : '단조 감소 아님'}</div>`;
+}
+
+function renderLegend() {
+  const gridOn = document.getElementById('gridOn').checked;
+  const labs = ['', ...breaks.map(fmt)];
+  document.getElementById('legend').innerHTML = `
+    ${gridOn ? `<div style="font-weight:700">${cell}m 격자 건물밀도 (동/km²)</div>
+      <div class="scale">${BLUES.map(c => `<div style="background:${c}"></div>`).join('')}</div>
+      <div class="scale-lab"><span>낮음</span>${breaks.map(b => `<span>${fmt(b)}</span>`).join('')}<span>높음</span></div>` : ''}
+    <div class="li" style="margin-top:4px"><span class="center-pin"></span>중심 ${CENTER_NAME} · 원그래프 = 정점 링 대비 밀도</div>
+    <div class="li"><span class="sw" style="background:${PEAK}"></span>밀도 정점 링</div>
+    <div class="li"><span class="ring"></span>1km 간격 링 · 바깥 실선 = 반경 ${R}km</div>
+    ${document.getElementById('dotsOn').checked ? '<div class="li"><span class="sw" style="background:#3d7bff"></span>건물(중심점)</div>' : ''}`;
+}
+
+function renderAnalysis() {
+  const r = S.rings, p = r[S.peakIdx];
+  const items = [];
+  items.push(`<b>원그래프 값</b> — ${r.map((x, i) => `<span class="${i === S.peakIdx ? 'hl' : ''}">${x.name} ${fmt(x.density)}</span>`).join(' → ')} 동/km²`);
+  const changes = r.slice(1).map(x => `${x.name} ${signed(x.change)}`).join(', ');
+  if (r.length > 1) items.push(`<b>링 간 변화</b> — ${changes}. 가장 크게 떨어진 곳은 <span class="hl">${r.slice(1).reduce((a, b) => b.change < a.change ? b : a).name}</span>`);
+  items.push(`<b>단일중심</b> — 정점이 ${p.name} ${S.peakIdx === 0 ? '<span class="result good">기각 못 함</span> 중심 링이 가장 조밀함' : '<span class="result bad">기각</span> 중심 링보다 바깥이 더 조밀함'}`);
+  if (S.crater) items.push(`<b>중심부 함몰</b> — 0–1km가 1–2km보다 낮음. 뉴링(1969)이 말한 도심공동화와 같은 모양인지, 상주 기능이 업무로 바뀐 결과인지 따로 확인`);
+  if (r.length > 1) items.push(`<b>단조 감소</b> — ${S.monotonic ? '<span class="result good">성립</span> 바깥으로 갈수록 계속 낮아짐' : `<span class="result bad">기각</span> ${S.rebounds.map(x => x.name).join(', ')}에서 다시 오름 — 부도심이나 간선 교차부 영향 가능`}`);
+  if (S.clark) {
+    const worst = r.reduce((a, b) => Math.abs(b.resid) > Math.abs(a.resid) ? b : a);
+    items.push(`<b>클라크 지수감소</b> — D(r) = ${fmt(S.clark.D0)}·e<sup>−${S.clark.b.toFixed(2)}r</sup>, R² = ${S.clark.r2.toFixed(2)}. 1km 멀어질 때마다 약 ${((1 - Math.exp(-S.clark.b)) * 100).toFixed(0)}%씩 감소. 예측과 가장 어긋난 링은 ${worst.name}(${signed(worst.resid)})`);
+  } else {
+    items.push(`<b>클라크 지수감소</b> — 링이 3개 이상이어야 추정함. 반경을 3km 이상으로 늘려 보세요`);
+  }
+  items.push(`<b>주의</b> — 건물 동수 밀도이지 인구밀도가 아님. 반경 안 용도 기재율 ${pct(S.classified, S.total)}로 OSM 커버리지가 고르지 않을 수 있음`);
+  document.getElementById('analysis').innerHTML = items.map((t, i) => `<div class="item"><span class="num">${i + 1}</span><div>${t}</div></div>`).join('');
+}
+
+function renderTable() {
+  const hasPred = !!S.clark;
+  document.getElementById('ringTable').innerHTML = `
+    <thead><tr><th>링</th><th>면적 km²</th><th>건물 동</th><th>밀도</th><th>정점 대비</th><th>전 링 대비</th>${hasPred ? '<th>클라크 예측</th>' : ''}</tr></thead>
+    <tbody>${S.rings.map((r, i) => `<tr class="${i === S.peakIdx ? 'peak' : ''}"><td>${r.name}</td><td>${r.area.toFixed(2)}</td><td>${fmt(r.total)}</td>
+      <td><b>${fmt(r.density)}</b></td><td>${pct(r.rel, 1, 0)}</td><td>${r.change === null ? '—' : signed(r.change)}</td>${hasPred ? `<td>${fmt(r.pred)}</td>` : ''}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>0–${R}km</td><td>${S.area.toFixed(2)}</td><td>${fmt(S.total)}</td><td>${fmt(S.total / S.area)}</td><td></td><td></td>${hasPred ? '<td></td>' : ''}</tr></tfoot>`;
+}
+
+function renderSteps() {
+  const rej = S.peakIdx !== 0;
+  document.getElementById('steps').innerHTML = `
+    <li><b>① 명제</b> — 동심원·클라크: 중심에서 멀어질수록 밀도가 낮아짐 (지대가 아니라 밀도에 관한 주장)</li>
+    <li><b>② 측정 변수</b> — 1km 링별 건물밀도(동/km²), 반경 ${R}km</li>
+    <li><b>③ 기각 조건</b> — 0–1km가 정점이 아니면 단일중심 기각 · 바깥 링이 안쪽보다 높아지면 단조 감소 기각</li>
+    <li><b>④ 판정</b> — 단일중심 <span class="result ${rej ? 'bad' : 'good'}">${rej ? '기각' : '기각 못 함'}</span>
+      · 단조 감소 <span class="result ${S.monotonic ? 'good' : 'bad'}">${S.monotonic ? '성립' : '기각'}</span></li>`;
+}
+
+function renderCatalog() {
+  document.getElementById('catalog').innerHTML = `
+    <dt>값</dt><dd>1km 링별 건물 동수·밀도, ${cell}m 격자 밀도</dd>
+    <dt>단위</dt><dd>동, 동/km² (건물 중심점 기준)</dd>
+    <dt>출처</dt><dd>Overpass API (OpenStreetMap) · building 태그</dd>
+    <dt>엔드포인트</dt><dd>${META.endpoint}</dd>
+    <dt>조회일</dt><dd>${META.fetched} (OSM 기준 ${META.osmBase})</dd>
+    <dt>응답 건수</dt><dd>${fmt(META.response)}건 (반경 ${MAX_R}km) → 현재 반경 ${R}km 안 ${fmt(S.total)}동</dd>
+    <dt>재현 명령</dt><dd><code>${QUERY.replace(/</g, '&lt;')}</code></dd>`;
+}
+
+document.getElementById('csvBtn').addEventListener('click', () => {
+  const head = ['ring', 'r0_km', 'r1_km', 'area_km2', 'buildings', 'density_per_km2', 'rel_to_peak_pct', 'change_vs_prev_pct', 'clark_pred', 'radius_km', 'center', 'center_lat', 'center_lon', 'source', 'endpoint', 'osm_base', 'fetched'];
+  const rows = S.rings.map(r => [r.name, r.r0, r.r1, r.area.toFixed(4), r.total, r.density.toFixed(1), (r.rel * 100).toFixed(1), r.change === null ? '' : r.change.toFixed(1),
+    r.pred ? r.pred.toFixed(1) : '', R, CENTER_NAME, CENTER[0], CENTER[1], 'Overpass API (OpenStreetMap) building', META.endpoint, META.osmBase, META.fetched]);
+  const csv = '﻿' + [head, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `종로구청_반경${R}km_링별_건물밀도_${META.fetched}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* ---------- wiring ---------- */
+const $ = id => document.getElementById(id);
+const layerFor = { gridOn: gridLayer, ringOn: ringLayer, dotsOn: dotsLayer };
+function syncLayers() {
+  Object.entries(layerFor).forEach(([id, layer]) => $(id).checked ? layer.addTo(map) : map.removeLayer(layer));
+  $('piesOn').checked ? pieLayer.addTo(map) : map.removeLayer(pieLayer);
+  $('barCard').hidden = !$('barsOn').checked;
+  renderLegend();
+}
+function refresh({ refit = false } = {}) {
+  compute();
+  $('titleR').textContent = R;
+  if (refit) fitRadius();
+  renderGrid(); renderRings(); renderDots(); renderPies();
+  renderKpis(); renderBars(); renderAnalysis(); renderTable(); renderSteps(); renderCatalog();
+  syncLayers();
+  [...$('quick').children].forEach(b => b.classList.toggle('on', +b.dataset.r === R));
+}
+
+['baseOn', 'osmOn'].forEach(id => $(id).addEventListener('change', syncBase));
+['gridOn', 'ringOn', 'dotsOn', 'piesOn', 'barsOn'].forEach(id => $(id).addEventListener('change', syncLayers));
+[...$('cellSeg').children].forEach(b => b.addEventListener('click', () => {
+  cell = +b.dataset.s;
+  [...$('cellSeg').children].forEach(x => x.classList.toggle('on', x === b));
+  renderGrid(); renderLegend(); renderCatalog();
+}));
+
+const slider = $('rSlider');
+slider.addEventListener('input', () => { $('rVal').textContent = (+slider.value).toFixed(1); });
+slider.addEventListener('change', () => { R = +slider.value; refresh({ refit: true }); });
+$('ticks').innerHTML = Array.from({ length: MAX_R }, (_, i) => `<span>${i + 1}km</span>`).join('');
+$('quick').innerHTML = Array.from({ length: MAX_R }, (_, i) => `<button type="button" data-r="${i + 1}">${i + 1}km</button>`).join('');
+[...$('quick').children].forEach(b => b.addEventListener('click', () => {
+  R = +b.dataset.r; slider.value = R; $('rVal').textContent = R.toFixed(1); refresh({ refit: true });
+}));
+
+$('collapseBtn').addEventListener('click', () => {
+  const c = document.body.classList.toggle('collapsed');
+  $('collapseBtn').textContent = c ? '패널 다시 보기' : '패널 숨기고 지도만 보기';
+});
+
+map.on('zoomend', () => {
+  const z = map.getZoom();
+  dotsLayer.eachLayer(m => { m.setRadius(radiusFor(z)); m.setStyle({ stroke: z >= 15 }); });
+  renderPies();
+});
+
+syncBase();
+slider.value = R;
+$('rVal').textContent = R.toFixed(1);
+refresh({ refit: true });
+</script>
+</body>
+</html>
