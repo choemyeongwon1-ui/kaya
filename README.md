@@ -1,5 +1,9 @@
 # Overpass API 다층 태그 결합으로 미분류 건물 해소
 
+### ▶ 대시보드 바로 보기 — https://choemyeongwon1-ui.github.io/jongno-building-density/
+
+*(GitHub에서 HTML 파일을 클릭하면 코드만 보입니다. 실행 화면은 위 주소로 들어가세요.)*
+
 **대상** 서울 종로구청(37.5735, 126.9790) 반경 3 km · 건물 **19,036동**
 **출처** Overpass API (OpenStreetMap) · 조회 2026-09-14
 *(슬라이드의 19,282동과 246동 차이는 2026-08-26 이후 OSM 편집 반영분입니다.)*
