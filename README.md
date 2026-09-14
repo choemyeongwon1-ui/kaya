@@ -2,6 +2,8 @@
 
 ### ▶ [**대시보드 열기**](https://choemyeongwon1-ui.github.io/jongno-building-density/) ◀
 
+<sub>GitHub Pages 주소입니다. Vercel 배포 주소는 아래 [배포](#배포) 참고.</sub>
+
 반경을 움직이며 원 안의 건물만으로 밀도·용도·판정근거를 다시 계산하는 화면입니다.
 위성/OpenStreetMap 배경 전환, 건물에 올리면 판정근거 표시.
 
@@ -242,3 +244,27 @@ OSM 배경은 **항상 아래에 깔립니다.** 위성 이미지는 정사각�
 
 `py scripts/satellite.py` 로 위성 배경을 다시 받을 수 있습니다(`pillow` 필요).
 위성 이미지 저작권 표기는 지도 하단에 `© Esri, Maxar, Earthstar Geographics`로 넣었습니다.
+
+## 배포
+
+정적 파일만 있는 저장소라 빌드 과정이 없습니다. 두 곳 모두 `main` 브랜치에 푸시하면
+자동으로 갱신됩니다.
+
+| 호스팅 | 주소 | 상태 |
+|---|---|---|
+| GitHub Pages | https://choemyeongwon1-ui.github.io/jongno-building-density/ | 사용 중 |
+| Vercel | (배포 후 기입) | 준비됨 |
+
+### Vercel 연결하기
+
+1. https://vercel.com 접속 → **Continue with GitHub** 으로 로그인
+2. **Add New… → Project**
+3. `jongno-building-density` 옆 **Import**
+   - 목록에 없으면 **Adjust GitHub App Permissions** 에서 이 저장소 접근을 허용
+4. 설정은 **건드리지 않고** 그대로 **Deploy**
+   - Framework Preset `Other`, Build Command 비움, Output Directory `.` 가 맞습니다
+   - 빌드가 없으므로 1분 안에 끝납니다
+5. 나온 `*.vercel.app` 주소가 배포 주소입니다
+
+`vercel.json` 은 `dashboard/data/` 의 대용량 파일(위성 이미지 3.6 MB, 건물 1.9 MB)에
+장기 캐시 헤더를 붙입니다. 두 번째 방문부터 즉시 뜹니다.
