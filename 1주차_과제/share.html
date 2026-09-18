@@ -1,0 +1,522 @@
+<title>팀 헌장과 카탈로그 첫 행</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#F1F3F4;
+  --surface:#FFFFFF;
+  --surface-2:#F7F9FA;
+  --grid:#E1E7EB;
+  --ink:#141A1F;
+  --ink-2:#3C4952;
+  --muted:#66757F;
+  --rule:#D5DDE2;
+  --rule-2:#E6ECEF;
+  --accent:#123C5E;
+  --accent-soft:#E7EFF5;
+  --ju:#B3261E;
+  --ju-soft:#FBEDEC;
+  --sA:#1F6FA8;
+  --sB:#C07A12;
+  --shadow:0 1px 2px rgba(20,26,31,.05), 0 8px 24px -16px rgba(20,26,31,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101419; --surface:#161B21; --surface-2:#1B2229; --grid:#191F26;
+    --ink:#E7ECF0; --ink-2:#BCC7CF; --muted:#8A98A3; --rule:#2B343C; --rule-2:#232B33;
+    --accent:#8CBBDD; --accent-soft:#1A2732; --ju:#EE9089; --ju-soft:#2A1E1E;
+    --sA:#6FB3DE; --sB:#E0A94A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101419; --surface:#161B21; --surface-2:#1B2229; --grid:#191F26;
+  --ink:#E7ECF0; --ink-2:#BCC7CF; --muted:#8A98A3; --rule:#2B343C; --rule-2:#232B33;
+  --accent:#8CBBDD; --accent-soft:#1A2732; --ju:#EE9089; --ju-soft:#2A1E1E;
+  --sA:#6FB3DE; --sB:#E0A94A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;
+  font-size:15px; line-height:1.72; font-weight:300;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:30px 30px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px; margin:0 auto; padding-inline:18px; padding-block:0 72px}
+
+/* ---------- masthead ---------- */
+.mast{padding-block:52px 34px}
+.stamp{
+  display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:20px;
+}
+.stamp b{color:var(--accent); font-weight:500}
+h1{
+  font-family:"Nanum Myeongjo",serif; font-weight:800;
+  font-size:clamp(30px,6.6vw,50px); line-height:1.2; letter-spacing:-.02em;
+  margin:0 0 14px; text-wrap:balance; color:var(--ink);
+}
+.dek{font-size:16px; color:var(--ink-2); max-width:62ch; margin:0}
+.byline{
+  margin-top:24px; padding-top:16px; border-top:1px solid var(--rule);
+  display:flex; flex-wrap:wrap; gap:4px 22px;
+  font-size:13px; color:var(--muted);
+}
+.byline span b{color:var(--ink-2); font-weight:500}
+
+/* ---------- assignment checklist ---------- */
+.tasks{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule);
+  border-radius:3px; overflow:hidden; margin-top:30px}
+.task{background:var(--surface); padding:14px 18px; display:grid;
+  grid-template-columns:22px 1fr; gap:14px; align-items:start}
+.task .no{font-family:"IBM Plex Mono",monospace; color:var(--accent); font-size:14px; font-weight:500; padding-top:2px}
+.task p{margin:0; font-size:14px}
+.task .did{display:block; color:var(--muted); font-size:13px; margin-top:2px}
+.task .did b{color:var(--ink-2); font-weight:500; font-variant-numeric:tabular-nums}
+
+/* ---------- sections ---------- */
+section{margin-top:56px}
+.shead{display:grid; grid-template-columns:52px 1fr; gap:16px; align-items:baseline;
+  border-bottom:2px solid var(--ink); padding-bottom:9px; margin-bottom:22px}
+.shead .sno{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted);
+  letter-spacing:.08em; padding-bottom:3px}
+.shead h2{font-family:"Nanum Myeongjo",serif; font-weight:700; font-size:22px;
+  margin:0; letter-spacing:-.01em}
+.shead .sub{display:block; font-family:"IBM Plex Sans KR",sans-serif; font-weight:300;
+  font-size:12.5px; color:var(--muted); letter-spacing:0; margin-top:3px}
+p{margin:0 0 14px; max-width:66ch}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px}
+caption{caption-side:top; text-align:left; font-size:12px; color:var(--muted); padding:0 0 7px}
+th,td{padding:9px 13px; text-align:left; vertical-align:top; border-bottom:1px solid var(--rule-2)}
+thead th{font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--muted); background:var(--surface-2); border-bottom:1px solid var(--rule); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+.mono{font-family:"IBM Plex Mono",monospace; font-size:12px; font-variant-numeric:tabular-nums}
+.nowrap{white-space:nowrap}
+
+/* ---------- notes ---------- */
+.note{background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--accent);
+  border-radius:0 3px 3px 0; padding:14px 18px; font-size:13.5px; color:var(--ink-2); margin-top:14px}
+.note p{margin:0; max-width:none}
+.note p + p{margin-top:9px}
+.note .lab{display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin-bottom:5px}
+
+/* ---------- 주서 : corrections in red, as on a marked-up drawing ---------- */
+.ju{color:var(--ju)}
+.ju-tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.06em; color:var(--ju); border:1px solid var(--ju); border-radius:2px;
+  padding:0 4px; white-space:nowrap}
+.log{display:grid; gap:10px}
+.logrow{background:var(--surface); border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+.logtop{display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center;
+  padding:10px 16px; background:var(--surface-2); border-bottom:1px solid var(--rule)}
+.logtop .id{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--accent); font-weight:500}
+.logtop .kind{font-size:13px; font-weight:600}
+.logtop .where{font-size:12.5px; color:var(--muted); margin-left:auto}
+.logbody{display:grid; grid-template-columns:1fr; gap:0}
+@media (min-width:720px){ .logbody{grid-template-columns:1.15fr 1fr} }
+.cell{padding:13px 16px; font-size:13px}
+.cell .lab{display:block; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+.fix{background:var(--ju-soft); border-left:3px solid var(--ju)}
+.fix .lab{color:var(--ju)}
+@media (min-width:720px){ .fix{border-left:3px solid var(--ju)} }
+
+/* ---------- site cards ---------- */
+.sites{display:grid; gap:12px; grid-template-columns:1fr}
+@media (min-width:640px){ .sites{grid-template-columns:1fr 1fr} }
+.site{background:var(--surface); border:1px solid var(--rule); border-radius:3px; padding:18px 20px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px}
+.site .tick{display:flex; align-items:center; gap:9px}
+.site .dot{width:11px; height:11px; border-radius:2px; flex:none}
+.site h3{margin:0; font-family:"Nanum Myeongjo",serif; font-size:19px; font-weight:700}
+.site .addr{font-size:12.5px; color:var(--muted); margin:0}
+.site .coord{font-family:"IBM Plex Mono",monospace; font-size:15px; font-variant-numeric:tabular-nums;
+  letter-spacing:-.01em; padding:9px 0; border-block:1px solid var(--rule-2)}
+.site .why{font-size:13px; color:var(--ink-2); margin:0; flex:1}
+.site .src{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); margin:0}
+
+/* ---------- chart ---------- */
+.figure{background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+  padding:18px 16px 12px; box-shadow:var(--shadow); margin-top:4px}
+.figtitle{font-size:14px; font-weight:600; margin:0 0 2px}
+.figsub{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+.legend{display:flex; flex-wrap:wrap; gap:8px 18px; margin:10px 0 0; padding-top:11px;
+  border-top:1px solid var(--rule-2); font-size:12.5px; color:var(--ink-2)}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:7px; vertical-align:-1px}
+.chartbox{overflow-x:auto}
+svg.chart{display:block; width:100%; min-width:520px; height:auto; max-width:100%}
+.ax{font-family:"IBM Plex Mono",monospace; font-size:11px; fill:var(--muted)}
+.gridline line{stroke:var(--rule-2); stroke-width:1}
+.axisline{stroke:var(--rule); stroke-width:1}
+.barA{fill:var(--sA)}
+.barB{fill:var(--sB)}
+.hitbg{fill:transparent}
+.guide line{stroke:var(--muted); stroke-width:1; stroke-dasharray:2 3; opacity:.65}
+.span line{stroke-width:2; fill:none}
+.spanNight line{stroke:var(--ju)}
+.spanDay line{stroke:var(--ink-2)}
+.labNight{fill:var(--ju)}
+.labDay{fill:var(--ink-2)}
+.rowlab{font-family:"IBM Plex Sans KR",sans-serif; font-size:12.5px; font-weight:500; fill:var(--ink-2)}
+.val{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500; fill:var(--ink)}
+.gaplab{font-family:"IBM Plex Sans KR",sans-serif; font-size:11.5px; font-weight:600}
+.rowg{cursor:default}
+.rowg:focus{outline:none}
+.rowg:focus-visible .hitbg,.rowg:hover .hitbg{fill:var(--accent-soft)}
+#tip{position:fixed; z-index:9; pointer-events:none; opacity:0; transform:translate(-50%,-120%);
+  background:var(--ink); color:var(--paper); font-size:12px; line-height:1.5;
+  padding:7px 10px; border-radius:3px; white-space:nowrap; transition:opacity .12s}
+#tip b{font-variant-numeric:tabular-nums}
+
+/* ---------- code ---------- */
+pre{margin:0; padding:14px 16px; background:var(--surface); border:1px solid var(--rule);
+  border-radius:3px; overflow-x:auto; font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; line-height:1.7; color:var(--ink-2)}
+.cmd{margin-top:12px}
+.cmd .lab{display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+
+/* ---------- charter blocks ---------- */
+.rules{display:grid; gap:12px; grid-template-columns:1fr; margin-top:14px}
+@media (min-width:640px){ .rules{grid-template-columns:1fr 1fr} }
+.rule-card{background:var(--surface); border:1px solid var(--rule); border-radius:3px; padding:4px 0}
+.rule-card dl{margin:0}
+.rule-card div{display:grid; grid-template-columns:74px 1fr; gap:14px; padding:10px 16px;
+  border-bottom:1px solid var(--rule-2); font-size:13px}
+.rule-card div:last-child{border-bottom:0}
+.rule-card dt{color:var(--muted); font-size:12px; font-weight:500; margin:0}
+.rule-card dd{margin:0; color:var(--ink-2)}
+.rule-card dd b{color:var(--ink); font-weight:600}
+
+footer{margin-top:60px; padding-top:20px; border-top:1px solid var(--rule);
+  font-size:12.5px; color:var(--muted)}
+footer p{max-width:none}
+a{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="stamp">
+    <span>스마트도시계획 (캡스톤디자인)</span>
+    <span>1주차 과제</span>
+    <span><b>제출 2026.09.15</b></span>
+  </div>
+  <h1>팀 헌장과<br>데이터 카탈로그 첫 행</h1>
+  <p class="dek">조원의 역할과 연락 규약을 정하고, 대상지 후보 두 곳의 오늘 기온을 Open-Meteo에서 직접 조회해 출처·조회일·단위·재현 명령과 함께 카탈로그 첫 행에 올린 기록.</p>
+  <div class="byline">
+    <span>상명대학교 그린스마트시티학과</span>
+    <span>김태한 교수</span>
+    <span><b>○조</b> · 최명원 외 3인</span>
+  </div>
+
+  <div class="tasks">
+    <div class="task"><span class="no">①</span><p>조원별 역할과 연락 규약을 한 장으로 적음
+      <span class="did">담당 1명 + 백업 1명 구조 · 응답 시한 <b>12시간</b> · 무응답 <b>24h/48h</b> 처리</span></p></div>
+    <div class="task"><span class="no">②</span><p>대상지 후보 좌표를 정하고 Open-Meteo로 오늘 기온을 직접 조회함
+      <span class="did">후보 2곳 · <b>HTTP 200</b> · 조회 <b>2026-09-15 16:39 KST</b></span></p></div>
+    <div class="task"><span class="no">③</span><p>그 값을 출처·조회일·단위와 함께 카탈로그 첫 행에 기록함
+      <span class="did">지표 <b>6</b>행 · 다섯 칸(값·단위·출처·조회일·재현 명령) 충족 · 검증 <b>5</b>건</span></p></div>
+  </div>
+</header>
+
+<!-- 01 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">01</span>
+    <h2>팀 헌장<span class="sub">역할은 사람이 아니라 산출물에 붙는다</span></h2></div>
+
+  <div class="scroll">
+  <table>
+    <caption>조원별 역할 — 담당 1명을 못 박고 백업 1명을 둔다. 담당자가 응답 불가일 때 백업이 대신 결정하고, 그 사실을 당일 안에 기록 채널에 남긴다.</caption>
+    <thead><tr><th>이름</th><th>역할</th><th>구체 담당</th><th>연결되는 최종 산출물</th><th>백업</th></tr></thead>
+    <tbody>
+      <tr><td class="nowrap">(①)</td><td class="nowrap"><b>PM · 기록</b></td><td>주차별 마감 관리, 회의록, 제출본 통합·LMS 업로드, 기업 과업 대응표 유지</td><td class="nowrap">계획도 · 판넬</td><td class="nowrap">분석</td></tr>
+      <tr><td class="nowrap">(②)</td><td class="nowrap"><b>데이터</b></td><td>API 호출 스크립트 작성·실행, 원본 응답 보관, 데이터 카탈로그 매주 1행 갱신</td><td class="nowrap">데이터 카탈로그</td><td class="nowrap">PM</td></tr>
+      <tr><td class="nowrap">(③)</td><td class="nowrap"><b>분석 · 화면</b></td><td>공간분석, 지표 산출, 비교과에서 대시보드 배포·갱신</td><td class="nowrap">의사결정 대시보드</td><td class="nowrap">데이터</td></tr>
+      <tr><td class="nowrap">(④)</td><td class="nowrap"><b>검증 · 발표</b></td><td>법령 조문·수치·문헌 교차확인, 검증 로그 4칸 작성, 답사 기록, 발표</td><td class="nowrap">검증 로그</td><td class="nowrap">분석</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="rules">
+    <div class="rule-card"><dl>
+      <div><dt>주 채널</dt><dd>카카오톡 단톡방 — 일상 연락 · 긴급</dd></div>
+      <div><dt>기록 채널</dt><dd>공유 드라이브 + GitHub. <b>단톡방의 결정은 반드시 기록 채널로 옮겨 적는다</b></dd></div>
+      <div><dt>정기 회의</dt><dd>수업 직후 10분 스탠드업 + 매주 온라인 30분</dd></div>
+      <div><dt>회의 기록</dt><dd>결정 · 담당 · 기한 세 줄만 남긴다</dd></div>
+    </dl></div>
+    <div class="rule-card"><dl>
+      <div><dt>응답 시한</dt><dd><b>평일 12시간 이내.</b> 야간 22–08시와 주말은 응답 의무 없음</dd></div>
+      <div><dt>긴급 기준</dt><dd>마감 24시간 이내 · 제출물 오류 · 답사 일정 변동 → 전화 허용</dd></div>
+      <div><dt>무응답 시</dt><dd>24h 재요청 → 48h 백업이 인계하고 교수님께 공유</dd></div>
+      <div><dt>의사결정</dt><dd>다수결, 동수면 PM. <b>결정은 근거와 함께 적는다</b></dd></div>
+    </dl></div>
+  </div>
+
+  <div class="note">
+    <span class="lab">작업 규약</span>
+    <p><b>값 · 단위 · 출처 · 조회일 · 재현 명령</b> 다섯 칸을 채우지 못한 수치는 카탈로그에 올리지 않고 산출물에도 쓰지 않는다. 재현되지 않는 수치는 근거가 아니라 주장이다.</p>
+    <p>AI 사용은 금지하지 않는다. 대신 <b>검증한 흔적을 함께 제출한다</b> — 오류유형 · 위치 · 원문근거 · 정정값 네 칸. 프롬프트는 대상 · 조건 · 형식 · 금지 4단계로 쓰고, 확인되지 않은 수치와 조문 번호는 생성 금지를 명시한다. 법령은 조문 번호와 <b>시행일</b>까지 원문을 대조한 것만 인용한다.</p>
+  </div>
+</section>
+
+<!-- 02 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">02</span>
+    <h2>대상지 후보<span class="sub">9주차 기업 과업 배정 전, 과업 범위를 기준으로 잠정 선정</span></h2></div>
+
+  <div class="sites">
+    <article class="site">
+      <div class="tick"><span class="dot" style="background:var(--sA)"></span><h3>청주시청</h3></div>
+      <p class="addr">충청북도 청주시 상당구</p>
+      <p class="coord">36.6425, 127.4890</p>
+      <p class="why">㈜선진엔지니어링 과업 — 2040 청주시 공원녹지기본계획. 대상 범위 940.3 km² 전역의 행정 중심점.</p>
+      <p class="src">OpenStreetMap node/282684005 · ODbL 1.0</p>
+    </article>
+    <article class="site">
+      <div class="tick"><span class="dot" style="background:var(--sB)"></span><h3>상명대 천안캠퍼스</h3></div>
+      <p class="addr">충청남도 천안시 동남구</p>
+      <p class="coord">36.8330, 127.1790</p>
+      <p class="why">1주차 2차시가 기준점으로 쓴 지점. 후보 A와 34.8 km 떨어져 대조군이 된다.</p>
+      <p class="src">OpenStreetMap way/231288273 · ODbL 1.0</p>
+    </article>
+  </div>
+
+  <div class="note">
+    <span class="lab">좌표를 적는 방식</span>
+    <p>좌표는 소수점 4자리(약 11 m 해상도)까지 적었다. <b>이름으로 찾은 좌표는 그대로 쓰지 않고 OSM 객체 ID로 고정</b>했다 — 같은 이름의 장소가 여러 곳이기 때문이다(검증 로그 V-03).</p>
+  </div>
+</section>
+
+<!-- 03 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">03</span>
+    <h2>카탈로그 첫 행<span class="sub">한 행 = 값 · 단위 · 출처 · 조회일 · 재현 명령</span></h2></div>
+
+  <div class="scroll">
+  <table>
+    <caption>Open-Meteo Forecast API · 인증키 없음 · 600회/분 · 10,000회/일 · CC BY 4.0 · 예보 대상일 2026-09-15</caption>
+    <thead><tr><th>ID</th><th>지표</th><th>값</th><th>단위</th><th>대상지</th><th>출처</th><th>조회일 (KST)</th><th>재현</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">T-001</td><td>일최고기온 <span class="mono">temperature_2m_max</span></td><td class="num"><b>25.7</b></td><td>°C</td><td class="nowrap">A 청주시청</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">A</td></tr>
+      <tr><td class="mono">T-002</td><td>일최저기온 <span class="mono">temperature_2m_min</span></td><td class="num"><b>16.1</b></td><td>°C</td><td class="nowrap">A 청주시청</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">A</td></tr>
+      <tr><td class="mono">T-003</td><td>최대강수확률 <span class="mono">precipitation_probability_max</span></td><td class="num"><b>4</b></td><td>%</td><td class="nowrap">A 청주시청</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">A</td></tr>
+      <tr><td class="mono">T-004</td><td>일최고기온</td><td class="num"><b>24.5</b></td><td>°C</td><td class="nowrap">B 천안캠</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">B</td></tr>
+      <tr><td class="mono">T-005</td><td>일최저기온</td><td class="num"><b>13.1</b></td><td>°C</td><td class="nowrap">B 천안캠</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">B</td></tr>
+      <tr><td class="mono">T-006</td><td>최대강수확률</td><td class="num"><b>0</b></td><td>%</td><td class="nowrap">B 천안캠</td><td class="nowrap">Open-Meteo</td><td class="mono">2026-09-15 16:39</td><td class="mono">B</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="lab">한계 — 격자 스냅</span>
+    <p>API는 요청 좌표를 자체 격자로 바꿔 응답한다. <b>A</b> 36.6425/127.4890 → <span class="mono">36.65/127.50</span>(1.29 km 이동, 표고 46 m), <b>B</b> 36.8330/127.1790 → <span class="mono">36.85/127.1875</span>(2.04 km 이동, 표고 91 m). 따라서 이 값은 <b>지점 실측값이 아니라 격자 모델값</b>이며, 실측 대조가 필요하면 기상청 ASOS/AWS를 쓴다.</p>
+  </div>
+</section>
+
+<!-- 04 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">04</span>
+    <h2>검증 로그<span class="sub">오류유형 · 위치 · 원문근거 · 정정값 — 정정은 도면 관례대로 주서(朱書)로 적는다</span></h2></div>
+
+  <div class="log">
+    <div class="logrow">
+      <div class="logtop"><span class="id">V-01</span><span class="kind">절차 누락</span>
+        <span class="ju-tag">우리 초안</span><span class="where">1차 초안의 API 호출</span></div>
+      <div class="logbody">
+        <div class="cell"><span class="lab">원문근거</span>슬라이드 p.20 — “URL 조립 · daily 항목에 최고기온 · 최저기온 · 강수확률을 넣고 timezone을 Asia/Seoul로 지정함”</div>
+        <div class="cell fix"><span class="lab">정정값</span><span class="mono">current=temperature_2m</span> 으로 호출했던 것을 <span class="mono">daily=temperature_2m_max, temperature_2m_min, precipitation_probability_max</span> 로 재호출</div>
+      </div>
+    </div>
+
+    <div class="logrow">
+      <div class="logtop"><span class="id">V-02</span><span class="kind">양식 누락</span>
+        <span class="ju-tag">우리 초안</span><span class="where">1차 초안의 카탈로그 표</span></div>
+      <div class="logbody">
+        <div class="cell"><span class="lab">원문근거</span>슬라이드 p.22 — “한 행은 값 · 단위 · 출처 · 조회일 · <b>재현 명령</b> 다섯 칸으로 이뤄짐”</div>
+        <div class="cell fix"><span class="lab">정정값</span>네 칸(값 · 단위 · 출처 · 조회일)만 있던 표에 <b>재현 명령</b> 칸을 추가</div>
+      </div>
+    </div>
+
+    <div class="logrow">
+      <div class="logtop"><span class="id">V-03</span><span class="kind">동명이소</span>
+        <span class="where">후보지 검색어 “구룡공원”</span></div>
+      <div class="logbody">
+        <div class="cell"><span class="lab">원문근거</span>Nominatim(OSM) 검색 결과 국내 3건 — 서울 금천구 <span class="mono">37.4778/126.9028</span>, 청주 <b>청원구</b> <span class="mono">36.7155/127.4146</span>, 안산 상록구 <span class="mono">37.3081/126.8634</span>. 청주 결과는 장기미집행 논의로 알려진 서원구 구룡산 일원(약 <span class="mono">36.487/127.473</span>)이 아니다</div>
+        <div class="cell fix"><span class="lab">정정값</span>후보에서 <b>기각</b>. 대상지는 이름이 아니라 <b>OSM 객체 ID</b>로 지정하도록 작업 규약에 반영</div>
+      </div>
+    </div>
+
+    <div class="logrow">
+      <div class="logtop"><span class="id">V-04</span><span class="kind">좌표 성격 오독 위험</span>
+        <span class="where">슬라이드 p.21 캡션</span></div>
+      <div class="logbody">
+        <div class="cell"><span class="lab">원문근거</span>“격자 36.815N 127.113E” — 이 값은 <b>재분석 격자의 중심</b>이지 캠퍼스 위치가 아니다. OSM의 실제 천안캠퍼스(way/231288273) <span class="mono">36.8330/127.1790</span>과 <b>6.21 km</b> 차이가 난다</div>
+        <div class="cell fix"><span class="lab">정정값</span>대상지 좌표는 캠퍼스 실좌표를 쓰고, 격자 좌표는 <b>격자 스냅</b> 항목에 분리해 기재</div>
+      </div>
+    </div>
+
+    <div class="logrow">
+      <div class="logtop"><span class="id">V-05</span><span class="kind">척도 오용 점검</span>
+        <span class="where">두 후보 기온 비교 문장</span></div>
+      <div class="logbody">
+        <div class="cell"><span class="lab">원문근거</span>슬라이드 p.21 — “기온은 등간척도이므로 배율로 말하지 않고 차이로 말함”</div>
+        <div class="cell fix"><span class="lab">정정값</span>“몇 배 덥다” 표현을 쓰지 않고, 아래 메모 전체를 <b>차이(°C)</b>로만 서술</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">05</span>
+    <h2>오늘의 값이 말하는 것<span class="sub">다음 차시 준비질문 — “우리 대상지의 중심은 하나인가 여럿인가”</span></h2></div>
+
+  <div class="figure">
+    <p class="figtitle">두 후보의 하루 기온 범위 · 2026-09-15</p>
+    <p class="figsub">막대는 각 후보의 일최저기온에서 일최고기온까지. 두 후보는 34.8 km 떨어져 있다.</p>
+    <div class="chartbox">
+      <svg class="chart" viewBox="0 0 680 262" role="img" aria-label="청주시청은 16.1도에서 25.7도, 상명대 천안캠퍼스는 13.1도에서 24.5도. 최저기온 차이 3.0도가 최고기온 차이 1.2도보다 크다.">
+        <!-- grid -->
+        <g class="gridline">
+          <line x1="70" y1="56" x2="70" y2="228"/>
+          <line x1="184" y1="56" x2="184" y2="228"/>
+          <line x1="298" y1="56" x2="298" y2="228"/>
+          <line x1="412" y1="56" x2="412" y2="228"/>
+          <line x1="526" y1="56" x2="526" y2="228"/>
+          <line x1="640" y1="56" x2="640" y2="228"/>
+        </g>
+
+        <!-- row A -->
+        <g class="rowg" tabindex="0" data-tip="A 청주시청 · 최저 16.1 °C → 최고 25.7 °C · 일교차 9.6 °C">
+          <rect class="hitbg" x="62" y="60" width="586" height="48" rx="3"/>
+          <text class="rowlab" x="70" y="76">A · 청주시청</text>
+          <rect class="barA" x="225.8" y="84" width="364.8" height="18" rx="4"/>
+          <text class="val" x="217.8" y="97" text-anchor="end">16.1</text>
+          <text class="val" x="598.6" y="97" text-anchor="start">25.7</text>
+        </g>
+
+        <!-- row B -->
+        <g class="rowg" tabindex="0" data-tip="B 상명대 천안캠퍼스 · 최저 13.1 °C → 최고 24.5 °C · 일교차 11.4 °C">
+          <rect class="hitbg" x="62" y="118" width="586" height="48" rx="3"/>
+          <text class="rowlab" x="70" y="134">B · 상명대 천안캠퍼스</text>
+          <rect class="barB" x="111.8" y="142" width="433.2" height="18" rx="4"/>
+          <text class="val" x="103.8" y="155" text-anchor="end">13.1</text>
+          <text class="val" x="553" y="155" text-anchor="start">24.5</text>
+        </g>
+
+        <!-- gap connectors -->
+        <g class="guide">
+          <line x1="111.8" y1="160" x2="111.8" y2="196"/>
+          <line x1="225.8" y1="102" x2="225.8" y2="196"/>
+          <line x1="545.0" y1="160" x2="545.0" y2="196"/>
+          <line x1="590.6" y1="102" x2="590.6" y2="196"/>
+        </g>
+        <g class="span spanNight">
+          <line x1="111.8" y1="196" x2="225.8" y2="196"/>
+          <line x1="111.8" y1="192" x2="111.8" y2="200"/>
+          <line x1="225.8" y1="192" x2="225.8" y2="200"/>
+        </g>
+        <g class="span spanDay">
+          <line x1="545.0" y1="196" x2="590.6" y2="196"/>
+          <line x1="545.0" y1="192" x2="545.0" y2="200"/>
+          <line x1="590.6" y1="192" x2="590.6" y2="200"/>
+        </g>
+        <text class="gaplab labNight" x="168.8" y="188" text-anchor="middle">밤의 차이 3.0 °C</text>
+        <text class="gaplab labDay" x="567.8" y="188" text-anchor="middle">낮의 차이 1.2 °C</text>
+
+        <!-- axis -->
+        <line class="axisline" x1="70" y1="228" x2="640" y2="228"/>
+        <g class="ax" text-anchor="middle">
+          <text x="70" y="246">12</text>
+          <text x="184" y="246">15</text>
+          <text x="298" y="246">18</text>
+          <text x="412" y="246">21</text>
+          <text x="526" y="246">24</text>
+          <text x="640" y="246">27</text>
+        </g>
+        <text class="ax" x="70" y="34" text-anchor="start">°C</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--sA)"></i>A · 청주시청</span>
+      <span><i style="background:var(--sB)"></i>B · 상명대 천안캠퍼스</span>
+      <span style="color:var(--muted)">값의 표는 위 03 카탈로그 첫 행에 있음</span>
+    </div>
+  </div>
+
+  <div class="note" style="border-left-color:var(--ju)">
+    <span class="lab" style="color:var(--ju)">1차 메모</span>
+    <p>34.8 km 떨어진 두 후보의 같은 날 값에서 <b>최고기온 차이는 1.2 °C</b>(25.7 vs 24.5)인데 <b>최저기온 차이는 3.0 °C</b>(16.1 vs 13.1)로 두 배 넘게 벌어졌다. 일교차로 보면 청주시청 9.6 °C, 천안캠 11.4 °C다. 1주차 1차시에서 “낮보다 밤의 증가가 도시열섬의 신호”라고 배운 것과 방향이 같다 — <b>차이는 낮이 아니라 밤에 생긴다.</b></p>
+    <p>그렇다면 대상지를 대표 좌표 하나로 요약하는 순간 이 3.0 °C가 사라진다. 중심을 하나로 볼지 여럿으로 볼지는 <b>어떤 지표를 다루느냐</b>에 달렸다는 것이 우리 조의 가설이다. 다만 위 값은 격자 모델값이므로, 실제 야간 열섬 여부는 기상청 실측으로 확인한 뒤에만 근거로 쓴다.</p>
+  </div>
+</section>
+
+<!-- 06 ------------------------------------------------------------------ -->
+<section>
+  <div class="shead"><span class="sno">06</span>
+    <h2>재현<span class="sub">아래 두 줄을 그대로 붙여 넣으면 같은 값이 나온다</span></h2></div>
+
+  <div class="cmd"><span class="lab">A · 청주시청 → raw_A_cheongju.json</span>
+<pre>curl "https://api.open-meteo.com/v1/forecast?latitude=36.6425&amp;longitude=127.4890\
+&amp;daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max\
+&amp;timezone=Asia%2FSeoul&amp;forecast_days=1"</pre></div>
+
+  <div class="cmd"><span class="lab">B · 상명대 천안캠퍼스 → raw_B_sangmyung_cheonan.json</span>
+<pre>curl "https://api.open-meteo.com/v1/forecast?latitude=36.8330&amp;longitude=127.1790\
+&amp;daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max\
+&amp;timezone=Asia%2FSeoul&amp;forecast_days=1"</pre></div>
+
+  <div class="cmd"><span class="lab">응답 원문 · 후보 A</span>
+<pre>{"latitude":36.65,"longitude":127.5,"utc_offset_seconds":32400,
+ "timezone":"Asia/Seoul","elevation":46.0,
+ "daily_units":{"temperature_2m_max":"°C","temperature_2m_min":"°C",
+                "precipitation_probability_max":"%"},
+ "daily":{"time":["2026-09-15"],"temperature_2m_max":[25.7],
+          "temperature_2m_min":[16.1],"precipitation_probability_max":[4]}}</pre></div>
+</section>
+
+<footer>
+  <p><b>AI 사용 고지</b> — 본 제출물의 문서 초안과 API 호출 스크립트 작성에 생성형 AI를 사용했다. 산출된 모든 수치는 원본 JSON 응답과 대조했고, 초안에서 발견된 오류 2건(V-01 · V-02)을 검증 로그에 기록했다. 좌표는 OSM 객체 ID로, 제출 규격은 1주차 강의자료 원문으로 각각 교차확인했다.</p>
+  <p style="margin-top:10px">데이터 © Open-Meteo (CC BY 4.0) · 좌표 © OpenStreetMap 기여자 (ODbL 1.0)</p>
+</footer>
+
+</div>
+
+<div id="tip" role="status"></div>
+<script>
+(function(){
+  var tip = document.getElementById('tip');
+  function show(e, text){
+    tip.textContent = text;
+    var r = e.currentTarget.getBoundingClientRect();
+    tip.style.left = (r.left + r.width/2) + 'px';
+    tip.style.top  = (r.top + r.height/2) + 'px';
+    tip.style.opacity = '1';
+  }
+  function hide(){ tip.style.opacity = '0'; }
+  document.querySelectorAll('.rowg').forEach(function(g){
+    var t = g.getAttribute('data-tip');
+    g.addEventListener('mouseenter', function(e){ show(e, t); });
+    g.addEventListener('focus', function(e){ show(e, t); });
+    g.addEventListener('mouseleave', hide);
+    g.addEventListener('blur', hide);
+  });
+})();
+</script>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>1주차 과제</title>
+<style>
+@page { size:A4; margin:11mm 12mm; }
+*{box-sizing:border-box}
+body{font-family:"Malgun Gothic","맑은 고딕",sans-serif;color:#16202e;font-size:8.5pt;line-height:1.42;margin:0}
+.pg{page-break-after:always}
+.pg:last-child{page-break-after:auto}
+.top{border-bottom:2.5px solid #16418f;padding-bottom:5px;margin-bottom:8px;display:flex;align-items:flex-end;justify-content:space-between}
+h1{font-size:14.5pt;color:#16418f;margin:0;letter-spacing:-.4px}
+.sub{font-size:7.5pt;color:#5b6b80;margin-top:1px}
+.meta{font-size:7.3pt;color:#5b6b80;text-align:right;line-height:1.5}
+h2{font-size:9.5pt;color:#16418f;margin:10px 0 4px;padding-left:7px;border-left:3.5px solid #16418f}
+h2 span{font-size:7.3pt;color:#7385a0;font-weight:400;margin-left:5px}
+table{width:100%;border-collapse:collapse;font-size:7.8pt}
+th,td{border:.6px solid #c2cddb;padding:3px 5px;vertical-align:top}
+th{background:#eef2f9;color:#16418f;font-weight:700;text-align:left}
+td.k{background:#f7f9fc;font-weight:700;color:#2a3a52}
+.mono{font-family:Consolas,monospace;font-size:7pt;word-break:break-all}
+.nw{white-space:nowrap}
+.note{font-size:7.2pt;color:#41506a;margin:4px 0 0;padding:4.5px 7px;background:#f7f9fc;border-left:2.5px solid #9bb0cc}
+.hl{background:#fff3cd;font-weight:700}
+.two{display:flex;gap:8px}.two>div{flex:1}
+.fill{color:#9aa7b8}
+</style></head><body>
+
+<!-- ================= PAGE 1 : 팀 헌장 ================= -->
+<div class="pg">
+<div class="top">
+  <div><h1>팀 헌장 <span style="font-size:10pt;color:#7385a0">TEAM CHARTER</span></h1>
+  <div class="sub">스마트도시계획(캡스톤디자인) · 1주차 과제 ① 조원별 역할과 연락 규약</div></div>
+  <div class="meta">상명대학교 그린스마트시티학과 · 김태한 교수<br>
+  제출 2026.09.15 &nbsp;|&nbsp; <span class="fill">○조</span> · <span class="fill">최명원 외 3인</span></div>
+</div>
+
+<h2>1. 조원별 역할 <span>담당 1명 + 백업 1명. 학기말 산출물 3종에 맞춰 나눔</span></h2>
+<table>
+<tr><th style="width:68px">이름</th><th style="width:92px">역할</th><th>구체 담당</th><th style="width:116px">연결되는 최종 산출물</th><th style="width:66px">백업</th></tr>
+<tr><td class="fill">(①)</td><td>PM · 기록</td><td>주차별 마감 관리, 회의록, 제출본 통합·LMS 업로드, 기업 과업 대응표 유지</td><td>계획도 · 판넬</td><td>분석</td></tr>
+<tr><td class="fill">(②)</td><td>데이터</td><td>API 호출 스크립트 작성·실행, 원본 응답 보관, <b>데이터 카탈로그</b> 매주 1행 갱신</td><td>데이터 카탈로그</td><td>PM</td></tr>
+<tr><td class="fill">(③)</td><td>분석 · 화면</td><td>공간분석, 지표 산출, 비교과에서 대시보드 배포·갱신</td><td>의사결정 대시보드</td><td>데이터</td></tr>
+<tr><td class="fill">(④)</td><td>검증 · 발표</td><td>법령 조문·수치·문헌 교차확인, <b>검증 로그</b> 4칸 작성, 답사 기록, 발표</td><td>검증 로그</td><td>분석</td></tr>
+</table>
+<p class="note"><b>역할 원칙</b> — 담당자는 1명으로 못 박고 백업을 1명 둔다. 담당자가 응답 불가일 때 백업이 대신 결정하고 그 사실을 당일 안에 기록 채널에 남긴다. <b>역할은 사람이 아니라 산출물에 붙는다</b> — 9주차 기업 과업 배정 시 과업 성격에 맞춰 1회 재배분한다.</p>
+
+<h2>2. 연락 규약 <span>응답 시한과 무응답 처리를 숫자로 정함</span></h2>
+<div class="two">
+<div><table>
+<tr><td class="k" style="width:62px">주 채널</td><td>카카오톡 단톡방 — 일상 연락 · 긴급</td></tr>
+<tr><td class="k">기록 채널</td><td>공유 드라이브 + GitHub — 결정 · 파일 · 코드<br><b>단톡방의 결정은 반드시 기록 채널로 옮겨 적는다</b></td></tr>
+<tr><td class="k">정기 회의</td><td>수업 직후 10분 스탠드업<br>+ 매주 <span class="fill">(요일 · 시간)</span> 온라인 30분</td></tr>
+<tr><td class="k">회의 기록</td><td>결정 · 담당 · 기한 세 줄만 남김 (논의 과정은 기록하지 않음)</td></tr>
+</table></div>
+<div><table>
+<tr><td class="k" style="width:62px">응답 시한</td><td>평일 <b>12시간</b> 이내<br>야간 22–08시와 주말은 응답 의무 없음</td></tr>
+<tr><td class="k">긴급 기준</td><td>마감 24시간 이내 · 제출물 오류 발견 · 답사 일정 변동 → 전화 허용</td></tr>
+<tr><td class="k">무응답 시</td><td>24h 재요청 → 48h 백업이 인계하고 교수님께 공유</td></tr>
+<tr><td class="k">의사결정</td><td>다수결, 동수면 PM이 결정. <b>결정은 근거와 함께 적는다</b></td></tr>
+</table></div>
+</div>
+
+<h2>3. 작업 규약 <span>재현되지 않는 수치는 근거가 아니라 주장이다 — 1주차 2차시</span></h2>
+<table>
+<tr><td class="k" style="width:94px">수치 반입 원칙</td><td><b>값 · 단위 · 출처 · 조회일 · 재현 명령</b> 다섯 칸을 채우지 못한 수치는 카탈로그에 올리지 않고 산출물에도 쓰지 않는다</td></tr>
+<tr><td class="k">파일 이름</td><td class="mono">YYYYMMDD_주제_작성자_v1.확장자 &nbsp; · &nbsp; API 원본 응답은 raw_*.json 으로 함께 보관</td></tr>
+<tr><td class="k">AI 사용</td><td>사용을 금지하지 않는다. 대신 <b>검증한 흔적을 함께 제출한다</b> — 오류유형 · 위치 · 원문근거 · 정정값 4칸.<br>프롬프트는 <b>대상 · 조건 · 형식 · 금지</b> 4단계로 쓰고, 확인되지 않은 수치와 조문 번호는 생성 금지를 명시한다</td></tr>
+<tr><td class="k">법령 인용</td><td>조문 번호와 <b>시행일</b>까지 원문을 대조한 것만 인용한다. 법령 인용 오류 0건이 기준이다</td></tr>
+</table>
+<p class="note"><b>이번 주에 우리 조가 확인한 것</b> — 뒷장의 카탈로그 첫 행을 만들면서 검증 항목 5건이 나왔고, 그중 2건은 <b>우리 초안 자체의 오류</b>였다. 규약을 먼저 쓰고 데이터를 만든 것이 아니라, 데이터를 만들다 걸린 것을 규약으로 올렸다.</p>
+</div>
+
+<!-- ================= PAGE 2 : 카탈로그 ================= -->
+<div class="pg">
+<div class="top">
+  <div><h1>데이터 카탈로그 · 첫 행</h1>
+  <div class="sub">1주차 과제 ② 대상지 후보 좌표와 Open-Meteo 직접 조회 &nbsp;/&nbsp; ③ 값 · 단위 · 출처 · 조회일 기록</div></div>
+  <div class="meta">조회 2026.09.15 16:39 KST<br>Open-Meteo Forecast API · 인증키 없음</div>
+</div>
+
+<h2>4. 대상지 후보 <span>9주차 기업 과업 배정 전, 과업 범위를 기준으로 잠정 선정</span></h2>
+<table>
+<tr><th style="width:24px">　</th><th style="width:116px">후보</th><th style="width:96px">좌표 (소수점 4자리)</th><th>선정 근거</th><th style="width:126px">좌표 출처</th></tr>
+<tr><td class="hl" style="text-align:center">A</td><td><b>청주시청</b><br>충북 청주시 상당구</td><td class="mono nw">36.6425, 127.4890</td>
+<td>㈜선진엔지니어링 과업 — 2040 청주시 공원녹지기본계획. 대상 범위 940.3 km² 전역의 행정 중심점</td>
+<td>OpenStreetMap<br><span class="mono">node/282684005</span><br>ODbL 1.0</td></tr>
+<tr><td class="hl" style="text-align:center">B</td><td><b>상명대 천안캠퍼스</b><br>충남 천안시 동남구</td><td class="mono nw">36.8330, 127.1790</td>
+<td>1주차 2차시가 기준점으로 쓴 지점. 후보 A와 34.8 km 떨어져 대조군이 됨</td>
+<td>OpenStreetMap<br><span class="mono">way/231288273</span><br>ODbL 1.0</td></tr>
+</table>
+<p class="note">좌표는 소수점 4자리(약 11 m 해상도)까지 적었다. <b>이름으로 찾은 좌표는 그대로 쓰지 않고 OSM 객체 ID로 고정</b>했다 — 사유는 검증 로그 V-03.</p>
+
+<h2>5. 카탈로그 첫 행 <span>한 행 = 값 · 단위 · 출처 · 조회일 · 재현 명령</span></h2>
+<table>
+<tr><th style="width:42px">ID</th><th style="width:100px">지표</th><th style="width:40px">값</th><th style="width:28px">단위</th><th style="width:70px">대상지</th><th style="width:80px">출처</th><th style="width:56px">조회일</th><th>재현 명령</th></tr>
+<tr><td class="mono">T-001</td><td>일최고기온<br><span class="mono">temperature_2m_max</span></td><td class="hl">25.7</td><td>°C</td><td>후보 A<br>청주시청</td><td rowspan="6">Open-Meteo<br>Forecast API<br><span class="mono">CC BY 4.0</span><br><br>인증키 없음<br>600회/분<br>10,000회/일</td><td rowspan="6" class="mono">2026-09-15<br>16:39 KST<br><br>(예보 대상일 2026-09-15)</td><td rowspan="3" class="mono">curl "https://api.open-meteo.com/v1/forecast?latitude=36.6425&amp;longitude=127.4890&amp;daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&amp;timezone=Asia%2FSeoul&amp;forecast_days=1"<br><br>→ raw_A_cheongju.json</td></tr>
+<tr><td class="mono">T-002</td><td>일최저기온<br><span class="mono">temperature_2m_min</span></td><td class="hl">16.1</td><td>°C</td><td>후보 A</td></tr>
+<tr><td class="mono">T-003</td><td>최대강수확률<br><span class="mono">precipitation_probability_max</span></td><td class="hl">4</td><td>%</td><td>후보 A</td></tr>
+<tr><td class="mono">T-004</td><td>일최고기온</td><td class="hl">24.5</td><td>°C</td><td>후보 B<br>천안캠</td><td rowspan="3" class="mono">curl "https://api.open-meteo.com/v1/forecast?latitude=36.8330&amp;longitude=127.1790&amp;daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&amp;timezone=Asia%2FSeoul&amp;forecast_days=1"<br><br>→ raw_B_sangmyung_cheonan.json</td></tr>
+<tr><td class="mono">T-005</td><td>일최저기온</td><td class="hl">13.1</td><td>°C</td><td>후보 B</td></tr>
+<tr><td class="mono">T-006</td><td>최대강수확률</td><td class="hl">0</td><td>%</td><td>후보 B</td></tr>
+</table>
+<table style="margin-top:4px">
+<tr><td class="k" style="width:82px">격자 스냅</td><td>API가 요청 좌표를 자체 격자로 바꿔 응답한다. <b>A</b> 36.6425/127.4890 → <span class="mono">36.65/127.50</span> (1.29 km 이동, 표고 46 m) · <b>B</b> 36.8330/127.1790 → <span class="mono">36.85/127.1875</span> (2.04 km 이동, 표고 91 m). 따라서 이 값은 <b>지점 실측값이 아니라 격자 모델값</b>이며, 실측 대조가 필요하면 기상청 ASOS/AWS를 쓴다</td></tr>
+<tr><td class="k">호출 결과</td><td>HTTP 200 · 응답 원문 2건을 <span class="mono">raw_A_cheongju.json</span>, <span class="mono">raw_B_sangmyung_cheonan.json</span> 으로 제출물과 함께 보관</td></tr>
+</table>
+
+<h2>6. 검증 로그 <span>오류유형 · 위치 · 원문근거 · 정정값</span></h2>
+<table>
+<tr><th style="width:36px">ID</th><th style="width:70px">오류유형</th><th style="width:96px">위치</th><th>원문근거</th><th style="width:144px">정정값</th></tr>
+<tr><td class="mono">V-01</td><td>절차 누락<br><span class="fill">(우리 초안)</span></td><td>1차 초안의 API 호출</td><td>슬라이드 p.20 — "URL 조립 · daily 항목에 최고기온 · 최저기온 · 강수확률을 넣고 timezone을 Asia/Seoul로 지정함"</td><td><span class="mono">current=temperature_2m</span> 으로 호출했던 것을 <span class="mono">daily=temperature_2m_max, temperature_2m_min, precipitation_probability_max</span> 로 재호출</td></tr>
+<tr><td class="mono">V-02</td><td>양식 누락<br><span class="fill">(우리 초안)</span></td><td>1차 초안의 카탈로그 표</td><td>슬라이드 p.22 — "한 행은 값 · 단위 · 출처 · 조회일 · <b>재현 명령</b> 다섯 칸으로 이뤄짐"</td><td>4칸(값 · 단위 · 출처 · 조회일)만 있던 표에 <b>재현 명령</b> 칸을 추가</td></tr>
+<tr><td class="mono">V-03</td><td>동명이소</td><td>후보지 검색어 "구룡공원"</td><td>Nominatim(OSM) 검색 결과 국내 3건 — 서울 금천구 37.4778/126.9028, 청주 <b>청원구</b> 36.7155/127.4146, 안산 상록구 37.3081/126.8634. 청주 결과는 장기미집행 논의로 알려진 서원구 구룡산 일원(약 36.487/127.473)이 아니다</td><td>후보에서 <b>기각</b>. 대상지는 이름이 아니라 <b>OSM 객체 ID</b>로 지정하도록 작업 규약에 반영</td></tr>
+<tr><td class="mono">V-04</td><td>좌표 성격<br>오독 위험</td><td>슬라이드 p.21 캡션</td><td>"격자 36.815N 127.113E" — 이 값은 <b>재분석 격자의 중심</b>이지 캠퍼스 위치가 아니다. OSM의 실제 천안캠퍼스(way/231288273) 36.8330/127.1790과 <b>6.21 km</b> 차이가 난다</td><td>대상지 좌표는 캠퍼스 실좌표를 쓰고, 격자 좌표는 위 <b>격자 스냅</b> 칸에 분리해 기재</td></tr>
+<tr><td class="mono">V-05</td><td>척도 오용<br>점검</td><td>두 후보 기온 비교 문장</td><td>슬라이드 p.21 — "기온은 등간척도이므로 배율로 말하지 않고 차이로 말함"</td><td>"몇 배 덥다" 표현을 쓰지 않고, 아래 메모 전체를 <b>차이(°C)</b>로만 서술</td></tr>
+</table>
+
+<p class="note"><b>다음 차시 준비질문 1차 메모 — "우리 대상지의 중심은 하나인가 여럿인가"</b><br>
+34.8 km 떨어진 두 후보의 같은 날 값에서 <b>최고기온 차이는 1.2 °C(25.7 vs 24.5)인데 최저기온 차이는 3.0 °C(16.1 vs 13.1)</b>로 두 배 넘게 벌어졌다. 일교차로 보면 청주시청 9.6 °C, 천안캠 11.4 °C다. 1주차 1차시에서 "낮보다 밤의 증가가 도시열섬의 신호"라고 배운 것과 방향이 같다 — <b>차이는 낮이 아니라 밤에 생긴다.</b><br>
+그렇다면 대상지를 대표 좌표 하나로 요약하는 순간 이 3.0 °C가 사라진다. 중심을 하나로 볼지 여럿으로 볼지는 <b>어떤 지표를 다루느냐</b>에 달렸다는 것이 우리 조의 가설이다. 다만 위 값은 격자 모델값이므로, 실제 야간 열섬 여부는 기상청 실측으로 확인한 뒤에만 근거로 쓴다.</p>
+
+<p class="note" style="border-left-color:#16418f"><b>AI 사용 고지</b> — 본 제출물의 문서 초안과 API 호출 스크립트 작성에 생성형 AI를 사용했다. 산출된 모든 수치는 원본 JSON 응답과 대조했고, 초안에서 발견된 오류 2건(V-01 · V-02)을 위 검증 로그에 기록했다. 좌표는 OSM 객체 ID로, 제출 규격은 1주차 강의자료 원문으로 각각 교차확인했다.</p>
+</div>
+</body></html>
