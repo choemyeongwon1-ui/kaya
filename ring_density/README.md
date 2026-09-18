@@ -36,8 +36,10 @@
 
 | 파일 | 내용 |
 |---|---|
-| `index.html` | 완성된 화면 (데이터 포함) |
+| `index.html` | 완성된 화면 (건물 데이터·위성사진·Leaflet 포함 — 인터넷 없이도 위성 바탕이 보임) |
 | `src/template.html` | 화면 원본 — 데이터 자리에 `__DATA__` 등 자리표시자 |
+| `src/satellite.ps1` | Esri 위성 타일을 받아 반경 5km 위성사진 한 장(`data/satellite_z15.jpg`)으로 이어 붙임 |
+| `src/vendor/` | Leaflet 1.9.4 — 파일 안에 넣어 인터넷 없이도 지도가 열리게 함 |
 | `src/build.ps1` | `raw/`의 Overpass 응답을 템플릿에 채워 `index.html`을 다시 만듦 |
 
 `raw/`는 저장소 `.gitignore` 규칙대로 올리지 않았습니다. 다시 받아서 만들려면:

@@ -43,8 +43,21 @@ foreach ($e in $j.elements) {
 }
 
 $osmBase = ([string]$j.osm3s.timestamp_osm_base).Substring(0, 10)
+
+# 위성사진(src\satellite.ps1로 만든 것)과 Leaflet을 파일 안에 넣어 인터넷 없이도 열리게 함
+$satMeta = Get-Content (Join-Path $root 'data\satellite_z15.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$satB64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $root 'data\satellite_z15.jpg')))
+$sat = '{{"uri":"data:image/jpeg;base64,{0}","latSouth":{1},"latNorth":{2},"lonWest":{3},"lonEast":{4}}}' -f $satB64,
+  ([double]$satMeta.latSouth).ToString('R', $inv), ([double]$satMeta.latNorth).ToString('R', $inv),
+  ([double]$satMeta.lonWest).ToString('R', $inv), ([double]$satMeta.lonEast).ToString('R', $inv)
+$leafletCss = [IO.File]::ReadAllText((Join-Path $root 'src\vendor\leaflet.min.css'), $enc)
+$leafletJs = [IO.File]::ReadAllText((Join-Path $root 'src\vendor\leaflet.min.js'), $enc)
+
 $t = [IO.File]::ReadAllText((Join-Path $root 'src\template.html'), $enc)
-$html = $t.Replace('__DATA__', '[' + ($rows -join ',') + ']').
+$html = $t.Replace('/*__LEAFLET_CSS__*/', $leafletCss).
+  Replace('/*__LEAFLET_JS__*/', $leafletJs).
+  Replace('__SAT__', $sat).
+  Replace('__DATA__', '[' + ($rows -join ',') + ']').
   Replace('__MAXR__', [string]$maxR).
   Replace('__ENDPOINT__', $endpoint).
   Replace('__OSMDATE__', $osmBase).
