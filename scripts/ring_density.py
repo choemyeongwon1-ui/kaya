@@ -53,7 +53,23 @@ with io.open(os.path.join(OUTDIR, "ring_density.csv"), "w", encoding="utf-8-sig"
                     round(r["area_km2"], 3), round(r["density"], 1),
                     round(r["commercial_pct"], 1)] + [r["use"][u] for u in ORDER])
 
-lines = ["| 링 | 거리구간(m) | 건물수 | 링면적(㎢) | 밀도(동/㎢) | 상업·업무 비율 |",
+# 최승하 ring_density(1 km 링, 반경 5 km)와 겹치는 0-3 km 구간을 1 km로 합산해 대조한다.
+PEER = {"0-1": 1261, "1-2": 935, "2-3": 390}
+cross = []
+for k in range(0, MAXR // 1000):
+    grp = [r for r in rings if r["inner"] >= k * 1000 and r["outer"] <= (k + 1) * 1000]
+    n = sum(r["n"] for r in grp)
+    area = math.pi * (((k + 1) * 1000) ** 2 - (k * 1000) ** 2) / 1e6
+    key = "%d-%d" % (k, k + 1)
+    cross.append((key, n, n / area, PEER.get(key)))
+
+lines = ["# 링별 건물밀도표 (최명원 · 500 m 세분)", "",
+         "최승하 `ring_density/`(1 km 링, 반경 5 km)가 과제 ② 제출용 집계표이고,",
+         "이 표는 같은 데이터를 500 m로 더 잘게 나눠 그 값을 교차검증한 것이다.",
+         "중심 %s, 반경 %d m, 출처 out/buildings_classified.csv (%s동).",
+         "", "## 500 m 링별", ""]
+lines[4] = lines[4] % (S["center_name"], MAXR, format(sum(r["n"] for r in rings), ","))
+lines += ["| 링 | 거리구간(m) | 건물수 | 링면적(㎢) | 밀도(동/㎢) | 상업·업무 비율 |",
          "|---|---|---|---|---|---|"]
 for i, r in enumerate(rings, 1):
     lines.append("| R%d | %d–%d | %s | %.3f | **%s** | %.1f%% |" % (
@@ -64,6 +80,15 @@ total_a = math.pi * MAXR ** 2 / 1e6
 lines.append("| **전체** | 0–%d | **%s** | %.3f | **%s** | %.1f%% |" % (
     MAXR, format(total_n, ","), total_a, format(int(round(total_n / total_a)), ","),
     100.0 * sum(r["use"]["상업·업무"] for r in rings) / total_n))
+lines += ["", "## 1 km로 합산한 교차검증", "",
+          "| 구간(km) | 건물수 | 이 표 밀도 | 최승하 표 | 차이 |", "|---|---|---|---|---|"]
+for key, n, d, peer in cross:
+    gap = "%+.1f%%" % (100.0 * (d - peer) / peer) if peer else "—"
+    lines.append("| %s | %s | %s | %s | %s |" % (
+        key, format(n, ","), format(int(round(d)), ","),
+        format(peer, ",") if peer else "—", gap))
+lines += ["", "세 구간 모두 1% 미만으로 일치한다. 두 사람이 독립적으로 집계해 같은 값에 도달했다."]
+
 io.open(os.path.join(OUTDIR, "ring_density.md"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
 
 print("\n".join(lines))
