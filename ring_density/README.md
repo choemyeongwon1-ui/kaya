@@ -1,6 +1,6 @@
 # 링별 건물밀도 위성지도 (최승하)
 
-### ▶ [**지도 열기**](https://choemyeongwon1-ui.github.io/jongno-building-density/ring_density/) ◀
+### ▶ [**지도 열기**](https://choemyeongwon1-ui.github.io/kaya/ring_density/) ◀
 
 2주차 2차시 「데이터로 하는 이론 검정」 — 과제 ② **1km 링별 밀도 집계표**용 화면입니다.
 위성지도를 배경으로 종로구청 중심 1km 간격 링의 건물밀도(동/km²)를 원그래프·막대그래프·밀도 격자로 보여 주고,
