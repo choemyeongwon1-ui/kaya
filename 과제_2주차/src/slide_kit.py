@@ -60,6 +60,8 @@ def text(slide, x, y, w, h, runs, size=12, color=INK, bold=False, align=PP_ALIGN
                       bold=opt.get("bold", bold), italic=opt.get("italic", italic),
                       spacing=spacing)
             p.runs[-1].text = part
+            if opt.get("link"):  # 클릭하면 열리는 주소
+                p.runs[-1].hyperlink.address = opt["link"]
     return tb
 
 

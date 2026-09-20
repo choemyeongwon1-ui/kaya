@@ -11,6 +11,7 @@
 import csv
 import json
 from pathlib import Path
+from urllib.parse import quote
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -332,8 +333,12 @@ def slide_priority(prs):
 
 
 # ── 슬라이드 ④ 산출물·출처 기록 ──────────────────────────────────────────────
+REPO_URL = "https://github.com/choemyeongwon1-ui/kaya"
+PDF_URL = (REPO_URL + "/blob/main/"
+           + quote("과제_2주차/2주차_과제_종로밀도_스마트공원.pdf"))
+
 OUTPUT_ROWS = [
-    ("①", "개념 다이어그램 — 동심원 이론 대입", "과제2주차_산출물.pdf 1쪽", "2026.09.14"),
+    ("①", "개념 다이어그램 — 동심원 이론 대입", "PDF 1쪽", "2026.09.14"),
     ("참고", "대상지 현황 지도", "PDF 2쪽 · 참고_건물용도지도.html", "2026.09.14"),
     ("②", "권역별(1km 링) 밀도표", "PDF 3쪽 · ring_density.csv · ring_density_by_use.csv",
      "2026.09.14"),
@@ -391,7 +396,12 @@ def slide_records(prs):
     rect(s, px, 1.62, 0.07, 5.24, BLUE)
     text(s, px + 0.3, 1.82, pw - 0.6, 0.3, "보관 위치", size=13, bold=True, color=BLUE)
     blocks = [
-        ("팀 저장소", "github.com/choemyeongwon1-ui/kaya\n2주차 산출물과 대시보드를 팀이 함께 관리하는 저장소"),
+        ("팀 저장소", [
+            ("github.com/choemyeongwon1-ui/kaya", {"size": 9.5, "color": BLUE, "link": REPO_URL}),
+            ("\n과제 PDF 바로 열기 → ", {"size": 9.5}),
+            ("2주차_과제_종로밀도_스마트공원.pdf", {"size": 9.5, "color": BLUE, "link": PDF_URL}),
+            ("\n표 CSV 원본과 재현 스크립트도 같은 폴더에 있음", {"size": 9.5}),
+        ]),
         ("제출 폴더", "submit/2주차/\nPDF·PPTX·표 CSV 3종·참고 지도·Overpass 질의 원본을 한 곳에 모아 둠"),
         ("재현 방법", "python analyze.py --refresh\npython ring_density.py\npython build_assignment.py"),
         ("밝혀 둘 한계", "용도 기재율이 권역마다 21.6~32.4%로 달라, 용도별 밀도의 절대 비교는 "
@@ -400,9 +410,9 @@ def slide_records(prs):
     for i, (head, body) in enumerate(blocks):
         y = 2.32 + i * 1.17
         label_shape(rect(s, px + 0.3, y + 0.02, 0.3, 0.3, NAVY, MSO_SHAPE.OVAL), str(i + 1), size=10)
+        runs = body if isinstance(body, list) else [(body, {"size": 9.5})]
         text(s, px + 0.72, y, pw - 1.02, 1.05,
-             [(head + "\n", {"bold": True, "size": 11, "color": NAVY}), (body, {"size": 9.5})],
-             line_spacing=1.15)
+             [(head + "\n", {"bold": True, "size": 11, "color": NAVY}), *runs], line_spacing=1.15)
 
     slide_footer(s, SOURCE, y=7.1)
 
