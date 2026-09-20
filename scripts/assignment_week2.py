@@ -5,7 +5,7 @@
 셋을 한 PDF 로 묶는다. 수치를 이 파일에 적어 두지 않고 CSV 에서 읽어
 표·그림·적합식이 같은 원본을 보게 한다.
 """
-import csv, io, math, os, textwrap
+import csv, io, json, math, os, textwrap
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -33,6 +33,13 @@ RULE, INK, INK2 = "#D9DFE8", "#1B2434", "#5A6578"
 CENTER = "서울 종로구청 (37.5735, 126.9790)"
 QUERIED = "2026-09-14"
 SOURCE = "Overpass API (OpenStreetMap) · building 태그 · © OpenStreetMap contributors (ODbL)"
+REPO = "https://github.com/choemyeongwon1-ui/kaya"
+PAGES = "https://choemyeongwon1-ui.github.io/kaya/"
+
+# ③ 의 대상지 공원 — OSM leisure=park, 종로구청에서 433 m (0–1 km 링 안)
+PARK_NAME = "열린송현 녹지광장"
+PARK_LL = (37.57688, 126.98142)
+PARK_BUF = 500.0
 
 # ── ② 이미 집계된 값 읽기 ────────────────────────────────────────────────
 with io.open(os.path.join(OUT, "ring_density.csv"), encoding="utf-8-sig") as f:
@@ -82,6 +89,31 @@ print("클라크 적합  D(r) = %.0f · e^(-%.3f r)   R² = %.3f" % (D0, B, R2))
 peak = max(R500, key=lambda r: r["dens"])
 core = R500[0]
 
+TOT_N = sum(r["n"] for r in R500)
+TOT_A = sum(r["area"] for r in R500)
+TOT_D = TOT_N / TOT_A
+
+
+def park_density():
+    """공원 반경 500 m 안의 건물밀도 — ③ 효과 점수의 보정 근거."""
+    K = math.cos(math.radians(CENTER_LAT)) * 111320.0
+    n = 0
+    with io.open(os.path.join(OUT, "buildings_classified.csv"), encoding="utf-8-sig") as f:
+        for r in csv.DictReader(f):
+            dx = (float(r["lon"]) - PARK_LL[1]) * K
+            dy = (float(r["lat"]) - PARK_LL[0]) * 111320.0
+            if math.hypot(dx, dy) <= PARK_BUF:
+                n += 1
+    a = math.pi * (PARK_BUF / 1000.0) ** 2
+    return n, a, n / a
+
+
+CENTER_LAT, CENTER_LON = 37.5735, 126.9790
+PARK_N, PARK_A, PARK_D = park_density()
+PARK_RATIO = PARK_D / TOT_D
+print("공원 주변 500 m  %d동 · %.0f 동/km² · 반경3km 평균의 %.2f배"
+      % (PARK_N, PARK_D, PARK_RATIO))
+
 FOOT = "중심 %s · 조회일 %s · 출처 %s" % (CENTER, QUERIED, SOURCE)
 
 
@@ -103,6 +135,11 @@ def page_concept(pdf=None):
     fig = plt.figure(figsize=(11.69, 8.27), dpi=200)      # A4 가로
     head(fig, "과제 ① · 1차시 이론의 대상지 대입",
          "클라크 밀도경사 모델로 읽은 서울 종로 도심")
+    fig.text(0.08, 0.893,
+             "이론: Clark, C. (1951). Urban Population Densities. "
+             "Journal of the Royal Statistical Society A, 114(4).    "
+             "같은 링 집계를 버제스(1925) 동심원 지대로 읽은 해석은 팀 내 최승하 자료가 맡음.",
+             fontsize=7.6, color=GREY)
 
     # ── 왼쪽: 이론 개념도
     ax = fig.add_axes([0.06, 0.38, 0.40, 0.49])
@@ -228,6 +265,12 @@ def page_priority(pdf=None):
     fig = plt.figure(figsize=(11.69, 8.27), dpi=200)
     head(fig, "과제 ③ · 스마트공원 요소 우선순위",
          "효과와 난이도 두 축으로 본 도입 순서")
+    fig.text(0.08, 0.893,
+             "대상지 공원: {} (OSM leisure=park · 종로구청에서 433 m · 0–1 km 링 안)    "
+             "주변 500 m 건물밀도 {:,.0f}동/km² = 반경 3 km 평균 {:,.0f}의 {:.2f}배 "
+             "→ 이용 압력이 큰 만큼 효과 점수를 +1 보정".format(
+                 PARK_NAME, PARK_D, TOT_D, PARK_RATIO),
+             fontsize=7.6, color=GREY)
 
     ax = fig.add_axes([0.06, 0.12, 0.44, 0.74])
     ax.add_patch(Rectangle((3.5, 0.3), 2.6, 2.7, facecolor="#E8F3EC", edgecolor="none"))
@@ -299,6 +342,65 @@ def page_priority(pdf=None):
     print("saved 과제3_우선순위매트릭스.png / 과제3_스마트공원_우선순위.csv")
 
 
+# ══ ② 집계에 쓴 지도 화면 ══════════════════════════════════════════════
+def ring_map(ax):
+    """팀 저장소 ring_density/ 화면과 같은 구성 — 위성 위 1 km 링과 링별 밀도."""
+    from PIL import Image
+    HALF = 3300.0                       # 표시 반경(m)
+    K = math.cos(math.radians(CENTER_LAT)) * 111320.0
+    meta = json.load(io.open(os.path.join(ROOT, "ring_density", "data",
+                                          "satellite_z15.json"), encoding="utf-8-sig"))
+    lw, le = meta["lonWest"], meta["lonEast"]
+    ln, ls = meta["latNorth"], meta["latSouth"]
+    W, H = meta["width"], meta["height"]
+
+    def px(lon):
+        return (lon - lw) / (le - lw) * W
+
+    def py(lat):
+        return (ln - lat) / (ln - ls) * H
+
+    dlat, dlon = HALF / 111320.0, HALF / K
+    box = (int(px(CENTER_LON - dlon)), int(py(CENTER_LAT + dlat)),
+           int(px(CENTER_LON + dlon)), int(py(CENTER_LAT - dlat)))
+    im = Image.open(os.path.join(ROOT, "ring_density", "data", "satellite_z15.jpg")).crop(box)
+    ax.imshow(im, extent=(-HALF, HALF, -HALF, HALF), zorder=1)
+    ax.add_patch(Rectangle((-HALF, -HALF), 2 * HALF, 2 * HALF, facecolor="#0A1018",
+                           alpha=0.30, zorder=2))
+
+    xs, ys = [], []
+    with io.open(os.path.join(OUT, "buildings_classified.csv"), encoding="utf-8-sig") as f:
+        for r in csv.DictReader(f):
+            xs.append((float(r["lon"]) - CENTER_LON) * K)
+            ys.append((float(r["lat"]) - CENTER_LAT) * 111320.0)
+    ax.scatter(xs, ys, s=0.45, color="#7FC4FF", alpha=0.55, linewidths=0, zorder=3)
+
+    for i, b in enumerate(KM):
+        rr = (i + 1) * 1000.0
+        ax.add_patch(Circle((0, 0), rr, fill=False, ec="white", lw=1.4,
+                            ls=(0, (6, 4)), alpha=0.9, zorder=5))
+        ang = math.radians([100, 52, 18][i])       # 링마다 다른 방향 — 라벨끼리 안 겹치게
+        mid = (i + 0.5) * 1000.0
+        ax.text(mid * math.cos(ang), mid * math.sin(ang),
+                "{:,.0f}".format(b["dens"]), ha="center", va="center", fontsize=9,
+                color="#0E2144", weight="bold", zorder=7,
+                bbox=dict(boxstyle="circle,pad=0.34", fc="white", ec=NAVY, lw=1.3,
+                          alpha=0.95))
+    ax.plot(0, 0, marker="*", ms=13, color=ACC, mec="white", mew=1.1, zorder=8)
+    ax.plot([-3050, -2050], [-3000, -3000], color="white", lw=3, solid_capstyle="butt",
+            zorder=8)
+    ax.text(-2550, -2870, "1 km", ha="center", fontsize=7.5, color="white", weight="bold",
+            zorder=8)
+    ax.set_xlim(-HALF, HALF)
+    ax.set_ylim(-HALF, HALF)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("집계에 쓴 화면 — 위성 위 1 km 링과 링별 밀도(동/km²)",
+                 fontsize=9.5, color=INK, pad=8, weight="bold")
+    ax.text(0.5, -0.055, "실행 화면 " + PAGES + "ring_density/", transform=ax.transAxes,
+            ha="center", fontsize=7, color=GREY)
+
+
 # ══ ② 링별 밀도표 페이지 ════════════════════════════════════════════════
 def page_table(pdf=None):
     fig = plt.figure(figsize=(11.69, 8.27), dpi=200)
@@ -342,7 +444,9 @@ def page_table(pdf=None):
         if c == 4 and r > 0:
             cell.set_text_props(weight="bold", color=NAVY)
 
-    axb = fig.add_axes([0.06, 0.13, 0.88, 0.28])
+    ring_map(fig.add_axes([0.06, 0.09, 0.36, 0.35]))
+
+    axb = fig.add_axes([0.52, 0.13, 0.42, 0.28])
     xs = [i + 0.5 for i in range(len(R500))]
     axb.bar(xs, [r["dens"] for r in R500], width=0.7, color=NAVY2)
     for x, r in zip(xs, R500):
@@ -406,6 +510,70 @@ def page_cover(pdf):
     plt.close(fig)
 
 
+# ══ ④ 산출물과 출처 기록 ═══════════════════════════════════════════════
+def page_outputs(pdf=None):
+    fig = plt.figure(figsize=(11.69, 8.27), dpi=200)
+    head(fig, "과제 ④ · 산출물과 출처 기록",
+         "어느 값이 어느 조회에서 나왔는지 남기기")
+
+    def block(y, title, rows, wkey=0.17):
+        fig.text(0.08, y, title, fontsize=11, color="#0E2144", weight="bold")
+        fig.add_artist(plt.Line2D([0.08, 0.92], [y - 0.018, y - 0.018], color=RULE,
+                                  lw=1, transform=fig.transFigure))
+        yy = y - 0.048
+        for k, v in rows:
+            fig.text(0.085, yy, k, fontsize=8.4, color=GREY, weight="bold")
+            fig.text(0.085 + wkey, yy, v, fontsize=8.4, color=INK2)
+            yy -= 0.032
+        return yy
+
+    y = block(0.845, "산출물", [
+        ("① 개념 다이어그램", "본 PDF 2쪽 · out/과제1_개념다이어그램.png"),
+        ("② 링별 밀도 집계표", "본 PDF 3쪽 · out/ring_density.csv (동봉: 과제2_링별밀도표_원본.csv)"),
+        ("③ 우선순위표", "본 PDF 4쪽 · out/과제3_스마트공원_우선순위.csv (동봉: 과제3_우선순위표_원본.csv)"),
+        ("생성 스크립트", "scripts/assignment_week2.py — 위 CSV를 읽어 PDF·PNG를 다시 만듦"),
+    ])
+
+    y = block(y - 0.030, "팀 저장소와 실행 화면", [
+        ("팀 저장소", REPO),
+        ("제출물 경로", "과제_2주차/ (PDF·CSV 2종)"),
+        ("링별 밀도 화면", PAGES + "ring_density/"),
+        ("용도판독 대시보드", PAGES + "dashboard/index_server.html"),
+    ])
+
+    y = block(y - 0.030, "데이터 출처와 조회 기록", [
+        ("출처", "Overpass API (OpenStreetMap) · © OpenStreetMap contributors (ODbL)"),
+        ("조회일", QUERIED + " (OSM 기준시각 2026-07-15)"),
+        ("엔드포인트", "https://overpass.kumi.systems/api/interpreter"),
+        ("대상지 중심", CENTER),
+        ("집계 대상", "반경 3 km 안에 건물 중심점이 있는 {:,}동 (링별 집계 기준)".format(TOT_N)),
+        ("공원 주변 집계", "{} 반경 {:.0f} m · {:,}동 · {:,.0f}동/km²".format(
+            PARK_NAME, PARK_BUF, PARK_N, PARK_D)),
+    ])
+
+    fig.text(0.085, y - 0.016, "조회에 쓴 Overpass 질의", fontsize=8.4, color=GREY,
+             weight="bold")
+    q = ('[out:json][timeout:600];(way["building"](around:3000,37.5735,126.9790);'
+         'relation["building"](around:3000,37.5735,126.9790););out center tags qt;')
+    fig.patches.append(Rectangle((0.085, y - 0.088), 0.835, 0.062,
+                                 transform=fig.transFigure, facecolor="#F4F6F9",
+                                 edgecolor=RULE, lw=0.8))
+    fig.text(0.095, y - 0.048, textwrap.fill(q, 96), fontsize=7.2, color=INK,
+             family="monospace", va="top", linespacing=1.5)
+
+    fig.text(0.085, y - 0.115,
+             "※ 밀도는 건물 동수 기준이며 인구밀도가 아님. OSM은 자원봉사 매핑이라 "
+             "등재 건물만 집계되므로 실제 건물밀도의 하한값으로 읽어야 함.",
+             fontsize=7.6, color=ACC)
+
+    footer(fig, "④ 산출물·출처")
+    if pdf:
+        pdf.savefig(fig)
+    fig.savefig(os.path.join(OUT, "과제4_산출물출처기록.png"), facecolor="white")
+    plt.close(fig)
+    print("saved 과제4_산출물출처기록.png")
+
+
 path = os.path.join(SUB, "2주차_과제_종로밀도_스마트공원.pdf")
 with PdfPages(path) as pdf:
     d = pdf.infodict()
@@ -415,4 +583,5 @@ with PdfPages(path) as pdf:
     page_concept(pdf)
     page_table(pdf)
     page_priority(pdf)
+    page_outputs(pdf)
 print("saved", path, "{:.2f} MB".format(os.path.getsize(path) / 1e6))
