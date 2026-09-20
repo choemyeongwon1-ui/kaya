@@ -144,7 +144,6 @@ const state = { center: L.latLng(M.origin), radius: 3000, visible: Array(NCAT).f
                 outside: "dim", bg: "own", counts: Array(NCAT).fill(0), total: 0 };
 
 // ── 지도 ──
-const map = L.map("map", { zoomControl: true, attributionControl: true });
 map.attributionControl.setPrefix(false).addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
 map.createPane("basemap").style.zIndex = 250;
 map.createPane("buildings").style.zIndex = 350;
