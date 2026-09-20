@@ -1,6 +1,6 @@
 # 종로 반경 3 km 건물밀도 판독
 
-### ▶ [**대시보드 열기**](https://choemyeongwon1-ui.github.io/jongno-building-density/) ◀
+### ▶ [**대시보드 열기**](https://choemyeongwon1-ui.github.io/kaya/) ◀
 
 <sub>GitHub Pages 주소입니다. Vercel 배포 주소는 아래 [배포](#배포) 참고.</sub>
 
@@ -252,14 +252,14 @@ OSM 배경은 **항상 아래에 깔립니다.** 위성 이미지는 정사각�
 
 | 호스팅 | 주소 | 상태 |
 |---|---|---|
-| GitHub Pages | https://choemyeongwon1-ui.github.io/jongno-building-density/ | 사용 중 |
+| GitHub Pages | https://choemyeongwon1-ui.github.io/kaya/ | 사용 중 · 2026-09-20 21:19 KST 200 확인 |
 | Vercel | (배포 후 기입) | 준비됨 |
 
 ### Vercel 연결하기
 
 1. https://vercel.com 접속 → **Continue with GitHub** 으로 로그인
 2. **Add New… → Project**
-3. `jongno-building-density` 옆 **Import**
+3. `kaya` 옆 **Import**
    - 목록에 없으면 **Adjust GitHub App Permissions** 에서 이 저장소 접근을 허용
 4. 설정은 **건드리지 않고** 그대로 **Deploy**
    - Framework Preset `Other`, Build Command 비움, Output Directory `.` 가 맞습니다
