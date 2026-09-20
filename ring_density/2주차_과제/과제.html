@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>스마트도시계획 2주차 과제 — 최승하</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --navy: #0b4a96; --ink: #1d2533; --muted: #5b6575; --line: #cfd6e2; --soft: #eef3fa; --orange: #d4581c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; color: var(--ink); font-size: 9.6pt; line-height: 1.5; }
+  .page { width: 210mm; height: 297mm; padding: 13mm 14mm 12mm; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--navy); padding-bottom: 5px; font-size: 8.2pt; color: var(--muted); }
+  .top b { color: var(--navy); letter-spacing: .06em; }
+  h1 { font-size: 15pt; margin: 9px 0 1px; }
+  .sub { color: var(--muted); font-size: 8.6pt; margin-bottom: 9px; }
+  h2 { font-size: 10.5pt; color: #fff; background: var(--navy); padding: 3px 9px; margin: 10px 0 6px; }
+  h3 { font-size: 9.6pt; color: var(--navy); margin: 9px 0 4px; border-left: 3px solid var(--navy); padding-left: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
+  th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); color: var(--navy); white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.peak td { background: #fff4ec; }
+  code, .mono { font-family: Consolas, monospace; font-size: 8.2pt; }
+  ul { margin: 4px 0; padding-left: 16px; }
+  li { margin: 2px 0; }
+  .cap { font-size: 8pt; color: var(--muted); margin: 4px 0 7px; line-height: 1.5; }
+  .note { background: #f5f7fb; border-left: 3px solid var(--navy); padding: 6px 9px; font-size: 8.6pt; line-height: 1.55; margin-top: 7px; }
+  .warn { background: #fff7e6; border-left: 3px solid #d98a00; padding: 6px 9px; font-size: 8.4pt; line-height: 1.55; color: #5b4300; margin-top: 7px; }
+  .shot { border: 1px solid var(--line); overflow: hidden; }
+  .shot img { display: block; width: 100%; }
+  .two { display: flex; gap: 8mm; }
+  .two > * { flex: 1; }
+  .foot { position: absolute; left: 14mm; right: 14mm; bottom: 8mm; font-size: 7.6pt; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 3px; }
+  svg text { font-family: "Malgun Gothic", sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ───────────────────────── 1쪽: ① 개념 다이어그램 ───────────────────────── -->
+<div class="page">
+  <div class="top"><span><b>2주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>① 개념 다이어그램 — 버제스 동심원을 종로 대상지에 대입</h1>
+  <div class="sub">최승하 (202420778) · 대상지 중심 종로구청(37.5735N, 126.9790E) · 작성 2026.09.20.</div>
+
+  <svg viewBox="0 0 760 420" style="width:100%">
+    <defs>
+      <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#5b6575"/></marker>
+    </defs>
+    <!-- 바깥 → 안쪽 순서로 그려 겹침을 피함 -->
+    <circle cx="215" cy="215" r="200" fill="#f2f6fd" stroke="#9db4d8" stroke-width="1" stroke-dasharray="5 4"/>
+    <circle cx="215" cy="215" r="160" fill="#eaf1fd" stroke="#9db4d8" stroke-width="1" stroke-dasharray="5 4"/>
+    <circle cx="215" cy="215" r="120" fill="#dce8ff" stroke="#6c9bff" stroke-width="1.5"/>
+    <circle cx="215" cy="215" r="80" fill="#a8c5ff" stroke="#3469e6" stroke-width="1.5"/>
+    <circle cx="215" cy="215" r="40" fill="#163f9e" stroke="#0b2a72" stroke-width="1.5"/>
+    <!-- 링 안 수치 -->
+    <text x="215" y="212" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">1,261</text>
+    <text x="215" y="226" text-anchor="middle" fill="#cfe0ff" font-size="9">동/km²</text>
+    <text x="215" y="145" text-anchor="middle" fill="#0b2a72" font-size="11" font-weight="700">935</text>
+    <text x="215" y="105" text-anchor="middle" fill="#0b2a72" font-size="11" font-weight="700">390</text>
+    <text x="215" y="68" text-anchor="middle" fill="#40506b" font-size="10.5">373</text>
+    <text x="215" y="28" text-anchor="middle" fill="#40506b" font-size="10.5">387</text>
+    <!-- 반경 눈금 -->
+    <line x1="215" y1="215" x2="415" y2="215" stroke="#5b6575" stroke-width="1" marker-end="url(#ar)"/>
+    <text x="255" y="229" fill="#5b6575" font-size="8.5">1km</text><text x="295" y="229" fill="#5b6575" font-size="8.5">2km</text>
+    <text x="335" y="229" fill="#5b6575" font-size="8.5">3km</text><text x="375" y="229" fill="#5b6575" font-size="8.5">4km</text>
+    <text x="405" y="229" fill="#5b6575" font-size="8.5">5km</text>
+    <circle cx="215" cy="215" r="3.5" fill="#d4581c"/>
+    <text x="215" y="250" text-anchor="middle" fill="#0b2a72" font-size="9.5" font-weight="700">중심 · 종로구청</text>
+
+    <!-- 오른쪽 대입 라벨 -->
+    <g font-size="9.5">
+      <line x1="435" y1="196" x2="470" y2="196" stroke="#cfd6e2"/><text x="476" y="193" font-weight="700" fill="#0b2a72">제1지대 · 중심업무지구(CBD)</text>
+      <text x="476" y="206" fill="#5b6575">0–1km · 밀도 정점 1,261동/km² · 광화문–종로 업무축</text>
+      <line x1="435" y1="236" x2="470" y2="236" stroke="#cfd6e2"/><text x="476" y="233" font-weight="700" fill="#0b2a72">제2지대 · 점이지대</text>
+      <text x="476" y="246" fill="#5b6575">1–2km · 935동/km²(−26%) · 북촌·서촌 한옥 주거에 상업 침투</text>
+      <line x1="435" y1="276" x2="470" y2="276" stroke="#cfd6e2"/><text x="476" y="273" font-weight="700" fill="#0b2a72">제3–4지대 · 주택지대</text>
+      <text x="476" y="286" fill="#5b6575">2–3km · 390동/km²(−58%) · 인왕산·북악산 산지와 성곽이 경계</text>
+      <line x1="435" y1="316" x2="470" y2="316" stroke="#cfd6e2"/><text x="476" y="313" font-weight="700" fill="#d4581c">제5지대(통근자지대)로 이어지지 않음</text>
+      <text x="476" y="326" fill="#5b6575">3–4km 373 → 4–5km 387동/km²로 <tspan font-weight="700">다시 상승</tspan></text>
+      <text x="476" y="339" fill="#5b6575">→ 동심원이 끊기고 다핵심(해리스·울만) 쪽에 가까움</text>
+    </g>
+    <rect x="470" y="356" width="285" height="52" fill="#f5f7fb" stroke="#cfd6e2"/>
+    <text x="478" y="371" font-size="8.6" font-weight="700" fill="#0b2a72">전제 검토 (버제스 3전제)</text>
+    <text x="478" y="384" font-size="8.4" fill="#40506b">단일 중심 ○ (0–1km가 정점) · 대중교통 ○ (지하철 1·3·5호선)</text>
+    <text x="478" y="396" font-size="8.4" fill="#40506b">주민 유입 △ — 도심 상주인구 감소·문화재 보존구역이 침입-계승을 막음</text>
+  </svg>
+  <div class="cap">모식도이며 축척 도면이 아님. 원의 반지름만 실제 거리(1km 간격)에 비례하고, 각 지대의 이름은 버제스(1925) 모형의 지대명을 대상지에 대입해 붙인 해석임. 숫자는 아래 ②의 실측 밀도.</div>
+
+  <h2>대입 근거 — 버제스 지대와 관측의 대응</h2>
+  <table>
+    <tr><th style="width:34mm">버제스(1925) 지대</th><th style="width:30mm">종로 대상지 대입</th><th>관측 근거 (②의 실측값)</th></tr>
+    <tr><td>제1지대 중심업무지구</td><td>0–1km · 광화문·종로1가</td><td>건물밀도 1,261동/km²로 정점. 반경 3km 평균 669의 1.9배</td></tr>
+    <tr><td>제2지대 점이지대</td><td>1–2km · 북촌·서촌·익선동</td><td>935동/km²로 −26%. 한옥 주거에 상업이 섞여 용도가 혼재</td></tr>
+    <tr><td>제3·4지대 주택지대</td><td>2–3km · 부암·평창 방면</td><td>390동/km²로 −58%. 산지·성곽이 시가지를 끊어 급락</td></tr>
+    <tr><td>제5지대 통근자지대</td><td>대응 없음</td><td>3–4km 373 → 4–5km 387동/km²로 반등. 단조 감소가 아님</td></tr>
+  </table>
+
+  <div class="note"><b>판단</b> — 반경 3km 안에서는 밀도가 중심에서 바깥으로 계속 낮아져 동심원 모형과 같은 모양이지만, 4–5km에서 다시 오르므로 도시 전체를 하나의 동심원으로 설명할 수 없음. 즉 <b>대상지는 동심원(버제스)에 가깝고, 그 바깥은 다핵심(해리스·울만)이 필요</b>함. 단절의 원인은 이론이 가정한 침입-계승이 아니라 <b>산지 지형과 문화재 보존구역</b>이라는 점을 함께 적음.</div>
+  <div class="warn">생성형 AI로 만든 이미지가 아니라 실측 데이터로 그린 모식도임. 지대 이름 붙이기는 해석이므로, 용도지역 고시와 교차검증하기 전에는 확정된 결과가 아님.</div>
+
+  <div class="foot"><span>① 개념 다이어그램 · 이론: Burgess, E. W. (1925). The Growth of the City</span><span>1 / 3</span></div>
+</div>
+
+<!-- ───────────────────────── 2쪽: ② 링별 밀도표 ───────────────────────── -->
+<div class="page">
+  <div class="top"><span><b>2주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>② 중심 정의와 1km 링(권역)별 건물밀도</h1>
+  <div class="sub">중심 = 종로구청(37.5735N, 126.9790E) · 링 간격 1km · 개수가 아니라 면적으로 나눈 밀도</div>
+
+  <h3>중심을 어떻게 정했는가</h3>
+  <ul>
+    <li>행정 중심인 <b>종로구청</b>을 대상지 중심으로 정의함. 중심을 어디로 잡느냐가 이미 가설의 일부이므로 좌표와 함께 고정해 기록함(강의자료 11·36쪽).</li>
+    <li>건물의 <b>중심점</b>이 반경 안에 있으면 그 링에 배정함. 경계에 걸친 건물이 두 링에 중복되지 않게 하기 위함.</li>
+    <li>밀도 = 링 안 건물 동수 ÷ 링 면적(km²). 바깥 링일수록 면적이 넓어 <b>동수만 비교하면 항상 바깥이 커 보임</b>(38쪽 확인질문 B).</li>
+  </ul>
+
+  <h3>집계표 (반경 3km · 동봉 CSV: 링별_밀도표_1km_종로구청_반경3km.csv)</h3>
+  <table>
+    <tr><th>링(권역)</th><th class="num">면적 km²</th><th class="num">건물 동수</th><th class="num">밀도 동/km²</th><th class="num">정점 대비</th><th class="num">전 링 대비</th><th class="num">클라크 예측</th></tr>
+    <tr class="peak"><td>0–1km</td><td class="num">3.14</td><td class="num">3,961</td><td class="num"><b>1,261</b></td><td class="num">100%</td><td class="num">—</td><td class="num">1,388</td></tr>
+    <tr><td>1–2km</td><td class="num">9.42</td><td class="num">8,814</td><td class="num"><b>935</b></td><td class="num">74%</td><td class="num">−26%</td><td class="num">772</td></tr>
+    <tr><td>2–3km</td><td class="num">15.71</td><td class="num">6,132</td><td class="num"><b>390</b></td><td class="num">31%</td><td class="num">−58%</td><td class="num">430</td></tr>
+    <tr><td><b>0–3km 합</b></td><td class="num">28.27</td><td class="num">18,907</td><td class="num"><b>669</b></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+  </table>
+  <div class="cap">확장 집계(반경 5km): 3–4km 373동/km², 4–5km 387동/km² — 바깥에서 다시 오름. 클라크(1951) 지수감소 적합 D(r) ≈ 1,321·e<sup>−0.33r</sup>, R² ≈ 0.80.</div>
+
+  <h3>판정</h3>
+  <ul>
+    <li><b>단일중심 가설</b>(0–1km가 정점이 아니면 기각) — 정점이 0–1km이므로 <b>기각하지 못함</b>.</li>
+    <li><b>단조 감소</b>(바깥 링이 안쪽보다 높아지면 기각) — 3km까지는 성립, 5km까지 넓히면 4–5km에서 반등해 <b>기각</b>.</li>
+    <li>건물 동수 밀도이지 인구밀도가 아님. 용도 기재율이 21.8%뿐이라 용도 구성비로 읽지 않음(28쪽).</li>
+  </ul>
+
+  <div class="shot" style="height:88mm"><img src="대시보드_화면.png" alt="링별 건물밀도 대시보드 화면"></div>
+  <div class="cap">그림. 집계에 쓴 화면 — 위성지도 위 링별 원그래프(가운데 숫자 = 밀도), 막대그래프, 250m 격자 밀도. 반경은 1~5km로 조정 가능.</div>
+
+  <div class="foot"><span>② 링별 밀도표 · 출처: Overpass API (OpenStreetMap) building · 조회 2026-09-14</span><span>2 / 3</span></div>
+</div>
+
+<!-- ───────────────────────── 3쪽: ③ 우선순위표 + ④ 저장소 ───────────────────────── -->
+<div class="page">
+  <div class="top"><span><b>2주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>③ 스마트공원 요소 우선순위표 (효과 × 난이도)</h1>
+  <div class="sub">대상지 공원 = 열린송현 녹지광장(33,917m², 종로구청에서 413m · 0–1km 링) · 주변 500m 건물밀도 1,421동/km² = 반경 3km 평균 669의 2.12배</div>
+
+  <h3>두 축을 어떻게 매겼는가</h3>
+  <ul>
+    <li><b>효과(1~5)</b> = 기본 점수 + 보정. 공원 주변 500m 건물밀도가 3km 평균의 1.5배 이상이면 이용 압력 +1, 0.75배 미만이면 −1. 녹지 요소는 면적 2만m² 이상 +1, 5천m² 미만 −1.</li>
+    <li><b>난이도(1~5)</b> = 52쪽 SWOT의 약점·위협 반영. 운영 인력 없음, 전원·통신망 제한, 영상 기반 계수의 개인정보, 제품 사양 발주 시 교체 종속.</li>
+    <li>요소는 49쪽 설계요소 30개에서 골랐고, 50쪽 순서(부족한 기능 → 측정요소 → 측정 도구)대로 각 요소에 부족 기능과 측정요소를 붙임.</li>
+  </ul>
+
+  <table>
+    <tr><th class="num">순위</th><th>요소</th><th>영역</th><th>측정요소</th><th class="num">효과</th><th class="num">난이도</th><th>구분</th></tr>
+    <tr><td class="num">1</td><td>보행자 자동 계수(비영상)</td><td>도로·광장</td><td>시간대별 이용자 수</td><td class="num">4</td><td class="num">2</td><td>1순위 바로 도입</td></tr>
+    <tr><td class="num">2</td><td>토양 센서·관수 모니터링</td><td>녹지</td><td>토양 수분·관수량</td><td class="num">4</td><td class="num">2</td><td>1순위 바로 도입</td></tr>
+    <tr><td class="num">3</td><td>데이터 플랫폼(공유 폴더 수준)</td><td>설계 방법</td><td>센서값 누적·공개</td><td class="num">4</td><td class="num">2</td><td>1순위 바로 도입</td></tr>
+    <tr><td class="num">4</td><td>스마트 벤치(태양광 충전·환경센서)</td><td>조경시설물</td><td>이용 횟수·기온·미세먼지</td><td class="num">3</td><td class="num">2</td><td>1순위 바로 도입</td></tr>
+    <tr><td class="num">5</td><td>스마트 쓰레기통(적재량 센서)</td><td>조경시설물</td><td>적재율·수거 주기</td><td class="num">3</td><td class="num">2</td><td>1순위 바로 도입</td></tr>
+    <tr><td class="num">6</td><td>스마트 조명(가로등·볼라드)</td><td>도로·광장</td><td>야간 조도·점등 시간</td><td class="num">4</td><td class="num">3</td><td>2순위 단계 도입</td></tr>
+    <tr><td class="num">7</td><td>우수 관리 모니터링</td><td>수경시설</td><td>우수 유입·저류 수위</td><td class="num">3</td><td class="num">3</td><td>2순위 단계 도입</td></tr>
+    <tr><td class="num">8</td><td>스마트 음수대</td><td>조경시설물</td><td>급수량·수질</td><td class="num">3</td><td class="num">3</td><td>2순위 단계 도입</td></tr>
+    <tr><td class="num">9</td><td>스마트 안내 표지(디지털 사이니지)</td><td>조경시설물</td><td>조회 수·안내 문의</td><td class="num">3</td><td class="num">4</td><td>2순위 단계 도입</td></tr>
+    <tr><td class="num">10</td><td>미디어 파사드</td><td>도로·광장</td><td>체류 시간</td><td class="num">2</td><td class="num">5</td><td>4순위 보류</td></tr>
+    <tr><td class="num">11</td><td>스마트 주차장</td><td>조경시설물</td><td>주차 회전율</td><td class="num">1</td><td class="num">4</td><td>4순위 보류</td></tr>
+  </table>
+  <div class="cap">구분: 효과 3 이상·난이도 2 이하 = 1순위, 효과 3 이상·난이도 3 이상 = 2순위, 효과 2 이하·난이도 2 이하 = 3순위, 나머지 = 4순위. 동봉 CSV(스마트공원_우선순위표_열린송현녹지광장.csv)에 요소별 효과·난이도 근거를 한 줄씩 적어 둠. 점수는 강의자료 근거로 정한 판단값이며 실측 비용·효과가 아님.</div>
+
+  <h2>④ 산출물과 출처 기록</h2>
+  <table>
+    <tr><th style="width:26mm">항목</th><th>내용</th></tr>
+    <tr><th>팀 저장소</th><td class="mono">https://github.com/choemyeongwon1-ui/kaya</td></tr>
+    <tr><th>실행 화면</th><td class="mono">https://choemyeongwon1-ui.github.io/kaya/ring_density/</td></tr>
+    <tr><th>산출물</th><td>① 개념 다이어그램(이 PDF 1쪽) · ② 링별_밀도표_1km_종로구청_반경3km.csv · ③ 스마트공원_우선순위표_열린송현녹지광장.csv</td></tr>
+    <tr><th>건물 데이터</th><td>Overpass API (OpenStreetMap) <span class="mono">building</span> · 엔드포인트 <span class="mono">https://overpass.kumi.systems/api/interpreter</span> · 응답 38,293건(반경 5km) · <b>조회 2026-09-14</b>(OSM 기준 2026-07-15)</td></tr>
+    <tr><th>공원 데이터</th><td>Overpass API (OpenStreetMap) <span class="mono">leisure=park</span> · 반경 3km · 1,500m² 이상 79곳 · <b>조회 2026-09-18</b>(OSM 기준 2026-06-01)</td></tr>
+    <tr><th>위성 영상</th><td>Esri World Imagery (Esri, Maxar, Earthstar Geographics) · 조회 2026-09-18</td></tr>
+    <tr><th>이론·설계요소</th><td>Burgess(1925) 동심원 / Clark(1951) 밀도구배 / 2주차 강의자료 49·50·52쪽 스마트공원 설계요소·SWOT</td></tr>
+    <tr><th>재현 명령</th><td><span class="mono">[out:json][timeout:600];(way["building"](around:5000,37.5735,126.9790);relation["building"](around:5000,37.5735,126.9790););out center tags qt;</span></td></tr>
+  </table>
+
+  <div class="foot"><span>③ 우선순위표 · ④ 산출물·출처 기록 · 최승하(202420778)</span><span>3 / 3</span></div>
+</div>
+
+</body>
+</html>
