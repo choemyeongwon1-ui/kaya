@@ -1,0 +1,236 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-21T07:57:47Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 7557537338,
+  "lat": 37.5744038,
+  "lon": 127.0224633,
+  "tags": {
+    "amenity": "pub",
+    "name": "어른이대공원"
+  }
+},
+{
+  "type": "node",
+  "id": 11565776543,
+  "lat": 37.5768462,
+  "lon": 127.0154120,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "창신초등학교",
+    "network": "서울특별시 시내버스",
+    "network:ko": "서울특별시 시내버스",
+    "network:wikidata": "Q3724007",
+    "public_transport": "platform",
+    "ref": "01582",
+    "shelter": "no",
+    "tactile_paving": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 223434842,
+  "center": {
+    "lat": 37.5825985,
+    "lon": 127.0088977
+  },
+  "tags": {
+    "addr:city": "서울특별시",
+    "addr:district": "성북구",
+    "addr:housenumber": "145",
+    "addr:postcode": "02877",
+    "addr:street": "삼선교로4길",
+    "addr:subdistrict": "삼선동1가",
+    "leisure": "park",
+    "name": "삼선공원",
+    "name:en": "Samseon Park",
+    "phone": "+82 02-920-3782"
+  }
+},
+{
+  "type": "way",
+  "id": 229027407,
+  "center": {
+    "lat": 37.5754618,
+    "lon": 127.0085424
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "성줄어린이공원",
+    "name:en": "Seongjul Children's Park"
+  }
+},
+{
+  "type": "way",
+  "id": 229027411,
+  "center": {
+    "lat": 37.5805453,
+    "lon": 127.0072143
+  },
+  "tags": {
+    "addr:city": "서울특별시",
+    "addr:district": "종로구",
+    "addr:housenumber": "41",
+    "addr:postcode": "03085",
+    "addr:street": "낙산길",
+    "addr:subdistrict": "동숭동",
+    "alt_name:ko": "낙산",
+    "leisure": "park",
+    "name": "낙산공원",
+    "name:en": "Naksan park",
+    "name:ja": "駱山公園",
+    "name:ko": "낙산공원",
+    "phone": "+82 02-743-7985",
+    "website": "https://parks.seoul.go.kr/template/sub/naksan.do"
+  }
+},
+{
+  "type": "way",
+  "id": 416195954,
+  "center": {
+    "lat": 37.5760524,
+    "lon": 127.0143695
+  },
+  "tags": {
+    "amenity": "school",
+    "isced:level": "1",
+    "name": "창신초등학교"
+  }
+},
+{
+  "type": "way",
+  "id": 416204693,
+  "center": {
+    "lat": 37.5816467,
+    "lon": 127.0142275
+  },
+  "tags": {
+    "amenity": "school",
+    "isced:level": "1",
+    "name": "명신초등학교",
+    "name:en": "Myeongsin Elementary School"
+  }
+},
+{
+  "type": "way",
+  "id": 416453504,
+  "center": {
+    "lat": 37.5837461,
+    "lon": 127.0170375
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "동망봉 어린이 공원"
+  }
+},
+{
+  "type": "way",
+  "id": 469144895,
+  "center": {
+    "lat": 37.5828071,
+    "lon": 127.0170744
+  },
+  "tags": {
+    "amenity": "school",
+    "isced:level": "1",
+    "name": "동신초등학교",
+    "name:en": "Dongsin Elementary School"
+  }
+},
+{
+  "type": "way",
+  "id": 471360933,
+  "center": {
+    "lat": 37.5791731,
+    "lon": 127.0236468
+  },
+  "tags": {
+    "amenity": "school",
+    "check_date": "2026-07-16",
+    "isced:level": "1",
+    "name": "서울대광초등학교",
+    "name:en": "Seoul Daegwang Elementary School",
+    "name:ko": "서울대광초등학교",
+    "name:ko-Latn": "Seouldaegwangchodeunghakgyo"
+  }
+},
+{
+  "type": "way",
+  "id": 608835315,
+  "center": {
+    "lat": 37.5721408,
+    "lon": 127.0088010
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "흥인지문공원",
+    "name:en": "Heunginjimun Park",
+    "name:ja": "興仁之門公園",
+    "name:zh-Hans": "兴仁之门公园",
+    "name:zh-Hant": "興仁之門公園"
+  }
+},
+{
+  "type": "way",
+  "id": 705245458,
+  "center": {
+    "lat": 37.5734037,
+    "lon": 127.0244221
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "우산각어린이공원",
+    "name:ja": "ウサンガクこども公園"
+  }
+},
+{
+  "type": "relation",
+  "id": 4160590,
+  "center": {
+    "lat": 37.5770710,
+    "lon": 127.0176964
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "숭인근린공원",
+    "name:ja": "崇仁近隣公園",
+    "name:ko": "숭인근린공원",
+    "source": "survey;Bing",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 19175488,
+  "center": {
+    "lat": 37.5689476,
+    "lon": 126.9933765
+  },
+  "tags": {
+    "leisure": "park",
+    "name": "청계천공원",
+    "name:en": "Cheonggyecheon Stream Park",
+    "name:ja": "清渓川公園",
+    "name:ko": "청계천공원",
+    "name:ru": "Чхонгечхон",
+    "tourism": "attraction",
+    "type": "multipolygon",
+    "wheelchair": "yes",
+    "wikidata": "Q495437",
+    "wikipedia": "en:Cheonggyecheon"
+  }
+}
+
+  ]
+}
