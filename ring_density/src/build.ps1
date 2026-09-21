@@ -54,7 +54,11 @@ $leafletCss = [IO.File]::ReadAllText((Join-Path $root 'src\vendor\leaflet.min.cs
 $leafletJs = [IO.File]::ReadAllText((Join-Path $root 'src\vendor\leaflet.min.js'), $enc)
 
 $t = [IO.File]::ReadAllText((Join-Path $root 'src\template.html'), $enc)
+$parks = [IO.File]::ReadAllText((Join-Path $root 'data\parks.json'), $enc)   # src\parks.ps1로 만든 공원 목록
+$ordin = [IO.File]::ReadAllText((Join-Path $root 'data\ordinance.json'), $enc)   # src\ordinance.ps1로 만든 조례 21종·카드
 $html = $t.Replace('/*__LEAFLET_CSS__*/', $leafletCss).
+  Replace('__PARKS__', $parks).
+  Replace('__ORDIN__', $ordin).
   Replace('/*__LEAFLET_JS__*/', $leafletJs).
   Replace('__SAT__', $sat).
   Replace('__DATA__', '[' + ($rows -join ',') + ']').

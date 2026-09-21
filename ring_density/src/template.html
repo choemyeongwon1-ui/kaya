@@ -105,6 +105,14 @@
   .mapchart .mc-foot { font-size: 11.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.5; }
   .mapchart .mc-foot b { color: var(--orange); }
 
+  .park-label { display: inline-block; background: #ffd23f; color: #1c2b4a; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.4); white-space: nowrap; }
+  .park-info { font-size: 12px; line-height: 1.6; color: var(--ink-2); margin: 8px 0; }
+  .park-info b { color: #1c2b4a; }
+  select { width: 100%; font: inherit; font-size: 12.5px; padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .prio-sub { font-size: 10.5px; color: var(--muted); }
+  #prioTable td:nth-child(2), #prioTable th:nth-child(2) { text-align: left; }
+  .qtag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+
   .legend-float { padding: 9px 12px; font-size: 12px; line-height: 1.75; }
   .legend-float .li { display: flex; align-items: center; gap: 7px; }
   .legend-float .ring { width: 14px; height: 14px; border-radius: 50%; border: 2px dashed var(--bright); flex: none; }
@@ -145,6 +153,18 @@
   .warn { margin-top: 8px; font-size: 11.5px; background: #fff7e6; border-left: 3px solid #d98a00; padding: 6px 8px; line-height: 1.55; color: #5b4300; }
   .src { color: var(--muted); font-size: 11px; line-height: 1.6; padding: 9px 13px; }
 
+  /* 조례 용적률 카드 — 값·단위·출처·조회일 네 칸 (3주차 비교과 26쪽) */
+  .ordin { padding: 12px 14px; border-top: 4px solid var(--blue); }
+  .ordin h4 { margin: 0; font-size: 13px; font-weight: 700; color: var(--navy); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ordin .o-sub { font-size: 11px; color: var(--muted); margin: 2px 0 8px; line-height: 1.45; }
+  .ordin .o-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ordin .o-cell { background: #f4f6fa; border-radius: 7px; padding: 7px 9px; }
+  .ordin .o-cell.wide { grid-column: 1 / -1; }
+  .ordin .o-k { font-size: 10.5px; color: var(--ink-2); font-weight: 500; }
+  .ordin .o-v { font-size: 12.5px; font-weight: 700; color: #1c2b4a; line-height: 1.45; }
+  .ordin .o-v.big { font-size: 26px; font-weight: 900; color: var(--blue); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .ordin .o-note { font-size: 11px; color: var(--ink-2); line-height: 1.55; margin-top: 7px; border-left: 3px solid var(--line); padding-left: 7px; }
+
   .tip { position: fixed; pointer-events: none; z-index: 2000; background: #111827; color: #fff; padding: 6px 9px; border-radius: 5px; font-size: 12px; line-height: 1.5; display: none; white-space: nowrap; }
 
   /* narrow screens: map on top, cards stacked underneath */
@@ -171,7 +191,11 @@
 
   <section class="kpis" id="kpis"></section>
 
+  <div class="glass ordin" id="ordinCard"></div>
+
   <div class="glass mapchart" id="barCard"></div>
+
+  <div class="glass mapchart" id="prioCard"></div>
 
   <div class="glass legend-float" id="legend"></div>
 </div>
@@ -195,6 +219,8 @@
       <label class="switch"><input type="checkbox" id="ringOn" checked aria-label="링 켜기/끄기"><span></span></label></div>
     <div class="row"><span>건물 점 (파란색)</span>
       <label class="switch"><input type="checkbox" id="dotsOn" aria-label="건물 점 켜기/끄기"><span></span></label></div>
+    <div class="row"><span>공원 · 스마트공원 우선순위</span>
+      <label class="switch"><input type="checkbox" id="parksOn" checked aria-label="공원과 우선순위 켜기/끄기"><span></span></label></div>
   </div>
 
   <div class="glass box">
@@ -203,6 +229,14 @@
     <input type="range" id="rSlider" min="1" max="__MAXR__" step="0.5" value="3" aria-label="반경(km)">
     <div class="ticks" id="ticks"></div>
     <div class="quick" id="quick"></div>
+  </div>
+
+  <div class="glass box" id="prioBox">
+    <h2>③ 스마트공원 우선순위표 <button class="btn" id="prioCsv" type="button">CSV 저장</button></h2>
+    <select id="parkSel" aria-label="대상지 공원 선택"></select>
+    <div class="park-info" id="parkInfo"></div>
+    <div class="tablewrap"><table id="prioTable"></table></div>
+    <div class="note" id="prioNote"></div>
   </div>
 
   <div class="glass box">
@@ -239,6 +273,8 @@ const CENTER_NAME = '종로구청';
 const MAX_R = __MAXR__;  // km — how far the downloaded data reaches
 const META = { endpoint: '__ENDPOINT__', fetched: '__FETCHED__', osmBase: '__OSMDATE__', response: __RESPONSE__ };
 const SAT = __SAT__;     // embedded satellite photo: { uri, latSouth, latNorth, lonWest, lonEast }
+const PARKS = __PARKS__; // OSM leisure=park ≥ 1,500 m²: { meta, parks: [{ id, name, area, dist, lat, lon, rings }] }
+const ORDIN = __ORDIN__; // src\ordinance.ps1: 서울특별시 도시계획 조례 건폐율·용적률 21종 + 대상지 카드 { meta, site, card, rows }
 const QUERY = `[out:json][timeout:600];(way["building"](around:${MAX_R * 1000},37.5735,126.9790);relation["building"](around:${MAX_R * 1000},37.5735,126.9790););out center tags qt;`;
 
 const BLUES = ['#dce8ff', '#a8c5ff', '#6c9bff', '#3469e6', '#163f9e'];   // light → dark = sparse → dense
@@ -468,7 +504,8 @@ function renderLegend() {
     <div class="li" style="margin-top:4px"><span class="center-pin"></span>중심 ${CENTER_NAME} · 원그래프 = 정점 링 대비 밀도</div>
     <div class="li"><span class="sw" style="background:${PEAK}"></span>밀도 정점 링</div>
     <div class="li"><span class="ring"></span>1km 간격 링 · 바깥 실선 = 반경 ${R}km</div>
-    ${document.getElementById('dotsOn').checked ? '<div class="li"><span class="sw" style="background:#3d7bff"></span>건물(중심점)</div>' : ''}`;
+    ${document.getElementById('dotsOn').checked ? '<div class="li"><span class="sw" style="background:#3d7bff"></span>건물(중심점)</div>' : ''}
+    ${document.getElementById('parksOn').checked ? '<div class="li"><span class="sw" style="background:#3fd07a;border-radius:2px"></span>공원(누르면 대상지로 지정) · <span class="sw" style="background:#ffd23f;border-radius:2px"></span>대상지</div>' : ''}`;
 }
 
 function renderAnalysis() {
@@ -517,8 +554,41 @@ function renderCatalog() {
     <dt>엔드포인트</dt><dd>${META.endpoint}</dd>
     <dt>조회일</dt><dd>${META.fetched} (OSM 기준 ${META.osmBase})</dd>
     <dt>응답 건수</dt><dd>${fmt(META.response)}건 (반경 ${MAX_R}km) → 현재 반경 ${R}km 안 ${fmt(S.total)}동</dd>
-    <dt>재현 명령</dt><dd><code>${QUERY.replace(/</g, '&lt;')}</code></dd>`;
+    <dt>재현 명령</dt><dd><code>${QUERY.replace(/</g, '&lt;')}</code></dd>
+    <dt>공원</dt><dd>${PARKS.meta.source} · 반경 3km · OSM 기준 ${PARKS.meta.osmBase} · 1,500m² 이상 ${PARKS.parks.length}곳 (${PARKS.meta.file})</dd>
+    <dt>우선순위</dt><dd>설계요소: 2주차 강의자료 49쪽 · 순서: 50쪽 · 난이도 근거: 52쪽 SWOT</dd>
+    <dt>조례</dt><dd>「${ORDIN.meta.name}」 ${ORDIN.meta.articles} · 시행 ${ORDIN.meta.effective} · 조회 ${ORDIN.meta.fetched} · ${ORDIN.meta.via}</dd>
+    <dt>용도지역</dt><dd>${ORDIN.site.parcel} ${ORDIN.site.zone} · ${ORDIN.site.checkedVia} ${ORDIN.site.checked}</dd>
+    <dt>조례 재현</dt><dd><code>${ORDIN.meta.reproduce}</code></dd>`;
 }
+
+/* ---------- 조례 용적률 카드: 값·단위·출처·조회일 — 하나라도 비면 올리지 않음 ---------- */
+function renderOrdinance() {
+  const c = ORDIN.card, el = document.getElementById('ordinCard');
+  const filled = [c.value, c.unit, c.source, c.fetched].every(v => v !== null && v !== undefined && String(v).trim() !== '');
+  if (!filled) { el.innerHTML = `<h4>대상지 용적률</h4><div class="o-sub">조회 대기 — 값·단위·출처·조회일 중 빈칸이 있어 올리지 않음</div>`; return; }
+  el.innerHTML = `
+    <h4>${c.label} <button class="btn" id="ordinCsv" type="button">21종 CSV</button></h4>
+    <div class="o-sub">3주차 비교과 · ${ORDIN.site.parcel} · ${ORDIN.site.zone}${ORDIN.site.downtown ? ' · 서울도심' : ''}</div>
+    <div class="o-grid">
+      <div class="o-cell"><div class="o-k">값</div><div class="o-v big">${fmt(c.value)}</div></div>
+      <div class="o-cell"><div class="o-k">단위</div><div class="o-v">${c.unit}</div></div>
+      <div class="o-cell wide"><div class="o-k">출처</div><div class="o-v">${c.source}</div></div>
+      <div class="o-cell wide"><div class="o-k">조회일</div><div class="o-v">${c.fetched}</div></div>
+    </div>
+    <div class="o-note"><b>비고</b> · ${c.note}</div>`;
+  document.getElementById('ordinCsv').addEventListener('click', () => {
+    const head = Object.keys(ORDIN.rows[0]);
+    const csv = '﻿' + [head, ...ORDIN.rows.map(r => head.map(k => r[k]))]
+      .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = ORDIN.meta.csv;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+}
+renderOrdinance();
 
 document.getElementById('csvBtn').addEventListener('click', () => {
   const head = ['ring', 'r0_km', 'r1_km', 'area_km2', 'buildings', 'density_per_km2', 'rel_to_peak_pct', 'change_vs_prev_pct', 'clark_pred', 'radius_km', 'center', 'center_lat', 'center_lon', 'source', 'endpoint', 'osm_base', 'fetched'];
@@ -532,13 +602,163 @@ document.getElementById('csvBtn').addEventListener('click', () => {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
 
+/* ---------- ③ smart-park priority: effect × difficulty for the chosen park ---------- */
+// Elements come from the lecture's 30 design elements (slide 49), grouped by park zone.
+// eff = base effect, dif = introduction difficulty (1 easy … 5 hard, from the SWOT on slide 52).
+// demand: effect rises/falls with building density around the park; green: with park area.
+const ELEMENTS = [
+  { name: '보행자 자동 계수(비영상)', zone: '도로·광장', need: '형평적 접근·운영', measure: '시간대별 이용자 수', eff: 3, demand: true, dif: 2,
+    difWhy: '배터리형 적외선·레이더 계수기라 전원·통신 부담 작음. 영상 계수는 개인정보 검토가 필요해 제외' },
+  { name: '스마트 조명(가로등·볼라드)', zone: '도로·광장', need: '안전', measure: '야간 조도·점등 시간', eff: 3, demand: true, dif: 3,
+    difWhy: '기존 가로등 교체라 전원은 있으나 제어 통신망이 필요' },
+  { name: '스마트 벤치(태양광 충전·환경센서)', zone: '조경시설물', need: '건강·휴게', measure: '이용 횟수·기온·미세먼지', eff: 2, demand: true, dif: 2,
+    difWhy: '자가발전형이라 배선 공사가 없음' },
+  { name: '스마트 쓰레기통(적재량 센서)', zone: '조경시설물', need: '운영·유지', measure: '적재율·수거 주기', eff: 2, demand: true, dif: 2,
+    difWhy: '태양광 압축형으로 단독 설치 가능, 수거 주체만 정하면 됨' },
+  { name: '토양 센서·관수 모니터링', zone: '녹지', need: '물·에너지 효율', measure: '토양 수분·관수량', eff: 3, green: true, dif: 2,
+    difWhy: '저전력 무선 센서라 배터리로 수년 운용' },
+  { name: '우수 관리 모니터링', zone: '수경시설', need: '회복탄력성', measure: '우수 유입·저류 수위', eff: 2, green: true, dif: 3,
+    difWhy: '배수 설비와 연계 공사가 필요' },
+  { name: '스마트 안내 표지(디지털 사이니지)', zone: '조경시설물', need: '형평적 접근', measure: '조회 수·안내 문의', eff: 2, demand: true, dif: 4,
+    difWhy: '상시 전원·통신과 콘텐츠를 갱신할 운영 인력이 필요 — 약점(운영 인력 없음)과 충돌' },
+  { name: '스마트 음수대', zone: '조경시설물', need: '건강', measure: '급수량·수질', eff: 2, demand: true, dif: 3,
+    difWhy: '급수 배관과 수질 관리가 필요' },
+  { name: '미디어 파사드', zone: '도로·광장', need: '문화·체류', measure: '체류 시간', eff: 1, demand: true, dif: 5,
+    difWhy: '대형 설비·전력·콘텐츠 운영비가 큼, 제품 사양 발주 시 교체 종속 위협' },
+  { name: '스마트 주차장', zone: '조경시설물', need: '접근', measure: '주차 회전율', eff: 1, dif: 4,
+    difWhy: '도심 공원은 대중교통 접근이 주라 부지·공사 대비 효과 작음' },
+  { name: '데이터 플랫폼(공유 폴더 수준)', zone: '설계 방법', need: '운영·유지', measure: '센서값 누적·공개', eff: 4, dif: 2,
+    difWhy: '허브가 아니라 팀 공유 폴더 하나로 시작(슬라이드 54) — 과거 이용 데이터가 없는 약점을 메움' },
+];
+const QUAD = [
+  { key: 1, name: '1순위 · 바로 도입', color: '#1b7f4b', bg: '#e7f5ee' },
+  { key: 2, name: '2순위 · 단계 도입', color: '#1f5bd6', bg: '#e8eefb' },
+  { key: 3, name: '3순위 · 여력 시', color: '#8a6d00', bg: '#fff7e6' },
+  { key: 4, name: '4순위 · 보류', color: '#6b7280', bg: '#f1f2f4' },
+];
+const REF_DENSITY = PTS.filter(p => p.dist <= 3000).length / (Math.PI * 9);   // 반경 3km 평균 (동/km²)
+const PARK_LOCAL_R = 500;                                                        // m, 공원 주변 수요를 보는 반경
+let targetId = null;
+const parkLayer = L.layerGroup();
+
+function parkStats(pk) {
+  const px = (pk.lon - CENTER[1]) * M_LON, py = (pk.lat - CENTER[0]) * M_LAT;
+  let n = 0;
+  for (const p of PTS) if (Math.hypot(p.x - px, p.y - py) <= PARK_LOCAL_R) n++;
+  const density = n / (Math.PI * (PARK_LOCAL_R / 1000) ** 2);
+  return { n, density, demand: density / REF_DENSITY, ring: `${Math.floor(pk.dist / 1000)}–${Math.floor(pk.dist / 1000) + 1}km` };
+}
+function scorePark(pk, st) {
+  const dAdj = st.demand >= 1.5 ? 1 : st.demand < 0.75 ? -1 : 0;
+  const gAdj = pk.area >= 20000 ? 1 : pk.area < 5000 ? -1 : 0;
+  const clamp = v => Math.max(1, Math.min(5, v));
+  const rows = ELEMENTS.map(e => {
+    const adj = (e.demand ? dAdj : 0) + (e.green ? gAdj : 0);
+    const eff = clamp(e.eff + adj);
+    let effWhy = `기본 ${e.eff}`;
+    if (e.demand) effWhy += dAdj ? ` ${dAdj > 0 ? '+1' : '−1'}(주변 밀도 ${st.demand.toFixed(2)}배)` : ` (주변 밀도 ${st.demand.toFixed(2)}배 · 보정 없음)`;
+    if (e.green) effWhy += gAdj ? ` ${gAdj > 0 ? '+1' : '−1'}(면적 ${fmt(pk.area)}m²)` : ` (면적 ${fmt(pk.area)}m² · 보정 없음)`;
+    const hi = eff >= 3, easy = e.dif <= 2;
+    const quad = hi && easy ? 1 : hi ? 2 : easy ? 3 : 4;
+    return { ...e, effScore: eff, effWhy, quad };
+  });
+  rows.sort((a, b) => a.quad - b.quad || (b.effScore - b.dif) - (a.effScore - a.dif) || b.effScore - a.effScore);
+  rows.forEach((r, i) => { r.rank = i + 1; });
+  return rows;
+}
+
+function renderParks() {
+  parkLayer.clearLayers();
+  PARKS.parks.forEach(pk => {
+    const isT = pk.id === targetId;
+    const poly = L.polygon(pk.rings, {
+      renderer: canvas, color: isT ? '#ffd23f' : '#3fd07a', weight: isT ? 3.5 : 1.2, opacity: .95,
+      fillColor: isT ? '#ffd23f' : '#3fd07a', fillOpacity: isT ? .28 : .18,
+    }).bindTooltip(`${pk.name || '이름 없는 공원'} · ${fmt(pk.area)}m² · 중심에서 ${fmt(pk.dist)}m<br><small>눌러서 대상지로 지정</small>`, { sticky: true });
+    poly.on('click', () => setTarget(pk.id));
+    poly.addTo(parkLayer);
+  });
+  const t = PARKS.parks.find(p => p.id === targetId);
+  if (t) {
+    L.circle([t.lat, t.lon], { radius: PARK_LOCAL_R, color: '#ffd23f', weight: 1.5, dashArray: '3 5', fill: false, interactive: false }).addTo(parkLayer);
+    L.marker([t.lat, t.lon], { interactive: false, keyboard: false, zIndexOffset: 1200,
+      icon: L.divIcon({ className: '', html: `<div class="park-label">대상지 · ${t.name || '이름 없는 공원'}</div>`, iconSize: [220, 24], iconAnchor: [110, 40] }) }).addTo(parkLayer);
+  }
+}
+
+function renderPriority() {
+  const pk = PARKS.parks.find(p => p.id === targetId);
+  const st = parkStats(pk);
+  const rows = scorePark(pk, st);
+  window.PRIO = { pk, st, rows };
+
+  // matrix card (left)
+  const W = 340, H = 250, L0 = 34, B0 = 26, T0 = 8, R0 = 8;
+  const X = d => L0 + (d - .5) / 5 * (W - L0 - R0), Y = e => H - B0 - (e - .5) / 5 * (H - B0 - T0);
+  const quadRect = (x0, x1, y0, y1, q) => `<rect x="${X(x0)}" y="${Y(y1)}" width="${X(x1) - X(x0)}" height="${Y(y0) - Y(y1)}" fill="${QUAD[q - 1].bg}"/>`;
+  const seen = {};
+  const dots = rows.map(r => {
+    const k = r.dif + ',' + r.effScore, i = seen[k] = (seen[k] || 0) + 1;
+    const cx = X(r.dif) + (i - 1) * 15 - 7 * (rows.filter(o => o.dif === r.dif && o.effScore === r.effScore).length - 1), cy = Y(r.effScore);
+    return `<g><title>${r.rank}. ${r.name} — 효과 ${r.effScore}, 난이도 ${r.dif}</title><circle cx="${cx}" cy="${cy}" r="8.5" fill="${QUAD[r.quad - 1].color}" stroke="#fff" stroke-width="1.5"/>
+      <text x="${cx}" y="${cy + .5}" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="9.5" font-weight="700">${r.rank}</text></g>`;
+  }).join('');
+  const ticks = [1, 2, 3, 4, 5].map(v => `<text x="${X(v)}" y="${H - B0 + 13}" text-anchor="middle" font-size="10" fill="#4b5563">${v}</text><text x="${L0 - 8}" y="${Y(v) + 3}" text-anchor="end" font-size="10" fill="#4b5563">${v}</text>`).join('');
+  $('prioCard').innerHTML = `<h4>③ 스마트공원 우선순위 — ${pk.name || '이름 없는 공원'}</h4>
+    <div class="mc-sub">가로 = 도입 난이도(오른쪽일수록 어려움) · 세로 = 효과 크기 · 번호 = 순위</div>
+    <svg viewBox="0 0 ${W} ${H}">
+      ${quadRect(.5, 2.5, 2.5, 5.5, 1)}${quadRect(2.5, 5.5, 2.5, 5.5, 2)}${quadRect(.5, 2.5, .5, 2.5, 3)}${quadRect(2.5, 5.5, .5, 2.5, 4)}
+      <text x="${X(.6)}" y="${Y(5.3)}" font-size="10" font-weight="700" fill="${QUAD[0].color}">1순위 바로 도입</text>
+      <text x="${X(5.4)}" y="${Y(5.3)}" text-anchor="end" font-size="10" font-weight="700" fill="${QUAD[1].color}">2순위 단계 도입</text>
+      <text x="${X(.6)}" y="${Y(.75)}" font-size="10" font-weight="700" fill="${QUAD[2].color}">3순위 여력 시</text>
+      <text x="${X(5.4)}" y="${Y(.75)}" text-anchor="end" font-size="10" font-weight="700" fill="${QUAD[3].color}">4순위 보류</text>
+      <line x1="${L0}" x2="${W - R0}" y1="${H - B0}" y2="${H - B0}" stroke="rgba(0,0,0,.35)"/><line x1="${L0}" x2="${L0}" y1="${T0}" y2="${H - B0}" stroke="rgba(0,0,0,.35)"/>
+      ${ticks}${dots}
+      <text x="${(L0 + W) / 2}" y="${H - 1}" text-anchor="middle" font-size="10.5" fill="#1f2937">도입 난이도 →</text>
+      <text x="11" y="${(T0 + H - B0) / 2}" text-anchor="middle" font-size="10.5" fill="#1f2937" transform="rotate(-90 11 ${(T0 + H - B0) / 2})">효과 크기 →</text>
+    </svg>
+    <div class="mc-foot">주변 ${PARK_LOCAL_R}m 건물밀도 <b>${fmt(st.density)}동/km²</b> = 반경 3km 평균의 ${st.demand.toFixed(2)}배 · ${st.ring} 링</div>`;
+
+  // table (right)
+  $('parkInfo').innerHTML = `<b>${pk.name || '이름 없는 공원'}</b> · 면적 ${fmt(pk.area)}m² · 종로구청에서 ${fmt(pk.dist)}m(${st.ring} 링)<br>
+    주변 ${PARK_LOCAL_R}m 안 건물 ${fmt(st.n)}동 → ${fmt(st.density)}동/km² (3km 평균 ${fmt(REF_DENSITY)}의 ${st.demand.toFixed(2)}배)`;
+  $('prioTable').innerHTML = `<thead><tr><th>순위</th><th>요소</th><th>효과</th><th>난이도</th><th>구분</th></tr></thead><tbody>${rows.map(r => `
+    <tr title="영역: ${r.zone} · 부족 기능: ${r.need} · 측정요소: ${r.measure}\n효과 근거: ${r.effWhy}\n난이도 근거: ${r.difWhy}">
+      <td>${r.rank}</td><td style="white-space:normal">${r.name}<div class="prio-sub">${r.zone} · ${r.measure}</div></td>
+      <td>${r.effScore}</td><td>${r.dif}</td><td><span class="qtag" style="color:${QUAD[r.quad - 1].color};background:${QUAD[r.quad - 1].bg}">${QUAD[r.quad - 1].name.split(' · ')[0]}</span></td></tr>`).join('')}</tbody>`;
+  const top = rows.filter(r => r.quad === 1).map(r => r.name);
+  $('prioNote').innerHTML = `효과 = 기본 점수 + 보정(주변 밀도가 3km 평균의 1.5배 이상이면 이용 압력 +1, 0.75배 미만이면 −1 · 녹지 요소는 면적 2만m² 이상 +1, 5천m² 미만 −1). 난이도 = 슬라이드 52 SWOT의 약점·위협(운영 인력 없음, 전원·통신망 제한, 영상 계수 개인정보)을 반영한 고정 점수. 행에 마우스를 올리면 근거가 보임.
+    ${top.length ? `<br><b>1순위(효과 높고 쉬움)</b>: ${top.join(', ')}` : ''}`;
+  const sel = $('parkSel');
+  if (sel.value !== pk.id) sel.value = pk.id;
+}
+
+function setTarget(id) {
+  targetId = id;
+  renderParks(); renderPriority();
+}
+
+document.getElementById('prioCsv').addEventListener('click', () => {
+  const { pk, st, rows } = window.PRIO;
+  const head = ['순위', '구분', '요소', '영역', '부족 기능', '측정요소', '효과(1-5)', '효과 근거', '난이도(1-5)', '난이도 근거', '대상지', '대상지 면적_m2', '종로구청까지_m', '주변500m_건물밀도', '3km평균_대비', '출처', '조회일'];
+  const out = rows.map(r => [r.rank, QUAD[r.quad - 1].name, r.name, r.zone, r.need, r.measure, r.effScore, r.effWhy, r.dif, r.difWhy, pk.name || '이름 없는 공원', pk.area, pk.dist,
+    st.density.toFixed(1), st.demand.toFixed(2), `설계요소: 2주차 강의자료 49·50·52쪽 / 공원: ${PARKS.meta.source} (OSM 기준 ${PARKS.meta.osmBase}) / 건물: ${META.endpoint}`, META.fetched]);
+  const csv = '﻿' + [head, ...out].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `스마트공원_우선순위표_${(pk.name || '대상지').replace(/\s+/g, '')}_${META.fetched}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
 /* ---------- wiring ---------- */
 const $ = id => document.getElementById(id);
-const layerFor = { gridOn: gridLayer, ringOn: ringLayer, dotsOn: dotsLayer };
+const layerFor = { gridOn: gridLayer, parksOn: parkLayer, ringOn: ringLayer, dotsOn: dotsLayer };
 function syncLayers() {
   Object.entries(layerFor).forEach(([id, layer]) => $(id).checked ? layer.addTo(map) : map.removeLayer(layer));
   $('piesOn').checked ? pieLayer.addTo(map) : map.removeLayer(pieLayer);
   $('barCard').hidden = !$('barsOn').checked;
+  $('prioCard').hidden = $('prioBox').hidden = !$('parksOn').checked;
   renderLegend();
 }
 function refresh({ refit = false } = {}) {
@@ -552,7 +772,14 @@ function refresh({ refit = false } = {}) {
 }
 
 ['baseOn', 'osmOn'].forEach(id => $(id).addEventListener('change', syncBase));
-['gridOn', 'ringOn', 'dotsOn', 'piesOn', 'barsOn'].forEach(id => $(id).addEventListener('change', syncLayers));
+['gridOn', 'parksOn', 'ringOn', 'dotsOn', 'piesOn', 'barsOn'].forEach(id => $(id).addEventListener('change', syncLayers));
+
+// park picker: named parks nearest first; default target = largest named park inside the 0–1km ring
+const named = PARKS.parks.filter(p => p.name);
+$('parkSel').innerHTML = named.map(p => `<option value="${p.id}">${p.name} · ${fmt(p.area)}m² · ${fmt(p.dist)}m</option>`).join('');
+$('parkSel').addEventListener('change', e => setTarget(e.target.value));
+targetId = named.filter(p => p.dist <= 1000).reduce((a, b) => b.area > a.area ? b : a).id;
+setTarget(targetId);
 [...$('cellSeg').children].forEach(b => b.addEventListener('click', () => {
   cell = +b.dataset.s;
   [...$('cellSeg').children].forEach(x => x.classList.toggle('on', x === b));
