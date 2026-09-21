@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>법령 검증 기록 — kaya</title>
+<style>
+  :root { --navy:#1f3a68; --blue:#0b4ea2; --ink:#1d2433; --mute:#5b6475; --line:#dde2ea; --soft:#f3f5f9; --ok:#1f7a45; --okbg:#e7f5ee; --bad:#b42318; --badbg:#fdecea; --warn:#8a5a00; --warnbg:#fff4dc; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif; color: var(--ink); background: #eef1f6; font-size: 14px; }
+  main { max-width: 1400px; margin: 0 auto; padding: 20px 16px 40px; }
+  header { background: #fff; border-top: 4px solid var(--navy); border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(20,30,60,.08); }
+  .eyebrow { color: var(--blue); font-weight: 700; font-size: 12px; letter-spacing: .06em; }
+  h1 { margin: 4px 0 6px; font-size: 22px; color: var(--navy); }
+  .lead { color: var(--mute); font-size: 13px; line-height: 1.6; margin: 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .stat { background: #fff; border-radius: 10px; padding: 11px 14px; box-shadow: 0 2px 8px rgba(20,30,60,.06); }
+  .stat .k { font-size: 12px; color: var(--mute); }
+  .stat .v { font-size: 22px; font-weight: 900; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .stat .v.ok { color: var(--ok); } .stat .v.bad { color: var(--bad); }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+  select, label.chk { font: inherit; font-size: 13px; background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px; }
+  label.chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .wrap { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(20,30,60,.06); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { position: sticky; top: 0; background: var(--soft); color: var(--navy); font-weight: 700; white-space: nowrap; }
+  td.nowrap { white-space: nowrap; }
+  tr.run td { border-top: 2px solid #c4ccd9; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+  .pill.ok { background: var(--okbg); color: var(--ok); } .pill.bad { background: var(--badbg); color: var(--bad); } .pill.warn { background: var(--warnbg); color: var(--warn); }
+  .sub { color: var(--mute); font-size: 11.5px; }
+  .empty { padding: 30px; text-align: center; color: var(--mute); }
+  footer { color: var(--mute); font-size: 12px; line-height: 1.7; margin-top: 12px; }
+  footer a, header a { color: var(--blue); }
+  code { font-family: Consolas, monospace; font-size: 12px; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">kaya · 법령 폴더 · 조회할 때마다 쌓이는 기록</div>
+    <h1>법령 검증 기록</h1>
+    <p class="lead">팀이 인용하는 법령·조례의 <b>법령ID · 시행일 · 소관기관 · 검색시점</b>을 조회할 때마다 검색 응답과 본문 응답으로 대조한 표입니다. 원본은 <a href="조회기록.csv">조회기록.csv</a>이고, 예전 줄은 고치거나 지우지 않습니다.</p>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="bar">
+    <select id="lawSel" aria-label="법령 선택"><option value="">모든 법령</option></select>
+    <label class="chk"><input type="checkbox" id="latestOnly" checked> 최신 조회만</label>
+    <label class="chk"><input type="checkbox" id="badOnly"> 확인 필요만</label>
+  </div>
+
+  <div class="wrap"><table id="tbl"></table></div>
+
+  <footer>
+    확인 방법 — 법령ID·시행일·기관: 검색(lawSearch) 응답과 본문(lawService) 응답의 값이 같으면 ✓ · 검색시점: 조회일에 시행 중인지(시행일 ≤ 조회일)와 시행예정 개정본 유무 · 직전 기록 대비: 같은 조의 앞 기록과 MST(일련번호)가 다르면 "버전 바뀜"<br>
+    새로 조회하기: 저장소 최상위에서 <code>powershell -ExecutionPolicy Bypass -File 법령\check.ps1</code> (인증키는 환경변수 <code>LAW_OC</code>에만) · 대상 추가: <a href="대상목록.csv">대상목록.csv</a> · 출처: 국가법령정보 공동활용 OPEN API (law.go.kr)
+  </footer>
+</main>
+<script>
+// RFC 4180 CSV → 객체 배열 (따옴표 안의 쉼표·줄바꿈 처리)
+function parseCsv(text) {
+  text = text.replace(/^﻿/, '');
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  const head = rows.shift() || [];
+  return rows.filter(r => r.length > 1).map(r => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])));
+}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const mark = v => v === '일치' ? '<span class="pill ok">✓ 일치</span>' : `<span class="pill bad">✗ ${esc(v || '없음')}</span>`;
+
+let ROWS = [];
+function render() {
+  const law = document.getElementById('lawSel').value;
+  const latest = document.getElementById('latestOnly').checked;
+  const bad = document.getElementById('badOnly').checked;
+  const lastRun = ROWS.length ? ROWS[ROWS.length - 1].조회일시 : '';
+  // 조회는 최신순, 한 번의 조회 안에서는 대상목록 순서 그대로
+  let rows = ROWS.map((r, i) => ({ r, i })).sort((a, b) => b.r.조회일시.localeCompare(a.r.조회일시) || a.i - b.i).map(x => x.r);
+  if (latest) rows = rows.filter(r => r.조회일시 === lastRun);
+  if (law) rows = rows.filter(r => r.법령명 === law);
+  if (bad) rows = rows.filter(r => r.판정 !== '정상');
+
+  const runs = new Set(ROWS.map(r => r.조회일시)).size;
+  const okN = ROWS.filter(r => r.판정 === '정상').length;
+  const changed = ROWS.filter(r => r.직전기록대비.startsWith('버전 바뀜')).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="k">누적 기록</div><div class="v">${ROWS.length}줄</div></div>
+    <div class="stat"><div class="k">조회 횟수</div><div class="v">${runs}회</div></div>
+    <div class="stat"><div class="k">마지막 조회</div><div class="v" style="font-size:16px;padding-top:4px">${esc(lastRun || '—')}</div></div>
+    <div class="stat"><div class="k">정상</div><div class="v ok">${okN}줄</div></div>
+    <div class="stat"><div class="k">확인 필요</div><div class="v ${ROWS.length - okN ? 'bad' : ''}">${ROWS.length - okN}줄</div></div>
+    <div class="stat"><div class="k">버전 바뀜 감지</div><div class="v">${changed}건</div></div>`;
+
+  const t = document.getElementById('tbl');
+  if (!rows.length) { t.innerHTML = '<tr><td class="empty">조건에 맞는 기록이 없습니다.</td></tr>'; return; }
+  let prev = null;
+  t.innerHTML = `<thead><tr><th>조회일시</th><th>법령 · 조</th><th>법령ID</th><th>MST(일련번호)</th><th>시행일</th><th>기관</th><th>검색시점</th><th>시행예정본</th><th>직전 기록 대비</th><th>판정</th></tr></thead><tbody>` +
+    rows.map(r => {
+      const cls = prev !== null && prev !== r.조회일시 ? ' class="run"' : ''; prev = r.조회일시;
+      const verdict = r.판정 === '정상' ? '<span class="pill ok">정상</span>' : `<span class="pill bad">${esc(r.판정)}</span>`;
+      const diff = r.직전기록대비.startsWith('버전 바뀜') ? `<span class="pill warn">${esc(r.직전기록대비)}</span>` : esc(r.직전기록대비);
+      const pend = r.시행예정본.startsWith('있음') ? `<span class="pill warn">${esc(r.시행예정본)}</span>` : `<span class="sub">${esc(r.시행예정본)}</span>`;
+      return `<tr${cls}>
+        <td class="nowrap">${esc(r.조회일시)}<div class="sub">${esc(r.조회자)}</div></td>
+        <td><b>${esc(r.법령명)}</b><div class="sub">${esc(r.구분)} · ${esc(r.조)} ${esc(r.조문제목)}</div></td>
+        <td class="nowrap">${esc(r['법령ID(본문)'])}<div>${mark(r.법령ID확인)}</div></td>
+        <td class="nowrap">${esc(r['MST(일련번호)'])}</td>
+        <td class="nowrap">${esc(r['시행일(본문)'])}${r.조문시행일 ? `<div class="sub">조문 ${esc(r.조문시행일)}</div>` : ''}<div>${mark(r.시행일확인)}</div></td>
+        <td class="nowrap">${esc(r['기관(본문)'])}<div>${mark(r.기관확인)}</div></td>
+        <td class="nowrap">${r.검색시점 === '현행' ? '<span class="pill ok">현행</span>' : `<span class="pill bad">${esc(r.검색시점)}</span>`}</td>
+        <td>${pend}</td>
+        <td>${diff}</td>
+        <td>${verdict}</td></tr>`;
+    }).join('') + '</tbody>';
+}
+
+fetch('조회기록.csv', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(text => {
+    ROWS = parseCsv(text);
+    const sel = document.getElementById('lawSel');
+    [...new Set(ROWS.map(r => r.법령명))].forEach(n => sel.insertAdjacentHTML('beforeend', `<option>${esc(n)}</option>`));
+    ['lawSel', 'latestOnly', 'badOnly'].forEach(id => document.getElementById(id).addEventListener('change', render));
+    render();
+  })
+  .catch(e => { document.getElementById('tbl').innerHTML = `<tr><td class="empty">조회기록.csv를 읽지 못했습니다 (${esc(e.message)}). 저장소의 표 원본을 직접 여세요.</td></tr>`; });
+</script>
+</body>
+</html>
