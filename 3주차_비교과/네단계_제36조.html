@@ -9,40 +9,44 @@
          --navy:#1B3A6B; --navy-ink:#0E2144; --acc:#C4570F; --acc-bg:#F7EDE4; --panel:#F7F9FB; }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif; color:var(--ink);
-        font-size:9pt; line-height:1.55; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .page{ width:210mm; height:297mm; padding:13mm 14mm 11mm; position:relative; overflow:hidden; }
-  .head{ display:flex; align-items:baseline; border-bottom:2px solid var(--navy); padding-bottom:6px; }
-  .head h1{ font-size:15pt; margin:0; color:var(--navy-ink); letter-spacing:-.01em; }
-  .head .sub{ font-size:8pt; color:var(--muted); margin-left:auto; text-align:right; line-height:1.45; }
-  .lede{ font-size:8.6pt; color:var(--muted); margin:6px 0 10px; }
-  .step{ display:grid; grid-template-columns:31mm 1fr; gap:0; border:1px solid var(--line);
-         border-radius:3px; margin:0 0 7px; overflow:hidden; }
-  .step .no{ background:var(--panel); border-right:1px solid var(--line); padding:8px 9px; }
-  .step .no b{ display:block; font-family:Consolas,monospace; font-size:15pt; color:var(--navy);
-               line-height:1; margin-bottom:3px; }
-  .step .no span{ font-size:8.4pt; font-weight:600; color:var(--navy-ink); }
-  .step .bd{ padding:8px 11px; }
-  .step p{ margin:0 0 4px; font-size:8.6pt; }
-  table{ width:100%; border-collapse:collapse; font-size:8.3pt; margin:4px 0 0; }
-  th,td{ border:1px solid var(--line); padding:3px 5px; vertical-align:top; text-align:left; }
+        font-size:8.2pt; line-height:1.45; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page{ width:210mm; height:297mm; padding:10mm 12mm 8mm; position:relative; overflow:hidden;
+         display:flex; flex-direction:column; }
+  .head{ display:flex; align-items:baseline; border-bottom:2px solid var(--navy); padding-bottom:5px; }
+  .head h1{ font-size:14pt; margin:0; color:var(--navy-ink); letter-spacing:-.01em; }
+  .head .sub{ font-size:7.6pt; color:var(--muted); margin-left:auto; text-align:right; line-height:1.4; }
+  .lede{ font-size:8pt; color:var(--muted); margin:5px 0 7px; }
+  .step{ display:grid; grid-template-columns:27mm 1fr; border:1px solid var(--line);
+         border-radius:3px; margin:0 0 4px; overflow:hidden; }
+  .step .no{ background:var(--panel); border-right:1px solid var(--line); padding:6px 8px; }
+  .step .no b{ display:block; font-family:Consolas,monospace; font-size:13pt; color:var(--navy);
+               line-height:1; margin-bottom:2px; }
+  .step .no span{ font-size:8pt; font-weight:600; color:var(--navy-ink); }
+  .step .bd{ padding:6px 9px; }
+  .step p{ margin:0 0 3px; font-size:8pt; }
+  .step p:last-child{ margin-bottom:0; }
+  table{ width:100%; border-collapse:collapse; font-size:7.8pt; margin:3px 0 0; }
+  th,td{ border:1px solid var(--line); padding:2px 5px; vertical-align:top; text-align:left; }
   th{ background:var(--panel); font-weight:600; color:var(--navy-ink); }
   td.n{ font-family:Consolas,monospace; font-variant-numeric:tabular-nums; }
   .ids{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
-        border:1px solid var(--line); margin:4px 0 0; }
-  .ids div{ background:#fff; padding:6px 8px; }
-  .ids .k{ font-size:7.2pt; color:var(--faint); letter-spacing:.06em; }
-  .ids .v{ font-family:Consolas,monospace; font-size:11pt; font-weight:600; color:var(--navy-ink); margin-top:1px; }
+        border:1px solid var(--line); margin:3px 0 0; }
+  .ids div{ background:#fff; padding:4px 7px; }
+  .ids .k{ font-size:6.8pt; color:var(--faint); letter-spacing:.06em; }
+  .ids .v{ font-family:Consolas,monospace; font-size:10pt; font-weight:600; color:var(--navy-ink); }
   .art{ border:1px solid var(--line); border-left:3px solid var(--navy); background:#fff;
-        padding:8px 11px; margin:4px 0 0; font-size:8.3pt; line-height:1.6; }
-  .art .t{ font-weight:700; color:var(--navy-ink); font-size:9pt; }
-  .art .h{ margin:3px 0 2px; }
-  .art ol{ margin:2px 0 0 14px; padding:0; } .art ol li{ margin:1px 0; }
-  .art ul{ margin:1px 0 2px 14px; padding:0; list-style:none; } .art ul li{ margin:0; }
-  .mono{ font-family:Consolas,monospace; font-size:8pt; background:var(--panel);
-         border:1px solid var(--soft); padding:2px 5px; border-radius:2px; }
-  .note{ border:1px solid var(--acc); background:var(--acc-bg); padding:6px 9px; font-size:8.2pt; margin:8px 0 0; }
-  .src{ font-size:7.8pt; color:var(--muted); margin:8px 0 0; padding-top:5px; border-top:1px solid var(--line); }
-  .foot{ position:absolute; left:14mm; right:14mm; bottom:8mm; font-size:7.2pt; color:var(--faint);
+        padding:6px 9px; margin:3px 0 0; font-size:7.6pt; line-height:1.4; }
+  .art .t{ font-weight:700; color:var(--navy-ink); font-size:8.4pt; }
+  .art .h{ margin:2px 0 1px; }
+  .art ol{ margin:1px 0 0 13px; padding:0; }
+  .art ol li{ margin:0; }
+  .art ul{ margin:0 0 1px 12px; padding:0; list-style:none; }
+  .art ul li{ margin:0; }
+  .mono{ font-family:Consolas,monospace; font-size:7.6pt; background:var(--panel);
+         border:1px solid var(--soft); padding:1px 4px; border-radius:2px; }
+  .note{ border:1px solid var(--acc); background:var(--acc-bg); padding:5px 8px; font-size:7.6pt; margin:6px 0 0; }
+  .src{ font-size:7.2pt; color:var(--muted); margin:5px 0 0; padding-top:4px; border-top:1px solid var(--line); }
+  .foot{ margin-top:auto; padding-top:5px; font-size:7pt; color:var(--faint);
          display:flex; justify-content:space-between; }
 </style>
 </head>
@@ -62,15 +66,15 @@
   <div class="step">
     <div class="no"><b>01</b><span>법령 찾기</span></div>
     <div class="bd">
-      <p>정식 명칭 <b>국토의 계획 및 이용에 관한 법률</b> 로 검색했다. 3건이 돌아왔고,
-        제명이 정확히 일치하는 <b>법률</b> 하나를 골랐다 — 시행령·시행규칙은 이름이 비슷하지만 다른 법령이다.</p>
+      <p>정식 명칭 <b>국토의 계획 및 이용에 관한 법률</b> 로 검색했다. 3건이 돌아왔고, 제명이 정확히 일치하는
+        <b>법률</b> 하나를 골랐다 — 시행령·시행규칙은 이름이 비슷하지만 다른 법령이다.</p>
       <table>
-        <tr><th style="width:62mm">법령명</th><th style="width:26mm">구분</th><th>시행일</th><th style="width:22mm">선택</th></tr>
+        <tr><th style="width:60mm">법령명</th><th style="width:25mm">구분</th><th>시행일</th><th style="width:16mm">선택</th></tr>
         <tr><td>국토의 계획 및 이용에 관한 법률</td><td>법률</td><td class="n">2026-07-01</td><td><b>○</b></td></tr>
         <tr><td>국토의 계획 및 이용에 관한 법률 시행령</td><td>대통령령</td><td class="n">2026-09-18</td><td></td></tr>
         <tr><td>국토의 계획 및 이용에 관한 법률 시행규칙</td><td>기후에너지환경부령</td><td class="n">2026-09-18</td><td></td></tr>
       </table>
-      <p style="margin-top:4px">최신 개정정보 — 타법개정 · 공포 2026-03-05 · 법률 제21447호.</p>
+      <p style="margin-top:3px">최신 개정정보 — 타법개정 · 공포 2026-03-05 · 법률 제21447호.</p>
     </div>
   </div>
 
@@ -82,7 +86,7 @@
         <div><div class="k">법령ID</div><div class="v">009294</div></div>
         <div><div class="k">MST</div><div class="v">284013</div></div>
         <div><div class="k">시행일</div><div class="v">2026-07-01</div></div>
-        <div><div class="k">소관부처</div><div class="v" style="font-size:9.5pt">국토교통부</div></div>
+        <div><div class="k">소관부처</div><div class="v" style="font-size:9pt">국토교통부</div></div>
       </div>
     </div>
   </div>
@@ -122,7 +126,7 @@
           같은 항 각 호 각 목의 용도지역을 도시ㆍ군관리계획결정으로 다시 세분하여 지정하거나 변경할 수 있다.
           &lt;개정 2011.4.14, 2013.3.23&gt;</p>
       </div>
-      <p style="margin-top:4px">조문과 함께 저장한 값 — 법령명 「국토의 계획 및 이용에 관한 법률」 ·
+      <p style="margin-top:3px">조문과 함께 저장한 값 — 법령명 「국토의 계획 및 이용에 관한 법률」 ·
         공포일 2026-03-05(법률 제21447호) · 시행일 2026-07-01.</p>
     </div>
   </div>
@@ -132,7 +136,7 @@
     <div class="bd">
       <p>시행일과 조회일을 함께 적는다. 이후 개정되어도 같은 기준으로 비교할 수 있다.</p>
       <table>
-        <tr><th style="width:30mm">시행일</th><th style="width:30mm">조회일</th><th>비고</th></tr>
+        <tr><th style="width:28mm">시행일</th><th style="width:28mm">조회일</th><th>비고</th></tr>
         <tr><td class="n">2026-07-01</td><td class="n">2026-09-21</td>
           <td>응답의 칸을 전수 확인한 결과 법령명·조·번호·시행일은 응답 안에 있으나
             <b>조회일 칸은 없다.</b> 서버가 주지 않는 값이므로 호출한 쪽이 직접 기록했다.</td></tr>
