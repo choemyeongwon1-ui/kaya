@@ -378,6 +378,64 @@ h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-
     </aside>
   </div>
 
+  <style>
+  .lawcard{margin:18px 0 0}
+  .lawcard .body{padding:18px 20px 16px}
+  .lawcard .tag{display:inline-block; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--navy); background:var(--panel-2); border:1px solid var(--rule-soft);
+    padding:3px 8px; border-radius:2px; margin-bottom:12px}
+  .lawcard .val{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .lawcard .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+    font-size:44px; line-height:1; font-weight:600; color:var(--navy-ink)}
+  .lawcard .unit{font-size:15px; color:var(--text-2)}
+  .lawcard .zone{font-size:13px; color:var(--text-2); margin:8px 0 0}
+  .lawcard .why{margin:12px 0 0; padding:10px 12px; border-left:3px solid var(--navy);
+    background:var(--panel-2); border-radius:0 2px 2px 0}
+  .lawcard .why p{margin:0; font-size:12.5px; color:var(--text); line-height:1.6}
+  .lawcard dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:14px 0 0;
+    padding:13px 0 0; border-top:1px solid var(--rule-soft); font-size:12.5px}
+  .lawcard dt{color:var(--text-3); white-space:nowrap}
+  .lawcard dd{margin:0; color:var(--text)}
+  .lawcard .pending{margin:12px 0 0; font-size:12px; color:var(--text-2)}
+  .lawcard .pending b{color:var(--accent)}
+  @media (max-width:560px){ .lawcard dl{grid-template-columns:1fr; gap:2px 0}
+    .lawcard dt{margin-top:7px} .lawcard .num{font-size:36px} }
+  </style>
+
+  <section class="card lawcard" aria-label="조문 카드 — 용도지역 안에서의 용적률">
+    <div class="body">
+      <div class="tag">조문 카드 · 용적률 상한</div>
+
+      <div class="val">
+        <span class="num">600</span>
+        <span class="unit">퍼센트 이하 <small>(상한)</small></span>
+      </div>
+      <p class="zone">일반상업지역 · 서울도심 — 「서울특별시 도시계획 조례」 제48조제8호 단서</p>
+
+      <div class="why">
+        <p>같은 호의 본문값은 800퍼센트이고, <b>서울도심 안에서만 600퍼센트</b>로 낮아집니다.
+        대상지 중심(종로구청)에 실제로 걸리는 값은 단서 쪽이므로 600을 값으로 올리고 800은 비고에 둡니다.
+        서울도심의 범역은 조례가 아니라 시행규칙이 정합니다 — 제19조가 "한양도성과 그 주변지역을
+        포함하는 지역으로서 별표 5에서 정한 구역"으로 획정하고 있고, 종로구청은 한양도성 안입니다.</p>
+      </div>
+
+      <dl>
+        <dt>값 · 단위</dt><dd>600 · 퍼센트 이하 (본문값 800 · 서울도심 밖일 때)</dd>
+        <dt>출처</dt><dd>「서울특별시 도시계획 조례」 제48조(용도지역 안에서의 용적률) 제8호 단서</dd>
+        <dt>시행일</dt><dd>2026-07-13 (조례 제10139호)</dd>
+        <dt>조회일</dt><dd>2026-09-21</dd>
+        <dt>식별자</dt><dd>자치법규ID 2000719 · MST 2149501</dd>
+        <dt>범역 근거</dt><dd>「서울특별시 도시계획 조례 시행규칙」 제19조 · 별표 5 (시행 2024-10-14 · MST 1976247)</dd>
+        <dt>조회 경로</dt><dd>korean-law MCP → law.go.kr <code>lawService.do</code> (target=ordin)</dd>
+        <dt>상위 근거</dt><dd>법 제78조제1항·제2항 → 시행령 제85조제1항 → 조례 제48조</dd>
+      </dl>
+
+      <p class="pending">대상지 필지가 일반상업지역으로 지정되어 있는지는 <b>조회 대기</b>입니다 —
+      토지이용계획확인원으로 확인해야 하며, 확인 전까지 이 카드는 "서울도심 안 일반상업지역의 상한"으로만 읽습니다.
+      별표 5는 도면이라 좌표 대조는 하지 못했고, 제19조 본문의 범역 정의로만 판단했습니다.</p>
+    </div>
+  </section>
+
   <div class="notes">
     <div class="note">
       <h4>밀도 정의</h4>
