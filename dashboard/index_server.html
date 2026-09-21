@@ -378,63 +378,6 @@ h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-
     </aside>
   </div>
 
-  <style>
-  .lawcard{margin:18px 0 0}
-  .lawcard .body{padding:18px 20px 16px}
-  .lawcard .tag{display:inline-block; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
-    color:var(--navy); background:var(--panel-2); border:1px solid var(--rule-soft);
-    padding:3px 8px; border-radius:2px; margin-bottom:12px}
-  .lawcard .val{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
-  .lawcard .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
-    font-size:44px; line-height:1; font-weight:600; color:var(--navy-ink)}
-  .lawcard .unit{font-size:15px; color:var(--text-2)}
-  .lawcard .zone{font-size:13px; color:var(--text-2); margin:8px 0 0}
-  .lawcard .rider{margin:12px 0 0; padding:10px 12px; border-left:3px solid var(--accent);
-    background:var(--accent-soft); border-radius:0 2px 2px 0}
-  .lawcard .rider b{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
-  .lawcard .rider p{margin:0; font-size:12.5px; color:var(--text); line-height:1.6}
-  .lawcard dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:14px 0 0;
-    padding:13px 0 0; border-top:1px solid var(--rule-soft); font-size:12.5px}
-  .lawcard dt{color:var(--text-3); white-space:nowrap}
-  .lawcard dd{margin:0; color:var(--text)}
-  .lawcard .pending{margin:12px 0 0; font-size:12px; color:var(--text-2)}
-  .lawcard .pending b{color:var(--accent)}
-  @media (max-width:560px){ .lawcard dl{grid-template-columns:1fr; gap:2px 0}
-    .lawcard dt{margin-top:7px} .lawcard .num{font-size:36px} }
-  </style>
-
-  <section class="card lawcard" aria-label="조문 카드 — 용도지역 안에서의 용적률">
-    <div class="body">
-      <div class="tag">조문 카드 · 용적률 상한</div>
-
-      <div class="val">
-        <span class="num">800</span>
-        <span class="unit">퍼센트 이하 <small>(상한)</small></span>
-      </div>
-      <p class="zone">일반상업지역 — 「서울특별시 도시계획 조례」 제48조제8호</p>
-
-      <div class="rider">
-        <p>단서 · <b>서울도심 600퍼센트 이하</b> — 같은 호의 단서값입니다.
-        대상지 중심(종로구청)은 서울도심 범위에 놓이므로 실제 적용값은 이쪽이 됩니다.
-        기본값과 단서를 한 칸에 섞으면 수치 오류가 되므로 따로 적었습니다.</p>
-      </div>
-
-      <dl>
-        <dt>값 · 단위</dt><dd>800 · 퍼센트 이하 (단서 600 · 퍼센트 이하)</dd>
-        <dt>출처</dt><dd>「서울특별시 도시계획 조례」 제48조(용도지역 안에서의 용적률) 제8호</dd>
-        <dt>시행일</dt><dd>2026-07-13 (공포 2026-07-13 · 조례 제10139호)</dd>
-        <dt>조회일</dt><dd>2026-09-21</dd>
-        <dt>식별자</dt><dd>자치법규ID 2000719 · MST 2149501</dd>
-        <dt>조회 경로</dt><dd>korean-law MCP → law.go.kr <code>lawService.do</code> (target=ordin)</dd>
-        <dt>상위 근거</dt><dd>법 제78조제1항·제2항 → 시행령 제85조제1항 → 조례 제48조</dd>
-      </dl>
-
-      <p class="pending">대상지 필지의 용도지역 지정 현황은 <b>조회 대기</b>입니다 —
-      확인되지 않은 값은 추정해 넣지 않고 빈칸으로 둡니다.
-      21종 전체 값은 저장소의 <code>3주차_과제/조례_건폐율용적률_21종표_원본.csv</code>에 있습니다.</p>
-    </div>
-  </section>
-
   <div class="notes">
     <div class="note">
       <h4>밀도 정의</h4>
