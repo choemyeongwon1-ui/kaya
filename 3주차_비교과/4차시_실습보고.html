@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>3주차 4차시 실습 보고 — 최명원</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root{ --ink:#1B2434; --muted:#5A6578; --faint:#8A94A6; --line:#D9DFE8; --soft:#E7ECF3;
+         --navy:#1B3A6B; --navy-ink:#0E2144; --acc:#C4570F; --acc-bg:#F7EDE4; --panel:#F7F9FB; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif; color:var(--ink);
+        font-size:8.2pt; line-height:1.45; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page{ width:210mm; height:297mm; padding:10mm 12mm 8mm; position:relative; overflow:hidden;
+         display:flex; flex-direction:column; page-break-after:always; }
+  .page:last-child{ page-break-after:auto; }
+  .head{ display:flex; align-items:baseline; border-bottom:2px solid var(--navy); padding-bottom:5px; }
+  .head h1{ font-size:13.5pt; margin:0; color:var(--navy-ink); letter-spacing:-.01em; }
+  .head .sub{ font-size:7.5pt; color:var(--muted); margin-left:auto; text-align:right; line-height:1.4; }
+  .lede{ font-size:8pt; color:var(--muted); margin:5px 0 8px; }
+  h2{ font-size:9.2pt; margin:9px 0 4px; color:var(--navy-ink); display:flex; align-items:baseline; gap:6px; }
+  h2:first-of-type{ margin-top:2px; }
+  h2 .n{ font-family:Consolas,monospace; background:var(--navy); color:#fff; font-size:7.6pt;
+         padding:1px 6px; border-radius:2px; }
+  h2 .go{ margin-left:auto; font-size:7.2pt; font-weight:400; color:var(--faint); }
+  p{ margin:0 0 4px; }
+  table{ width:100%; border-collapse:collapse; font-size:7.7pt; margin:3px 0 0; }
+  th,td{ border:1px solid var(--line); padding:2.5px 5px; vertical-align:top; text-align:left; }
+  th{ background:var(--panel); font-weight:600; color:var(--navy-ink); }
+  td.n, .mono{ font-family:Consolas,monospace; font-variant-numeric:tabular-nums; }
+  .mono{ font-size:7.5pt; }
+  .keybox{ background:var(--panel); border:1px solid var(--soft); border-radius:3px;
+           padding:6px 9px; margin:4px 0 0; font-size:7.8pt; }
+  .url{ display:grid; grid-template-columns:20mm 1fr 30mm; gap:1px; background:var(--line);
+        border:1px solid var(--line); margin:3px 0 0; font-size:7.5pt; }
+  .url div{ background:#fff; padding:3px 6px; }
+  .url .h{ background:var(--panel); font-weight:600; color:var(--navy-ink); }
+  .url .c{ font-family:Consolas,monospace; word-break:break-all; }
+  .url .d{ color:var(--muted); }
+  .ids{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+        border:1px solid var(--line); margin:3px 0 0; }
+  .ids div{ background:#fff; padding:4px 7px; }
+  .ids .k{ font-size:6.8pt; color:var(--faint); letter-spacing:.06em; }
+  .ids .v{ font-family:Consolas,monospace; font-size:10pt; font-weight:600; color:var(--navy-ink); }
+  .art{ border:1px solid var(--line); border-left:3px solid var(--navy); background:#fff;
+        padding:6px 9px; margin:3px 0 0; font-size:7.5pt; line-height:1.38; }
+  .art .t{ font-weight:700; color:var(--navy-ink); font-size:8.3pt; }
+  .art .h{ margin:2px 0 1px; }
+  .art ol{ margin:1px 0 0 13px; padding:0; } .art ol li{ margin:0; }
+  .art ul{ margin:0 0 1px 12px; padding:0; list-style:none; } .art ul li{ margin:0; }
+  .note{ border:1px solid var(--acc); background:var(--acc-bg); padding:5px 8px; font-size:7.6pt; margin:6px 0 0; }
+  .obs{ border-left:3px solid var(--navy); background:var(--panel); padding:5px 8px;
+        font-size:7.8pt; margin:4px 0 0; }
+  .src{ font-size:7.2pt; color:var(--muted); margin:6px 0 0; padding-top:4px; border-top:1px solid var(--line); }
+  .foot{ margin-top:auto; padding-top:5px; font-size:7pt; color:var(--faint);
+         display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+
+<!-- ================= 1쪽 ================= -->
+<div class="page">
+  <div class="head">
+    <h1>API — 주소로 데이터를 받는 구조</h1>
+    <div class="sub">스마트도시계획(캡스톤디자인) · 비교과 3주차 · 4차시 실습 보고<br>
+      최명원 (202421390) · 실습일 2026-09-21 · 범위 강의자료 1~6쪽 (슬라이드 4~12)</div>
+  </div>
+
+  <p class="lede">4차시 학습목표 셋 — <b>구별한다 · 해부한다 · 판정한다</b> — 을 같은 조문 하나
+    (「국토의 계획 및 이용에 관한 법률」 제36조)로 확인했다. 모든 수치는 2026-09-21 직접 호출해 잰 값이다.</p>
+
+  <h2><span class="n">1</span> 사람이 읽는 화면과 프로그램이 읽는 응답
+    <span class="go">학습목표 01 · 슬라이드 6~7</span></h2>
+  <p>같은 서버에 같은 조문을 두 가지 주소로 물었다.</p>
+  <table>
+    <tr><th style="width:22mm"></th><th style="width:74mm">웹페이지 (사람용)</th><th>API 응답 (프로그램용)</th></tr>
+    <tr><td><b>주소</b></td>
+      <td class="mono">www.law.go.kr/법령/국토의계획및이용에관한법률/제36조</td>
+      <td class="mono">www.law.go.kr/DRF/lawService.do?…&amp;MST=284013&amp;JO=003600</td></tr>
+    <tr><td><b>받은 것</b></td>
+      <td>HTTP 200 · text/html · <b>1,297바이트</b></td>
+      <td>HTTP 200 · application/json · <b>7,972바이트</b></td></tr>
+    <tr><td><b>조문 글자</b></td>
+      <td><b>없음</b> — frame 1개와 script 2개만 온다. 본문은 브라우저가 다른 주소에서
+        다시 불러와 그리므로, 이 주소만 받아서는 조문을 얻을 수 없다</td>
+      <td><b>있음</b> — 기본정보 20칸과 조문이 항·호·목으로 나뉘어 온다
+        (법령명_한글 · 시행일자 · 공포번호 · 조문내용 …)</td></tr>
+  </table>
+  <div class="obs">같은 서버가 두 얼굴을 가진다. 화면은 사람에게 보여 주려고 그린 그림이라
+    글자·색·배치가 섞여 있어 값을 골라내기 어렵고 디자인이 바뀌면 골라내던 규칙이 깨진다.
+    <b>그래서 조문은 화면이 아니라 응답으로 받는다.</b></div>
+
+  <h2><span class="n">2</span> 요청 주소 한 줄의 네 부분
+    <span class="go">학습목표 02 · 슬라이드 8</span></h2>
+  <p>이번 실습에서 쓴 두 주소를 네 부분으로 나눠 읽었다.</p>
+  <div class="url">
+    <div class="h">도메인</div><div class="c">https://www.law.go.kr</div><div class="d">어느 서버에</div>
+    <div class="h">경로</div><div class="c">/DRF/lawSearch.do</div><div class="d">이름으로 찾는 서비스</div>
+    <div class="h">파라미터</div><div class="c">?target=law&amp;type=JSON&amp;query=국토의 계획 및 이용에 관한 법률</div><div class="d">무엇을</div>
+    <div class="h">인증키</div><div class="c">&amp;OC=${LAW_OC}</div><div class="d">누가</div>
+  </div>
+  <table>
+    <tr><th style="width:28mm">경로가 바뀌면</th><th>파라미터도 바뀐다</th></tr>
+    <tr><td class="mono">/DRF/lawService.do</td>
+      <td class="mono">?target=law&amp;type=JSON&amp;MST=284013&amp;JO=003600&amp;OC=${LAW_OC}
+        <span style="font-family:inherit"> — 이름으로 찾는 <b>query</b> 대신, 판본을 가리키는
+        <b>MST</b> 와 조문을 가리키는 <b>JO</b>(여섯 자리)를 받는다.</span></td></tr>
+  </table>
+  <div class="keybox">
+    <b>한글은 부호화되어 나간다.</b> <span class="mono">query=국토의…</span> 는 실제로는
+    <span class="mono">query=%EA%B5%AD%ED%86%A0%EC%9D%98+%EA%B3%84%ED%9A%8D…</span> 로 전송된다.<br>
+    <b>인증키는 주소에 붙지만 어디에도 적지 않았다.</b> 환경변수 <span class="mono">LAW_OC</span> 에만 두고
+    프로그램이 붙인다 — 이 보고서·저장소·스크립트에 키 값은 없다.
+    다만 <b>개인 OC 는 아직 발급 전</b>이라, 이번 조회는 법제처가 공개한 데모 키
+    <span class="mono">OC=test</span> 로 했다. 개인 키 신청 시 등록할 이 컴퓨터의 공인 IP 는
+    <span class="mono">203.237.200.7</span> 로 확인했다.
+  </div>
+
+  <h2><span class="n">3</span> 거절 응답 읽기 <span class="go">학습목표 03 · 슬라이드 9</span></h2>
+  <p>거절을 일부러 세 가지 방법으로 만들어 문구를 읽었다.</p>
+  <table>
+    <tr><th style="width:36mm">요청</th><th style="width:12mm">HTTP</th>
+        <th style="width:58mm">본문의 result · msg</th><th>판정 → 다음 행동</th></tr>
+    <tr><td><b>C1</b> 등록되지 않은 OC 로<br><span class="mono">lawService</span></td><td class="n">200</td>
+      <td>사용자 정보 검증에 실패하였습니다. / … 정확한 서버장비의 IP주소 및 도메인주소를 등록해 주세요.</td>
+      <td>계정·IP 문제 → 마이페이지에 OC 신청·IP 등록</td></tr>
+    <tr><td><b>C2</b> OC 를 빼고<br><span class="mono">lawSearch</span></td><td class="n">200</td>
+      <td>필수입력요소 검증에 실패하였습니다. / 필수 입력값이 존재하지 않습니다. 요청 URL을 확인해 주세요.</td>
+      <td>파라미터 문제 → 요청 주소 재확인. 다만 문구가 파라미터를 가리켜도 실제 원인이 계정일 수 있다(슬라이드 9)</td></tr>
+    <tr><td><b>C3</b> 없는 조 번호<br><span class="mono">JO=999900</span></td><td class="n">200</td>
+      <td><b>result·msg 칸이 아예 없다.</b> 2,883바이트가 정상처럼 오지만 조문은 <b>0개</b></td>
+      <td>거절 문구가 없어도 실패 → 받은 조문 개수·조문번호를 요청과 대조해야 안다</td></tr>
+  </table>
+  <div class="obs">세 경우 모두 <b>HTTP 200</b> 이었다. 상태 코드만 보면 전부 "성공"으로 오판한다.
+    본문의 <span class="mono">result·msg</span> 칸을 읽고(C1·C2), 그 칸이 없을 때는 받은 조문을 대조해야(C3)
+    판정할 수 있다. 거절을 받으면 <b>"없다"가 아니라 "확인하지 못했다"</b> 로 적는다.</div>
+
+  <div class="foot">
+    <span>상명대학교 그린스마트시티학과 · 스마트도시계획(캡스톤디자인) · 김태한 교수</span>
+    <span>1 / 2</span>
+  </div>
+</div>
+
+<!-- ================= 2쪽 ================= -->
+<div class="page">
+  <div class="head">
+    <h1>MCP — 이미 연결해 둔 도구를 말로 부르기</h1>
+    <div class="sub">3주차 4차시 실습 보고 (이어서) · 최명원<br>슬라이드 11~12</div>
+  </div>
+
+  <h2><span class="n">4</span> 조문 하나가 지나오는 세 자리 <span class="go">슬라이드 11</span></h2>
+  <table>
+    <tr><th style="width:26mm">자리</th><th style="width:62mm">강의자료의 구성</th><th>이번 실습</th></tr>
+    <tr><td><b>내 컴퓨터</b><br>Claude Code</td>
+      <td>한국어로 요청하면 어느 도구를 부를지 Claude Code 가 정한다. 코드를 쓰지 않는다</td>
+      <td>같음 — "국토계획법 제36조 원문과 시행일"로 요청했고 주소를 손으로 조립하지 않았다</td></tr>
+    <tr><td><b>MCP 서버</b><br>korean-law</td>
+      <td>요청을 API 호출로 바꿔 주는 창구. <span class="mono">search_law</span> 로 법령ID·MST 를 찾고
+        <span class="mono">get_law_text</span> 로 조문을 받는다</td>
+      <td>연결해서 썼다. 다만 이 PC 에 Node.js 가 없어 배포된 구현체를 쓰지 못하고,
+        파이썬 표준 라이브러리만으로 서버를 직접 작성해 붙였다. 그래서 도구 이름이
+        <span class="mono">law_search · law_detail · law_history</span> 로 자료와 다르지만 역할은 같다</td></tr>
+    <tr><td><b>원 서버</b><br>law.go.kr</td>
+      <td>조문의 원본이 있는 곳. MCP 도 결국 여기에 묻는다</td>
+      <td>같음 — §3 의 C1·C2 처럼 원 서버가 거절하면 MCP 를 거쳐도 답을 못 받고
+        거절 응답이 그대로 올라온다</td></tr>
+  </table>
+
+  <h2><span class="n">5</span> 말로 조문을 받는 네 단계 — 제36조 <span class="go">슬라이드 12</span></h2>
+
+  <p><b>01 법령 찾기</b> — 정식 명칭으로 검색해 3건을 받았고, 제명이 정확히 일치하는 <b>법률</b>을 골랐다.
+    시행령·시행규칙은 이름이 비슷하지만 다른 법령이다. 최신 개정정보는 타법개정 · 공포 2026-03-05 · 법률 제21447호.</p>
+  <table>
+    <tr><th style="width:62mm">법령명</th><th style="width:26mm">구분</th><th>시행일</th><th style="width:14mm">선택</th></tr>
+    <tr><td>국토의 계획 및 이용에 관한 법률</td><td>법률</td><td class="n">2026-07-01</td><td><b>○</b></td></tr>
+    <tr><td>국토의 계획 및 이용에 관한 법률 시행령</td><td>대통령령</td><td class="n">2026-09-18</td><td></td></tr>
+    <tr><td>국토의 계획 및 이용에 관한 법률 시행규칙</td><td>기후에너지환경부령</td><td class="n">2026-09-18</td><td></td></tr>
+  </table>
+
+  <p style="margin-top:6px"><b>02 식별자 확인</b> — 같은 법령이라도 판본이 여럿이므로 식별자로 고정한다.</p>
+  <div class="ids">
+    <div><div class="k">법령ID</div><div class="v">009294</div></div>
+    <div><div class="k">MST</div><div class="v">284013</div></div>
+    <div><div class="k">시행일</div><div class="v">2026-07-01</div></div>
+    <div><div class="k">소관부처</div><div class="v" style="font-size:9pt">국토교통부</div></div>
+  </div>
+
+  <p style="margin-top:6px"><b>03 조문 받기</b> — MST 284013 에 <span class="mono">JO=003600</span> 을 붙여 제36조만 받았다.</p>
+  <div class="art">
+    <div class="t">제36조(용도지역의 지정)</div>
+    <p class="h">① 국토교통부장관, 시ㆍ도지사 또는 대도시 시장은 다음 각 호의 어느 하나에 해당하는
+      용도지역의 지정 또는 변경을 도시ㆍ군관리계획으로 결정한다. &lt;개정 2011.4.14, 2013.3.23&gt;</p>
+    <ol>
+      <li>도시지역: 다음 각 목의 어느 하나로 구분하여 지정한다.
+        <ul>
+          <li>가. 주거지역: 거주의 안녕과 건전한 생활환경의 보호를 위하여 필요한 지역</li>
+          <li>나. 상업지역: 상업이나 그 밖의 업무의 편익을 증진하기 위하여 필요한 지역</li>
+          <li>다. 공업지역: 공업의 편익을 증진하기 위하여 필요한 지역</li>
+          <li>라. 녹지지역: 자연환경ㆍ농지 및 산림의 보호, 보건위생, 보안과 도시의 무질서한 확산을
+            방지하기 위하여 녹지의 보전이 필요한 지역</li>
+        </ul></li>
+      <li>관리지역: 다음 각 목의 어느 하나로 구분하여 지정한다.
+        <ul>
+          <li>가. 보전관리지역: 자연환경 보호, 산림 보호, 수질오염 방지, 녹지공간 확보 및 생태계 보전 등을
+            위하여 보전이 필요하나, 주변 용도지역과의 관계 등을 고려할 때 자연환경보전지역으로 지정하여
+            관리하기가 곤란한 지역</li>
+          <li>나. 생산관리지역: 농업ㆍ임업ㆍ어업 생산 등을 위하여 관리가 필요하나, 주변 용도지역과의 관계 등을
+            고려할 때 농림지역으로 지정하여 관리하기가 곤란한 지역</li>
+          <li>다. 계획관리지역: 도시지역으로의 편입이 예상되는 지역이나 자연환경을 고려하여 제한적인
+            이용ㆍ개발을 하려는 지역으로서 계획적ㆍ체계적인 관리가 필요한 지역</li>
+        </ul></li>
+      <li>농림지역</li>
+      <li>자연환경보전지역</li>
+    </ol>
+    <p class="h">② 국토교통부장관, 시ㆍ도지사 또는 대도시 시장은 대통령령으로 정하는 바에 따라 제1항 각 호 및
+      같은 항 각 호 각 목의 용도지역을 도시ㆍ군관리계획결정으로 다시 세분하여 지정하거나 변경할 수 있다.
+      &lt;개정 2011.4.14, 2013.3.23&gt;</p>
+  </div>
+  <p style="margin-top:3px">조문과 함께 저장한 값 — 법령명 「국토의 계획 및 이용에 관한 법률」 ·
+    공포일 2026-03-05(법률 제21447호) · 시행일 2026-07-01.</p>
+
+  <p style="margin-top:6px"><b>04 시점 기록</b> — 시행일과 조회일을 함께 적는다.</p>
+  <table>
+    <tr><th style="width:28mm">시행일</th><th style="width:28mm">조회일</th><th>확인한 것</th></tr>
+    <tr><td class="n">2026-07-01</td><td class="n">2026-09-21</td>
+      <td>응답의 칸을 전수 확인한 결과 법령명·조·번호·시행일은 응답 안에 있으나
+        <b>조회일 칸은 없다.</b> 응답 전체를 오늘 날짜로 검색해도 나오지 않는다 —
+        서버가 주지 않는 값이므로 호출한 쪽이 직접 기록했다.</td></tr>
+  </table>
+  <div class="obs">검색이 안내한 현행 시행일(2026-07-01)과 조문 응답의 시행일(2026-07-01)이 일치한다 —
+    옛 판본이 아니라 현행 조문을 받았음을 이 대조로 확인했다.</div>
+
+  <div class="note"><b>강의자료 12쪽 대조</b> — 예시가 「제36조(용도지역의 <b>변경</b>)」 으로 적혀 있으나
+    원문 조제목은 「제36조(용도지역의 <b>지정</b>)」 이고, 예시 본문의 "1. 토지의 효율적 이용 /
+    2. 도시의 기능 증진 / 3. 환경의 보전" 도 제36조에 없다. 해당 쪽은 AI 생성 이미지이므로
+    판정은 '실재하지 않음'이 아니라 <b>생성물 오기</b>로 적는다.</div>
+
+  <p class="src">출처: 「국토의 계획 및 이용에 관한 법률」 제36조 (법률 제21447호, 공포 2026-03-05,
+    시행 2026-07-01, 법령ID 009294 · MST 284013). 국가법령정보 공동활용 OPEN API —
+    <span class="mono">korean-law</span> MCP 경유 · https://open.law.go.kr (조회 2026-09-21)</p>
+
+  <div class="foot">
+    <span>출처와 조회일이 없는 숫자는 데이터가 아니라 소문이다</span>
+    <span>2 / 2</span>
+  </div>
+</div>
+
+</body>
+</html>
