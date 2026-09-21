@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>스마트도시계획 3주차 과제 — 최명원</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --navy: #0b4a96; --ink: #1d2533; --muted: #5b6575; --line: #cfd6e2; --soft: #eef3fa; --orange: #d4581c; --red: #b3261e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; color: var(--ink); font-size: 9.1pt; line-height: 1.44; }
+  .page { width: 210mm; height: 297mm; padding: 13mm 14mm 12mm; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--navy); padding-bottom: 5px; font-size: 8.2pt; color: var(--muted); }
+  .top b { color: var(--navy); letter-spacing: .06em; }
+  h1 { font-size: 14pt; margin: 7px 0 1px; }
+  .sub { color: var(--muted); font-size: 8.6pt; margin-bottom: 9px; }
+  h2 { font-size: 10pt; color: #fff; background: var(--navy); padding: 3px 9px; margin: 8px 0 5px; }
+  h3 { font-size: 9.2pt; color: var(--navy); margin: 9px 0 4px; border-left: 3px solid var(--navy); padding-left: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.3pt; }
+  th, td { border: 1px solid var(--line); padding: 3px 5px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); color: var(--navy); white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.c, th.c { text-align: center; }
+  tr.hit td { background: #fff4ec; }
+  tr.gap td { background: #f6f7f9; color: var(--muted); }
+  .tag { display: inline-block; font-size: 7.6pt; padding: 1px 5px; border-radius: 2px; color: #fff; white-space: nowrap; }
+  .t-jo { background: #6b3fa0; } .t-si { background: #0b7285; } .t-su { background: var(--orange); } .t-ok { background: #2f7a3e; }
+  code, .mono { font-family: Consolas, monospace; font-size: 8pt; word-break: break-all; }
+  ul { margin: 4px 0; padding-left: 16px; }
+  li { margin: 1px 0; }
+  .cap { font-size: 7.7pt; color: var(--muted); margin: 4px 0 7px; line-height: 1.5; }
+  .note { background: #f5f7fb; border-left: 3px solid var(--navy); padding: 5px 8px; font-size: 8.2pt; line-height: 1.5; margin-top: 6px; }
+  .warn { background: #fff7e6; border-left: 3px solid #d98a00; padding: 5px 8px; font-size: 8pt; line-height: 1.5; color: #5b4300; margin-top: 7px; }
+  .kill { background: #fdf1f0; border-left: 3px solid var(--red); padding: 5px 8px; font-size: 8.2pt; line-height: 1.5; margin-top: 7px; }
+  .foot { position: absolute; left: 14mm; right: 14mm; bottom: 8mm; font-size: 7.6pt; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 3px; }
+  svg text { font-family: "Malgun Gothic", sans-serif; }
+  table.dense { font-size: 7.7pt; }
+  table.dense th, table.dense td { padding: 1.6px 4px; }
+  ul.refs { font-size: 7.7pt; line-height: 1.38; }
+  ul.refs li { margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ 1쪽 : ① 가설 — 중심·경계·기각조건 ═══════════════════ -->
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>① 대상지 계획단위 가설 — 중심 · 경계 · 기각조건</h1>
+  <div class="sub">최명원 (202421390) · 대상지 중심 종로구청(37.5735N, 126.9790E) · 작성 2026.09.21. · 팀 저장소 github.com/choemyeongwon1-ui/kaya</div>
+
+  <h2>가설 한 문장</h2>
+  <div class="note" style="margin-top:0">
+    <b>가설 H3</b> — 종로구청을 중심으로 한 반경 400m 범위는 <b>페리(1929)의 근린주구 한 단위로 읽을 수 있다.</b>
+    즉 ⑴ 원 안에 일상생활권의 핵이 되는 초등학교 1개교가 있고, ⑵ 네 면의 간선도로가 원의 <b>경계</b>를 이루어 통과교통이 안으로 들어오지 않으며,
+    ⑶ 원 안에 근린공원이 놓여 오픈스페이스 체계를 이룬다.
+  </div>
+
+  <h3>중심을 왜 여기로 잡았는가 — 한 줄</h3>
+  <ul>
+    <li><b>종로구청(37.5735N, 126.9790E).</b> 2주차 집계에서 0–1km 링의 건물밀도가 1,261동/km²로 정점이었고(반경 3km 평균 669의 1.9배), 광화문역 279m·종각역 522m 두 지하철 결절 사이에 있어 <b>보행 생활권의 중심 후보로 가장 강한 지점</b>이기 때문이다. 좌표를 1·2주차와 동일하게 고정해 세 주차의 집계가 같은 원점을 쓰게 했다.</li>
+    <li><b>중심 선택 자체가 가설의 일부다.</b> 페리의 원칙이 지목하는 중심은 관공서가 아니라 <b>초등학교</b>다. 행정 결절을 중심으로 잡은 이 선택이 맞는지가 아래 기각조건 R1으로 곧바로 시험된다.</li>
+  </ul>
+
+  <h3>기각조건 — 데이터를 보기 전에 적는다</h3>
+  <table>
+    <tr><th style="width:12mm" class="c">번호</th><th>어떤 결과가 나오면 가설 H3을 버리는가</th><th style="width:38mm">대응하는 페리 원칙</th><th style="width:30mm">판정 자료</th></tr>
+    <tr><td class="c"><b>R1</b></td><td>반경 400m 원 안에 <b>초등학교가 0개</b>이면 규모 원칙이 성립하지 않으므로 기각한다</td><td>① 규모 — 초등학교 1개교 · 반경 약 400m</td><td>OSM <code>amenity=school</code></td></tr>
+    <tr><td class="c"><b>R2</b></td><td>간선도로가 원의 <b>경계가 아니라 원 안을 관통</b>하면 경계 원칙이 성립하지 않으므로 기각한다</td><td>② 경계 — 네 면의 간선도로 / ⑥ 통과교통 배제</td><td>OSM <code>highway=trunk|primary|secondary</code></td></tr>
+    <tr><td class="c"><b>R3</b></td><td>반경 400m 원 안에 <b>근린공원이 0개</b>이면 오픈스페이스 체계가 성립하지 않으므로 기각한다</td><td>③ 오픈스페이스 — 소공원·위락 체계</td><td>OSM <code>leisure=park</code> · 명칭의 '근린공원'</td></tr>
+  </table>
+  <div class="cap">세 조건은 <b>하나라도 충족되면 기각</b>하는 것으로 미리 정했다. 조건을 데이터 이후에 고치면 가설이 아니라 사후 해설이 되므로, 조회 전에 저장소에 먼저 올려 시점을 남겼다.</div>
+
+  <h2>경계 — 네 면은 어디인가</h2>
+  <svg viewBox="0 0 760 330" style="width:100%">
+    <rect x="0" y="0" width="760" height="330" fill="#fbfcfe"/>
+    <!-- 원 -->
+    <circle cx="200" cy="165" r="145" fill="#eaf1fd" stroke="#3469e6" stroke-width="1.6"/>
+    <circle cx="200" cy="165" r="72"  fill="#dce8ff" stroke="#9db4d8" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="200" y="35" text-anchor="middle" font-size="9" fill="#3469e6">반경 400m</text>
+    <text x="200" y="100" text-anchor="middle" font-size="8.5" fill="#5b6575">200m</text>
+    <!-- 간선도로 : 원을 관통 -->
+    <g stroke="#d4581c" stroke-width="3.4" opacity="0.92">
+      <line x1="142" y1="10" x2="142" y2="320"/>   <!-- 세종대로 : 서쪽 159m -->
+      <line x1="30" y1="77"  x2="370" y2="77"/>    <!-- 사직로 243m -->
+      <line x1="30" y1="257" x2="370" y2="257"/>   <!-- 종로 359m -->
+      <line x1="327" y1="10" x2="327" y2="320"/>   <!-- 우정국로 351m -->
+    </g>
+    <g font-size="8.4" fill="#a2440f">
+      <text x="146" y="22">세종대로 · 최근접 159m</text>
+      <text x="34" y="71">사직로 243m · 율곡로 255m</text>
+      <text x="34" y="272">종로 359m · 무교로 361m</text>
+      <text x="245" y="315">우정국로 351m</text>
+    </g>
+    <!-- 중심과 시설 -->
+    <circle cx="200" cy="165" r="4.5" fill="#0b2a72"/>
+    <text x="200" y="182" text-anchor="middle" font-size="9" font-weight="700" fill="#0b2a72">종로구청</text>
+    <g font-size="8.2">
+      <circle cx="163" cy="152" r="3" fill="#2f7a3e"/><text x="169" y="150" fill="#2f7a3e">수성공원 175m</text>
+      <circle cx="245" cy="140" r="3" fill="#2f7a3e"/><text x="251" y="138" fill="#2f7a3e">청진공원 246m</text>
+      <circle cx="138" cy="120" r="3" fill="#2f7a3e"/><text x="60"  y="117" fill="#2f7a3e">세종로공원 271m</text>
+      <circle cx="236" cy="105" r="3" fill="#2f7a3e"/><text x="242" y="103" fill="#2f7a3e">우정총국시민광장 330m</text>
+      <circle cx="133" cy="188" r="3.4" fill="#3469e6"/><text x="60" y="203" fill="#3469e6">광화문역 279m</text>
+    </g>
+    <!-- 원 밖 시설 -->
+    <g font-size="8.2" fill="#b3261e">
+      <circle cx="372" cy="232" r="3.4" fill="#b3261e"/><text x="379" y="230">서울덕수초 698m — 원 밖</text>
+      <circle cx="392" cy="120" r="3.4" fill="#b3261e"/><text x="399" y="118">교동초 780m — 원 밖</text>
+      <circle cx="120" cy="30" r="3.4" fill="#b3261e"/><text x="126" y="45">내수2근린공원 671m — 원 밖</text>
+    </g>
+    <!-- 오른쪽 셈 상자 -->
+    <rect x="470" y="30" width="270" height="270" fill="#fff" stroke="#cfd6e2"/>
+    <text x="484" y="50" font-size="9.6" font-weight="700" fill="#0b4a96">반경 400m 원 안의 셈</text>
+    <line x1="484" y1="58" x2="726" y2="58" stroke="#cfd6e2"/>
+    <g font-size="9">
+      <text x="484" y="78" fill="#1d2533">초등학교</text>          <text x="726" y="78" text-anchor="end" font-weight="700" fill="#b3261e">0 개</text>
+      <text x="484" y="98" fill="#1d2533">근린공원(법정 명칭)</text> <text x="726" y="98" text-anchor="end" font-weight="700" fill="#b3261e">0 개</text>
+      <text x="484" y="118" fill="#1d2533">공원(소공원·광장 등)</text><text x="726" y="118" text-anchor="end" font-weight="700" fill="#2f7a3e">4 개</text>
+      <text x="484" y="138" fill="#1d2533">지하철역</text>          <text x="726" y="138" text-anchor="end" font-weight="700" fill="#2f7a3e">1 개</text>
+      <text x="484" y="158" fill="#1d2533">원 안으로 들어온 간선도로</text><text x="726" y="158" text-anchor="end" font-weight="700" fill="#d4581c">8 개 노선</text>
+    </g>
+    <line x1="484" y1="172" x2="726" y2="172" stroke="#cfd6e2"/>
+    <text x="484" y="191" font-size="9" fill="#5b6575">가장 가까운 초등학교</text>
+    <text x="484" y="206" font-size="9" font-weight="700" fill="#1d2533">서울덕수초등학교 698m</text>
+    <text x="484" y="225" font-size="9" fill="#5b6575">가장 가까운 근린공원</text>
+    <text x="484" y="240" font-size="9" font-weight="700" fill="#1d2533">내수2근린공원 671m</text>
+    <rect x="484" y="252" width="242" height="36" fill="#fdf1f0" stroke="#b3261e"/>
+    <text x="494" y="267" font-size="8.8" font-weight="700" fill="#b3261e">R1 · R2 · R3 모두 충족</text>
+    <text x="494" y="280" font-size="8.4" fill="#b3261e">→ 가설 H3 기각</text>
+  </svg>
+  <div class="cap">모식도이며 축척 도면이 아니다. 원의 반지름과 각 시설에 적힌 거리만 실측값(하버사인)이고, 도로와 시설의 <b>방위와 위치는 개념적으로 배치</b>했다. 원자료 <code>계측_400m원_시설목록.csv</code> · <code>계측_400m원_간선도로.csv</code>, 출처 OpenStreetMap contributors (ODbL), Overpass API 조회 2026-09-21.</div>
+
+  <div class="foot"><span>① 계획단위 가설 · Perry, C. A. (1929) The Neighborhood Unit</span><span>1 / 7</span></div>
+</div>
+
+<!-- ═══════════════════ 2쪽 : ① 검증과 판정 ═══════════════════ -->
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>① (계속) 셈의 결과와 기각 판정 — 그리고 대체 계보</h1>
+  <div class="sub">인상이 아니라 개수로 확인함 · Overpass API 조회 2026.09.21. · 중심에서의 거리는 하버사인 직선거리</div>
+
+  <h3>R1 — 반경 400m 안의 초등학교</h3>
+  <table>
+    <tr><th class="num" style="width:20mm">중심거리</th><th style="width:44mm">명칭</th><th class="c" style="width:22mm">400m 원</th><th>판정에 쓴 근거</th></tr>
+    <tr class="hit"><td class="num">698 m</td><td>서울덕수초등학교</td><td class="c"><b>밖</b></td><td>원 안에서 가장 가까운 초등학교가 아니라, <b>원 밖에서</b> 가장 가까운 초등학교임</td></tr>
+    <tr><td class="num">780 m</td><td>교동초등학교</td><td class="c">밖</td><td>1894년 개교. 원을 800m로 늘려야 들어옴</td></tr>
+    <tr><td class="num">821 m</td><td>운현초등학교</td><td class="c">밖</td><td>—</td></tr>
+  </table>
+  <div class="kill"><b>R1 충족 → 기각 사유 1.</b> 반경 400m 원 안의 초등학교는 <b>0개</b>다. 페리가 규모의 기준으로 삼은 '학생 600명 규모 초등학교 하나'가 이 원 안에 없으므로, 이 범위는 페리가 정의한 근린주구가 아니다.</div>
+
+  <h3>R2 — 간선도로는 경계인가 관통하는가</h3>
+  <table>
+    <tr><th style="width:26mm">도로명</th><th class="c" style="width:20mm">OSM 등급</th><th class="num" style="width:20mm">최근접</th><th class="num" style="width:20mm">최원접</th><th>400m 원과의 관계</th></tr>
+    <tr class="hit"><td>세종대로</td><td class="c">primary</td><td class="num">159 m</td><td class="num">966 m</td><td><b>원 안까지 들어옴</b> — 경계가 아니라 원의 서쪽을 지나감</td></tr>
+    <tr class="hit"><td>사직로</td><td class="c">primary</td><td class="num">243 m</td><td class="num">919 m</td><td><b>원 안까지 들어옴</b></td></tr>
+    <tr class="hit"><td>율곡로</td><td class="c">primary</td><td class="num">255 m</td><td class="num">735 m</td><td><b>원 안까지 들어옴</b></td></tr>
+    <tr><td>우정국로</td><td class="c">secondary</td><td class="num">351 m</td><td class="num">595 m</td><td>원 안까지 들어옴</td></tr>
+    <tr><td>종로</td><td class="c">primary</td><td class="num">359 m</td><td class="num">847 m</td><td>원 안까지 들어옴</td></tr>
+    <tr><td>무교로</td><td class="c">secondary</td><td class="num">361 m</td><td class="num">833 m</td><td>원 안까지 들어옴</td></tr>
+    <tr><td>새문안로</td><td class="c">primary</td><td class="num">391 m</td><td class="num">774 m</td><td>원 안까지 들어옴</td></tr>
+    <tr class="gap"><td colspan="5">위 7개 노선에 무명 primary 구간 1개(247m)를 더해, 반경 700m 안 간선도로 <b>12개 노선 중 8개 노선</b>의 최근접 거리가 400m 미만이다. 400m 밖에 머무는 것은 청계천로(460m)·남대문로(595m)·자하문로(628m)와 무명 secondary 1개뿐이다. 전체 목록은 <code>계측_400m원_간선도로.csv</code>.</td></tr>
+  </table>
+  <div class="kill"><b>R2 충족 → 기각 사유 2.</b> 페리의 원칙 ②는 간선도로가 <b>네 면의 경계</b>를 이루고 통과교통을 주구 안으로 들이지 않는 것이다. 대상지는 반대다. 세종대로가 159m 지점부터, 사직로가 243m, 율곡로가 255m 지점부터 원 안으로 들어온다. <b>간선도로가 경계가 아니라 내부 격자의 일부</b>이므로 원칙 ②와 ⑥이 함께 무너진다.</div>
+
+  <h3>R3 — 반경 400m 안의 공원</h3>
+  <table>
+    <tr><th class="num" style="width:20mm">중심거리</th><th style="width:48mm">명칭</th><th class="c" style="width:24mm">근린공원인가</th><th>성격</th></tr>
+    <tr><td class="num">175 m</td><td>수성공원</td><td class="c">아니오</td><td rowspan="4">모두 소공원·광장 규모다. 페리가 말한 '일상생활 요구에 맞춘 소공원과 위락공간의 <b>체계</b>'는 개별 소공원의 존재가 아니라 중심에 놓인 근린공원과의 위계를 뜻한다</td></tr>
+    <tr><td class="num">246 m</td><td>청진공원</td><td class="c">아니오</td></tr>
+    <tr><td class="num">271 m</td><td>세종로공원</td><td class="c">아니오</td></tr>
+    <tr><td class="num">330 m</td><td>우정총국시민광장</td><td class="c">아니오</td></tr>
+    <tr class="hit"><td class="num">671 m</td><td>내수2근린공원</td><td class="c"><b>예 — 원 밖</b></td><td>명칭에 '근린공원'이 붙은 가장 가까운 공원. 778m에 내수1근린공원</td></tr>
+  </table>
+  <div class="kill"><b>R3 충족 → 기각 사유 3.</b> 원 안 공원 4개는 모두 소공원·광장이고, 근린공원은 <b>0개</b>다.</div>
+
+  <div class="foot"><span>① 계획단위 가설 · R1·R2·R3 의 셈</span><span>2 / 7</span></div>
+</div>
+
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>① (이어서) 판정 — 가설 H3을 기각한다</h1>
+  <div class="sub">기각의 뜻은 이론이 틀렸다는 것이 아니라 대상지가 전제와 다르다는 것임 · 확인질문 58쪽 답 C</div>
+  <h2>판정 — 가설 H3을 기각한다. 그리고 무엇이 다른지 적는다</h2>
+  <div class="note" style="margin-top:0">
+    세 기각조건이 모두 충족되었으므로 <b>가설 H3을 기각</b>한다. 다만 기각의 뜻은 <b>이론이 틀렸다는 것이 아니라 우리 대상지가 페리의 전제와 다르다는 것</b>이다. 무엇이 다른지 셋으로 적는다.
+    <ul style="margin-top:4px">
+      <li><b>학령인구 전제가 다르다.</b> 페리는 초등학교 1개교(학생 약 600명, 인구 약 5,000명)를 생활권의 단위로 삼는다. 대상지는 도심 업무지구여서 상주인구가 아니라 <b>주간 유동인구</b>가 공간을 쓴다. 원 안에 초등학교가 없는 것은 시설 부족이 아니라 <b>단위 자체가 다르다</b>는 신호다. ※ 학령인구 수치는 아직 조회하지 못했다(4쪽 조회 대기 항목).</li>
+      <li><b>경계의 성격이 다르다.</b> 페리의 간선도로는 <b>바깥에서 감싸는 경계</b>인데, 대상지의 간선도로는 <b>안을 지나는 격자</b>다. 이는 계획으로 만든 단지가 아니라 조선시대 가로망 위에 누적된 격자 시가지이기 때문이다.</li>
+      <li><b>대체할 중심시설.</b> 초등학교 대신 <b>광화문역(279m)</b>을 중심시설로 둔다. 통학거리가 아니라 <b>환승 결절에서의 보행거리</b>가 이 대상지의 생활권을 정하는 축이다. 열린송현 녹지광장(432m)은 2주차 ③에서 다룬 오픈스페이스 후보로, 근린공원의 자리를 대신할 수 있는지는 면적·접근성 조회 후 판단한다.</li>
+    </ul>
+  </div>
+
+  <h3>그래서 어느 계보의 답이 필요한가 — 분리인가 연결인가</h3>
+  <table>
+    <tr><th style="width:30mm">계보</th><th style="width:34mm">대상지 적합성</th><th>근거</th></tr>
+    <tr><td>레드번·슈퍼블록 (분리)</td><td><b>적용 불가</b></td><td>쿨데삭과 전용 녹지로 보행을 차도에서 떼어 내는 방식이다. 대상지는 이미 간선도로가 원 안을 관통하고 필지가 잘게 나뉜 시가지여서, 12~20ha 대가구를 새로 묶으려면 기존 가로망을 지워야 한다</td></tr>
+    <tr class="hit"><td><b>TND (연결)</b></td><td><b>이쪽이 필요함</b></td><td>강의자료 51쪽 기준 — "격자 시가지면 연결 계보의 문제(통과교통·보행 안전)가 먼저 나타남". 대상지는 격자이고 실제로 통과교통이 내부를 지난다. 마을중심 반경 1/4마일(도보 5분) 단위와 자동차 속도를 낮추는 격자 가로망이 대상지 조건과 맞는다</td></tr>
+    <tr><td>페리 근린주구</td><td>기각</td><td>R1·R2·R3 — 위 참조. 다만 <b>통학거리 단위 생활권과 오픈스페이스라는 목표 자체는 TND도 페리와 같다</b>. 버리는 것은 목표가 아니라 형태다</td></tr>
+  </table>
+  <div class="warn"><b>다음 단계</b> — 이 가설과 셈 위에 1차시의 용도지역 세분(③ 21종 표)과 2차시의 조례 적용값을 얹는 것이 ㈜선진엔지니어링 과업 '용도지역·지구·구역 결정(변경)(안)'의 형식이다. 법정 수단으로는 지구단위계획(법 제52조)이 그 자리이며, 대상지의 지구단위계획구역 결정조서·고시문은 아직 확보하지 못했다(4쪽 조회 대기).</div>
+
+  <div class="foot"><span>① 계획단위 가설 · 확인질문 58쪽 답: C — 전제가 달라진 지점을 적고 대체 중심시설을 찾는다</span><span>3 / 7</span></div>
+</div>
+
+<!-- ═══════════════════ 3쪽 : ② 법령 검증 로그 ═══════════════════ -->
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>② 법령 검증 로그 — 조문 · 시점 · 수치</h1>
+  <div class="sub">원문 · 식별자 · 시행일 · 조회일 네 칸을 모두 채움 · 조회일 2026.09.21. · CSV 원본 <code>검증로그_원본.csv</code> 동봉</div>
+
+  <table>
+    <tr>
+      <th class="c" style="width:13mm">번호<br>유형</th>
+      <th style="width:40mm">검증한 진술과 그 출처</th>
+      <th>원문 (조회 결과)</th>
+      <th style="width:33mm">식별자</th>
+      <th class="c" style="width:17mm">시행일<br>조회일</th>
+      <th class="c" style="width:17mm">판정</th>
+    </tr>
+
+    <tr class="hit">
+      <td class="c"><b>V3-1</b><br><span class="tag t-jo">조문</span></td>
+      <td>"대상지(서울 종로구)의 건폐율·용적률은 <b>「서울특별시 종로구 도시계획 조례」</b>에서 가져온다"<br><span style="color:#5b6575">— 팀 내부 초안. '대상지 시·군 조례'를 자치구 조례로 읽음</span></td>
+      <td>제1조(목적)~제16조(토지이용계획 확인서 등재 대상). <b>전체 16개 조가 종로구 도시계획위원회의 설치·구성·운영과 등재 대상만 규정</b>하며, 용도지역별 건폐율·용적률을 정하는 조문이 존재하지 않음(조문 전수 17행, 제15조는 2013.6.14. 삭제)</td>
+      <td>서울특별시 종로구 도시계획 조례<br>자치법규ID 2079864<br>MST 1746853</td>
+      <td class="c">2022-11-11<br>2026-09-21</td>
+      <td class="c"><b style="color:#b3261e">실재하지<br>않음</b></td>
+    </tr>
+
+    <tr class="hit">
+      <td class="c"><b>V3-2</b><br><span class="tag t-si">시점</span></td>
+      <td>"국토계획법 <b>시행령의 현행본은 2026-09-08 공포·시행본</b>이다"<br><span style="color:#5b6575">— 3주차 강의자료 참고문헌 [2] (자료 조회일 2026-09-09)</span></td>
+      <td>현행 시행령은 <b>대통령령 제36587호(공포 2026-08-18, 시행 2026-09-18, MST 288857)</b>이고, 2026-09-08 시행본(대통령령 제36656호, MST 289497)은 '연혁'으로 내려감. 시행일자별 연혁 100건 조회로 확인</td>
+      <td>국토의 계획 및 이용에 관한 법률 시행령<br>법령ID 009419<br>현행 MST 288857 · 직전 289497</td>
+      <td class="c">2026-09-18<br>2026-09-21</td>
+      <td class="c"><b style="color:#0b7285">시점<br>불일치</b></td>
+    </tr>
+
+    <tr class="hit">
+      <td class="c"><b>V3-3</b><br><span class="tag t-su">수치</span></td>
+      <td>"「국토의 계획 및 이용에 관한 법률」 현행본은 <b>법률 제21284호</b>이다 (시행 2026-07-01)"<br><span style="color:#5b6575">— 3주차 강의자료 참고문헌 [1]</span></td>
+      <td>시행 2026-07-01 현행본의 공포번호는 <b>법률 제21447호</b>(공포 2026-03-05, 타법개정, MST 284013). 시행일자별 연혁 <b>28건을 전수 대조했으나 공포번호 21284는 존재하지 않음</b></td>
+      <td>국토의 계획 및 이용에 관한 법률<br>법령ID 009294 · MST 284013<br>공포번호 21447</td>
+      <td class="c">2026-07-01<br>2026-09-21</td>
+      <td class="c"><b style="color:#b3261e">실재하지<br>않음</b></td>
+    </tr>
+
+    <tr>
+      <td class="c"><b>V3-4</b><br><span class="tag t-si">시점</span></td>
+      <td>"국토계획법상 <b>용도지구는 10종</b>이다"<br><span style="color:#5b6575">— 2025 강의자료(원본 45·53번)를 학습한 AI 요약본. 강의자료 30쪽이 지목한 항목을 팀이 직접 재조회</span></td>
+      <td>법 제37조제1항 = 1.경관지구 2.고도지구 3.방화지구 4.방재지구 5.보호지구 6.취락지구 7.개발진흥지구 8.특정용도제한지구 9.복합용도지구 10.<b>그 밖에 대통령령으로 정하는 지구</b>. 개정란에 2017.4.18 표시</td>
+      <td>국토의 계획 및 이용에 관한 법률 제37조제1항<br>MST 284013 · JO 003700</td>
+      <td class="c">2026-07-01<br>2026-09-21</td>
+      <td class="c"><b style="color:#0b7285">시점<br>불일치</b></td>
+    </tr>
+
+    <tr class="hit">
+      <td class="c"><b>V3-5</b><br><span class="tag t-su">수치</span></td>
+      <td>"서울특별시 <b>준주거지역의 용적률은 500%</b>이다"<br><span style="color:#5b6575">— 법정 상한을 조례 적용값으로 옮겨 적는 유형(강의자료 33쪽)을 대상지 값으로 확인</span></td>
+      <td>조례 제48조제6호 <b>"준주거지역: 400퍼센트"</b>. 시행령 제85조제1항제6호는 "준주거지역: 200퍼센트 이상 <b>500퍼센트 이하</b>"로 범위만 정함</td>
+      <td>서울특별시 도시계획 조례 제48조제6호<br>자치법규ID 2000719 · MST 2149501</td>
+      <td class="c">2026-07-13<br>2026-09-21</td>
+      <td class="c"><b style="color:#b3261e">실재하지<br>않음</b></td>
+    </tr>
+
+    <tr>
+      <td class="c"><b>V3-6</b><br><span class="tag t-si">시점</span></td>
+      <td>"<b>취락지구는 자연·집단 2종</b>이다"<br><span style="color:#5b6575">— 2025 강의자료를 학습한 AI 요약본. 강의자료가 제시한 정정값을 팀이 재조회</span></td>
+      <td>시행령 제31조제2항제7호 취락지구 = 가.<b>자연취락지구</b> 나.<b>보호취락지구</b> 다.<b>집단취락지구</b>. 같은 항 제2호·제3호·제6호는 "삭제&lt;2017.12.29&gt;"</td>
+      <td>국토계획법 시행령 제31조제2항제7호<br>MST 288857 · JO 003100</td>
+      <td class="c">2026-09-18<br>2026-09-21</td>
+      <td class="c"><b style="color:#2f7a3e">일치</b><br><span style="font-size:7.4pt">(정정값 확인)</span></td>
+    </tr>
+
+    <tr class="hit">
+      <td class="c"><b>V3-7</b><br><span class="tag t-jo">조문</span></td>
+      <td>"서울시 조례에서 <b>보전관리·생산관리·계획관리·농림·자연환경보전지역의 값</b>을 찾을 수 있다"<br><span style="color:#5b6575">— 21종 표는 21행이 다 차야 한다는 팀 초안의 전제</span></td>
+      <td>조례 제44조는 제1호 제1종전용주거~<b>제16호 자연녹지지역</b>에서, 제48조도 <b>제16호</b>에서 끝남. <b>제17호 이하가 조문에 없음</b></td>
+      <td>서울특별시 도시계획 조례 제44조·제48조<br>자치법규ID 2000719 · MST 2149501</td>
+      <td class="c">2026-07-13<br>2026-09-21</td>
+      <td class="c"><b style="color:#b3261e">실재하지<br>않음</b></td>
+    </tr>
+  </table>
+
+  <div class="foot"><span>② 법령 검증 로그 · 국가법령정보 공동활용 OPEN API (DRF)</span><span>4 / 7</span></div>
+</div>
+
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>② (이어서) 정정값과 판정 분포</h1>
+  <div class="sub">판정만 적고 정정값을 비우면 다음 학기 자료가 그대로 물려받음 · 조회일 2026.09.21.</div>
+  <h3>정정값 — 여기까지 적어야 다음 학기 자료에 반영된다</h3>
+  <table>
+    <tr><th class="c" style="width:13mm">번호</th><th>정정값과 그 근거</th></tr>
+    <tr><td class="c">V3-1</td><td><b>「서울특별시 도시계획 조례」 제44조(건폐율)·제48조(용적률).</b> 시행령 제84조제1항·제85조제1항의 위임 대상은 <b>"특별시·광역시·특별자치시·특별자치도·시 또는 군의 도시·군계획조례"</b>이며 <b>자치구는 위임 대상이 아니다</b>. 특별시·광역시 지역에서 '대상지 시·군 조례'는 자치구 조례가 아니라 시 조례를 가리킨다</td></tr>
+    <tr><td class="c">V3-2</td><td><b>MST 288857 · 시행 2026-09-18.</b> 다만 제84조제1항·제85조제1항의 21종 범위 수치는 두 판본이 같으므로 ③ 조례표의 값은 영향이 없다(조문시행일자 20260918로 재확인). <b>시점이 바뀌었어도 값이 바뀌지 않았다는 사실 자체를 기록해야</b> 다음 사람이 다시 대조하지 않는다</td></tr>
+    <tr><td class="c">V3-3</td><td><b>법률 제21447호.</b> 시행일(2026-07-01)과 조문 내용은 맞고 공포번호만 틀렸으므로, 이 자료를 인용한 조문 자체는 유효하다. 다만 <b>식별자가 틀리면 다른 사람이 같은 판본으로 되돌아올 수 없다</b></td></tr>
+    <tr><td class="c">V3-4</td><td><b>9종.</b> 2017-04-18 개정으로 미관지구가 경관지구에, 보존지구·시설보호지구가 보호지구에 통폐합되고 복합용도지구가 신설되었다. <b>호(號)는 10개이나 제10호는 "그 밖에 대통령령으로 정하는 지구"라는 위임규정</b>이므로 지구 종수로 세지 않는다 — 호 개수를 종수로 옮겨 적는 것이 이 오류가 반복되는 통로다</td></tr>
+    <tr><td class="c">V3-5</td><td><b>400%.</b> 500%는 시행령이 정한 범위의 상한이지 대상지에 걸리는 값이 아니다. 연면적을 추정하기 전에 이 값을 바꿔 적으면 설계 전제 전체가 25% 어긋난다</td></tr>
+    <tr><td class="c">V3-7</td><td><b>17~21행은 '조회 실패'가 아니라 '조례 미규정 — 서울특별시 관할구역 내 미지정'</b>으로 적고 시행령 범위만 남긴다. 서울시 관할구역에는 관리지역·농림지역·자연환경보전지역이 지정되어 있지 않다. <b>임의 값을 넣지 않는다</b></td></tr>
+  </table>
+  <div class="cap">판정은 '일치 / 시점 불일치 / 실재하지 않음' 셋 중 하나로만 적었고 애매하다는 판정은 두지 않았다(강의자료 32쪽). 오류 유형 분포 — 조문 2건 · 시점 3건 · 수치 2건, 판정 분포 — 실재하지 않음 4건 · 시점 불일치 2건 · 일치 1건.</div>
+
+  <div class="foot"><span>② 법령 검증 로그 · 국가법령정보 공동활용 OPEN API (DRF) · korean-law MCP</span><span>5 / 7</span></div>
+</div>
+
+<!-- ═══════════════════ 4쪽 : ③ 조례 21종 표 ═══════════════════ -->
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>③ 대상지 시·군 조례의 건폐율·용적률 — 용도지역 21종</h1>
+  <div class="sub">대상지 서울 종로구 → <b>「서울특별시 도시계획 조례」</b>(자치법규ID 2000719 · MST 2149501 · 시행 2026-07-13) · <b>조회일 2026.09.21.</b> · CSV 원본 <code>조례_건폐율용적률_21종표_원본.csv</code> 동봉</div>
+
+  <table class="dense">
+    <tr>
+      <th class="c" style="width:8mm">No.</th>
+      <th style="width:30mm">용도지역 (21종)</th>
+      <th class="c" colspan="2" style="background:#e7edf7">법 제77·78조 상한</th>
+      <th class="c" colspan="2" style="background:#eef3fa">시행령 제84·85조 범위</th>
+      <th class="c" colspan="2" style="background:#fff4ec">서울시 조례 적용값</th>
+      <th style="width:26mm">서울도심 단서</th>
+    </tr>
+    <tr>
+      <th></th><th></th>
+      <th class="c" style="width:15mm">건폐율</th><th class="c" style="width:17mm">용적률</th>
+      <th class="c" style="width:16mm">건폐율</th><th class="c" style="width:30mm">용적률</th>
+      <th class="c" style="width:15mm">제44조</th><th class="c" style="width:16mm">제48조</th>
+      <th></th>
+    </tr>
+
+    <tr><td class="c">1</td><td>제1종전용주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">50% 이하</td><td class="num">50~100%</td><td class="num"><b>50%</b></td><td class="num"><b>100%</b></td><td></td></tr>
+    <tr><td class="c">2</td><td>제2종전용주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">50% 이하</td><td class="num">50~150%</td><td class="num"><b>40%</b></td><td class="num"><b>120%</b></td><td></td></tr>
+    <tr><td class="c">3</td><td>제1종일반주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">60% 이하</td><td class="num">100~200%</td><td class="num"><b>60%</b></td><td class="num"><b>150%</b></td><td></td></tr>
+    <tr><td class="c">4</td><td>제2종일반주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">60% 이하</td><td class="num">100~250%</td><td class="num"><b>60%</b></td><td class="num"><b>200%</b></td><td></td></tr>
+    <tr><td class="c">5</td><td>제3종일반주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">50% 이하</td><td class="num">100~300%</td><td class="num"><b>50%</b></td><td class="num"><b>250%</b></td><td></td></tr>
+    <tr class="hit"><td class="c">6</td><td>준주거지역</td><td class="num">70% 이하</td><td class="num">500% 이하</td><td class="num">70% 이하</td><td class="num">200~500%</td><td class="num"><b>60%</b></td><td class="num"><b>400%</b></td><td>— <span style="color:#b3261e">V3-5 항목</span></td></tr>
+    <tr><td class="c">7</td><td>중심상업지역</td><td class="num">90% 이하</td><td class="num">1,500% 이하</td><td class="num">90% 이하</td><td class="num">200~1,500%</td><td class="num"><b>60%</b></td><td class="num"><b>1,000%</b></td><td class="num">800%</td></tr>
+    <tr><td class="c">8</td><td>일반상업지역</td><td class="num">90% 이하</td><td class="num">1,500% 이하</td><td class="num">80% 이하</td><td class="num">200~1,300%</td><td class="num"><b>60%</b></td><td class="num"><b>800%</b></td><td class="num">600%</td></tr>
+    <tr><td class="c">9</td><td>근린상업지역</td><td class="num">90% 이하</td><td class="num">1,500% 이하</td><td class="num">70% 이하</td><td class="num">200~900%</td><td class="num"><b>60%</b></td><td class="num"><b>600%</b></td><td class="num">500%</td></tr>
+    <tr><td class="c">10</td><td>유통상업지역</td><td class="num">90% 이하</td><td class="num">1,500% 이하</td><td class="num">80% 이하</td><td class="num">200~1,100%</td><td class="num"><b>60%</b></td><td class="num"><b>600%</b></td><td class="num">500%</td></tr>
+    <tr><td class="c">11</td><td>전용공업지역</td><td class="num">70% 이하</td><td class="num">400% 이하</td><td class="num">70% 이하</td><td class="num">150~300%</td><td class="num"><b>60%</b></td><td class="num"><b>200%</b></td><td></td></tr>
+    <tr><td class="c">12</td><td>일반공업지역</td><td class="num">70% 이하</td><td class="num">400% 이하</td><td class="num">70% 이하</td><td class="num">150~350%</td><td class="num"><b>60%</b></td><td class="num"><b>200%</b></td><td></td></tr>
+    <tr><td class="c">13</td><td>준공업지역</td><td class="num">70% 이하</td><td class="num">400% 이하</td><td class="num">70% 이하</td><td class="num">150~400%</td><td class="num"><b>60%</b></td><td class="num"><b>400%</b></td><td></td></tr>
+    <tr><td class="c">14</td><td>보전녹지지역</td><td class="num">20% 이하</td><td class="num">100% 이하</td><td class="num">20% 이하</td><td class="num">50~80%</td><td class="num"><b>20%</b></td><td class="num"><b>50%</b></td><td></td></tr>
+    <tr><td class="c">15</td><td>생산녹지지역</td><td class="num">20% 이하</td><td class="num">100% 이하</td><td class="num">20% 이하</td><td class="num">50~100%</td><td class="num"><b>20%</b></td><td class="num"><b>50%</b></td><td></td></tr>
+    <tr><td class="c">16</td><td>자연녹지지역</td><td class="num">20% 이하</td><td class="num">100% 이하</td><td class="num">20% 이하</td><td class="num">50~100%</td><td class="num"><b>20%</b></td><td class="num"><b>50%</b></td><td></td></tr>
+    <tr class="gap"><td class="c">17</td><td>보전관리지역</td><td class="num">20% 이하</td><td class="num">80% 이하</td><td class="num">20% 이하</td><td class="num">50~80%</td><td class="c" colspan="2">조례 미규정</td><td>관할구역 내 미지정</td></tr>
+    <tr class="gap"><td class="c">18</td><td>생산관리지역</td><td class="num">20% 이하</td><td class="num">80% 이하</td><td class="num">20% 이하</td><td class="num">50~80%</td><td class="c" colspan="2">조례 미규정</td><td>관할구역 내 미지정</td></tr>
+    <tr class="gap"><td class="c">19</td><td>계획관리지역</td><td class="num">40% 이하</td><td class="num">100% 이하</td><td class="num">40% 이하</td><td class="num">50~100%</td><td class="c" colspan="2">조례 미규정</td><td>관할구역 내 미지정</td></tr>
+    <tr class="gap"><td class="c">20</td><td>농림지역</td><td class="num">20% 이하</td><td class="num">80% 이하</td><td class="num">20% 이하</td><td class="num">50~80%</td><td class="c" colspan="2">조례 미규정</td><td>관할구역 내 미지정</td></tr>
+    <tr class="gap"><td class="c">21</td><td>자연환경보전지역</td><td class="num">20% 이하</td><td class="num">80% 이하</td><td class="num">20% 이하</td><td class="num">50~80%</td><td class="c" colspan="2">조례 미규정</td><td>관할구역 내 미지정</td></tr>
+  </table>
+  <div class="cap">
+    법 제77·78조는 <b>대분류 9갈래</b>로만 상한을 정하므로 같은 대분류의 세분은 값이 반복된다. 21종으로 갈라지는 것은 시행령 제84·85조이고 <b>대상지에 실제로 걸리는 값은 조례</b>다. 용적률의 "50~100%"는 원문 "50퍼센트 이상 100퍼센트 이하"를 줄인 표기이며 CSV 원본에는 원문 그대로 실었다.
+  </div>
+
+  <div class="note" style="margin-top:6px"><b>표에서 읽히는 것 셋</b>
+    <ul style="margin-top:3px">
+      <li><b>법은 범위, 조례는 값.</b> 중심상업지역은 법 1,500% → 시행령 200~1,500% → 서울시 조례 1,000%(서울도심 800%)로 세 번 좁혀진다. <b>세 번째 칸이 대상지 설계조건</b>이다.</li>
+      <li><b>대상지는 '서울도심' 단서가 걸리는 구역이다.</b> 종로구청 일대는 서울 도심부에 해당하므로 상업지역 4종에서 단서값이 적용될 수 있다. 시행령 제85조제2항이 허용한 '관할구역 세분'의 실제 사례이며, <b>어느 필지에 단서가 걸리는지는 용도지역지구도 조회 후 확정</b>한다(아래 조회 대기).</li>
+      <li><b>건폐율은 상업·공업지역에서 60%로 평탄해진다.</b> 시행령이 70~90%까지 허용해도 서울시는 60%로 묶었다. 가장 빽빽한 도시가 오히려 낮은 값을 쓰는 자리이며, 용적률과 건폐율이 <b>같은 지역에서 방향이 다르게</b> 움직이는 사례다.</li>
+    </ul>
+  </div>
+
+  <h3>이번 주 지표 — 팀 대시보드 셋째 칸</h3>
+  <table>
+    <tr><th style="width:38mm">지표</th><th style="width:26mm">출처</th><th class="c" style="width:20mm">상태</th><th>값 · 사유</th></tr>
+    <tr><td>① 오늘 기온·강수</td><td>Open-Meteo</td><td class="c" style="color:#2f7a3e">값 있음</td><td>24.8 ℃ · 조회 2026-09-15 (1주차 카탈로그 2행)</td></tr>
+    <tr><td>② 건물밀도 — 반경 3km</td><td>Overpass (OSM)</td><td class="c" style="color:#2f7a3e">값 있음</td><td>668 동/km² · 조회 2026-09-14 (카탈로그 3행)</td></tr>
+    <tr class="gap"><td>③ 용도지역 구성비</td><td>국토교통부 용도지역지구도 WMS/WFS</td><td class="c"><b>조회 대기</b></td><td><b>이 작업공간에 VWorld 인증키가 없어 경계 폴리곤을 받지 못했다.</b> 임의 값을 넣지 않고 빈칸으로 둔다. 키가 준비되면 WMS로 경계를 받아 면적비를 계산한다 — 도면 그림만으로는 면적을 낼 수 없다</td></tr>
+    <tr><td>④ 조례 건폐율·용적률 21종</td><td>서울특별시 도시계획 조례 제44·48조</td><td class="c" style="color:#2f7a3e">값 있음</td><td><b>이번 주 추가.</b> 16종 확인 · 5종은 조례 미규정. 조회 2026-09-21</td></tr>
+  </table>
+  <div class="cap">빈칸은 실패가 아니라 <b>아직 확인하지 못했다</b>는 정직한 표시다(강의자료 38쪽). 이번 주 확인하지 못한 것 — 대상지 용도지역 구성비(인증키 없음) · 지구단위계획구역 결정조서와 고시문(미확보) · 종로구 학령인구(SGIS 미조회).</div>
+
+  <div class="foot"><span>③ 조례 21종 표 · 서울특별시 도시계획 조례 제44조·제48조 (시행 2026-07-13)</span><span>6 / 7</span></div>
+</div>
+
+<!-- ═══════════════════ 5쪽 : ④ 저장소와 재현 기록 ═══════════════════ -->
+<div class="page">
+  <div class="top"><span><b>3주차 과제</b> ｜ 스마트도시계획(캡스톤디자인) · 김태한 교수</span><span>상명대학교 그린스마트시티학과</span></div>
+  <h1>④ 팀 저장소 주소와 재현 기록</h1>
+  <div class="sub">최명원 (202421390) · 데이터·카탈로그 담당 · 제출 2026.09.21.</div>
+
+  <h2>팀 저장소</h2>
+  <table>
+    <tr><th style="width:30mm">저장소</th><td><code>https://github.com/choemyeongwon1-ui/kaya</code></td></tr>
+    <tr><th>이번 주 산출물 경로</th><td><code>kaya/3주차_과제/</code></td></tr>
+    <tr><th>배포 주소</th><td><code>https://choemyeongwon1-ui.github.io/kaya/</code> (GitHub Pages · <code>main</code> 브랜치 루트)</td></tr>
+  </table>
+
+  <h3>동봉 파일</h3>
+  <table>
+    <tr><th style="width:62mm">파일</th><th>내용</th></tr>
+    <tr><td><code>3주차_과제_계획단위가설_검증로그_최명원.pdf</code></td><td>①②③④ 합본 (이 문서)</td></tr>
+    <tr><td><code>검증로그_원본.csv</code></td><td>② 검증 로그 7행 — 원문·식별자·시행일·조회일·판정·정정값·재현 명령</td></tr>
+    <tr><td><code>조례_건폐율용적률_21종표_원본.csv</code></td><td>③ 21종 표 원본 — 법·시행령·조례 세 층과 서울도심 단서</td></tr>
+    <tr><td><code>계측_400m원_시설목록.csv</code></td><td>① R1·R3 판정 자료 — 중심에서 900m 안의 학교·공원·역 목록과 거리</td></tr>
+    <tr><td><code>계측_400m원_간선도로.csv</code></td><td>① R2 판정 자료 — 간선도로 구간별 최근접/최원접 거리와 400m 원과의 관계</td></tr>
+    <tr><td><code>build_조례표.py</code> · <code>계측_400m원.py</code> · <code>make_csv.py</code></td><td>위 CSV를 다시 만드는 스크립트</td></tr>
+    <tr><td><code>과제.html</code></td><td>이 PDF의 원본. headless Chrome <code>--print-to-pdf</code> 로 출력</td></tr>
+  </table>
+
+  <h2>재현 명령 — 다른 사람이 같은 결과로 되돌아오는 길</h2>
+  <table>
+    <tr><th class="c" style="width:13mm">항목</th><th>명령</th></tr>
+    <tr><td class="c">③ 조례표</td><td><code>py build_조례표.py</code> → 국가법령정보 OPEN API(DRF)에서 법 MST 284013 · 시행령 MST 288857 · 조례 MST 2149501 을 받아 CSV 생성</td></tr>
+    <tr><td class="c">① 계측</td><td><code>py 계측_400m원.py</code> → Overpass API 로 반경 1,200m 시설과 700m 간선도로를 받아 400/500/800m 로 집계</td></tr>
+    <tr><td class="c">② 로그</td><td><code>py make_csv.py</code> → 검증 로그 CSV 생성. 각 행의 '재현 명령' 칸에 개별 조회 명령을 적어 두었다</td></tr>
+    <tr><td class="c">PDF</td><td><code>chrome --headless --disable-gpu --print-to-pdf="3주차_과제_계획단위가설_검증로그_최명원.pdf" --no-pdf-header-footer 과제.html</code></td></tr>
+  </table>
+
+  <h3>법령 API 호출에서 실제로 걸린 것</h3>
+  <ul>
+    <li><b>인증.</b> <code>law.go.kr</code> 본 사이트 계정과 <code>open.law.go.kr</code> 공동활용 계정은 별개이고, OC 키는 공동활용 사이트에서 신청·승인을 받아야 생긴다. 이번 조회는 법제처가 공개한 <b>데모 키 <code>OC=test</code></b>로 했고, 이 키의 호출 제한 안에서 모든 조문을 받을 수 있었다.</li>
+    <li><b>거절 응답의 함정.</b> OC가 틀렸을 때도 응답 문구는 "사용자 정보 검증에 실패 — 서버장비의 IP주소 및 도메인주소 등록 요망"으로 나온다. <b>원인이 IP가 아닌데 IP 탓으로 읽히는 문구</b>이므로, 판별하려면 아무 문자열이나 OC로 넣어 응답이 같은지 비교해야 한다. HTTP 상태는 거절일 때도 200이므로 <b>상태 코드만 보고 성공으로 기록하면 검증 로그가 거짓이 된다</b> — 응답 본문에 <code>result</code>·<code>msg</code> 칸이 있으면 거절이다.</li>
+    <li><b>본문 조회 대상.</b> <code>target=law</code> + <code>MST</code> 로 특정 판본을 가져온다. <code>target=eflaw</code> 는 시행일자별 <b>목록 전용</b>이어서 본문 조회에 쓰면 HTML 오류 페이지가 돌아온다 — V3-2·V3-3의 연혁 전수 대조에는 이 목록 호출을 썼다.</li>
+    <li><b>JO 여섯 자리.</b> 조 번호 네 자리 + 가지 번호 두 자리다 — 제37조 → <code>003700</code>, 제31조 → <code>003100</code>. 제10조의2는 <code>001002</code>이지 <code>10002</code>가 아니다.</li>
+    <li><b>Overpass 504.</b> 계측 단계에서 본 서버가 Gateway Timeout 을 반복해 돌려주었다. 스크립트에 미러 3곳을 순회하는 재시도를 넣어 해결했고, <b>이것도 조회 실패가 아니라 재시도로 확보한 값</b>이므로 기록해 둔다.</li>
+  </ul>
+
+  <h2>참고문헌</h2>
+  <ul class="refs">
+    <li>「국토의 계획 및 이용에 관한 법률」 (법률 제21447호, 공포 2026-03-05, 시행 2026-07-01). 국가법령정보 공동활용 OPEN API 조회 2026-09-21.</li>
+    <li>「국토의 계획 및 이용에 관한 법률 시행령」 (대통령령 제36587호, 공포 2026-08-18, 시행 2026-09-18). 같은 조회일.</li>
+    <li>「서울특별시 도시계획 조례」 (서울특별시조례 제10139호, 공포·시행 2026-07-13). 같은 조회일.</li>
+    <li>「서울특별시 종로구 도시계획 조례」 (종로구조례 제1506호, 공포·시행 2022-11-11). 같은 조회일.</li>
+    <li>Perry, C. A. (1929). <i>The Neighborhood Unit</i>. Regional Survey of New York and Its Environs, Vol. VII.</li>
+    <li>Duany, A., &amp; Plater-Zyberk, E. (1991). <i>Towns and Town-Making Principles</i>. Rizzoli. — TND 원칙</li>
+    <li>OpenStreetMap contributors. Overpass API 조회 2026-09-21. © OpenStreetMap contributors, ODbL.</li>
+    <li>김태한. (2026). 「스마트도시계획(캡스톤디자인)」 3주차 강의자료. 상명대학교 그린스마트시티학과.</li>
+  </ul>
+
+  <div class="foot"><span>④ 팀 저장소 · github.com/choemyeongwon1-ui/kaya</span><span>7 / 7</span></div>
+</div>
+
+</body>
+</html>
