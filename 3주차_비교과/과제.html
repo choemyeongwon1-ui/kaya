@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>3주차 비교과 과제 — 최명원</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root{ --ink:#1B2434; --muted:#5A6578; --faint:#8A94A6; --line:#D9DFE8;
+         --soft:#E7ECF3; --navy:#1B3A6B; --navy-ink:#0E2144; --acc:#C4570F; --acc-bg:#F7EDE4; --panel:#F7F9FB; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif; color:var(--ink);
+        font-size:8.7pt; line-height:1.5; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page{ width:210mm; height:297mm; padding:11mm 13mm 10mm; position:relative; overflow:hidden; }
+  .head{ display:flex; align-items:baseline; gap:8px; border-bottom:2px solid var(--navy); padding-bottom:5px; }
+  .head h1{ font-size:14.5pt; margin:0; color:var(--navy-ink); letter-spacing:-.01em; }
+  .head .sub{ font-size:8pt; color:var(--muted); margin-left:auto; text-align:right; line-height:1.4; }
+  h2{ font-size:9.4pt; margin:8px 0 4px; color:var(--navy); border-left:3px solid var(--navy); padding-left:6px; }
+  p{ margin:0 0 4px; }
+  .cols{ display:grid; grid-template-columns:97mm 1fr; gap:6mm; }
+  table{ width:100%; border-collapse:collapse; font-size:7.9pt; }
+  th,td{ border:1px solid var(--line); padding:2.6px 4px; vertical-align:top; }
+  th{ background:var(--panel); font-weight:600; color:var(--navy-ink); text-align:left; }
+  td.n{ font-family:Consolas,monospace; font-variant-numeric:tabular-nums; }
+  .shot{ border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .bar{ background:var(--panel); border-bottom:1px solid var(--line); padding:3px 6px;
+        font-family:Consolas,monospace; font-size:7pt; color:var(--muted); display:flex; gap:5px; align-items:center; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:#C3CAD4; display:inline-block; }
+  .cardbody{ padding:8px 10px 9px; background:#fff; }
+  .tag{ display:inline-block; font-size:6.6pt; letter-spacing:.12em; color:var(--navy);
+        background:var(--panel); border:1px solid var(--soft); padding:1.5px 5px; margin-bottom:5px; }
+  .val{ display:flex; align-items:baseline; gap:5px; }
+  .num{ font-family:Consolas,monospace; font-size:25pt; font-weight:700; line-height:1; color:var(--navy-ink); }
+  .unit{ font-size:8.6pt; color:var(--muted); }
+  .zone{ font-size:7.8pt; color:var(--muted); margin:4px 0 0; }
+  .rider{ margin:6px 0 0; padding:5px 7px; border-left:3px solid var(--acc); background:var(--acc-bg); font-size:7.5pt; }
+  dl{ display:grid; grid-template-columns:auto 1fr; gap:2px 9px; margin:7px 0 0; padding-top:6px;
+      border-top:1px solid var(--soft); font-size:7.6pt; }
+  dt{ color:var(--faint); white-space:nowrap; } dd{ margin:0; }
+  .pend{ margin:6px 0 0; font-size:7.3pt; color:var(--muted); }
+  .pend b{ color:var(--acc); }
+  .cap{ font-size:7pt; color:var(--faint); margin:3px 0 0; }
+  .keyline{ border:1px solid var(--line); border-left:3px solid var(--navy); background:var(--panel);
+            padding:5px 8px; font-size:7.8pt; margin:3px 0 0; }
+  .flag{ border:1px solid var(--acc); background:var(--acc-bg); padding:5px 8px; font-size:7.8pt; margin:3px 0 0; }
+  .foot{ position:absolute; left:13mm; right:13mm; bottom:7mm; font-size:7pt; color:var(--faint);
+         display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:3px; }
+  code{ font-family:Consolas,monospace; font-size:7.4pt; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <h1>조문 카드가 오른 팀 화면</h1>
+    <div class="sub">스마트도시계획(캡스톤디자인) · 3주차 비교과<br>
+      최명원 (202421390) · 조회일 2026-09-21</div>
+  </div>
+
+  <p style="margin:5px 0 7px; font-size:8.2pt; color:var(--muted)">
+    배포 <b>choemyeongwon1-ui.github.io/kaya/</b> · 저장소 <b>github.com/choemyeongwon1-ui/kaya</b> ·
+    커밋 <code>581ee2a</code> · 조회 도구 korean-law MCP → law.go.kr <code>lawService.do</code>
+  </p>
+
+  <div class="cols">
+    <div>
+      <h2>➀ 팀 화면의 조문 카드 — 네 칸</h2>
+      <div class="shot">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span>choemyeongwon1-ui.github.io/kaya/dashboard/index_server.html</span></div>
+        <div class="cardbody">
+          <div class="tag">조문 카드 · 용적률 상한</div>
+          <div class="val"><span class="num">800</span><span class="unit">퍼센트 이하 (상한)</span></div>
+          <p class="zone">일반상업지역 — 「서울특별시 도시계획 조례」 제48조제8호</p>
+          <div class="rider">단서 · <b>서울도심 600퍼센트 이하</b> — 같은 호의 단서값. 대상지 중심(종로구청)이
+            서울도심 범위에 놓이므로 실제 적용값은 이쪽. 기본값과 한 칸에 섞으면 수치 오류가 되므로 분리했다.</div>
+          <dl>
+            <dt>값 · 단위</dt><dd>800 · 퍼센트 이하</dd>
+            <dt>출처</dt><dd>「서울특별시 도시계획 조례」 제48조(용도지역 안에서의 용적률) 제8호</dd>
+            <dt>시행일</dt><dd>2026-07-13 (조례 제10139호)</dd>
+            <dt>조회일</dt><dd>2026-09-21</dd>
+            <dt>식별자</dt><dd>자치법규ID 2000719 · MST 2149501</dd>
+          </dl>
+          <p class="pend">대상지 필지의 용도지역 지정 현황은 <b>조회 대기</b> — 추정값을 넣지 않고 빈칸으로 둔다.</p>
+        </div>
+      </div>
+      <p class="cap">배포 화면의 <code>section.lawcard</code> 블록을 같은 마크업·같은 CSS 변수로 옮겨 실은 것이다.</p>
+
+      <h2>➁ 커밋 — 저장소 화면에서 확인</h2>
+      <table>
+        <tr><th style="width:17mm">커밋</th><th>내용</th></tr>
+        <tr><td class="n">581ee2a</td><td>3주차 비교과 산출물 추가(최명원) — 조문 카드·조회일 기록<br>
+          <span style="color:var(--faint)">dashboard/index_server.html +57 · 3주차_비교과/README.md +69</span></td></tr>
+        <tr><td class="n">e32c10f</td><td>3주차 과제 산출물 추가(최명원) — 계획단위 가설·법령 검증 로그·조례 21종 표</td></tr>
+      </table>
+      <p class="cap">github.com/choemyeongwon1-ui/kaya 의 main 브랜치에 올렸다.</p>
+
+      <h2>➃ 인증키 섞임 확인</h2>
+      <div class="keyline">
+        2026-09-21 커밋 전 <code>git diff</code>·<code>git grep</code> 으로 저장소 전체를 검사했다.
+        추가된 57줄에 인증키 패턴 <b>0건</b>, 저장소에 남은 <code>OC=</code> 값은 법제처 공개 데모 키
+        <code>test</code> 뿐이며 개인 인증키는 없다. MCP 설정(<code>.mcp.json</code>)과 서버 코드는
+        저장소 바깥에 두어 git 이 추적하지 않는다(<code>git ls-files</code> 확인).
+      </div>
+    </div>
+
+    <div>
+      <h2>말로 조문을 받는 네 단계 — 실행 기록</h2>
+      <table>
+        <tr><th style="width:15mm">단계</th><th>한 일</th><th style="width:29mm">받은 값</th></tr>
+        <tr><td>① 법령 찾기</td><td><code>target=ordin</code> 으로 도시계획 조례를 검색한 뒤
+          기관명이 서울특별시인 <b>본청</b> 조례를 골랐다 — 자치구 조례에는 해당 조문이 없다</td>
+          <td class="n">서울특별시<br>도시계획 조례</td></tr>
+        <tr><td>② 식별자 확인</td><td>자치법규ID·MST·시행일로 판본을 고정했다</td>
+          <td class="n">2000719<br>2149501<br>2026-07-13</td></tr>
+        <tr><td>③ 조문 조회</td><td>제44조(건폐율)·제48조(용적률) 원문을 받았다</td>
+          <td class="n">각 16개 호</td></tr>
+        <tr><td>④ 조회일 기록</td><td>응답에 조회일 칸이 없어 직접 기록했다</td>
+          <td class="n">2026-09-21</td></tr>
+      </table>
+
+      <h2>④가 필요한 이유 — 응답 칸 전수 확인</h2>
+      <p style="font-size:7.9pt">국토계획법 제2조를 <code>JO=000200</code> 으로 조회해 응답의 칸을 전수 대조했다.</p>
+      <table>
+        <tr><th style="width:17mm">있어야 할 칸</th><th style="width:12mm">응답</th><th>받은 값</th></tr>
+        <tr><td>법령명</td><td>있음</td><td>국토의 계획 및 이용에 관한 법률</td></tr>
+        <tr><td>조</td><td>있음</td><td class="n">제2조</td></tr>
+        <tr><td>번호</td><td>있음</td><td class="n">법령ID 009294 · 공포번호 21447</td></tr>
+        <tr><td>시행일</td><td>있음</td><td class="n">20260701</td></tr>
+        <tr><td><b>조회일</b></td><td><b>없음</b></td><td>응답에 칸 자체가 없다 — 오늘 날짜로 응답 전체를 검색해도 나오지 않는다</td></tr>
+      </table>
+      <p style="font-size:7.8pt; margin-top:3px">조회일은 서버가 주지 않는 값이므로
+        <b>호출한 쪽이 적어야 한다.</b> 적지 않으면 카드에 올리지 않는다.</p>
+
+      <h2>➂ 조례 건폐율·용적률 21종 표 <span style="font-weight:400;color:var(--faint);font-size:7.4pt">— 발췌</span></h2>
+      <table>
+        <tr><th style="width:26mm">용도지역</th><th class="n" style="width:16mm">건폐율<br>제44조</th>
+            <th class="n" style="width:16mm">용적률<br>제48조</th><th>비고</th></tr>
+        <tr><td>제3종일반주거지역</td><td class="n">50%</td><td class="n">250%</td><td></td></tr>
+        <tr><td>준주거지역</td><td class="n">60%</td><td class="n">400%</td><td>시행령 범위 상한은 500%</td></tr>
+        <tr><td>일반상업지역</td><td class="n">60%</td><td class="n">800%</td><td>서울도심 단서 600%</td></tr>
+        <tr><td>자연녹지지역</td><td class="n">20%</td><td class="n">50%</td><td>조례가 정하는 마지막 호(제16호)</td></tr>
+        <tr><td>보전관리 ~ 자연환경보전</td><td class="n">—</td><td class="n">—</td>
+            <td>조례 미규정 — 관할구역 내 미지정. 조회 실패가 아니다</td></tr>
+      </table>
+      <p class="cap">전체 21행 원본: <code>조례_건폐율용적률_21종표_원본.csv</code> (동봉)</p>
+
+      <h2>강의자료 대조 — 12쪽 예시 조문</h2>
+      <div class="flag">강의자료 12쪽은 예시를 <b>「제36조(용도지역의 변경)」</b> 으로 적었으나,
+        원문(MST 284013 · JO 003600 · 조회 2026-09-21)의 조제목은 <b>「제36조(용도지역의 지정)」</b> 이고
+        각 호의 내용도 원문과 다르다. 해당 쪽은 AI 생성 이미지이므로 판정은 실재하지 않음이 아니라
+        <b>생성물 오기</b>로 적는다.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>상명대학교 그린스마트시티학과 · 스마트도시계획(캡스톤디자인) · 김태한 교수</span>
+    <span>출처와 조회일이 없는 숫자는 데이터가 아니라 소문이다</span>
+  </div>
+</div>
+</body>
+</html>
