@@ -283,6 +283,76 @@ h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-
     </div>
   </div>
 
+  <style>
+  /* 주차별 지표 칸 — 한 칸 = 값·단위·출처·조회일 (3주차 비교과 25·26·29쪽). 학기말에 열두 칸이 됨 */
+  .weekly{margin:0 0 18px}
+  .weekly .head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+  .weekly .head h2{margin:0; font-size:15px; color:var(--navy-ink)}
+  .weekly .head span{font-size:12px; color:var(--text-2)}
+  .cells{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+  .cell{background:var(--panel); border:1px solid var(--rule); border-top:3px solid var(--navy-2); border-radius:3px; padding:12px 14px 11px; display:flex; flex-direction:column; gap:3px}
+  .cell.now{border-top-color:var(--accent); box-shadow:var(--shadow)}
+  .cell.wait{border-style:dashed; border-top-style:solid; border-top-color:var(--outside); background:var(--panel-2)}
+  .cell .wk{font-size:10.5px; letter-spacing:.12em; font-weight:700; color:var(--text-3)}
+  .cell.now .wk{color:var(--accent)}
+  .cell .name{font-size:12.5px; font-weight:600; color:var(--text)}
+  .cell .val{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:28px; font-weight:600; color:var(--navy-ink); line-height:1.15; margin-top:2px}
+  .cell .val small{font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif; font-size:12.5px; font-weight:500; color:var(--text-2); margin-left:4px}
+  .cell.wait .val{font-size:18px; color:var(--text-2); padding:5px 0}
+  .cell dl{display:grid; grid-template-columns:auto 1fr; gap:2px 8px; margin:6px 0 0; padding-top:7px; border-top:1px solid var(--rule-soft); font-size:11.5px; line-height:1.5}
+  .cell dt{color:var(--text-3); white-space:nowrap}
+  .cell dd{margin:0; color:var(--text-2)}
+  .cell .memo{font-size:11px; color:var(--text-2); margin-top:4px; line-height:1.5}
+  @media (max-width:1080px){ .cells{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:560px){ .cells{grid-template-columns:1fr} }
+  </style>
+
+  <section class="weekly" aria-label="주차별 지표 칸">
+    <div class="head">
+      <h2>주차별 지표 — 대상지 종로구청</h2>
+      <span>한 칸 = 값 · 단위 · 출처 · 조회일 — 하나라도 비면 올리지 않음 · 원장 <a href="https://github.com/choemyeongwon1-ui/kaya/blob/main/%ED%8C%80%EC%B9%B4%ED%83%88%EB%A1%9C%EA%B7%B8.md">팀카탈로그.md</a></span>
+    </div>
+    <div class="cells">
+      <article class="cell">
+        <div class="wk">① 1주차</div>
+        <div class="name">일최고기온 — 종로구청</div>
+        <div class="val">24.8<small>℃</small></div>
+        <dl>
+          <dt>출처</dt><dd>Open-Meteo Forecast API · 응답 격자 37.55N 127.00E · 예보값</dd>
+          <dt>조회일</dt><dd>2026-09-15 16:32</dd>
+        </dl>
+      </article>
+      <article class="cell">
+        <div class="wk">② 2주차</div>
+        <div class="name">건물밀도 — 종로구청 반경 3 km</div>
+        <div class="val">668<small>동/km²</small></div>
+        <dl>
+          <dt>출처</dt><dd>Overpass API (OpenStreetMap) · 건물 18,900동 ÷ 28.27 km²</dd>
+          <dt>조회일</dt><dd>2026-09-14</dd>
+        </dl>
+      </article>
+      <article class="cell now">
+        <div class="wk">③ 3주차 · 조례 카드</div>
+        <div class="name">용적률 — 대상지 (일반상업지역 · 서울도심)</div>
+        <div class="val">600<small>퍼센트 이하</small></div>
+        <dl>
+          <dt>출처</dt><dd>「서울특별시 도시계획 조례」 제48조제8호 단서(서울도심) · 시행 2026-07-13</dd>
+          <dt>조회일</dt><dd>2026-09-21 · law.go.kr OPEN API</dd>
+        </dl>
+        <div class="memo">대상지 필지 수송동 146-12 = 일반상업지역·서울도심(토지이음 2026-09-21) · 본문값 800은 단서 전 값이라 따로 적음 · <a href="../ring_density/3%EC%A3%BC%EC%B0%A8_%EB%B9%84%EA%B5%90%EA%B3%BC/">21종 표</a></div>
+      </article>
+      <article class="cell wait">
+        <div class="wk">조회 대기</div>
+        <div class="name">용도지역 구성비 — 대상지 반경</div>
+        <div class="val">조회 대기</div>
+        <dl>
+          <dt>이유</dt><dd>용도지역 경계 면적(VWorld 용도지역지구도)을 아직 받지 못함</dd>
+          <dt>규칙</dt><dd>임의 값·추정값을 넣지 않고 빈칸으로 둠</dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
   <div class="grid">
     <section class="card">
       <header>

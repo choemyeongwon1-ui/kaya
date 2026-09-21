@@ -76,21 +76,64 @@ $zones = @(
   @('보전관리지역', '관리'), @('생산관리지역', '관리'), @('계획관리지역', '관리'), @('농림지역', '농림'), @('자연환경보전지역', '자연환경보전')
 )
 $reproduce = 'powershell -ExecutionPolicy Bypass -File src\ordinance.ps1'
-$via = 'law.go.kr OPEN API (자치법규 lawSearch → lawService)'
+$via = 'law.go.kr OPEN API (법령·자치법규 lawSearch → lawService)'
+
+# 상위 기준 — 법 제77조·제78조(대분류 상한)와 시행령 제84조·제85조(21종 범위)
+# 조례에 없는 종(관리·농림·자연환경보전)도 상위 기준으로 21종을 모두 채움
+function Law-Article([string]$lawName, [string]$jo) {
+  $s = Get-Json ("https://www.law.go.kr/DRF/lawSearch.do?OC=$OC&target=law&type=JSON&display=100&query=" + [uri]::EscapeDataString($lawName))
+  $h = L $s.LawSearch.law | Where-Object { $_.법령명한글 -eq $lawName -and $_.현행연혁코드 -eq '현행' } | Select-Object -First 1
+  if (-not $h) { throw "「$lawName」을 찾지 못함" }
+  $r = (Get-Json "https://www.law.go.kr/DRF/lawService.do?OC=$OC&target=law&type=JSON&MST=$($h.법령일련번호)&JO=$jo").법령
+  $u = L $r.조문.조문단위 | Where-Object { $_.조문여부 -eq '조문' } | Select-Object -First 1
+  if (-not $u -or [int]$u.조문번호 -ne [int]$jo.Substring(0, 4)) { throw "「$lawName」 JO=$jo 조문 없음" }
+  if ($h.시행일자 -ne $r.기본정보.시행일자) { throw "「$lawName」 검색·본문 시행일 불일치" }
+  @{ unit = $u; mst = $h.법령일련번호; id = $h.법령ID; ef = (D8 $h.시행일자); no = [int]$u.조문번호 }
+}
+function D8([string]$s) { '{0}-{1}-{2}' -f $s.Substring(0, 4), $s.Substring(4, 2), $s.Substring(6, 2) }
+# 항①의 호·목에서 "이름지역 : 값" 을 뽑아 이름 → [값, 호·목] 으로
+function Upper($art) {
+  $map = @{}
+  $h1 = (L $art.unit.항)[0]
+  foreach ($ho in L $h1.호) {
+    $hm = [regex]::Match($ho.호내용, '^\s*(\d+)\.\s*([^:：]+?지역)\s*[:：]\s*(.+?)\s*$')
+    $hn = [regex]::Match($ho.호내용, '^\s*(\d+)\.').Groups[1].Value
+    if ($hm.Success) { $map[$hm.Groups[2].Value.Trim()] = @(($hm.Groups[3].Value -replace '\s*<[^>]*>', '').Trim(), "제$($art.no)조제1항제$($hn)호") }
+    foreach ($mk in L $ho.목) {
+      $mm = [regex]::Match($mk.목내용, '^\s*([가-힣])\.\s*([^:：]+?지역)\s*[:：]\s*(.+?)\s*$')
+      if ($mm.Success) { $map[$mm.Groups[2].Value.Trim()] = @(($mm.Groups[3].Value -replace '\s*<[^>]*>', '').Trim(), "제$($art.no)조제1항제$($hn)호$($mm.Groups[1].Value)목") }
+    }
+  }
+  $map
+}
+$LAW = '국토의 계획 및 이용에 관한 법률'; $DEC = "$LAW 시행령"
+$a77 = Law-Article $LAW '007700'; $a78 = Law-Article $LAW '007800'
+$a84 = Law-Article $DEC '008400'; $a85 = Law-Article $DEC '008500'
+$u77 = Upper $a77; $u78 = Upper $a78; $u84 = Upper $a84; $u85 = Upper $a85
+if ($u84.Count -lt 21 -or $u85.Count -lt 21) { throw "시행령 제84·85조에서 21종을 다 뽑지 못함 ($($u84.Count) · $($u85.Count))" }
+$upperSrc = "법 법령ID $($a77.id) · MST $($a77.mst) · 시행 $($a77.ef) / 시행령 법령ID $($a84.id) · MST $($a84.mst) · 시행 $($a84.ef)"
+
 $rows = @(); $i = 0
 foreach ($z in $zones) {
   $i++
   $b = $bcr.map[$z[0]]; $f = $far.map[$z[0]]
-  $none = '조례에 규정 없음 — 서울은 시 전역이 도시지역이라 관리·농림·자연환경보전지역이 없음'
-  $rows += [pscustomobject]@{
+  $lawKey = if ($z[1] -in '주거', '상업', '공업', '녹지') { "$($z[1])지역" } else { $z[0] }   # 법은 도시지역을 대분류로만 정함
+  $l77 = $u77[$lawKey]; $l78 = $u78[$lawKey]; $d84 = $u84[$z[0]]; $d85 = $u85[$z[0]]
+  $none = '조례에 규정 없음 — 서울은 시 전역이 도시지역이라 관리·농림·자연환경보전지역이 없음 (상위 기준만 적음)'
+  $rows += [pscustomobject][ordered]@{
     번호 = $i; 용도지역 = $z[0]; 구분 = $z[1]
-    건폐율_값 = $(if ($b) { $b.value } else { '' }); 건폐율_단위 = $(if ($b) { '퍼센트 이하' } else { '' })
-    건폐율_출처 = $(if ($b) { "$($b.src) · 시행 $ef" } else { '' })
-    용적률_값 = $(if ($f) { $f.value } else { '' }); 용적률_단위 = $(if ($f) { '퍼센트 이하' } else { '' })
-    용적률_출처 = $(if ($f) { "$($f.src) · 시행 $ef" } else { '' })
-    용적률_서울도심_값 = $(if ($f -and $null -ne $f.downtown) { $f.downtown } else { '' })
-    용적률_서울도심_출처 = $(if ($f -and $null -ne $f.downtown) { "$($f.src) 단서 · 시행 $ef" } else { '' })
+    법_건폐율_상한 = $l77[0]; 법_건폐율_출처 = "법 $($l77[1])"
+    법_용적률_상한 = $l78[0]; 법_용적률_출처 = "법 $($l78[1])"
+    시행령_건폐율 = $d84[0]; 시행령_건폐율_출처 = "시행령 $($d84[1])"
+    시행령_용적률 = $d85[0]; 시행령_용적률_출처 = "시행령 $($d85[1])"
+    조례_건폐율_값 = $(if ($b) { $b.value } else { '' }); 조례_건폐율_단위 = $(if ($b) { '퍼센트 이하' } else { '' })
+    조례_건폐율_출처 = $(if ($b) { "$($b.src) · 시행 $ef" } else { '' })
+    조례_용적률_값 = $(if ($f) { $f.value } else { '' }); 조례_용적률_단위 = $(if ($f) { '퍼센트 이하' } else { '' })
+    조례_용적률_출처 = $(if ($f) { "$($f.src) · 시행 $ef" } else { '' })
+    조례_용적률_서울도심_값 = $(if ($f -and $null -ne $f.downtown) { $f.downtown } else { '' })
+    조례_용적률_서울도심_출처 = $(if ($f -and $null -ne $f.downtown) { "$($f.src) 단서 · 시행 $ef" } else { '' })
     비고 = $(if (-not $b -and -not $f) { $none } elseif ($f -and $null -ne $f.downtown) { '서울도심에서는 단서 값 적용 — 기본값과 따로 적음' } else { '' })
+    상위법령_판본 = $upperSrc
     조회일 = $today; 조회경로 = $via; 재현명령 = $reproduce
   }
 }
@@ -117,7 +160,7 @@ $meta = [ordered]@{
   name = $NAME; id = $info.자치법규ID; serial = $info.자치법규일련번호; effective = $ef
   promulgated = $info.공포일자; number = $info.공포번호; dept = $info.담당부서명
   articles = "제$($bcr.no)조(건폐율) · 제$($far.no)조(용적률)"; fetched = $today; via = $via; reproduce = $reproduce
-  csv = (Split-Path $csvPath -Leaf); listed = @($rows | Where-Object { $_.용적률_값 -ne '' }).Count
+  csv = (Split-Path $csvPath -Leaf); listed = @($rows | Where-Object { "$($_.조례_용적률_값)" -ne '' }).Count
 }
 $out = [ordered]@{ meta = $meta; site = $site; card = $card; rows = $rows }
 [IO.File]::WriteAllText((Join-Path $root 'data\ordinance.json'), ($out | ConvertTo-Json -Depth 5 -Compress), $enc)
