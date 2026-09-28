@@ -2,163 +2,234 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>근거노트 대시보드</title>
+<title>근거노트 대시보드 · 팀 KAYA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 :root{
-  --bg:#EEF1F5; --panel:#FFFFFF; --panel-2:#F7F9FB; --rule:#D9DFE8; --rule-soft:#E7ECF3;
-  --text:#1B2434; --text-2:#5A6578; --text-3:#8A94A6;
-  --navy:#1B3A6B; --navy-2:#2C5490; --navy-ink:#0E2144; --accent:#C4570F;
-  --good:#2E7D4F; --warn:#9A6B00; --crit:#B3261E;
-  --shadow:0 1px 2px rgba(20,35,66,.06), 0 6px 18px rgba(20,35,66,.05);
+  --bg:#F2F4F8; --panel:#FFFFFF; --panel-2:#F6F8FB; --rule:#E1E6EE; --rule-soft:#EDF0F5;
+  --text:#152033; --text-2:#56627A; --text-3:#8B95A8;
+  --navy:#1B3A6B; --navy-2:#2C5490; --ink:#0B1B38; --sky:#8FB7F0;
+  --good:#1F7A4D; --good-bg:#E4F4EB; --warn:#8A5A00; --warn-bg:#FBF0D9; --crit:#B3261E; --crit-bg:#FBE6E4;
+  --hero-1:#0B1B38; --hero-2:#1D3F77;
+  --shadow:0 1px 2px rgba(16,30,60,.05), 0 8px 24px rgba(16,30,60,.07);
+  --shadow-up:0 2px 4px rgba(16,30,60,.06), 0 16px 36px rgba(16,30,60,.12);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#0C1220; --panel:#151E2E; --panel-2:#111926; --rule:#26324A; --rule-soft:#1E2839;
-    --text:#E3E9F3; --text-2:#98A4B8; --text-3:#6C7A91;
-    --navy:#8FB2E8; --navy-2:#6E97D6; --navy-ink:#C9DBF6; --accent:#E8873D;
-    --good:#6CC08F; --warn:#E0B44C; --crit:#F08A80;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
-  }
-}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0A0F1A; --panel:#121A29; --panel-2:#0F1623; --rule:#223049; --rule-soft:#1A2436;
+  --text:#E6ECF5; --text-2:#9AA7BC; --text-3:#6B7890;
+  --navy:#9CBDF0; --navy-2:#7FA6E4; --ink:#DDE8FA; --sky:#9CC3F5;
+  --good:#6FD19B; --good-bg:#12291E; --warn:#EBC069; --warn-bg:#2A2211; --crit:#F2958C; --crit-bg:#2E1715;
+  --hero-1:#07101F; --hero-2:#16305C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); --shadow-up:0 2px 4px rgba(0,0,0,.45), 0 16px 36px rgba(0,0,0,.4);
+}}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#0C1220; --panel:#151E2E; --panel-2:#111926; --rule:#26324A; --rule-soft:#1E2839;
-  --text:#E3E9F3; --text-2:#98A4B8; --text-3:#6C7A91;
-  --navy:#8FB2E8; --navy-2:#6E97D6; --navy-ink:#C9DBF6; --accent:#E8873D;
-  --good:#6CC08F; --warn:#E0B44C; --crit:#F08A80;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+  --bg:#0A0F1A; --panel:#121A29; --panel-2:#0F1623; --rule:#223049; --rule-soft:#1A2436;
+  --text:#E6ECF5; --text-2:#9AA7BC; --text-3:#6B7890;
+  --navy:#9CBDF0; --navy-2:#7FA6E4; --ink:#DDE8FA; --sky:#9CC3F5;
+  --good:#6FD19B; --good-bg:#12291E; --warn:#EBC069; --warn-bg:#2A2211; --crit:#F2958C; --crit-bg:#2E1715;
+  --hero-1:#07101F; --hero-2:#16305C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); --shadow-up:0 2px 4px rgba(0,0,0,.45), 0 16px 36px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box}
-body{margin:0; background:var(--bg); color:var(--text); font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif; font-size:14px; line-height:1.6}
-.wrap{max-width:1280px; margin:0 auto; padding:22px 20px 44px}
-h1,h2{font-family:"Gothic A1","Malgun Gothic",sans-serif}
-.rail{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding-bottom:12px; border-bottom:2px solid var(--navy)}
-.rail .tick{width:5px; height:17px; background:var(--navy)}
-.rail .eyebrow{font-weight:600; font-size:11.5px; letter-spacing:.18em; color:var(--navy)}
-.rail .spacer{flex:1}
-.rail a{font-size:12px; color:var(--text-2)}
-h1{margin:18px 0 4px; font-size:clamp(24px,3vw,34px); font-weight:800; color:var(--navy-ink); letter-spacing:-.02em}
-.deck{margin:0 0 16px; color:var(--text-2); max-width:78ch}
-.panel{background:var(--panel); border:1px solid var(--rule); border-radius:3px; box-shadow:var(--shadow); padding:14px 16px; margin-bottom:16px}
-.panel h2{margin:0 0 10px; font-size:15px; color:var(--navy-ink)}
-.panel h2 span{font-family:"IBM Plex Sans KR",sans-serif; font-weight:400; font-size:12px; color:var(--text-2); margin-left:8px}
+body{margin:0; background:var(--bg); color:var(--text); font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",system-ui,sans-serif; font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased; letter-spacing:-.005em}
+a{color:inherit}
+.wrap{max-width:1200px; margin:0 auto; padding:0 20px}
 
-.controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px}
-.controls input{font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--rule); border-radius:3px; background:var(--panel); color:var(--text); min-width:0; flex:1 1 240px; max-width:420px}
-button{font:inherit; font-size:13px; font-weight:600; padding:7px 14px; border:0; border-radius:3px; background:var(--navy); color:#fff; cursor:pointer}
-:root[data-theme="dark"] button:not(.ghost){color:#0C1220}
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) button:not(.ghost){color:#0C1220} }
-button.ghost{background:transparent; color:var(--navy); border:1px solid var(--rule)}
-.controls .when{font-size:12px; color:var(--text-2)}
-.status{font-size:12px; color:var(--text-2); min-height:1.4em; margin:0}
+.hero{background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 0) 0 0/22px 22px,
+    radial-gradient(1200px 400px at 85% -10%, rgba(143,183,240,.28), transparent 60%),
+    linear-gradient(135deg, var(--hero-1), var(--hero-2));
+  color:#fff; padding:22px 0 84px}
+.topbar{display:flex; align-items:center; gap:12px; font-size:12.5px; color:rgba(255,255,255,.72)}
+.topbar .brand{display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.14em; color:#fff}
+.topbar .brand i{width:9px; height:9px; border-radius:2px; background:var(--sky)}
+.topbar .sp{flex:1}
+.topbar a{text-decoration:none; padding:5px 10px; border:1px solid rgba(255,255,255,.22); border-radius:999px; white-space:nowrap}
+.topbar a:hover{background:rgba(255,255,255,.1)}
+.hero-grid{display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end; margin-top:34px}
+.live{display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; padding:4px 11px 4px 9px; border-radius:999px; background:rgba(111,209,155,.14); color:#9BE6BC; border:1px solid rgba(111,209,155,.3)}
+.live b{width:7px; height:7px; border-radius:50%; background:#6FD19B; box-shadow:0 0 0 0 rgba(111,209,155,.6); animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(111,209,155,0)}100%{box-shadow:0 0 0 0 rgba(111,209,155,0)}}
+@media (prefers-reduced-motion:reduce){.live b{animation:none}}
+.hero h1{margin:14px 0 8px; font-size:clamp(30px,4.6vw,48px); font-weight:800; letter-spacing:-.035em; line-height:1.12}
+.hero p{margin:0; max-width:60ch; color:rgba(255,255,255,.74); font-size:15px}
+.hero p b{color:#fff}
+.ring{display:flex; align-items:center; gap:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:14px 20px 14px 14px; backdrop-filter:blur(6px)}
+.ring svg{width:92px; height:92px; flex:none}
+.ring .t{font-size:12px; color:rgba(255,255,255,.7)}
+.ring .n{font-family:var(--mono); font-size:30px; font-weight:700; line-height:1.1}
+.ring .n small{font-size:14px; opacity:.7; margin-left:2px}
+.ring .s{font-size:11.5px; color:rgba(255,255,255,.6)}
+
+.stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:-56px; position:relative}
+.stat{background:var(--panel); border:1px solid var(--rule); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); min-width:0}
+.stat .l{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-2); font-weight:500}
+.stat .l svg{width:15px; height:15px; color:var(--navy-2)}
+.stat .v{font-family:var(--mono); font-size:30px; font-weight:700; color:var(--ink); line-height:1.2; margin-top:6px; letter-spacing:-.02em}
+.stat .v small{font-family:"Pretendard Variable",sans-serif; font-size:14px; font-weight:600; color:var(--text-2); margin-left:4px}
+.stat .d{font-size:12px; color:var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+.toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:26px 0 14px}
+.toolbar h2{margin:0; font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--ink); margin-right:auto}
+.search{position:relative; flex:0 1 300px; min-width:0}
+.search svg{position:absolute; left:11px; top:50%; translate:0 -50%; width:15px; height:15px; color:var(--text-3)}
+.search input{width:100%; font:inherit; font-size:13.5px; padding:9px 12px 9px 34px; border:1px solid var(--rule); border-radius:10px; background:var(--panel); color:var(--text)}
+.search input:focus,.field input:focus{outline:2px solid var(--navy-2); outline-offset:-1px; border-color:transparent}
+.btn{font:inherit; font-size:13.5px; font-weight:600; padding:9px 15px; border-radius:10px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; border:1px solid var(--rule); background:var(--panel); color:var(--text)}
+.btn svg{width:15px; height:15px}
+.btn:hover{border-color:var(--navy-2)}
+.btn.primary{background:var(--navy); border-color:var(--navy); color:#fff}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .btn.primary{color:#0A0F1A} }
+:root[data-theme="dark"] .btn.primary{color:#0A0F1A}
+.btn:disabled{opacity:.55; cursor:wait}
+.status{font-size:12.5px; color:var(--text-2); margin:-6px 0 12px; min-height:1.3em}
 .status.err{color:var(--crit)}
 
-.kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:16px}
-.kpi{background:var(--panel); border:1px solid var(--rule); border-top:3px solid var(--navy-2); border-radius:3px; padding:12px 14px}
-.kpi .l{font-size:12px; color:var(--text-2)}
-.kpi .v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:28px; font-weight:600; color:var(--navy-ink); line-height:1.2}
-.kpi .v small{font-family:"IBM Plex Sans KR",sans-serif; font-size:13px; font-weight:500; color:var(--text-2); margin-left:3px}
-.kpi .d{font-size:11.5px; color:var(--text-3)}
+.cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px}
+.card{position:relative; background:var(--panel); border:1px solid var(--rule); border-radius:16px; padding:18px 20px 16px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px; transition:transform .15s, box-shadow .15s; overflow:hidden; min-width:0}
+.card::before{content:""; position:absolute; inset:0 0 auto 0; height:4px; background:var(--st)}
+.card:hover{transform:translateY(-2px); box-shadow:var(--shadow-up)}
+.card.good{--st:var(--good)} .card.warn{--st:var(--warn)} .card.crit{--st:var(--crit)}
+.card .head{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.tag{font-size:11.5px; font-weight:700; color:var(--navy-2); background:color-mix(in srgb, var(--navy-2) 11%, transparent); padding:3px 9px; border-radius:999px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:75%}
+.id{font-family:var(--mono); font-size:11.5px; color:var(--text-3)}
+.card h3{margin:0; font-size:15px; font-weight:700; line-height:1.45; letter-spacing:-.015em}
+.big{display:flex; align-items:baseline; gap:6px; margin:2px 0}
+.big b{font-family:var(--mono); font-size:40px; font-weight:700; color:var(--ink); letter-spacing:-.03em; line-height:1.05}
+.big span{font-size:16px; font-weight:600; color:var(--text-2)}
+.src{display:flex; gap:9px; background:var(--panel-2); border:1px solid var(--rule-soft); border-radius:10px; padding:10px 12px; font-size:12.5px; color:var(--text-2); line-height:1.55}
+.src svg{flex:none; width:15px; height:15px; margin-top:2px; color:var(--text-3)}
+.foot{display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12.5px; color:var(--text-2); margin-top:auto; padding-top:2px}
+.foot .date{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px}
+.foot .date svg{width:14px; height:14px; color:var(--text-3)}
+.pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap}
+.pill.good{color:var(--good); background:var(--good-bg)} .pill.warn{color:var(--warn); background:var(--warn-bg)} .pill.crit{color:var(--crit); background:var(--crit-bg)}
+.empty{grid-column:1/-1; text-align:center; padding:40px; color:var(--text-3); border:1px dashed var(--rule); border-radius:16px}
 
-.cells{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:10px}
-.cell{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px; padding:12px 14px; display:flex; flex-direction:column; gap:3px}
-.cell .top{display:flex; justify-content:space-between; gap:8px; font-size:10.5px; letter-spacing:.08em; color:var(--text-3); font-weight:700}
-.cell .name{font-size:12.5px; font-weight:600}
-.cell .val{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:var(--navy-ink); line-height:1.2}
-.cell .val small{font-family:"IBM Plex Sans KR",sans-serif; font-size:12.5px; font-weight:500; color:var(--text-2); margin-left:4px}
-.cell dl{display:grid; grid-template-columns:auto 1fr; gap:2px 8px; margin:6px 0 0; padding-top:7px; border-top:1px solid var(--rule-soft); font-size:11.5px}
-.cell dt{color:var(--text-3)} .cell dd{margin:0; color:var(--text-2)}
-.badge{display:inline-flex; gap:4px; align-items:center; font-size:11px; font-weight:600; letter-spacing:0; padding:0 6px; border-radius:2px; border:1px solid currentColor}
-.badge.good{color:var(--good)} .badge.warn{color:var(--warn)} .badge.crit{color:var(--crit)}
+.panel{background:var(--panel); border:1px solid var(--rule); border-radius:16px; box-shadow:var(--shadow); padding:20px 22px; min-width:0}
+.panel h2{margin:0; font-size:17px; font-weight:800; letter-spacing:-.02em; color:var(--ink)}
+.panel .sub{margin:2px 0 14px; font-size:12.5px; color:var(--text-2)}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--text-2); margin-bottom:8px}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:12px; height:12px; border-radius:3px}
+.tl{position:relative}
+.tl svg{display:block; width:100%; height:auto; overflow:visible}
+.tl .zone-good{fill:var(--good-bg)} .tl .zone-warn{fill:var(--warn-bg)} .tl .zone-crit{fill:var(--crit-bg)}
+.tl .axis text{font-family:var(--mono); font-size:11px; fill:var(--text-3)}
+.tl .base{stroke:var(--rule)}
+.tl .today{stroke:var(--ink); stroke-width:1.5}
+.tl .today-l{font-size:11.5px; font-weight:700; fill:var(--ink)}
+.tl .stem{stroke:var(--text-3); stroke-width:1}
+.tl .dot{fill:var(--navy-2); stroke:var(--panel); stroke-width:2.5}
+.tl .lab,.tl .lab2{paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round}
+.tl .lab{font-size:12px; font-weight:600; fill:var(--text)}
+.tl .lab2{font-family:var(--mono); font-size:11px; fill:var(--text-3)}
+.tl .hit{fill:transparent}
+.tl g.ev:hover .dot{fill:var(--navy)}
+.tip{position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--rule); box-shadow:var(--shadow-up); border-radius:10px; padding:8px 11px; font-size:12.5px; color:var(--text); opacity:0; transition:opacity .12s; max-width:280px; z-index:2}
+.tip b{display:block; margin-bottom:2px}
 
-.chart{position:relative}
-.chart svg{display:block; width:100%; height:auto; overflow:visible}
-.chart .axis text,.chart .lab{font-size:11px; fill:var(--text-2)}
-.chart .grid line{stroke:var(--rule-soft)}
-.chart .thr{stroke:var(--text-3); stroke-dasharray:3 3}
-.chart .bar{fill:var(--navy-2)}
-.chart .hit{fill:transparent; cursor:default}
-.chart .hit:hover + .bar,.chart .row:hover .bar{fill:var(--navy)}
-.tip{position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--rule); box-shadow:var(--shadow); border-radius:3px; padding:6px 9px; font-size:12px; color:var(--text); opacity:0; transition:opacity .1s; max-width:280px}
-.note{font-size:11.5px; color:var(--text-3); margin:8px 0 0}
-
-details summary{cursor:pointer; font-weight:600; color:var(--navy-ink); font-size:14px}
-form{display:grid; grid-template-columns:2fr 1fr .8fr 3fr 1.1fr auto; gap:8px; align-items:end; margin-top:10px}
-label{display:flex; flex-direction:column; gap:3px; font-size:11.5px; color:var(--text-2); min-width:0}
-label input{font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--rule); border-radius:3px; background:var(--panel-2); color:var(--text); width:100%; min-width:0}
-.tablewrap{overflow-x:auto; margin-top:10px}
-table{width:100%; border-collapse:collapse; font-size:12.5px}
-th,td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
-th{font-size:11px; color:var(--text-3)}
-td.num{font-family:"IBM Plex Mono",monospace; text-align:right; white-space:nowrap}
-td.date{font-family:"IBM Plex Mono",monospace; white-space:nowrap; color:var(--text-2)}
-footer{font-size:11.5px; color:var(--text-3); margin-top:18px; line-height:1.7}
-@media (max-width:900px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} form{grid-template-columns:1fr 1fr} form .wide{grid-column:1 / -1} }
-@media (max-width:480px){ .wrap{padding-inline:16px} .kpis{grid-template-columns:1fr} }
+.lower{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); gap:14px; margin-top:14px}
+form{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.field{display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--text-2); min-width:0}
+.field.wide{grid-column:1/-1}
+.field input{font:inherit; font-size:13.5px; font-weight:400; padding:9px 11px; border:1px solid var(--rule); border-radius:10px; background:var(--panel-2); color:var(--text); width:100%; min-width:0}
+form .btn{grid-column:1/-1; justify-content:center}
+.tablewrap{overflow-x:auto}
+table{width:100%; min-width:560px; border-collapse:collapse; font-size:12.5px}
+th,td{text-align:left; padding:8px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+th{font-size:11.5px; color:var(--text-3); font-weight:600; white-space:nowrap}
+td.num{font-family:var(--mono); text-align:right; white-space:nowrap; font-weight:700; color:var(--ink)}
+td.date{font-family:var(--mono); white-space:nowrap; color:var(--text-2); font-size:12px}
+footer{font-size:12px; color:var(--text-3); margin:26px 0 40px; line-height:1.8}
+footer code{font-family:var(--mono); font-size:11.5px}
+@media (max-width:980px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} .lower{grid-template-columns:1fr} .hero-grid{grid-template-columns:1fr} .ring{justify-self:start} }
+@media (max-width:520px){ .wrap{padding:0 16px} .stats{gap:10px} .stat{padding:13px 14px} .stat .v{font-size:24px} .cards{grid-template-columns:1fr} .search{flex:1 1 100%} .toolbar h2{flex:1 1 100%} .topbar>span:nth-child(2){display:none} .panel{padding:16px} }
 </style>
 <body>
-<div class="wrap">
-  <div class="rail"><i class="tick"></i><span class="eyebrow">팀 KAYA · 근거노트</span><span class="spacer"></span><a href="index_server.html">← 팀 메인 화면</a></div>
-  <h1>근거노트 대시보드</h1>
-  <p class="deck">Supabase <b>evidence</b> 표를 열 때마다 서버에서 다시 읽어 그립니다. 모든 값은 항목·값·단위·출처·조회일이 한 행으로 묶여 있고, 조회일이 오래된 값은 다시 확인하도록 표시합니다.</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h13"/></symbol>
+</svg>
 
-  <div class="controls">
-    <input id="q" type="search" placeholder="항목·출처 검색 (예: 용적률, 토지이음)" aria-label="항목·출처 검색">
-    <button type="button" id="reload" class="ghost">서버에서 다시 읽기</button>
-    <span class="when" id="when"></span>
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar"><span class="brand"><i></i>TEAM KAYA</span><span>스마트도시계획(캡스톤디자인)</span><span class="sp"></span><a href="index_server.html">← 팀 메인 화면</a></div>
+    <div class="hero-grid">
+      <div>
+        <span class="live"><b></b>LIVE · Supabase evidence 표</span>
+        <h1>근거노트 대시보드</h1>
+        <p>대상지 종로구청(수송동 146-12)의 값을 <b>항목·값·단위·출처·조회일</b> 한 행으로 서버에 쌓고, 열 때마다 다시 읽어 그립니다. 화면이 아니라 표에 있는 값만 보여 줍니다.</p>
+      </div>
+      <div class="ring" aria-label="최신 근거 비율">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="10"/><circle id="ring-arc" cx="50" cy="50" r="42" fill="none" stroke="#6FD19B" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 264" transform="rotate(-90 50 50)"/></svg>
+        <div><div class="t">최신 근거 비율</div><div class="n" id="ring-n">—<small>%</small></div><div class="s">조회 후 30일 이내</div></div>
+      </div>
+    </div>
   </div>
-  <p class="status" id="status" role="status">표를 읽는 중…</p>
+</header>
 
-  <section class="kpis" aria-label="요약 지표">
-    <div class="kpi"><div class="l">저장된 근거</div><div class="v" id="k-n">—</div><div class="d">evidence 표의 행 수</div></div>
-    <div class="kpi"><div class="l">가장 최근 조회일</div><div class="v" id="k-new">—</div><div class="d" id="k-new-d">—</div></div>
-    <div class="kpi"><div class="l">가장 오래된 값</div><div class="v" id="k-old">—</div><div class="d" id="k-old-d">—</div></div>
-    <div class="kpi"><div class="l">다시 확인할 값</div><div class="v" id="k-stale">—</div><div class="d">조회 후 30일 넘은 행</div></div>
+<main class="wrap">
+  <section class="stats" aria-label="요약 지표">
+    <div class="stat"><div class="l"><svg><use href="#i-db"/></svg>저장된 근거</div><div class="v" id="k-n">—</div><div class="d">evidence 표의 행 수</div></div>
+    <div class="stat"><div class="l"><svg><use href="#i-cal"/></svg>가장 최근 조회</div><div class="v" id="k-new">—</div><div class="d" id="k-new-d">—</div></div>
+    <div class="stat"><div class="l"><svg><use href="#i-clock"/></svg>가장 오래된 값</div><div class="v" id="k-old">—</div><div class="d" id="k-old-d">—</div></div>
+    <div class="stat"><div class="l"><svg><use href="#i-alert"/></svg>다시 확인할 값</div><div class="v" id="k-stale">—</div><div class="d">조회 후 30일 넘은 행</div></div>
   </section>
 
-  <section class="panel" aria-label="근거 카드">
-    <h2>근거 카드<span>한 장 = 한 행 · 값은 서버가 돌려준 그대로</span></h2>
-    <div class="cells" id="cells"></div>
+  <div class="toolbar">
+    <h2>근거 카드</h2>
+    <label class="search"><svg><use href="#i-search"/></svg><input id="q" type="search" placeholder="항목·출처 검색" aria-label="항목·출처 검색"></label>
+    <button type="button" class="btn" id="reload"><svg><use href="#i-refresh"/></svg>다시 읽기</button>
+  </div>
+  <p class="status" id="status" role="status">서버에서 읽는 중…</p>
+  <section class="cards" id="cards" aria-label="근거 카드"></section>
+
+  <section class="panel" style="margin-top:14px" aria-label="조회 타임라인">
+    <h2>조회 타임라인</h2>
+    <p class="sub">점 하나가 근거 한 행 · 오른쪽 끝이 오늘 · 색 띠는 다시 확인해야 할 시점</p>
+    <div class="legend"><span><i style="background:var(--good-bg);border:1px solid var(--good)"></i>✓ 최신 (30일 이내)</span><span><i style="background:var(--warn-bg);border:1px solid var(--warn)"></i>! 확인 필요 (31–180일)</span><span><i style="background:var(--crit-bg);border:1px solid var(--crit)"></i>✕ 오래됨 (180일 초과)</span></div>
+    <div class="tl" id="tl"><div class="tip" id="tip"></div></div>
   </section>
 
-  <section class="panel" aria-label="조회일 경과">
-    <h2>조회 후 지난 날수<span>30일·180일 선 — 넘으면 원출처에서 다시 조회</span></h2>
-    <div class="chart" id="chart"><div class="tip" id="tip"></div></div>
-    <p class="note">막대에 마우스를 올리면 항목·조회일이 보입니다. 기준일은 오늘(한국 시각)입니다.</p>
-  </section>
-
-  <section class="panel">
-    <details>
-      <summary>근거 추가 — 네 칸 모두 필수</summary>
+  <div class="lower">
+    <section class="panel" aria-label="근거 추가">
+      <h2>근거 추가</h2>
+      <p class="sub">네 칸 모두 필수 · 저장하면 서버 표에 한 행이 생기고 위 카드가 다시 그려짐</p>
       <form id="form" autocomplete="off">
-        <label class="wide">항목 (item)<input name="item" required placeholder="예: 용도지역 현황 — 수송동 146-12"></label>
-        <label>값 (숫자만)<input name="value" type="number" step="any" required></label>
-        <label>단위<input name="unit" required placeholder="%"></label>
-        <label class="wide">출처 (조문·조례번호·시행일)<input name="source" required></label>
-        <label>조회일<input name="queried_on" type="date" required></label>
-        <button type="submit">저장</button>
+        <label class="field wide">항목<input name="item" required placeholder="예: 용도지역 현황 — 수송동 146-12 일반상업지역 면적"></label>
+        <label class="field">값 (숫자만)<input name="value" type="number" step="any" required placeholder="3612.2"></label>
+        <label class="field">단위<input name="unit" required placeholder="㎡"></label>
+        <label class="field wide">출처 (조문·조례번호·시행일)<input name="source" required placeholder="예: 토지이음 토지이용계획 열람"></label>
+        <label class="field wide">조회일<input name="queried_on" type="date" required></label>
+        <button type="submit" class="btn primary">서버 표에 저장</button>
       </form>
-    </details>
-  </section>
-
-  <section class="panel">
-    <details>
-      <summary>표로 보기</summary>
+    </section>
+    <section class="panel" aria-label="표로 보기">
+      <h2>표로 보기</h2>
+      <p class="sub">evidence 표가 돌려준 행 그대로 · 저장 시각은 한국 시각</p>
       <div class="tablewrap"><table>
-        <thead><tr><th>#</th><th>항목</th><th style="text-align:right">값</th><th>단위</th><th>출처</th><th>조회일</th><th>저장 시각</th></tr></thead>
+        <thead><tr><th>#</th><th>항목</th><th style="text-align:right">값</th><th>단위</th><th>조회일</th><th>저장 시각</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
-    </details>
-  </section>
+    </section>
+  </div>
 
   <footer>
-    데이터: Supabase 프로젝트 kaya · 표 public.evidence (RLS 켬 — 읽기 공개, 추가만 허용, 수정·삭제 불가) · 연결은 publishable 키만 사용(<code>supabase-config.js</code>)<br>
-    판정 기준: 조회 후 30일 이하 = 최신 · 31~180일 = 확인 필요 · 180일 초과 = 오래됨 (4주차 비교과 13쪽 “날짜형으로 두어야 오래된 값을 골라낼 수 있음”)
+    데이터 Supabase 프로젝트 <b>kaya</b> · 표 <code>public.evidence</code> — RLS 켬(읽기 공개 · 추가만 허용 · 수정·삭제 불가) · 연결은 publishable 키만 사용(<code>supabase-config.js</code>)<br>
+    판정 기준 조회 후 30일 이하 = 최신 · 31–180일 = 확인 필요 · 180일 초과 = 오래됨 — 4주차 비교과 13쪽 “날짜형으로 두어야 오래된 값을 골라낼 수 있음”
   </footer>
-</div>
+</main>
 
 <script src="supabase-config.js"></script>
 <script type="module">
@@ -167,9 +238,10 @@ const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_K
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-const ageDays = d => Math.round((Date.parse(kstToday()) - Date.parse(d)) / 864e5);
+const ageDays = d => Math.max(0, Math.round((Date.parse(kstToday()) - Date.parse(d)) / 864e5));
 const fmt = r => Number(r.value).toLocaleString('ko-KR', { useGrouping: r.unit !== '년', maximumFractionDigits: 6 });
 const state = a => a <= 30 ? ['good', '✓ 최신'] : a <= 180 ? ['warn', '! 확인 필요'] : ['crit', '✕ 오래됨'];
+const split = item => { const i = item.indexOf(' — '); return i < 0 ? ['근거', item] : [item.slice(0, i), item.slice(i + 3)]; };
 const say = (m, err) => { $('status').textContent = m; $('status').classList.toggle('err', !!err); };
 let all = [];
 
@@ -177,60 +249,75 @@ function render() {
   const q = $('q').value.trim().toLowerCase();
   const rows = q ? all.filter(r => (r.item + ' ' + r.source).toLowerCase().includes(q)) : all;
 
+  const fresh = all.filter(r => ageDays(r.queried_on) <= 30).length;
+  const pct = all.length ? Math.round(fresh / all.length * 100) : 0;
+  $('ring-n').innerHTML = `${pct}<small>%</small>`;
+  $('ring-arc').setAttribute('stroke-dasharray', `${2.64 * pct} 264`);
   $('k-n').innerHTML = `${all.length}<small>행</small>`;
   if (all.length) {
     const byDate = [...all].sort((a, b) => a.queried_on.localeCompare(b.queried_on));
-    const newest = byDate.at(-1), oldest = byDate[0];
-    $('k-new').textContent = newest.queried_on.slice(5);
-    $('k-new-d').textContent = `${newest.queried_on} · ${newest.item.split(' — ')[0]}`;
-    $('k-old').innerHTML = `${ageDays(oldest.queried_on)}<small>일 전</small>`;
-    $('k-old-d').textContent = `${oldest.queried_on} · ${oldest.item.split(' — ')[0]}`;
-    $('k-stale').innerHTML = `${all.filter(r => ageDays(r.queried_on) > 30).length}<small>행</small>`;
+    const nw = byDate.at(-1), od = byDate[0];
+    $('k-new').textContent = nw.queried_on.slice(5).replace('-', '.');
+    $('k-new-d').textContent = split(nw.item)[0];
+    $('k-old').innerHTML = `${ageDays(od.queried_on)}<small>일 전</small>`;
+    $('k-old-d').textContent = split(od.item)[0];
+    $('k-stale').innerHTML = `${all.length - fresh}<small>행</small>`;
   }
 
-  $('cells').innerHTML = rows.map(r => {
-    const a = ageDays(r.queried_on), [cls, lab] = state(a);
-    return `<article class="cell"><div class="top"><span>#${r.id}</span><span class="badge ${cls}">${lab} · ${a}일</span></div>
-      <div class="name">${esc(r.item)}</div>
-      <div class="val">${esc(fmt(r))}<small>${esc(r.unit)}</small></div>
-      <dl><dt>출처</dt><dd>${esc(r.source)}</dd><dt>조회일</dt><dd>${esc(r.queried_on)}</dd></dl></article>`;
-  }).join('') || '<p class="note">검색에 맞는 근거가 없습니다.</p>';
+  $('cards').innerHTML = rows.map(r => {
+    const a = ageDays(r.queried_on), [cls, lab] = state(a), [cat, title] = split(r.item);
+    return `<article class="card ${cls}">
+      <div class="head"><span class="tag">${esc(cat)}</span><span class="id">#${r.id}</span></div>
+      <h3>${esc(title)}</h3>
+      <div class="big"><b>${esc(fmt(r))}</b><span>${esc(r.unit)}</span></div>
+      <div class="src"><svg><use href="#i-quote"/></svg><span>${esc(r.source)}</span></div>
+      <div class="foot"><span class="date"><svg><use href="#i-cal"/></svg>${esc(r.queried_on)}</span><span class="pill ${cls}">${lab} · ${a}일 전</span></div>
+    </article>`;
+  }).join('') || '<div class="empty">검색에 맞는 근거가 없습니다.</div>';
 
-  $('rows').innerHTML = rows.map(r => `<tr><td>${r.id}</td><td>${esc(r.item)}</td><td class="num">${esc(fmt(r))}</td><td>${esc(r.unit)}</td><td>${esc(r.source)}</td><td class="date">${esc(r.queried_on)}</td><td class="date">${esc(new Date(r.created_at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}))}</td></tr>`).join('');
-
-  drawChart(rows);
+  $('rows').innerHTML = rows.map(r => `<tr><td>${r.id}</td><td>${esc(r.item)}</td><td class="num">${esc(fmt(r))}</td><td>${esc(r.unit)}</td><td class="date">${esc(r.queried_on)}</td><td class="date">${esc(new Date(r.created_at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul', dateStyle:'short', timeStyle:'short'}))}</td></tr>`).join('');
+  drawTimeline(rows);
 }
 
-function drawChart(rows) {
-  const el = $('chart'), tip = $('tip');
+function drawTimeline(rows) {
+  const el = $('tl'), tip = $('tip');
   el.querySelector('svg')?.remove();
   if (!rows.length) return;
-  const data = rows.map(r => ({ r, a: Math.max(0, ageDays(r.queried_on)) })).sort((x, y) => y.a - x.a);
-  const W = Math.max(300, el.clientWidth), L = Math.round(Math.min(250, W * 0.42)), R = 36, rowH = 28, top = 8, H = top + data.length * rowH + 26;
-  const max = Math.max(200, ...data.map(d => d.a)) * 1.05;
-  const x = v => L + (W - L - R) * v / max;
-  const ticks = [0, 30, 90, 180, 365, 730].filter(t => t <= max);
-  const n = Math.max(6, Math.floor((L - 40) / 11.5)), label = s => { s = s.split(' — ')[0]; return s.length > n ? s.slice(0, n - 1) + '…' : s; };
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="근거별 조회 후 지난 날수 막대그래프">`;
-  s += `<g class="grid">${ticks.map(t => `<line x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${H - 22}"/>`).join('')}</g>`;
-  s += [30, 180].filter(t => t <= max).map(t => `<line class="thr" x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${H - 22}"/>`).join('');
-  let last = -1e9; const shown = ticks.filter(t => x(t) - last >= 40 && (last = x(t), true));
-  s += `<g class="axis">${shown.map(t => `<text x="${x(t)}" y="${H - 6}" text-anchor="middle">${t}일</text>`).join('')}</g>`;
-  data.forEach((d, i) => {
-    const y = top + i * rowH, bw = Math.max(2, x(d.a) - L);
-    s += `<g class="row" data-i="${i}"><rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}"/>`;
-    s += `<rect class="bar" x="${L}" y="${y + 7}" width="${bw}" height="14" rx="4"/>`;
-    s += `<text class="lab" x="${L - 10}" y="${y + 18}" text-anchor="end">#${d.r.id} ${esc(label(d.r.item))}</text>`;
-    s += `<text class="lab" x="${L + bw + 6}" y="${y + 18}">${d.a}일</text></g>`;
+  const W = Math.max(300, el.clientWidth), padL = 26, padR = 44;
+  const maxAge = Math.max(...rows.map(r => ageDays(r.queried_on)));
+  const span = maxAge > 150 ? Math.ceil((maxAge + 30) / 30) * 30 : maxAge > 45 ? 210 : 60;
+  const x = age => padL + (W - padL - padR) * (1 - age / span);
+  // 가까운 점은 줄을 나눠 세워 이름이 겹치지 않게 함
+  const pts = rows.map(r => ({ r, a: ageDays(r.queried_on) })).sort((p, q) => q.a - p.a);
+  const lanes = []; pts.forEach(p => { let k = 0; while (lanes[k] !== undefined && Math.abs(x(lanes[k]) - x(p.a)) < 170) k++; lanes[k] = p.a; p.k = k; });
+  const nL = Math.max(1, lanes.length), laneH = 44, top = 16, baseY = top + nL * laneH + 12, H = baseY + 30;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="근거별 조회일 타임라인">`;
+  const band = (a0, a1, cls) => { if (a0 >= span) return ''; const x0 = x(Math.min(a1, span)), x1 = x(a0); return `<rect class="${cls}" x="${x0}" y="${top - 10}" width="${x1 - x0}" height="${baseY - top + 10}" rx="6"/>`; };
+  s += band(0, 30, 'zone-good') + band(30, 180, 'zone-warn') + band(180, 1e9, 'zone-crit');
+  s += `<line class="base" x1="${padL}" x2="${W - padR}" y1="${baseY}" y2="${baseY}"/>`;
+  const step = span <= 60 ? 10 : span <= 210 ? 30 : 60;
+  const ticks = []; for (let t = span; t > 0; t -= step) ticks.push(t);
+  let last = -1e9;
+  s += `<g class="axis">${ticks.filter(t => { const ok = x(t) - last >= 46 && x(0) - x(t) >= 40; if (ok) last = x(t); return ok; }).map(t => `<text x="${x(t)}" y="${baseY + 18}" text-anchor="middle">-${t}일</text>`).join('')}</g>`;
+  s += `<line class="today" x1="${x(0)}" x2="${x(0)}" y1="${top - 10}" y2="${baseY + 4}"/><text class="today-l" x="${x(0)}" y="${baseY + 18}" text-anchor="middle">오늘</text>`;
+  s += pts.map(p => `<line class="stem" x1="${x(p.a)}" x2="${x(p.a)}" y1="${top + p.k * laneH + 12}" y2="${baseY}"/>`).join("");
+  pts.forEach((p, i) => {
+    const cx = x(p.a), cy = top + p.k * laneH + 12, right = cx > W * 0.55;
+    const [cat] = split(p.r.item), tx = cx + (right ? -13 : 13), anc = right ? 'end' : 'start';
+    s += `<g class="ev" data-i="${i}">`;
+    s += `<circle class="dot" cx="${cx}" cy="${cy}" r="7"/>`;
+    s += `<text class="lab" x="${tx}" y="${cy - 1}" text-anchor="${anc}">#${p.r.id} ${esc(cat.length > 16 ? cat.slice(0, 15) + '…' : cat)}</text>`;
+    s += `<text class="lab2" x="${tx}" y="${cy + 14}" text-anchor="${anc}">${esc(fmt(p.r))} ${esc(p.r.unit)} · ${p.r.queried_on.slice(5)}</text>`;
+    s += `<rect class="hit" x="${cx - 18}" y="${cy - 18}" width="36" height="${baseY - cy + 18}"/></g>`;
   });
   el.insertAdjacentHTML('afterbegin', s + '</svg>');
-  el.querySelectorAll('.row').forEach(g => {
-    const d = data[g.dataset.i];
+  el.querySelectorAll('g.ev').forEach(g => {
+    const p = pts[g.dataset.i];
     g.addEventListener('mousemove', e => {
       const b = el.getBoundingClientRect();
-      tip.innerHTML = `<b>#${d.r.id} ${esc(d.r.item)}</b><br>${esc(fmt(d.r))} ${esc(d.r.unit)} · 조회 ${esc(d.r.queried_on)} (${d.a}일 전)`;
-      tip.style.left = Math.min(e.clientX - b.left + 12, b.width - 290) + 'px';
-      tip.style.top = (e.clientY - b.top + 12) + 'px';
+      tip.innerHTML = `<b>#${p.r.id} ${esc(p.r.item)}</b>${esc(fmt(p.r))} ${esc(p.r.unit)} · 조회 ${esc(p.r.queried_on)} (${p.a}일 전)`;
+      tip.style.left = Math.max(0, Math.min(e.clientX - b.left + 14, b.width - 290)) + 'px';
+      tip.style.top = (e.clientY - b.top + 14) + 'px';
       tip.style.opacity = 1;
     });
     g.addEventListener('mouseleave', () => tip.style.opacity = 0);
@@ -242,8 +329,7 @@ async function load() {
   const { data, error } = await supabase.from('evidence').select('*').order('id');
   if (error) return say(`목록을 읽지 못함 — ${error.message}`, true);
   all = data;
-  $('when').textContent = `읽은 시각 ${new Date().toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul'})}`;
-  say(all.length ? `서버에서 받은 행 ${all.length}개` : '표에 행이 없음 (RLS 읽기 정책 확인)');
+  say(all.length ? `서버에서 받은 행 ${all.length}개 · ${new Date().toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul'})} 읽음` : '표에 행이 없음 (RLS 읽기 정책 확인)');
   render();
 }
 
