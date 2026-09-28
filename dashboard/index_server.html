@@ -353,6 +353,88 @@ h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-
     </div>
   </section>
 
+  <style>
+  /* 근거노트 — Supabase evidence 표에 저장하고 select로 다시 그림 (4주차 비교과 24~26쪽) */
+  .evid{background:var(--panel); border:1px solid var(--rule); border-top:3px solid var(--navy-2); border-radius:3px; padding:14px 16px; margin:0 0 18px; box-shadow:var(--shadow)}
+  .evid .head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+  .evid .head h2{margin:0; font-size:15px; color:var(--navy-ink)}
+  .evid .head span{font-size:12px; color:var(--text-2)}
+  .evid form{display:grid; grid-template-columns:2fr 1fr .8fr 3fr 1.1fr auto; gap:8px; align-items:end}
+  .evid label{display:flex; flex-direction:column; gap:3px; font-size:11.5px; color:var(--text-2); min-width:0}
+  .evid input{font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--rule); border-radius:3px; background:var(--panel-2); color:var(--text); min-width:0; width:100%}
+  .evid button{font:inherit; font-size:13px; font-weight:600; padding:7px 16px; border:0; border-radius:3px; background:var(--navy); color:#fff; cursor:pointer}
+  .evid button:disabled{opacity:.55; cursor:wait}
+  .evid .status{font-size:12px; color:var(--text-2); margin:8px 0 0; min-height:1.5em}
+  .evid .status.err{color:var(--accent)}
+  .evid .tablewrap{overflow-x:auto; margin-top:8px}
+  .evid table{width:100%; border-collapse:collapse; font-size:12.5px}
+  .evid th,.evid td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+  .evid th{font-size:11px; color:var(--text-3); font-weight:600; white-space:nowrap}
+  .evid td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; color:var(--navy-ink); font-weight:600}
+  .evid td.date{font-family:"IBM Plex Mono",monospace; white-space:nowrap; color:var(--text-2)}
+  @media (max-width:1080px){ .evid form{grid-template-columns:1fr 1fr} .evid form label.wide{grid-column:1 / -1} }
+  </style>
+
+  <section class="evid" aria-label="근거노트 — Supabase evidence 표">
+    <div class="head">
+      <h2>근거노트 — 서버의 evidence 표</h2>
+      <span>저장하면 Supabase 표에 한 행이 생기고, 아래 목록은 그 표를 다시 읽어 그림 · 네 칸 모두 필수</span>
+    </div>
+    <form id="evid-form" autocomplete="off">
+      <label class="wide">항목 (item)<input name="item" required placeholder="예: 용도지역 현황 — 수송동 146-12"></label>
+      <label>값 (value · 숫자만)<input name="value" type="number" step="any" required placeholder="600"></label>
+      <label>단위 (unit)<input name="unit" required placeholder="%"></label>
+      <label class="wide">출처 (source · 조문·조례번호·시행일)<input name="source" required placeholder="예: 토지이음 토지이용계획 열람"></label>
+      <label>조회일 (queried_on)<input name="queried_on" type="date" required></label>
+      <button type="submit">저장</button>
+    </form>
+    <p class="status" id="evid-status" role="status">표를 읽는 중…</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>항목</th><th style="text-align:right">값</th><th>단위</th><th>출처</th><th>조회일</th><th>저장 시각</th></tr></thead>
+        <tbody id="evid-rows"></tbody>
+      </table>
+    </div>
+  </section>
+  <script src="supabase-config.js"></script>
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
+  const form = document.getElementById('evid-form');
+  const statusEl = document.getElementById('evid-status');
+  const rowsEl = document.getElementById('evid-rows');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  form.queried_on.value = form.queried_on.max = kstToday();
+  const say = (msg, err) => { statusEl.textContent = msg; statusEl.classList.toggle('err', !!err); };
+
+  async function load() {
+    const { data, error } = await supabase.from('evidence').select('*').order('id');
+    if (error) return say(`목록을 읽지 못함 — ${error.message}`, true);
+    rowsEl.innerHTML = data.map(r => `<tr><td>${r.id}</td><td>${esc(r.item)}</td><td class="num">${esc(Number(r.value).toLocaleString('ko-KR'))}</td><td>${esc(r.unit)}</td><td>${esc(r.source)}</td><td class="date">${esc(r.queried_on)}</td><td class="date">${esc(new Date(r.created_at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}))}</td></tr>`).join('');
+    say(data.length ? `서버에서 받은 행 ${data.length}개 — 새로고침·다른 기기·팀원 화면에서도 같은 목록이 보여야 함` : '표에 행이 없음 (RLS 읽기 정책도 확인)');
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const row = Object.fromEntries(['item', 'unit', 'source', 'queried_on'].map(k => [k, f.get(k).trim()]));
+    row.value = Number(f.get('value'));
+    if (Object.values(row).some(v => v === '') || !Number.isFinite(row.value)) return say('네 칸을 모두 채워야 저장됨', true);
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    const { data, error } = await supabase.from('evidence').insert(row).select();
+    btn.disabled = false;
+    if (error) return say(`저장 실패 — ${error.message}`, true);
+    form.reset();
+    form.queried_on.value = kstToday();
+    await load();
+    say(`저장됨 — id ${data[0].id} · ${statusEl.textContent}`);
+  });
+
+  load();
+  </script>
+
   <div class="grid">
     <section class="card">
       <header>

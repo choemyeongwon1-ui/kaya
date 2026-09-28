@@ -11,3 +11,8 @@ venv/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Supabase 환경변수 — 로컬에만 둠 (.env.example 참고)
+.env
+.env.*
+!.env.example
