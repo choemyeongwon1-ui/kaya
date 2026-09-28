@@ -411,7 +411,7 @@ h1{margin:20px 0 6px; font-size:clamp(25px,3.3vw,39px); font-weight:800; letter-
   async function load() {
     const { data, error } = await supabase.from('evidence').select('*').order('id');
     if (error) return say(`목록을 읽지 못함 — ${error.message}`, true);
-    rowsEl.innerHTML = data.map(r => `<tr><td>${r.id}</td><td>${esc(r.item)}</td><td class="num">${esc(Number(r.value).toLocaleString('ko-KR'))}</td><td>${esc(r.unit)}</td><td>${esc(r.source)}</td><td class="date">${esc(r.queried_on)}</td><td class="date">${esc(new Date(r.created_at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}))}</td></tr>`).join('');
+    rowsEl.innerHTML = data.map(r => `<tr><td>${r.id}</td><td>${esc(r.item)}</td><td class="num">${esc(Number(r.value).toLocaleString('ko-KR', {useGrouping: r.unit !== '년'}))}</td><td>${esc(r.unit)}</td><td>${esc(r.source)}</td><td class="date">${esc(r.queried_on)}</td><td class="date">${esc(new Date(r.created_at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul'}))}</td></tr>`).join('');
     say(data.length ? `서버에서 받은 행 ${data.length}개 — 새로고침·다른 기기·팀원 화면에서도 같은 목록이 보여야 함` : '표에 행이 없음 (RLS 읽기 정책도 확인)');
   }
 

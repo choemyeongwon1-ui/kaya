@@ -270,3 +270,26 @@ OSM 배경은 **항상 아래에 깔립니다.** 위성 이미지는 정사각�
 
 `vercel.json` 은 `dashboard/data/` 의 대용량 파일(위성 이미지 3.6 MB, 건물 1.9 MB)에
 장기 캐시 헤더를 붙입니다. 두 번째 방문부터 즉시 뜹니다.
+
+## 4주차 비교과 — Supabase 근거노트 (최승하)
+
+| 항목 | 내용 |
+|---|---|
+| 배포 주소 | https://choemyeongwon1-ui.github.io/kaya/ (주차별 지표 아래 「근거노트 — 서버의 evidence 표」) |
+| 저장소 주소 | https://github.com/choemyeongwon1-ui/kaya |
+| Supabase | 조직·프로젝트 `kaya` (서울 리전) · 표 `evidence`(item text · value numeric · unit text · source text · queried_on date, id·created_at 자동) · 다섯 열 NOT NULL |
+| RLS | 켬 · 정책 `evidence_select`(읽기)·`evidence_insert`(쓰기, 조회일 ≤ 오늘 KST) · 수정·삭제 정책 없음 |
+| 키 | `dashboard/supabase-config.js`에 URL·publishable 키(`sb_publishable_`)만 둠 · `.env`는 `.gitignore` · secret 키는 쓰지 않음 |
+
+**저장된 근거노트** (팀 화면 폼으로 저장, 목록은 select로 다시 그림)
+
+| id | 항목 | 값 | 단위 | 출처 | 조회일 |
+|---|---|---|---|---|---|
+| 1 | 3주차 조례 카드 — 일반상업지역 용적률(서울도심) | 600 | % | 서울특별시 도시계획 조례 제48조제8호 단서(조례 제10139호, 시행 2026-07-13) | 2026-09-21 |
+| 3 | 상위계획 고시 이력 — 수송 도시정비형 재개발구역 정비구역 지정 연도 | 2010 | 년 | 서울특별시고시 제2010-485호(2010-12-30) · 최근 변경 서울특별시 고시 제2024-562호(2024-11-21) — 토지이음 고시정보 | 2026-09-28 |
+| 4 | 용도지역 현황 — 수송동 146-12 일반상업지역 면적 | 3,612.2 | ㎡ | 토지이음 토지이용계획 열람 (도시지역·일반상업지역 단일) | 2026-09-28 |
+
+*(id 2는 빈 출처 거부 시험에서 번호만 소비됨)*
+
+- **③ 남아 있는지 확인 (2026-09-28):** 저장 후 새로고침 → 같은 3행 · 다른 기기·팀원 브라우저에서 같은 목록 확인(최승하) · Table Editor에 같은 행 있음
+- **④ 키 점검 (2026-09-28):** 커밋 전 `git grep`으로 `sb_secret_`·`service_role`·`eyJhbGci` 검색 → 0건(주석 안내문 제외), `.env` 미추적 확인
