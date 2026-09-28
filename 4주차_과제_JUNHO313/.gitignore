@@ -1,0 +1,6 @@
+# 비밀 키 · 비밀번호는 저장소 밖에
+.env
+.env.*
+!.env.example
+
+__pycache__/
