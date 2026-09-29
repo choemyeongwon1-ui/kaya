@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kaya 게시판</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="#/">kaya 게시판</a>
+  </header>
+
+  <main class="container">
+    <!-- 알림 메시지 (저장 완료, 오류 등) -->
+    <p id="notice" class="notice" role="status" hidden></p>
+
+    <!-- 1. 목록 화면 -->
+    <section id="view-list" class="view" hidden>
+      <div class="toolbar">
+        <h1 class="page-title">전체 글 <span id="post-count" class="count"></span></h1>
+        <a class="btn btn-primary" href="#/write">글쓰기</a>
+      </div>
+      <table class="post-table">
+        <thead>
+          <tr>
+            <th class="col-id">번호</th>
+            <th>제목</th>
+            <th class="col-author">작성자</th>
+            <th class="col-date">작성일</th>
+          </tr>
+        </thead>
+        <tbody id="post-rows"></tbody>
+      </table>
+      <p id="empty-message" class="empty" hidden>아직 글이 없습니다. 첫 글을 써 보세요.</p>
+    </section>
+
+    <!-- 2. 상세 화면 -->
+    <section id="view-detail" class="view" hidden>
+      <article class="post-detail">
+        <h1 id="detail-title" class="page-title"></h1>
+        <p class="post-meta">
+          <span id="detail-author"></span> · <span id="detail-date"></span>
+        </p>
+        <div id="detail-content" class="post-content"></div>
+      </article>
+      <div class="actions">
+        <a class="btn" href="#/">목록</a>
+        <a id="detail-edit" class="btn" href="#/">수정</a>
+        <button id="detail-delete" class="btn btn-danger" type="button">삭제</button>
+      </div>
+    </section>
+
+    <!-- 3. 작성·수정 화면 -->
+    <section id="view-form" class="view" hidden>
+      <h1 id="form-heading" class="page-title">글쓰기</h1>
+      <form id="post-form" class="post-form" novalidate>
+        <label for="form-title">제목</label>
+        <input id="form-title" name="title" type="text" maxlength="100" required>
+
+        <label for="form-author">작성자</label>
+        <input id="form-author" name="author" type="text" maxlength="20" required>
+
+        <label for="form-content">본문</label>
+        <textarea id="form-content" name="content" rows="12" maxlength="5000" required></textarea>
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+
+        <div class="actions">
+          <a id="form-cancel" class="btn" href="#/">취소</a>
+          <button class="btn btn-primary" type="submit">저장</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
