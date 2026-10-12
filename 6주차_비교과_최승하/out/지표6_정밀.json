@@ -1,0 +1,129 @@
+﻿{
+    "지표":  "⑥ 경사·향 적합면적 비율 (정밀판)",
+    "대상지":  "서울특별시 종로구 창신동",
+    "DEM":  "AWS Terrain Tiles (terrarium) z14 ≈ 7.6 m/px · 원자료 30 m급(SRTM/ALOS 계열) · 분석 셀 30 m (0.09 ha)",
+    "계산":  "Horn(1981) 3x3 · 향 적합 135~225° · 경사 5% 미만 평탄 면제",
+    "조회일":  "2026-10-12 16:45",
+    "셀수":  852,
+    "면적_ha":  76.68,
+    "표고_m":  {
+                 "평균":  53.7,
+                 "최저":  23,
+                 "최고":  120.8
+             },
+    "경사_pct":  {
+                   "평균":  14.5,
+                   "최대":  50.22
+               },
+    "임계값별":  [
+                 {
+                     "threshold_pct":  10,
+                     "cells_total":  852,
+                     "cells_slope_ok":  364,
+                     "cells_slope_aspect":  208,
+                     "area_ha_total":  76.68,
+                     "area_ha_fit":  18.72,
+                     "pct_slope_only":  42.7,
+                     "pct_slope_aspect":  24.4
+                 },
+                 {
+                     "threshold_pct":  15,
+                     "cells_total":  852,
+                     "cells_slope_ok":  510,
+                     "cells_slope_aspect":  225,
+                     "area_ha_total":  76.68,
+                     "area_ha_fit":  20.25,
+                     "pct_slope_only":  59.9,
+                     "pct_slope_aspect":  26.4
+                 },
+                 {
+                     "threshold_pct":  25,
+                     "cells_total":  852,
+                     "cells_slope_ok":  707,
+                     "cells_slope_aspect":  230,
+                     "area_ha_total":  76.68,
+                     "area_ha_fit":  20.7,
+                     "pct_slope_only":  83,
+                     "pct_slope_aspect":  27
+                 }
+             ],
+    "경사구간":  [
+                 {
+                     "bin":  "0-5%",
+                     "cells":  173,
+                     "pct":  20.3,
+                     "area_ha":  15.57
+                 },
+                 {
+                     "bin":  "5-10%",
+                     "cells":  190,
+                     "pct":  22.3,
+                     "area_ha":  17.1
+                 },
+                 {
+                     "bin":  "10-15%",
+                     "cells":  147,
+                     "pct":  17.3,
+                     "area_ha":  13.23
+                 },
+                 {
+                     "bin":  "15-25%",
+                     "cells":  197,
+                     "pct":  23.1,
+                     "area_ha":  17.73
+                 },
+                 {
+                     "bin":  "25-100%",
+                     "cells":  145,
+                     "pct":  17,
+                     "area_ha":  13.05
+                 }
+             ],
+    "향분포":  [
+                {
+                    "dir":  "평탄(5% 미만)",
+                    "cells":  173,
+                    "pct":  20.3
+                },
+                {
+                    "dir":  "북",
+                    "cells":  64,
+                    "pct":  7.5
+                },
+                {
+                    "dir":  "북동",
+                    "cells":  183,
+                    "pct":  21.5
+                },
+                {
+                    "dir":  "동",
+                    "cells":  182,
+                    "pct":  21.4
+                },
+                {
+                    "dir":  "남동",
+                    "cells":  61,
+                    "pct":  7.2
+                },
+                {
+                    "dir":  "남",
+                    "cells":  26,
+                    "pct":  3.1
+                },
+                {
+                    "dir":  "남서",
+                    "cells":  14,
+                    "pct":  1.6
+                },
+                {
+                    "dir":  "서",
+                    "cells":  26,
+                    "pct":  3.1
+                },
+                {
+                    "dir":  "북서",
+                    "cells":  123,
+                    "pct":  14.4
+                }
+            ]
+}

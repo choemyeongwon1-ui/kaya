@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>창신동 지표 차트 3종 — 6주차 비교과</title>
+<style>
+  :root{
+    --ground:#eef1f5; --panel:#fff; --ink:#1b2434; --muted:#5a6578; --faint:#8b94a3;
+    --line:#d5dbe4; --navy:#1b3a6b; --navy-2:#2f5f9e; --soft:#9fb6d4; --accent:#c2571a;
+    --tint:#e8eef7; --grid:#dfe5ee;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0e131b; --panel:#161d27; --ink:#e6ebf3; --muted:#9ba5b5; --faint:#78828f;
+      --line:#2a3340; --navy:#7fa8df; --navy-2:#5b87c4; --soft:#3e577a; --accent:#f08a4b;
+      --tint:#1a2735; --grid:#263040;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0e131b; --panel:#161d27; --ink:#e6ebf3; --muted:#9ba5b5; --faint:#78828f;
+    --line:#2a3340; --navy:#7fa8df; --navy-2:#5b87c4; --soft:#3e577a; --accent:#f08a4b;
+    --tint:#1a2735; --grid:#263040;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink); padding:22px 14px 56px;
+       font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif; font-size:15px; line-height:1.6; word-break:keep-all}
+  .wrap{max-width:900px; margin:0 auto; display:grid; gap:18px}
+  header{display:grid; gap:6px; padding-bottom:14px; border-bottom:3px solid var(--navy)}
+  .eyebrow{font-size:12.5px; color:var(--muted)}
+  .eyebrow b{color:var(--navy); letter-spacing:.1em; margin-right:6px}
+  h1{margin:0; font-size:clamp(21px,4.2vw,27px); line-height:1.3}
+  .meta{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12.5px; color:var(--muted)}
+  .meta a{color:var(--navy-2)}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:16px 18px 18px; display:grid; gap:10px}
+  .kind{font-size:11.5px; font-weight:700; letter-spacing:.08em; color:var(--navy)}
+  h2{margin:0; font-size:16.5px; line-height:1.4}
+  .q{font-size:12.5px; color:var(--muted)}
+  figure{margin:0; display:grid; gap:8px}
+  svg{display:block; width:100%; height:auto; overflow:visible}
+  .axis{font-size:11px; fill:var(--faint); font-family:Consolas,monospace}
+  .lab{font-size:12px; fill:var(--ink); font-weight:700; font-family:Consolas,monospace}
+  .cat{font-size:12px; fill:var(--muted)}
+  .cat.on{fill:var(--accent); font-weight:700}
+  .gl{stroke:var(--grid); stroke-width:1}
+  .bar{fill:var(--soft)}
+  .bar.on{fill:var(--accent)}
+  .slice{fill:var(--soft); stroke:var(--panel); stroke-width:2}
+  .slice.on{fill:var(--accent)}
+  .slice.n2{fill:var(--navy-2)}
+  .slice.n3{fill:var(--navy)}
+  .donut-c{font-size:12px; fill:var(--ink); font-weight:700; text-anchor:middle; font-family:Consolas,monospace}
+  .pl{fill:none; stroke:var(--navy-2); stroke-width:1.8}
+  .dot{fill:var(--accent)}
+  figcaption{font-size:11.5px; color:var(--muted); line-height:1.6; border-top:1px solid var(--line); padding-top:7px}
+  .wrap > *{min-width:0}
+  .card > *{min-width:0}
+  footer, footer a, .chk span{overflow-wrap:anywhere}
+  .scroll{overflow-x:auto; min-width:0}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:330px}
+  th,td{border-bottom:1px solid var(--line); padding:6px 9px; text-align:left}
+  th{background:var(--tint); color:var(--navy); font-size:11.5px; white-space:nowrap}
+  td.n{text-align:right; font-family:Consolas,monospace; font-variant-numeric:tabular-nums}
+  tr.on td{color:var(--accent); font-weight:700}
+  .checks{display:grid; gap:6px}
+  .chk{display:grid; grid-template-columns:76px 1fr; gap:10px; font-size:13px; align-items:baseline}
+  .chk b{color:var(--navy)}
+  .pass{color:var(--navy); font-weight:700}
+  footer{font-size:11.5px; color:var(--muted); display:grid; gap:3px}
+  @media (max-width:520px){ body{padding:16px 12px 40px} .card{padding:13px 13px 15px} .chk{grid-template-columns:1fr; gap:1px}
+    .axis{font-size:15px} .lab{font-size:17px} .cat{font-size:16px} .donut-c{font-size:16px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><b>6주차 비교과</b>표의 그래프 전환 · 카야팀 · 작성 202420778 최승하</div>
+    <h1>창신동 지표 차트 3종 — 비교 · 구성 · 추세</h1>
+    <div class="meta">
+      <span>대상지 서울 종로구 창신동 (법정동 전역 0.7682 km²)</span>
+      <span>값 출처 팀 데이터 카탈로그 13~17행</span>
+      <span>조회일 2026-10-12</span>
+    </div>
+  </header>
+
+  <!-- ── 차트 A · 비교(막대) ── -->
+  <section class="card">
+    <div class="kind">차트 A · 비교 — 막대</div>
+    <h2>경사 임계값 10·15·25%별 적합면적 (ha) — 창신동</h2>
+    <p class="q">질문: 임계값을 어디로 잡으면 쓸 수 있는 땅이 얼마나 되는가</p>
+    <figure>
+      <svg viewBox="0 0 560 300" role="img" aria-label="경사 임계값 10퍼센트 18.72헥타르, 15퍼센트 20.25헥타르, 25퍼센트 20.70헥타르 막대그래프">
+        <line class="gl" x1="56" y1="240" x2="548" y2="240"/>
+        <line class="gl" x1="56" y1="192" x2="548" y2="192" stroke-dasharray="3 3"/>
+        <line class="gl" x1="56" y1="144" x2="548" y2="144" stroke-dasharray="3 3"/>
+        <line class="gl" x1="56" y1="96" x2="548" y2="96" stroke-dasharray="3 3"/>
+        <line class="gl" x1="56" y1="48" x2="548" y2="48" stroke-dasharray="3 3"/>
+        <text class="axis" x="48" y="244" text-anchor="end">0 ha</text>
+        <text class="axis" x="48" y="196" text-anchor="end">5 ha</text>
+        <text class="axis" x="48" y="148" text-anchor="end">10 ha</text>
+        <text class="axis" x="48" y="100" text-anchor="end">15 ha</text>
+        <text class="axis" x="48" y="52" text-anchor="end">20 ha</text>
+        <text class="axis" x="48" y="24" text-anchor="end">25 ha</text>
+        <line class="gl" x1="56" y1="20" x2="56" y2="240"/>
+        <rect class="bar" x="100" y="60.3" width="96" height="179.7" rx="2"/>
+        <rect class="bar on" x="232" y="45.6" width="96" height="194.4" rx="2"/>
+        <rect class="bar" x="364" y="41.3" width="96" height="198.7" rx="2"/>
+        <text class="lab" x="148" y="52" text-anchor="middle">18.72</text>
+        <text class="lab" x="280" y="37" text-anchor="middle" style="fill:var(--accent)">20.25</text>
+        <text class="lab" x="412" y="33" text-anchor="middle">20.70</text>
+        <text class="cat" x="148" y="262" text-anchor="middle">경사 10%</text>
+        <text class="cat on" x="280" y="262" text-anchor="middle">경사 15% (기준안)</text>
+        <text class="cat" x="412" y="262" text-anchor="middle">경사 25%</text>
+        <text class="axis" x="56" y="286">세로축 0 ha 시작 · 눈금 5 ha 균등 · 단위 ha · 강조색 1개(기준안 15%)</text>
+      </svg>
+      <figcaption>출처: 팀 데이터 카탈로그 13·14·15행 — AWS Terrain Tiles(terrarium) z14 기반 30 m 셀 경사·향 계산, Horn(1981) 3×3, 향 적합 135~225°(팀 공통 기준, 북 0° 시계방향) · 조회일 2026-10-12 · 계산값(DEM 수집 → 경사·향 계산), 실측 측량값 아님</figcaption>
+    </figure>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>카탈로그 행</th><th>임계값</th><th>적합면적</th><th>전체 대비</th><th>단위</th><th>조회일</th></tr></thead>
+        <tbody>
+          <tr><td>13</td><td>경사 10%</td><td class="n">18.72</td><td class="n">24.4%</td><td>ha</td><td>2026-10-12</td></tr>
+          <tr class="on"><td>14</td><td>경사 15% (기준안)</td><td class="n">20.25</td><td class="n">26.4%</td><td>ha</td><td>2026-10-12</td></tr>
+          <tr><td>15</td><td>경사 25%</td><td class="n">20.70</td><td class="n">27.0%</td><td>ha</td><td>2026-10-12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="q">읽기: 임계값을 10 → 25%로 두 배 넘게 풀어도 적합면적은 18.72 → 20.70 ha로 1.98 ha(+11%)만 늘어난다. 창신동에서 면적을 가르는 조건은 경사가 아니라 향이다.</p>
+  </section>
+
+  <!-- ── 차트 B · 구성(도넛) ── -->
+  <section class="card">
+    <div class="kind">차트 B · 구성 — 도넛</div>
+    <h2>경사 구간별 면적 구성비 (%) — 창신동 76.68 ha = 100%</h2>
+    <p class="q">질문: 대상지의 땅은 어느 경사 구간에 얼마나 들어 있는가</p>
+    <figure>
+      <svg viewBox="0 0 560 240" role="img" aria-label="경사 구간별 구성비 도넛 — 0에서 5퍼센트 20.3퍼센트, 5에서 10퍼센트 22.3퍼센트, 10에서 15퍼센트 17.3퍼센트, 15에서 25퍼센트 23.1퍼센트, 25퍼센트 초과 17.0퍼센트">
+        <g transform="translate(10,10)">
+          <path class="slice n3" d="M 110.00 18.00 A 92 92 0 0 1 198.02 83.22 L 163.58 93.70 A 56 56 0 0 0 110.00 54.00 Z"/>
+          <path class="slice n2" d="M 198.02 83.22 A 92 92 0 0 1 151.25 192.23 L 135.11 160.06 A 56 56 0 0 0 163.58 93.70 Z"/>
+          <path class="slice" d="M 151.25 192.23 A 92 92 0 0 1 56.39 184.77 L 77.37 155.51 A 56 56 0 0 0 135.11 160.06 Z"/>
+          <path class="slice on" d="M 56.39 184.77 A 92 92 0 0 1 29.38 65.68 L 60.93 83.02 A 56 56 0 0 0 77.37 155.51 Z"/>
+          <path class="slice" d="M 29.38 65.68 A 92 92 0 0 1 110.00 18.00 L 110.00 54.00 A 56 56 0 0 0 60.93 83.02 Z" opacity="0.55"/>
+          <text class="donut-c" x="110" y="105">합계</text>
+          <text class="donut-c" x="110" y="124">100%</text>
+          <text class="lab" x="154.1" y="50.5" text-anchor="middle" style="fill:#fff">20.3</text>
+          <text class="lab" x="178.0" y="139.2" text-anchor="middle" style="fill:#fff">22.3</text>
+          <text class="lab" x="104.2" y="183.8" text-anchor="middle">17.3</text>
+          <text class="lab" x="37.8" y="126.4" text-anchor="middle" style="fill:#fff">23.1</text>
+          <text class="lab" x="72.3" y="46.3" text-anchor="middle">17.0</text>
+        </g>
+        <g transform="translate(250,34)" class="cat">
+          <rect x="0" y="0" width="12" height="12" rx="2" fill="var(--navy)"/><text x="20" y="11">0–5% 평탄 · 20.3% · 15.57 ha</text>
+          <rect x="0" y="30" width="12" height="12" rx="2" fill="var(--navy-2)"/><text x="20" y="41">5–10% · 22.3% · 17.10 ha</text>
+          <rect x="0" y="60" width="12" height="12" rx="2" fill="var(--soft)"/><text x="20" y="71">10–15% · 17.3% · 13.23 ha</text>
+          <rect x="0" y="90" width="12" height="12" rx="2" fill="var(--accent)"/><text x="20" y="101" class="cat on">15–25% · 23.1% · 17.73 ha</text>
+          <rect x="0" y="120" width="12" height="12" rx="2" fill="var(--soft)" opacity="0.55"/><text x="20" y="131">25% 초과 · 17.0% · 13.05 ha</text>
+          <text x="0" y="166" class="axis">조각 5개(6개 이하) · 합계 100% · 단위 % · 강조색 1개</text>
+        </g>
+      </svg>
+      <figcaption>출처: 팀 데이터 카탈로그 16행 — 같은 30 m 셀 852개의 경사 구간 분류 · 조회일 2026-10-12 · 계산값, 실측 측량값 아님</figcaption>
+    </figure>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>카탈로그 행</th><th>경사 구간</th><th>구성비</th><th>면적</th><th>셀 수</th><th>조회일</th></tr></thead>
+        <tbody>
+          <tr><td>16-1</td><td>0–5% (평탄)</td><td class="n">20.3%</td><td class="n">15.57 ha</td><td class="n">173</td><td>2026-10-12</td></tr>
+          <tr><td>16-2</td><td>5–10%</td><td class="n">22.3%</td><td class="n">17.10 ha</td><td class="n">190</td><td>2026-10-12</td></tr>
+          <tr><td>16-3</td><td>10–15%</td><td class="n">17.3%</td><td class="n">13.23 ha</td><td class="n">147</td><td>2026-10-12</td></tr>
+          <tr class="on"><td>16-4</td><td>15–25%</td><td class="n">23.1%</td><td class="n">17.73 ha</td><td class="n">197</td><td>2026-10-12</td></tr>
+          <tr><td>16-5</td><td>25% 초과</td><td class="n">17.0%</td><td class="n">13.05 ha</td><td class="n">145</td><td>2026-10-12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="q">읽기: 기준안 15%를 넘는 첫 구간(15–25%)이 23.1%로 가장 크다. 경사를 조금만 더 허용하면 들어오는 땅이 많다는 뜻이지만, 차트 A에서 보듯 향 조건이 그 땅의 대부분을 다시 걸러 낸다.</p>
+  </section>
+
+  <!-- ── 차트 C · 추세(선) ── -->
+  <section class="card">
+    <div class="kind">차트 C · 추세 — 선</div>
+    <h2>연 폭염일수 추이 1975–2025 (일) — 창신동 격자</h2>
+    <p class="q">질문: 설계 조건인 폭염일수는 시간에 따라 어떻게 변했는가</p>
+    <figure>
+      <svg viewBox="0 0 560 250" role="img" aria-label="1975년부터 2025년까지 연 폭염일수 선그래프 — 2025년 22일로 최다">
+        <line class="gl" x1="46" y1="190" x2="552" y2="190"/>
+        <line class="gl" x1="46" y1="149" x2="552" y2="149" stroke-dasharray="3 3"/>
+        <line class="gl" x1="46" y1="108" x2="552" y2="108" stroke-dasharray="3 3"/>
+        <line class="gl" x1="46" y1="67" x2="552" y2="67" stroke-dasharray="3 3"/>
+        <line class="gl" x1="46" y1="26" x2="552" y2="26" stroke-dasharray="3 3"/>
+        <text class="axis" x="40" y="194" text-anchor="end">0일</text>
+        <text class="axis" x="40" y="153" text-anchor="end">5일</text>
+        <text class="axis" x="40" y="112" text-anchor="end">10일</text>
+        <text class="axis" x="40" y="71" text-anchor="end">15일</text>
+        <text class="axis" x="40" y="30" text-anchor="end">20일</text>
+        <line class="gl" x1="46" y1="10" x2="46" y2="190"/>
+        <g transform="translate(46,10) scale(1.012,1.8)">
+          <polyline class="pl" vector-effect="non-scaling-stroke" points="0.0,100.0 10.0,100.0 20.0,95.5 30.0,81.8 40.0,100.0 50.0,100.0 60.0,95.5 70.0,95.5 80.0,100.0 90.0,100.0 100.0,100.0 110.0,100.0 120.0,100.0 130.0,77.3 140.0,95.5 150.0,95.5 160.0,100.0 170.0,100.0 180.0,100.0 190.0,31.8 200.0,100.0 210.0,95.5 220.0,95.5 230.0,100.0 240.0,100.0 250.0,95.5 260.0,100.0 270.0,95.5 280.0,100.0 290.0,86.4 300.0,90.9 310.0,100.0 320.0,100.0 330.0,90.9 340.0,100.0 350.0,100.0 360.0,100.0 370.0,72.7 380.0,100.0 390.0,86.4 400.0,90.9 410.0,95.5 420.0,95.5 430.0,18.2 440.0,63.6 450.0,95.5 460.0,63.6 470.0,90.9 480.0,81.8 490.0,77.3 500.0,0.0 "/>
+        </g>
+        <circle class="dot" cx="552" cy="10" r="4.5"/>
+        <text class="lab" x="546" y="-2" text-anchor="end" style="fill:var(--accent)">2025년 22일</text>
+        <text class="axis" x="46" y="208">1975</text>
+        <text class="axis" x="147" y="208">1985</text>
+        <text class="axis" x="248" y="208">1995</text>
+        <text class="axis" x="349" y="208">2005</text>
+        <text class="axis" x="450" y="208">2015</text>
+        <text class="axis" x="552" y="208" text-anchor="end">2025</text>
+        <text class="axis" x="46" y="232">세로축 0일 시작 · 시점 간격 1년 균등 · 단위 일 · 강조 1개(최댓값 2025년)</text>
+      </svg>
+      <figcaption>출처: 팀 데이터 카탈로그 17행 — Open-Meteo Archive API(ERA5 재분석) 일자료 1975-01-01~2025-12-31, 일최고기온 33℃ 이상인 날의 연 합계 · 응답 격자 37.5747N 126.96E(대상지에서 약 4.5 km 서쪽) · 조회일 2026-10-12 · 재분석 자료로 관측소 실측값 아님</figcaption>
+    </figure>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>카탈로그 행</th><th>기간</th><th>연평균 폭염일수</th><th>연평균 열대야</th><th>단위</th><th>조회일</th></tr></thead>
+        <tbody>
+          <tr><td>17-1</td><td>1975–1984 (기준기간)</td><td class="n">0.7</td><td class="n">0.6</td><td>일</td><td>2026-10-12</td></tr>
+          <tr class="on"><td>17-2</td><td>2016–2025 (최근 10년)</td><td class="n">7.0</td><td class="n">8.2</td><td>일</td><td>2026-10-12</td></tr>
+          <tr><td>17-3</td><td>2025 (최댓값 연도)</td><td class="n">22</td><td class="n">16</td><td>일</td><td>2026-10-12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="q">읽기: 평균기온이 +0.248℃/10년(95% 신뢰구간 +0.143~+0.353, R² 0.31)으로 완만히 오르는 동안 폭염일수는 0.7 → 7.0일로 10배가 되었다. 설계 기준을 평균이 아니라 극값으로 잡아야 하는 이유가 대상지 좌표에서도 확인된다.</p>
+  </section>
+
+  <!-- ── 상호 점검 기록 ── -->
+  <section class="card">
+    <div class="kind">상호 점검 — 거리 · 색 · 폭 · 값 · 출처</div>
+    <h2>5개 점검 기록</h2>
+    <div class="checks">
+      <div class="chk"><b>1 거리</b><span>차트 A·B·C — 점검자 202420778 최승하 — 미통과 항목 없음 (1,120px 화면 3걸음 거리에서 제목·축 라벨·값 라벨 판독됨)</span></div>
+      <div class="chk"><b>2 색</b><span>차트 A·B·C — 점검자 202420778 최승하 — 미통과 항목 없음 (강조색 주황 1개, 값 라벨 병기로 색약 대비 확인)</span></div>
+      <div class="chk"><b>3 폭</b><span>차트 A·B·C — 점검자 202420778 최승하 — 미통과 항목 없음 (375×812 휴대전화 폭에서 축 라벨 비중첩, 가로 스크롤 없음)</span></div>
+      <div class="chk"><b>4 값</b><span>차트 A·B·C — 점검자 202420778 최승하 — 미통과 항목 없음 (막대·조각·점 라벨이 카탈로그 13~17행 값과 일치, 하단 표와 대조 완료)</span></div>
+      <div class="chk"><b>5 출처</b><span>차트 A·B·C — 점검자 202420778 최승하 — 미통과 항목 없음 (각주의 출처·조회일 2026-10-12이 카탈로그 행과 일치, 계산값 표기 포함)</span></div>
+      <div class="chk"><b>인증키</b><span>커밋 내 인증키 부재 확인 — <code>git show --stat</code> 변경 파일 전체를 key·token·secret·consumer·sb_secret 패턴으로 검색해 0건 (2026-10-12, 최승하)</span></div>
+      <div class="chk"><b>팀원 점검</b><span>팀원 1줄 기록란 — 차트 이름 · 점검자 · 미통과 항목 (팀 채팅 기록 후 이 줄에 전재)</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>배포 주소(production) <a href="https://choemyeongwon1-ui.github.io/kaya/6%EC%A3%BC%EC%B0%A8_%EB%B9%84%EA%B5%90%EA%B3%BC_%EC%B5%9C%EC%8A%B9%ED%95%98/">https://choemyeongwon1-ui.github.io/kaya/6%EC%A3%BC%EC%B0%A8_%EB%B9%84%EA%B5%90%EA%B3%BC_%EC%B5%9C%EC%8A%B9%ED%95%98/</a> · 저장소 <a href="https://github.com/choemyeongwon1-ui/kaya">https://github.com/choemyeongwon1-ui/kaya</a></span>
+    <span>값 출처: 팀 데이터 카탈로그 13~17행 · DEM AWS Terrain Tiles(terrarium, 원자료 30 m급) · 기후 Open-Meteo Archive(ERA5) · 경계 OpenStreetMap relation 3883989 (ODbL)</span>
+    <span>4차시 6개 요소(제목·축·단위·출처·조회일·강조)와 판별 5단계(원점 0 · 축 1개 · 2D 평면 · 시간→선 · 각주 기재)를 적용함. 세 차트 모두 2D, 세로축 0 시작, 축 1개.</span>
+  </footer>
+
+</div>
+</body>
+</html>
