@@ -10,6 +10,7 @@ from openpyxl.comments import Comment
 from openpyxl.utils import get_column_letter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+os.makedirs(os.path.join(HERE, "raw"), exist_ok=True)        # 중간 결과(_결과.json) 자리 — 저장소에는 올리지 않음
 sys.stdout.reconfigure(encoding="utf-8")
 rd = lambda f: list(csv.DictReader(open(os.path.join(HERE, f), encoding="utf-8-sig")))
 V = json.load(open(os.path.join(HERE, "01_4축표_값.json"), encoding="utf-8"))
