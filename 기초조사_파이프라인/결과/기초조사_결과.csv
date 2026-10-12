@@ -1,0 +1,164 @@
+﻿대항목,세부항목,지표,값,단위,출처,조회일,재현,상태,비고,수집기
+자연환경,지형,중심 표고,38.0,m,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,,meteo
+자연환경,지형,표고 최저~최고,25~63,m,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,반경 1000 m 안 317점 · 격자 100 m,meteo
+자연환경,지형,평균 표고,38.6,m,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,반경 1000 m 안 317점 · 격자 100 m,meteo
+자연환경,지형,"수치지형도 등고선(1:5,000)",,,국토정보플랫폼 수치지도,2026-10-12,https://map.ngii.go.kr,화면열람,,manual
+자연환경,경사도,평균 경사,3.3,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향 · 90 m DEM 이라 국지 급경사가 뭉개짐 — 5 m·1 m DEM(국토지리정보원)으로 교차확인,meteo
+자연환경,경사도,경사 10% 이하 면적 비율(하한 시나리오),99.0,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,"임계값은 교안 가정(교재 범위 4~25%, 6주차 27쪽) · 구간 경계 ≤10% 포함 · DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향",meteo
+자연환경,경사도,경사 15% 이하 면적 비율(기준안),100.0,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,"임계값은 교안 가정(교재 범위 4~25%, 6주차 27쪽) · 구간 경계 ≤15% 포함 · DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향",meteo
+자연환경,경사도,경사 25% 이하 면적 비율(상한 시나리오),100.0,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,"임계값은 교안 가정(교재 범위 4~25%, 6주차 27쪽) · 구간 경계 ≤25% 포함 · DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향",meteo
+자연환경,경사도,남향(향 135~225°) 면적 비율,39.3,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,남 180° ±45° · 경계 포함 · 평지(경사 0) 3점은 향 없음으로 분모에만 · DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향,meteo
+자연환경,경사도,경사 ≤15% · 남향 동시 충족 비율,39.3,%,Open-Meteo Elevation API (Copernicus DEM GLO-90),2026-10-12,py run.py --only meteo,수집,지표 ➅ 판정의 경사·향 두 조건 — 표고(기반시설 +50 m)는 기준 표고가 정해지면 추가 · DEM 계산값(API 수집 아님) · Copernicus GLO-90(90 m 셀 = 0.81 ha)을 100 m 표본 313점으로 판정 · 경사 = 100×√(dz/dx²+dz/dy²) 중앙차분 · 향 = 북 0° 시계방향,meteo
+자연환경,지질,지질도 암상·단층,,,한국지질자원연구원 지오빅데이터 오픈플랫폼,2026-10-12,https://data.kigam.re.kr,화면열람,,manual
+자연환경,토양,토양도·토성,,,흙토람 토양환경지도,2026-10-12,https://soil.rda.go.kr,화면열람,,manual
+자연환경,자원,광물·산림·수자원 현황,,,시·군 통계연보 / 산림청 임상도,2026-10-12,https://map.forest.go.kr,화면열람,,manual
+자연환경,지하수,지하수 관정·수위,,,국가지하수정보센터,2026-10-12,https://www.gims.go.kr,화면열람,,manual
+자연환경,수리,하천·수로 연장 — 중학천(삼청동전),1564,m,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 복개 구간은 OSM 에 없을 수 있음,osm
+자연환경,수리,하천·수로 연장 — 청계천,824,m,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 복개 구간은 OSM 에 없을 수 있음,osm
+자연환경,수리,하천·수로 연장 — (무명 drain),520,m,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 복개 구간은 OSM 에 없을 수 있음,osm
+자연환경,수리,하천·수로 연장 — 대은암천,127,m,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 복개 구간은 OSM 에 없을 수 있음,osm
+자연환경,수리,하천·수로 연장 — (무명 ditch),28,m,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 복개 구간은 OSM 에 없을 수 있음,osm
+자연환경,수문,수면 면적,800,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 0.0%,osm
+자연환경,수질,하천 수질측정망(BOD·TP),,,물환경정보시스템,2026-10-12,https://water.nier.go.kr,화면열람,,manual
+자연환경,기후,연평균기온(2025년),12.7,℃,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,,meteo
+자연환경,기후,연강수량(2025년),1334,mm,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,,meteo
+자연환경,기후,폭염일수 — 일최고 33℃ 이상(2025년),22,일,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,재분석 격자값은 도심 관측값보다 낮게 나오는 경향,meteo
+자연환경,기후,열대야 근사 — 일최저 25℃ 이상(2025년),16,일,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,기상청 정의(18~09시 최저)와 달라 근사값,meteo
+자연환경,풍수해,일강수량 80 mm 이상 일수(2025년),0,일,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,호우 빈도 단서 — 재해이력은 시군 풍수해저감종합계획으로,meteo
+자연환경,풍수해,최대 일강수량(2025년),58.2,mm,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,,meteo
+자연환경,풍수해,일최대풍속 최댓값(2025년),29.2,km/h,Open-Meteo Historical Weather API (재분석) · 격자 37.57N 126.96E,2026-10-12,py run.py --only meteo,수집,,meteo
+자연환경,풍수해,재해위험지구·침수흔적,,,시·군 풍수해저감종합계획 / 생활안전지도,2026-10-12,https://www.safemap.go.kr,화면열람,,manual
+자연환경,지진기록,반경 내 지진 발생 이력,,,기상청 날씨누리 국내지진 목록,2026-10-12,https://www.weather.go.kr/w/eqk-vol/search/korea.do,화면열람,,manual
+자연환경,생태,국토환경성평가 등급,,,국토환경성평가지도,2026-10-12,https://ecvam.neins.go.kr,화면열람,,manual
+자연환경,생태,생태자연도 등급,,,환경공간정보서비스(EGIS),2026-10-12,https://egis.me.go.kr,화면열람,,manual
+자연환경,식생,녹지 피복(OSM wood·scrub·grass 등) 면적,230000,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 7.3% · 대용값 — 현존식생도·생태자연도로 대체해야 함,osm
+자연환경,동식물 서식지,법정보호종·서식지,,,국립생태원 에코뱅크 / 생태자연도,2026-10-12,https://www.nie-ecobank.kr,화면열람,,manual
+인문환경,역사,지역 형성사·지명 유래,,,시·군지(종로구지) / 한국민족문화대백과,2026-10-12,https://encykorea.aks.ac.kr,화면열람,,manual
+인문환경,행정,대상지 중심 소재 시도·시군구,서울특별시 종로구,,브이월드 데이터 API GetFeature LT_C_ADSIDO_INFO/LT_C_ADSIGG_INFO,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,경계 안팎 판정 기준 · crs EPSG:4326,vworld
+인문환경,행정,반경 원 중 종로구 비율,81.4,%,브이월드 데이터 API GetFeature LT_C_ADSIGG_INFO,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 — 100 이 아니면 원이 시군구 경계를 넘음(시군구 단위 통계 적용 주의),vworld
+인문환경,행정,반경 원 중 중구 비율,18.6,%,브이월드 데이터 API GetFeature LT_C_ADSIGG_INFO,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 — 100 이 아니면 원이 시군구 경계를 넘음(시군구 단위 통계 적용 주의),vworld
+인문환경,행정,대상지 주소(지오코더 입력),서울특별시 종로구 수송동 146-12,,브이월드 지오코더 2.0 getCoord,2026-10-12,"py run.py --addr ""서울특별시 종로구 수송동 146-12"" --addr-type PARCEL   (환경변수 VWORLD_KEY 필요) · 요청 https://api.vworld.kr/req/address?service=address&request=getCoord&version=2.0&crs=epsg%3A4326&address=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C+%EC%A2%85%EB%A1%9C%EA%B5%AC+%EC%88%98%EC%86%A1%EB%8F%99+146-12&type=PARCEL&refine=true&simple=false&format=json&domain=http%3A%2F%2Flocalhost",수집,"정제주소 서울특별시 종로구 수송동 146-12 · 좌표는 저장하지 않음(이용조건: 결과 저장 금지 · 일 40,000건) — 실행 때마다 재호출",geocode
+인문환경,행정,행정구역 연혁·행정동 경계,,,시·군 통계연보 / SGIS 경계,2026-10-12,https://sgis.kostat.go.kr,화면열람,,manual
+인문환경,문화재,OSM historic 요소 개수,127,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+인문환경,문화재,종로구 지정 국가유산 수(해제 제외),517,건,국가유산청 국가유산 검색 OPEN API,2026-09-28,py run.py --only khs,수집,소재지 코드 기준 · 동산(유물)은 소장처 좌표라 대상지 밖일 수 있음,khs
+인문환경,문화재,반경 1000 m 안 국가유산 수,149,건,국가유산청 국가유산 검색 OPEN API,2026-09-28,py run.py --only khs,수집,"좌표 없는 211건 제외 · 종목별: 보물 59, 시도유형문화유산 53, 국가등록문화유산 9, 사적 9, 국보 7, 시도민속문화유산 5, 국가민속문화유산 2, 문화유산자료 2, 천연기념물 2, 시도기념물 1",khs
+인문환경,문화재,가장 가까운 국가유산,은제이화문탕기(국가등록문화유산),,국가유산청 국가유산 검색 OPEN API,2026-09-28,py run.py --only khs,수집,69 m · 유물(동산)이면 소장처 좌표 — 상세_국가유산목록.csv 에서 건조물 확인,khs
+토지이용,용도별 면적,용도지역 — 일반상업지역,53.3,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 1.678 km²,vworld
+토지이용,용도별 면적,용도지역 — 제1종일반주거지역,18.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.565 km²,vworld
+토지이용,용도별 면적,용도지역 — 자연녹지지역,11.7,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.369 km²,vworld
+토지이용,용도별 면적,용도지역 — 제2종일반주거지역,9.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.284 km²,vworld
+토지이용,용도별 면적,용도지역 — 준주거지역,3.4,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.106 km²,vworld
+토지이용,용도별 면적,용도지역 — 도시지역(세분 미표기),3.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.094 km²,vworld
+토지이용,용도별 면적,용도지역 — 제3종일반주거지역,1.2,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.037 km²,vworld
+토지이용,용도별 면적,용도지역 — 중심상업지역,0.5,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,반경 1000 m 원 면적 기준 · 면적 0.016 km²,vworld
+토지이용,용도별 면적,용도지역 결정도 원문(API 값 교차확인),,,토지이음 토지이용계획열람,2026-10-12,https://www.eum.go.kr,화면열람,,manual
+토지이용,용도별 분포,OSM landuse — 상업,5.6,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 초지,4.8,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 주거,2.2,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 공사중,1.3,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 기타(civic_admin),0.9,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 종교,0.4,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 산림,0.3,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 여가,0.2,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 군사,0.1,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 기타(flowerbed),0.0,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,대용값(법정 용도지역 아님) · 원 면적 기준,osm
+토지이용,용도별 분포,OSM landuse — 미표기,84.3,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,OSM 에 landuse 가 안 그려진 면적,osm
+토지이용,토지소유,소유 구분(국공유·사유) — 연속지적도에 없는 속성,,,국가공간정보포털 토지소유정보(자료신청),2026-10-12,https://www.nsdi.go.kr,화면열람,,manual
+토지이용,지가,중심 필지 개별공시지가,30920000,원/m²,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,서울특별시 종로구 수송동 146-12 · PNU 1111012400101460012 · 기준 2025년 01월,vworld
+토지이용,지가,원 안 필지 공시지가 중앙값,10530000,원/m²,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2631개,vworld
+토지이용,지목별 면적,지목 — 대,57.7,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 도,25.5,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 사,11.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 공,1.5,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 학,1.3,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 종,1.2,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 천,0.9,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 구,0.7,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 차,0.2,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 잡,0.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 철,0.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,지목별 면적,지목 — 주,0.0,%,브이월드 데이터 API GetFeature,2026-10-12,py run.py --only vworld   (환경변수 VWORLD_KEY 필요),수집,필지 2643개 기준 · 도로·하천 필지 포함,vworld
+토지이용,임상,임상도(침엽·활엽·혼효),,,산림공간정보서비스 임상도,2026-10-12,https://map.forest.go.kr,화면열람,,manual
+인구,인구총수 변화,총인구 2015·2020·2024,,,SGIS OpenAPI3 stats/population (통계청 인구주택총조사·등록센서스),2026-09-28,py run.py --only sgis   (환경변수 SGIS_KEY·SGIS_SECRET 필요),조회대기,SGIS_KEY·SGIS_SECRET 없음 — sgis.kostat.go.kr 개발지원센터에서 발급,sgis
+인구,인구총수 변화,종로구 주민등록인구(2015),154986,명,행정안전부 주민등록 인구통계 — 주민등록 인구 및 세대현황(연간) (2015-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 외국인 제외,public
+인구,인구총수 변화,종로구 주민등록인구(2020),149384,명,행정안전부 주민등록 인구통계 — 주민등록 인구 및 세대현황(연간) (2020-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 외국인 제외,public
+인구,인구총수 변화,종로구 주민등록인구(2024),138336,명,행정안전부 주민등록 인구통계 — 주민등록 인구 및 세대현황(연간) (2024-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 외국인 제외 · 세대수 72166,public
+인구,인구총수 변화,종로구 인구 증감률(2015→2024),-10.7,%,위 주민등록인구로 계산,2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님),public
+인구,인구밀도,인구밀도,,,SGIS OpenAPI3 stats/population (통계청 인구주택총조사·등록센서스),2026-09-28,py run.py --only sgis   (환경변수 SGIS_KEY·SGIS_SECRET 필요),조회대기,SGIS_KEY·SGIS_SECRET 없음 — sgis.kostat.go.kr 개발지원센터에서 발급,sgis
+인구,인구밀도,종로구 행정구역 면적,23.913519,km²,국토교통부 도시계획현황 — 행정구역 현황(KOSIS 460 TX_315_2009_H1009) (2025),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 원값 23913519 ㎡ · 전부 도시지역 · 인구밀도 계산에 쓴다,public
+인구,인구밀도,종로구 인구밀도(2024),5785,명/km²,주민등록인구 ÷ 행정구역 면적,2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님),public
+인구,인구밀도,SGIS 격자(100 m·500 m) 인구,,,SGIS 통계지도 격자,2026-10-12,https://sgis.kostat.go.kr,화면열람,,manual
+인구,인구구성,평균연령·노년부양비·노령화지수,,,SGIS OpenAPI3 stats/population (통계청 인구주택총조사·등록센서스),2026-09-28,py run.py --only sgis   (환경변수 SGIS_KEY·SGIS_SECRET 필요),조회대기,SGIS_KEY·SGIS_SECRET 없음 — sgis.kostat.go.kr 개발지원센터에서 발급,sgis
+인구,인구구성,종로구 65세 이상 인구(2024),29574,명,행정안전부 주민등록 인구통계 — 연령별 인구현황(5세 단위) (2024-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 65~69세부터 100세 이상까지 합,public
+인구,인구구성,종로구 0~14세 인구(2024),9931,명,행정안전부 주민등록 인구통계 — 연령별 인구현황(5세 단위) (2024-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 0-4 · 5-9 · 10-14세 합,public
+인구,인구구성,종로구 15~64세 인구(2024),98831,명,행정안전부 주민등록 인구통계 — 연령별 인구현황(5세 단위) (2024-12),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 15-19세부터 60-64세까지 합 · 세 구간 합 = 총인구 138336,public
+인구,인구구성,종로구 노령화지수(2024),297.8,,65세 이상 ÷ 0~14세 × 100,2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님),public
+인구,인구구성,종로구 노년부양비(2024),29.9,,65세 이상 ÷ 15~64세 × 100,2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님),public
+인구,주야간 인구,주간인구지수·통근통학,,,KOSIS 인구주택총조사 통근통학,2026-10-12,https://kosis.kr,화면열람,,manual
+인구,산업별 인구,종로구 종사자수,216016,명,고용노동부 사업체노동실태현황 — 시군구별(8개시) 산업별 규모별 사업체수 및 종사자수(KOSIS 118 DT_118N_SAUPM75) (2024),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 전체 산업 · 전규모 · 남 113181 · 여 102835,public
+인구,산업별 인구,산업대분류별 종사자,,,KOSIS 전국사업체조사,2026-10-12,https://kosis.kr,화면열람,,manual
+주거,주택수,총주택수,,,SGIS OpenAPI3 stats/population (통계청 인구주택총조사·등록센서스),2026-09-28,py run.py --only sgis   (환경변수 SGIS_KEY·SGIS_SECRET 필요),조회대기,SGIS_KEY·SGIS_SECRET 없음 — sgis.kostat.go.kr 개발지원센터에서 발급,sgis
+주거,주택수,종로구 총주택수,47214,호,국가데이터처 주택총조사(등록센서스) — 주택의 종류별 주택(KOSIS 101 DT_1JU1501) (2025),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 단독 11525 · 아파트 16430 · 연립 5514 · 다세대 12893 · 비주거용 건물 내 852,public
+주거,주택보급률,주택보급률(신),,,e-나라지표 / KOSIS,2026-10-12,https://www.index.go.kr,화면열람,,manual
+주거,임대수준,전월세 가격·전환율,,,한국부동산원 R-ONE / 국토부 실거래가,2026-10-12,https://www.reb.or.kr/r-one,화면열람,,manual
+경제,지역총생산,시·군 GRDP,,,KOSIS 지역소득,2026-10-12,https://kosis.kr,화면열람,,manual
+경제,산업,사업체수·종사자수,,,SGIS OpenAPI3 stats/population (통계청 인구주택총조사·등록센서스),2026-09-28,py run.py --only sgis   (환경변수 SGIS_KEY·SGIS_SECRET 필요),조회대기,SGIS_KEY·SGIS_SECRET 없음 — sgis.kostat.go.kr 개발지원센터에서 발급,sgis
+경제,산업,종로구 사업체수,19093,개,고용노동부 사업체노동실태현황 — 시군구별(8개시) 산업별 규모별 사업체수 및 종사자수(KOSIS 118 DT_118N_SAUPM75) (2024),2026-10-12,입력/공개통계.csv 값 입력 후 py run.py --only public,수집,종로구 전체(반경 원 기준 아님) · 전체 산업 · 전규모. 국가데이터처 전국사업체조사(시도까지만 공개)와 집계 범위가 다를 수 있다,public
+경제,산업,산업구조·입지계수,,,시·군 통계연보,2026-10-12,https://kosis.kr,화면열람,,manual
+경제,특화산업,상점(shop) 개수,718,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,"반경 1000 m 원 안(면적 3.15 km²) · 상위: clothes 128, convenience 95, beauty 73, stationery 61, bakery 53",osm
+경제,특화산업,사무소(office) 개수,67,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,"반경 1000 m 원 안(면적 3.15 km²) · 상위: diplomatic 27, company 10, research 5, newspaper 4, association 3",osm
+경제,특화산업,공방(craft) 개수,16,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,"반경 1000 m 원 안(면적 3.15 km²) · 상위: photographer 12, yes 2, jeweller 1, watchmaker 1",osm
+교통시설,도로,주간선 연장,17.08,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,보조간선 연장,2.33,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,집산도로 연장,4.72,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,국지도로 연장,43.2,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,보행자전용 연장,61.36,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,자전거도로 연장,4.74,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM highway 등급을 도로 기능 구분에 대응시킨 값(법정 도로등급 아님) · 상·하행이 따로 그려진 도로는 두 번 셈,osm
+교통시설,도로,차도 연장 밀도,21.39,km/km²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+교통시설,도로,도시계획시설(도로) 결정·미집행,,,관리계획 결정도 — 토지이음,2026-10-12,https://www.eum.go.kr,화면열람,,manual
+교통시설,철도,역 개수,7,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+교통시설,철도,철도·도시철도 선로 연장,16.27,km,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 지하 구간 포함,osm
+교통시설,항만,항만 개수,0,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM 에 없음(실제 없음인지 결정도로 확인),osm
+교통시설,공항,공항 개수,0,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM 에 없음(실제 없음인지 결정도로 확인),osm
+교통시설,버스터미널,버스정류장 개수,98,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+교통시설,버스터미널,버스터미널 개수,0,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · OSM 에 없음(실제 없음인지 결정도로 확인),osm
+교통시설,교통량,도로 구간별 AADT,,,국토교통부 교통량정보제공시스템 / 서울 TOPIS,2026-10-12,https://www.road.re.kr,화면열람,,manual
+유통·공급시설,상수도,상수도 보급률·급수량,,,시·군 통계연보 / 상수도통계,2026-10-12,https://kosis.kr,화면열람,,manual
+유통·공급시설,전기,변전소 개수,3,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+유통·공급시설,전기,전력 사용량,,,한국전력 전력데이터 개방포털,2026-10-12,https://bigdata.kepco.co.kr,화면열람,,manual
+유통·공급시설,통신,통신 기반시설 현황,,,시·군 통계연보,2026-10-12,https://kosis.kr,화면열람,,manual
+공공·문화체육시설,교육문화시설,공연장 개수,35,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,대학 개수,4,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,도서관 개수,5,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,문화시설 개수,21,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,미술관·갤러리(상업 포함) 개수,103,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,박물관 개수,33,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,영화관 개수,2,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,유치원 개수,1,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,체육시설 개수,13,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,학교 개수,8,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,교육문화시설,학교 학생수·학급수,,,학교알리미,2026-10-12,https://www.schoolinfo.go.kr,화면열람,,manual
+공공·문화체육시설,복지시설,병원 개수,3,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,복지시설,사회복지시설 개수,3,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,복지시설,의원 개수,1,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,복지시설,주민·복지회관 개수,2,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,복지시설,사회복지시설 목록,,,시·군 통계연보 / 사회서비스 정보,2026-10-12,https://kosis.kr,화면열람,,manual
+공공·문화체육시설,공공청사,경찰 개수,11,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,공공청사,법원 개수,1,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,공공청사,소방 개수,1,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,공공청사,시청·구청·주민센터 개수,3,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,공공청사,우체국 개수,8,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공공·문화체육시설,공공청사,행정기관 개수,16,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공간시설,공원·유원지,공원 개수,24,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공간시설,공원·유원지,어린이놀이터 개수,10,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공간시설,공원·유원지,정원(사유 포함) 개수,145,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공간시설,공원·유원지,공원 면적(원 안),148400,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 4.7%,osm
+공간시설,공원·유원지,어린이놀이터 면적(원 안),2400,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 0.1%,osm
+공간시설,공원·유원지,정원(사유 포함) 면적(원 안),75200,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 2.4%,osm
+공간시설,공원·유원지,도시공원 결정 면적·조성률,,,관리계획 결정도 · 공원녹지기본계획,2026-10-12,https://www.eum.go.kr,화면열람,,manual
+공간시설,녹지,녹지 피복 비율(대용),7.3,%,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,도시계획시설 '녹지'(완충·경관·연결녹지)가 아니라 피복 — 결정도로 확인,osm
+공간시설,녹지,완충·경관·연결녹지 결정,,,관리계획 결정도,2026-10-12,https://www.eum.go.kr,화면열람,,manual
+공간시설,광장,광장 개수,11,개소,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²),osm
+공간시설,광장,광장 면적(원 안),11200,m²,OpenStreetMap(ODbL) Overpass API,2026-09-28,py run.py --only osm,수집,반경 1000 m 원 안(면적 3.15 km²) · 원 대비 0.4%,osm
+공간시설,광장,교통·일반·경관광장 결정,,,관리계획 결정도,2026-10-12,https://www.eum.go.kr,화면열람,,manual
+공간시설,공공공지,공공공지 결정 위치·면적,,,관리계획 결정도 — OSM 에는 이 구분이 없음,2026-10-12,https://www.eum.go.kr,화면열람,,manual

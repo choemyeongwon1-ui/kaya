@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기초조사 대시보드</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f1;
+  --surface-1: #fcfcfb;
+  --surface-2: #f0efec;
+  --border: #dcdbd5;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #77766f;
+  --accent: #12305e;
+  --series-1: #2a78d6;
+  --track: #e7e6e1;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110; --surface-1: #1a1a19; --surface-2: #242422; --border: #383835;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #96958c;
+    --accent: #9ec5f4; --series-1: #3987e5; --track: #2c2c2a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface-1: #1a1a19; --surface-2: #242422; --border: #383835;
+  --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #96958c;
+  --accent: #9ec5f4; --series-1: #3987e5; --track: #2c2c2a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text-primary);
+  font: 14px/1.5 "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 14px; }
+h1 { font-size: 20px; margin: 0; color: var(--accent); }
+.sub { color: var(--text-secondary); font-size: 13px; }
+.chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary); }
+form { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+input, select, button { font: inherit; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--surface-1); color: var(--text-primary); min-width: 0; }
+button { background: var(--accent); color: var(--surface-1); border-color: var(--accent); font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .55; cursor: progress; }
+.hint { color: var(--text-muted); font-size: 12px; margin: 6px 2px 0; }
+.msg { margin: 12px 0; padding: 10px 12px; border-radius: 8px; background: var(--surface-1); border: 1px solid var(--border); }
+.msg.err { border-left: 4px solid var(--critical); }
+.msg.busy { border-left: 4px solid var(--series-1); }
+.hidden { display: none !important; }
+.top { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; margin-top: 14px; }
+.panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-width: 0; }
+.panel h2 { font-size: 15px; margin: 0 0 8px; }
+#map { height: 260px; border-radius: 8px; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; }
+dl.kv dt { color: var(--text-secondary); }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.grid6 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.card .hd { display: flex; align-items: center; gap: 8px; }
+.num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--surface-1);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.card h3 { font-size: 15px; margin: 0; flex: 1; }
+.state { font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); white-space: nowrap; }
+.state i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.note { color: var(--text-muted); font-size: 12px; }
+.stat { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--border); padding: 3px 0; }
+.stat span:first-child { color: var(--text-secondary); }
+.stat b { font-variant-numeric: tabular-nums; }
+.bars { display: flex; flex-direction: column; gap: 2px; }
+.bar { display: grid; grid-template-columns: minmax(84px, 38%) 1fr 48px; align-items: center; gap: 8px; padding: 3px 0; cursor: default; }
+.bar .lb { color: var(--text-secondary); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .tr { height: 12px; background: var(--track); border-radius: 0 4px 4px 0; position: relative; }
+.bar .fl { position: absolute; left: 0; top: 0; bottom: 0; background: var(--series-1); border-radius: 0 4px 4px 0; }
+.bar .vl { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.bar:hover .tr { outline: 2px solid var(--border); outline-offset: 1px; }
+.plan { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--border); }
+.plan small { display: block; color: var(--text-muted); }
+a { color: var(--series-1); }
+#tip { position: fixed; pointer-events: none; z-index: 9999; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px; max-width: 300px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.tablebar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 18px 0 8px; }
+.tablebar h2 { font-size: 15px; margin: 0; flex: 1; }
+.tbl { overflow-x: auto; background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 12.5px; }
+td:nth-child(-n+2), th { white-space: nowrap; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { background: var(--surface-2); color: var(--text-secondary); position: sticky; top: 0; }
+td.v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.n { color: var(--text-muted); max-width: 360px; }
+.team { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.team .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.team input { flex: 1 1 160px; }
+button.ghost { background: var(--surface-1); color: var(--text-primary); border-color: var(--border); font-weight: 600; }
+.runs { max-height: 240px; overflow: auto; }
+.run { display: flex; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.run div { flex: 1; min-width: 0; }
+.run small { color: var(--text-muted); display: block; }
+@media (max-width: 900px) { .team { grid-template-columns: 1fr; } .grid6 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .top { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { form { grid-template-columns: 1fr 1fr; } form input#addr { grid-column: 1 / -1; } .grid6 { grid-template-columns: 1fr; } .chips { margin-left: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>기초조사 대시보드</h1>
+    <span class="sub">주소 → 브이월드 → 6주차 지표 여섯 칸</span>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <form id="f">
+    <input id="addr" placeholder="예: 서울특별시 종로구 창신동 128-32" required>
+    <select id="type" aria-label="주소 종류">
+      <option value="PARCEL">지번(PARCEL)</option>
+      <option value="ROAD">도로명(ROAD)</option>
+    </select>
+    <select id="radius" aria-label="반경">
+      <option value="200">반경 200 m</option>
+      <option value="400" selected>반경 400 m</option>
+      <option value="800">반경 800 m</option>
+      <option value="1000">반경 1,000 m</option>
+    </select>
+    <input id="name" placeholder="이름(선택)" style="width:130px">
+    <button id="go" type="submit">조회</button>
+  </form>
+  <p class="hint">인증키는 서버 환경변수에만 있습니다. 지오코더 좌표는 화면에만 쓰고 저장하지 않습니다(이용조건). 반경 1,000 m 는 필지가 많아 1~2분 걸립니다.</p>
+
+  <div class="team">
+    <div class="panel">
+      <h2>팀 DB 저장</h2>
+      <div class="row">
+        <input id="author" placeholder="작성자 이름" maxlength="40">
+        <button id="save" type="button" disabled>이 결과를 팀 DB에 저장</button>
+      </div>
+      <p class="hint">로그인 없이 팀원 누구나 저장·조회합니다. 저장한 기록은 고치거나 지울 수 없습니다(관리자만 Supabase에서 삭제). 좌표·인증키는 저장하지 않습니다.</p>
+    </div>
+    <div class="panel">
+      <h2>팀 기록 <button id="reload" type="button" class="ghost" style="padding:2px 8px;font-size:12px">새로고침</button></h2>
+      <div class="runs" id="runs"><span class="note">불러오는 중…</span></div>
+    </div>
+  </div>
+
+  <div id="msg" class="msg hidden"></div>
+
+  <div id="result" class="hidden">
+    <div class="top">
+      <div class="panel">
+        <h2 id="siteName">대상지</h2>
+        <dl class="kv" id="siteKv"></dl>
+      </div>
+      <div class="panel"><div id="map"></div></div>
+    </div>
+    <div class="grid6" id="cards"></div>
+
+    <div class="tablebar">
+      <h2>전체 행 — 값 · 단위 · 출처 · 조회일 · 재현</h2>
+      <input id="filter" placeholder="표 안 찾기" style="width:200px">
+      <button id="dl" type="button">CSV 내려받기</button>
+    </div>
+    <div class="tbl"><table id="tbl"></table></div>
+  </div>
+</div>
+<div id="tip" class="hidden"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = v => { const n = Number(v); return v !== "" && v != null && isFinite(n) ? n.toLocaleString("ko-KR") : (v ?? ""); };
+const STATE = { "확보": "var(--good)", "열람 병기": "var(--series-1)", "조회 대기": "var(--warning)", "계산 필요": "var(--warning)", "없음": "var(--text-muted)", "실패": "var(--critical)" };
+const ICON = { "확보": "✓", "열람 병기": "↗", "조회 대기": "…", "계산 필요": "…", "없음": "–", "실패": "!" };
+let last = null, map = null, layer = null, sb = null;
+
+// 마지막 입력 주소만 이 브라우저에 기억(입력 편의) — 좌표는 저장하지 않는다
+try { const s = localStorage.getItem("bs-last-addr"); if (s) $("#addr").value = s; } catch (e) {}
+
+fetch("/api/status").then(r => r.json()).then(s => {
+  $("#chips").innerHTML = [
+    `<span class="chip">VWORLD_KEY ${s.vworld_key ? "있음" : "없음"}</span>`,
+    `<span class="chip">domain ${esc(s.domain || "없음")}</span>`,
+    `<span class="chip">SGIS ${s.sgis_key ? "있음" : "없음"}</span>`,
+    `<span class="chip">${esc(s.today)}</span>`].join("");
+}).catch(() => {});
+
+// 막대 — 단일 계열(한 색), 값은 텍스트 토큰으로, 호버 툴팁
+function bars(items, max) {
+  const m = max || Math.max(...items.map(i => i.v), 1);
+  return `<div class="bars">${items.map(i => `
+    <div class="bar" data-tip="${esc(i.tip)}">
+      <span class="lb">${esc(i.label)}</span>
+      <span class="tr"><span class="fl" style="width:${Math.max(0, Math.min(100, 100 * i.v / m))}%"></span></span>
+      <span class="vl">${esc(i.v)}%</span>
+    </div>`).join("")}</div>`;
+}
+function stats(rows) {
+  return rows.map(r => `<div class="stat" title="${esc(r.출처)} · ${esc(r.비고)}"><span>${esc(r.지표)}</span><b>${esc(fmt(r.값))} ${esc(r.단위)}</b></div>`).join("");
+}
+
+function cardBody(c) {
+  const R = c.rows;
+  if (c.no === 3 && R.length) {
+    const it = R.map(r => ({ label: r.지표.replace(/^용도지역 — /, ""), v: Number(r.값), tip: `${r.지표}: ${r.값}% · ${r.비고}` }))
+                .sort((a, b) => b.v - a.v);
+    return bars(it, 100);
+  }
+  if (c.no === 6 && R.length) {
+    const th = R.filter(r => /이하 면적 비율/.test(r.지표));
+    const it = th.map(r => ({ label: r.지표.replace(/ 면적 비율/, "").replace("경사 ", "≤ "), v: Number(r.값), tip: `${r.지표}: ${r.값}%` }));
+    const rest = R.filter(r => !/이하 면적 비율/.test(r.지표));
+    return bars(it, 100) + stats(rest);
+  }
+  if (c.no === 4 && R.length) {
+    return R.map(r => r.상태 === "화면열람"
+      ? `<div class="plan"><a href="${esc(r.재현)}" target="_blank" rel="noopener">${esc(r.지표)} ↗</a><small>${esc(r.비고)}</small></div>`
+      : `<div class="plan">${esc(r.지표)} — <b>${esc(r.값)}%</b><small>${esc(r.출처.replace("브이월드 데이터 API GetFeature ", ""))} · ${esc(r.비고)}</small></div>`).join("");
+  }
+  if (c.no === 2 && R.length && c.state !== "확보") {
+    return `<div class="note">${esc(R[0].비고)}</div>`;
+  }
+  return R.length ? stats(R) : "";
+}
+
+function render(d) {
+  last = d;
+  const s = d.site;
+  $("#siteName").textContent = s.name;
+  const adm = d.admin.map(r => r.지표.startsWith("대상지 중심") ? `<dt>소재</dt><dd>${esc(r.값)}</dd>` :
+    `<dt>${esc(r.지표.replace("반경 원 중 ", "원 중 "))}</dt><dd>${esc(r.값)}%</dd>`).join("");
+  $("#siteKv").innerHTML = `
+    <dt>입력 주소</dt><dd>${esc(s.addr)} (${esc(s.type)})</dd>
+    <dt>정제 주소</dt><dd>${esc(s.refined)}</dd>
+    <dt>반경</dt><dd>${esc(s.radius)} m</dd>${adm}
+    <dt>조회일</dt><dd>${esc(d.today)}</dd>
+    <dt>결과 폴더</dt><dd><code>${esc(d.out)}</code></dd>`;
+  $("#cards").innerHTML = d.indicators.map(c => `
+    <div class="card">
+      <div class="hd"><span class="num">${c.no}</span><h3>${esc(c.title)}</h3>
+        <span class="state"><i style="background:${STATE[c.state] || "var(--text-muted)"}"></i>${ICON[c.state] || ""} ${esc(c.state)}</span></div>
+      ${cardBody(c)}
+      ${c.note ? `<div class="note">${esc(c.note)}</div>` : ""}
+    </div>`).join("");
+  if (s.lat != null) drawMap(s);
+  else { if (map) { map.remove(); map = null; layer = null; }
+    $("#map").innerHTML = '<div class="note" style="padding:12px">팀 DB 기록은 좌표를 저장하지 않습니다(지오코더 이용조건) — 같은 주소로 조회하면 지도가 나옵니다.</div>'; }
+  drawTable();
+  $("#save").disabled = !(sb && s.lat != null);
+}
+
+function drawMap(s) {
+  if (typeof L === "undefined") { $("#map").textContent = "지도 라이브러리를 불러오지 못했습니다"; return; }
+  const c = L.latLng(s.lat, s.lon);
+  if (!map) {
+    map = L.map("map", { scrollWheelZoom: false }).setView(c, 15);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+  }
+  if (layer) layer.remove();
+  layer = L.layerGroup([
+    L.circle(c, { radius: s.radius, color: "#2a78d6", weight: 2, fillOpacity: .08 }),
+    L.circleMarker(c, { radius: 5, color: "#12305e", weight: 2, fillOpacity: 1 }).bindTooltip(s.refined),
+  ]).addTo(map);
+  setTimeout(() => { map.invalidateSize(); map.fitBounds(c.toBounds(s.radius * 2), { padding: [10, 10] }); }, 50);
+}
+
+const COLS = ["대항목", "세부항목", "지표", "값", "단위", "상태", "출처", "조회일", "비고"];
+function drawTable() {
+  const q = $("#filter").value.trim();
+  const rows = last.rows.filter(r => !q || COLS.some(k => String(r[k] ?? "").includes(q)));
+  $("#tbl").innerHTML = `<thead><tr>${COLS.map(k => `<th>${k}</th>`).join("")}</tr></thead><tbody>` +
+    rows.map(r => `<tr>${COLS.map(k => `<td class="${k === "값" ? "v" : k === "비고" ? "n" : ""}">${esc(k === "값" ? fmt(r[k]) : r[k])}</td>`).join("")}</tr>`).join("") + "</tbody>";
+}
+$("#filter").addEventListener("input", () => last && drawTable());
+
+$("#dl").addEventListener("click", () => {
+  if (!last) return;
+  const cols = ["대항목", "세부항목", "지표", "값", "단위", "출처", "조회일", "재현", "상태", "비고", "수집기"];
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const csv = "﻿" + [cols.join(","), ...last.rows.map(r => cols.map(c => q(r[c])).join(","))].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `기초조사_${last.site.name}_${last.today}.csv`;
+  a.click();
+});
+
+// 툴팁 — 막대보다 넓은 행 전체가 호버 대상
+document.addEventListener("mousemove", e => {
+  const b = e.target.closest("[data-tip]"), t = $("#tip");
+  if (!b) { t.classList.add("hidden"); return; }
+  t.textContent = b.dataset.tip; t.classList.remove("hidden");
+  const x = Math.min(e.clientX + 14, innerWidth - t.offsetWidth - 8);
+  t.style.left = x + "px"; t.style.top = (e.clientY + 14) + "px";
+});
+
+$("#f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const body = { addr: $("#addr").value, type: $("#type").value, radius: $("#radius").value, name: $("#name").value };
+  try { localStorage.setItem("bs-last-addr", body.addr); } catch (e) {}
+  $("#go").disabled = true;
+  const m = $("#msg"); m.className = "msg busy"; m.textContent = "조회 중… 지오코더 → DEM(경사·향) → 브이월드 레이어(용도지역·필지·행정경계·계획)";
+  try {
+    const r = await fetch("/api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    m.className = "msg hidden";
+    $("#result").classList.remove("hidden");
+    render(d);
+  } catch (err) {
+    m.className = "msg err"; m.textContent = "실패 — " + err.message;
+  } finally { $("#go").disabled = false; }
+});
+
+// ── 팀 DB (Supabase · 로그인 없음) ─────────────────────────────────
+const msg = (t, err) => { const m = $("#msg"); m.className = "msg " + (err ? "err" : "busy"); m.textContent = t; };
+try { const a = localStorage.getItem("bs-author"); if (a) $("#author").value = a; } catch (e) {}
+fetch("/api/config").then(r => r.json()).then(c => {
+  if (!c.supabase_url || !c.supabase_key || !window.supabase) { $("#runs").innerHTML = '<span class="note">팀 DB 설정이 없습니다(dashboard/supabase_config.json).</span>'; return; }
+  sb = window.supabase.createClient(c.supabase_url, c.supabase_key, { auth: { persistSession: false } });
+  loadRuns();
+});
+$("#reload").addEventListener("click", () => sb && loadRuns());
+
+async function loadRuns() {
+  const { data, error } = await sb.from("survey_runs")
+    .select("id, created_at, author, site_name, address, addr_type, radius_m, query_date, sido_sigungu")
+    .order("created_at", { ascending: false }).limit(100);
+  if (error) { $("#runs").innerHTML = `<span class="note">불러오기 실패 — ${esc(error.message)}</span>`; return; }
+  if (!data.length) { $("#runs").innerHTML = '<span class="note">아직 저장된 대상지가 없습니다.</span>'; return; }
+  $("#runs").innerHTML = data.map(r => `<div class="run"><div><b>${esc(r.site_name)}</b> · 반경 ${r.radius_m} m
+      <small>${esc(r.address)} · ${esc(r.sido_sigungu || "")} · ${esc(r.query_date)} · ${esc(r.author)}</small></div>
+      <button type="button" class="ghost" data-open="${r.id}" style="padding:4px 8px">열기</button></div>`).join("");
+}
+$("#runs").addEventListener("click", async e => {
+  const o = e.target.dataset.open;
+  if (!o) return;
+  const [{ data: run, error: e1 }, { data: rows, error: e2 }] = await Promise.all([
+    sb.from("survey_runs").select("*").eq("id", o).single(),
+    sb.from("survey_rows").select("*").eq("run_id", o).order("id")]);
+  if (e1 || e2) return msg("열기 실패 — " + (e1 || e2).message, true);
+  const R = rows.map(x => ({ 대항목: x.category, 세부항목: x.item, 지표: x.indicator, 값: x.value, 단위: x.unit, 출처: x.source,
+    조회일: x.query_date, 재현: x.reproduce, 상태: x.status, 비고: x.note, 수집기: x.collector }));
+  $("#result").classList.remove("hidden"); $("#msg").className = "msg hidden";
+  render({ site: { addr: run.address, type: run.addr_type, refined: run.refined_address, name: run.site_name + " · " + run.author,
+                   radius: run.radius_m, lat: null, lon: null },
+    admin: R.filter(r => r.세부항목 === "행정" && r.수집기 === "vworld"), today: run.query_date, out: "팀 DB 기록 " + run.id.slice(0, 8),
+    indicators: buildCards(R), rows: R });
+});
+// 서버 indicators() 와 같은 규칙 — DB 에서 연 기록도 같은 여섯 칸으로
+const PLAN = ["LT_C_UPISUQ161", "LT_C_UPISUQ171", "LT_C_UQ121", "LT_C_UQ123", "LT_C_UO101", "LT_C_UO301"];
+function buildCards(R) {
+  const clim = R.filter(r => r.세부항목 === "기후"), pop = R.filter(r => r.대항목 === "인구");
+  const zone = R.filter(r => r.세부항목 === "용도별 면적" && r.지표.startsWith("용도지역"));
+  const plan = R.filter(r => PLAN.some(l => (r.출처 || "").includes(l)) || r.지표.startsWith("중심 필지 고시 이력"));
+  const slope = R.filter(r => r.세부항목 === "경사도"), ok = pop.some(r => r.상태 === "수집");
+  return [
+    { no: 1, title: "기온·강수", rows: clim, state: clim.length ? "확보" : "실패", note: "재분석 격자값 — 관측소 값 아님" },
+    { no: 2, title: "격자 인구밀도", rows: pop, state: ok ? "확보" : "조회 대기", note: ok ? "" : "SGIS 인증키 필요 — 키가 없으면 빈칸 + 사유" },
+    { no: 3, title: "용도지역 구성비", rows: zone, state: zone.length ? "확보" : "실패", note: "브이월드 현행 지정 · 반경 원 면적비" },
+    { no: 4, title: "고시 이력", rows: plan, state: plan.length ? "열람 병기" : "없음", note: "현행 지정만 — 결정·효력일은 토지이음 고시문으로 확인" },
+    { no: 5, title: "용도별 소요면적", rows: [], state: ok ? "계산 필요" : "조회 대기", note: "② 인구 × 용도별 원단위(교과서·실측)" },
+    { no: 6, title: "경사·향 적합", rows: slope, state: slope.length ? "확보" : "실패", note: "임계값 10·15·25% 는 교안 가정 · DEM 90 m" }];
+}
+
+$("#save").addEventListener("click", async () => {
+  if (!last || last.site.lat == null) return;
+  const author = $("#author").value.trim() || "익명";
+  try { localStorage.setItem("bs-author", author); } catch (e) {}
+  $("#save").disabled = true; msg("팀 DB에 저장 중…");
+  const s = last.site, sg = (last.admin.find(r => r.지표.startsWith("대상지 중심")) || {}).값 || null;
+  // 좌표(lat·lon)는 넣지 않는다 — 표에 열 자체가 없다
+  const id = crypto.randomUUID();   // 저장 후 다시 읽지 않아도 되게 id 를 여기서 정한다(읽기·쓰기 정책만 있음)
+  const { error } = await sb.from("survey_runs").insert({ id, author, site_name: s.name, address: s.addr, addr_type: s.type,
+    refined_address: s.refined, radius_m: Number(s.radius), query_date: last.today, sido_sigungu: sg });
+  if (error) { $("#save").disabled = false; return msg("저장 실패 — " + error.message, true); }
+  const rows = last.rows.map(r => ({ run_id: id, category: r.대항목, item: r.세부항목, indicator: r.지표, value: String(r.값 ?? ""),
+    unit: r.단위, source: r.출처, query_date: r.조회일, reproduce: r.재현, status: r.상태, note: r.비고, collector: r.수집기 }));
+  const { error: e2 } = await sb.from("survey_rows").insert(rows);
+  if (e2) { $("#save").disabled = false; return msg("기록 머리는 저장됐지만 행 저장 실패 — " + e2.message + " (관리자에게 빈 기록 삭제 요청)", true); }
+  msg(`저장했습니다 — ${rows.length}행 · 좌표 제외 · 작성자 ${author}`); loadRuns();
+});
+
+</script>
+</body>
+</html>

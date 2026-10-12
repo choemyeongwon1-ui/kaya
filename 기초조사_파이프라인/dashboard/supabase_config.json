@@ -1,0 +1,5 @@
+{
+  "_note": "팀 DB(Supabase 'kaya') 접속 정보 — publishable 키는 공개용 — 로그인 없이 누구나 읽기·저장, 수정·삭제는 RLS 로 막음. secret/service_role 키는 여기 넣지 않는다.",
+  "url": "https://krseuiwyftqbbdsbvycq.supabase.co",
+  "publishable_key": "sb_publishable_n6nRYyK2uADrkVjCN84juQ_GUMgOQ-p"
+}
