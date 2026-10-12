@@ -4,7 +4,8 @@
   py 분석.py            (환경변수 VWORLD_KEY · VWORLD_DOMAIN 필요, 기초조사_파이프라인 폴더를 함께 씀)
 
 - 후보지 2곳: 창신초(창신동 128-32) · 종로구청(수송동 146-12), 반경 400 m.
-- 격자 30 m 표본점(점 하나 0.09 ha)마다 경사·향·표고(DEM), 용도지역, 공원·녹지 결정, 지목, 국가유산, 간선 거리를 붙인다.
+- 지형은 국토지리정보원 공개DEM 90 m(raw/dem_ngii/, 국토정보플랫폼에서 내려받음) — 지표 ⑥ 은 90 m 셀(0.81 ha)로 직접 판정하고,
+  배분용 격자 30 m 표본점(0.09 ha)은 자기가 든 90 m 셀의 경사·향·표고를 받는다. 여기에 용도지역, 공원·녹지 결정, 지목, 국가유산, 간선 거리를 붙인다.
 - 좌표는 지오코더로 실행 때마다 구하고 파일에 남기지 않는다(브이월드 지오코더 이용조건 — 6주차 32·33쪽).
 - 매트릭스의 지표·가중치·채점 구간은 `04_매트릭스_지표가중치_가안.csv` 에 먼저 고정하고, 이 스크립트는 그 파일을 읽어서만 채점한다.
 """
@@ -24,37 +25,6 @@ from pipeline import common, geocode                       # noqa: E402
 from pipeline.common import http, dist_m, TODAY           # noqa: E402
 from pipeline.config import KEYS                          # noqa: E402
 from pipeline.sources import vworld                       # noqa: E402
-import time                                               # noqa: E402
-from urllib.error import HTTPError                        # noqa: E402
-
-
-def elevations(pts, cache_name):
-    """Open-Meteo 표고 — 100점씩, 요청 사이 쉬고, 429(요청 한도)면 기다렸다 다시. 받은 값은 격자 번호 순서로만 캐시(좌표 없음)."""
-    path = os.path.join(HERE, "raw", cache_name + "_dem.json")
-    if os.path.exists(path):
-        z = json.load(open(path, encoding="utf-8"))
-        if len(z) == len(pts):
-            return z
-    out = []
-    for i in range(0, len(pts), 100):
-        chunk = pts[i:i + 100]
-        for wait in (0, 30, 60, 120, 240):
-            time.sleep(wait or 2)
-            try:
-                res = common.http_json("https://api.open-meteo.com/v1/elevation", {
-                    "latitude": ",".join("%.6f" % p[0] for p in chunk),
-                    "longitude": ",".join("%.6f" % p[1] for p in chunk)}, retries=1)
-                break
-            except HTTPError as e:
-                if e.code != 429:
-                    raise
-                print("    표고 요청 한도(429) — %d초 뒤 다시" % (wait * 2 or 30))
-        else:
-            raise RuntimeError("Open-Meteo 표고 요청 한도 — 잠시 뒤 다시 실행")
-        out += res["elevation"]
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    json.dump(out, open(path, "w", encoding="utf-8"))
-    return out
 
 SITES = [("창신초", "서울특별시 종로구 창신동 128-32"), ("종로구청", "서울특별시 종로구 수송동 146-12")]
 R, STEP, NB = 400, 30.0, 2                                 # 반경 · 격자 간격 · 경사 차분 이웃(±2칸 = ±60 m)
@@ -94,27 +64,70 @@ def overpass(q):
     raise last
 
 
+# ── 국토지리정보원 공개DEM 90 m ─────────────────────────────────────────────
+DEM_DIR = os.path.join(HERE, "raw", "dem_ngii")
+_DEM = []
+
+
+def to5179(lon, lat):
+    from rasterio.warp import transform
+    xs, ys = transform("EPSG:4326", "EPSG:5179", [lon], [lat])
+    return xs[0], ys[0]
+
+
+def DEM_CELLS():
+    """도엽 .img 를 읽어 셀마다 표고·경사(%)·향(°)을 계산 — 도엽 경계 셀은 이웃이 없어 제외."""
+    if _DEM:
+        return _DEM
+    import glob
+    import numpy as np
+    import rasterio
+    files = sorted(glob.glob(os.path.join(DEM_DIR, "*", "*.img")))
+    if not files:
+        sys.exit("raw/dem_ngii/ 에 국토지리정보원 공개DEM(.img)이 없습니다 — 국토정보플랫폼 > 공간정보받기 > 공개DEM")
+    for f in files:
+        with rasterio.open(f) as r:
+            a = r.read(1).astype("float64")
+            a[a == r.nodata] = np.nan
+            res = r.res[0]
+            for row in range(1, r.height - 1):
+                for col in range(1, r.width - 1):
+                    w = a[row - 1:row + 2, col - 1:col + 2]
+                    if np.isnan(w).any():
+                        continue
+                    (A, B, C), (D, _, F), (G, H, I) = w
+                    dx = ((C + 2 * F + I) - (A + 2 * D + G)) / (8 * res)      # 동쪽 +
+                    dy = ((A + 2 * B + C) - (G + 2 * H + I)) / (8 * res)      # 북쪽 +
+                    pct = 100 * math.hypot(dx, dy)
+                    x, y = r.xy(row, col)
+                    _DEM.append({"x": x, "y": y, "z": float(a[row, col]), "slope": pct,
+                                 "aspect": (math.degrees(math.atan2(-dx, -dy)) + 360) % 360 if pct > 0 else None})
+    return _DEM
+
+
+def cells_all_near(x0, y0, pad=600):
+    return [c for c in DEM_CELLS() if abs(c["x"] - x0) <= R + pad and abs(c["y"] - y0) <= R + pad]
+
+
 def sample(name, addr):
     key, dom = KEYS["VWORLD_KEY"], KEYS["VWORLD_DOMAIN"]
     lat0, lon0, refined, _ = geocode.request(addr, "PARCEL", key, dom)
     print("[%s] %s — 표본 만드는 중" % (name, refined))
-    n = int(R // STEP) + NB + 1
+    # 지형 — 국토지리정보원 공개DEM 90 m(EPSG:5179) · 경사·향은 3×3 Horn 법, 셀마다 계산
+    x0, y0 = to5179(lon0, lat0)
+    cells = [c for c in DEM_CELLS() if math.hypot(c["x"] - x0, c["y"] - y0) <= R]      # ② 셀 판정 — 중심점 규칙
+    cand = cells_all_near(x0, y0)
+    near = lambda x, y: min(cand, key=lambda c: (c["x"] - x) ** 2 + (c["y"] - y) ** 2)
+    n = int(R // STEP) + 1
     dlat, dlon = STEP / 111320.0, STEP / (111320.0 * math.cos(math.radians(lat0)))
-    grid = [(lat0 + i * dlat, lon0 + j * dlon) for i in range(-n, n + 1) for j in range(-n, n + 1)]
-    z = elevations(grid, name)
-    W = 2 * n + 1
-    Z = lambda i, j: z[(i + n) * W + (j + n)]
     pts = []
-    for i in range(-n + NB, n - NB + 1):
-        for j in range(-n + NB, n - NB + 1):
+    for i in range(-n, n + 1):
+        for j in range(-n, n + 1):
             la, lo = lat0 + i * dlat, lon0 + j * dlon
             if dist_m(lat0, lon0, la, lo) > R:
                 continue
-            gx = (Z(i, j + NB) - Z(i, j - NB)) / (2 * NB * STEP)
-            gy = (Z(i + NB, j) - Z(i - NB, j)) / (2 * NB * STEP)
-            pct = 100 * math.hypot(gx, gy)
-            asp = (math.degrees(math.atan2(-gx, -gy)) + 360) % 360 if pct > 0 else None
-            pts.append({"la": la, "lo": lo, "z": Z(i, j), "slope": pct, "aspect": asp})
+            c = near(*to5179(lo, la))                          # 30 m 표본은 자기가 든 90 m 셀 값을 받음
+            pts.append({"la": la, "lo": lo, "z": c["z"], "slope": c["slope"], "aspect": c["aspect"]})
 
     common.GEO_MASKED = True
     common.set_out(os.path.join(HERE, "raw", name))
@@ -169,7 +182,7 @@ def sample(name, addr):
     for p in pts:
         p["z_ok"] = p["z"] <= zmin + 50                         # 표고 기준: 원 안 최저 표고(간선 기반시설) +50 m — 가정
         p["south"] = p["aspect"] is not None and 135 <= p["aspect"] <= 225
-    return {"name": name, "refined": refined, "pts": pts, "zmin": zmin, "stations": stations}
+    return {"name": name, "refined": refined, "pts": pts, "zmin": zmin, "stations": stations, "cells": cells}
 
 
 def pct(a, b):
@@ -177,19 +190,21 @@ def pct(a, b):
 
 
 def indicator6(S):
-    P = S["pts"]
+    """지표 ⑥ — 국토지리정보원 공개DEM 90 m 셀(0.81 ha) 직접 판정(6주차 25·27·28쪽). 표고 기준 = 원 안 최저 셀 +50 m(가정)."""
+    C = S["cells"]
+    zmin = min(c["z"] for c in C)
+    south = lambda c: c["aspect"] is not None and 135 <= c["aspect"] <= 225
     out = []
     for t, label in ((10, "하한"), (15, "기준안"), (25, "상한")):
-        ok = sum(p["slope"] <= t and p["south"] and p["z_ok"] for p in P)
-        out.append({"후보지": S["name"], "임계값": "%s %d%%" % (label, t), "경사 조건 충족(%)": pct(sum(p["slope"] <= t for p in P), len(P)),
-                    "경사·향·표고 동시 충족(%)": pct(ok, len(P)), "적합면적(ha)": round(ok * CELL_HA, 2),
-                    "향 기준": "135~225° (북 0° 시계방향)", "표고 기준": "원 안 최저 %.0f m + 50 m 이내(가정)" % S["zmin"],
-                    "DEM": "Copernicus GLO-90 90 m (Open-Meteo Elevation API) — 국토지리정보원 90 m 대용", "표본": "격자 30 m · %d점 · 경사 차분 ±60 m" % len(P),
+        ok = sum(c["slope"] <= t and south(c) and c["z"] <= zmin + 50 for c in C)
+        out.append({"후보지": S["name"], "임계값": "%s %d%%" % (label, t), "경사 조건 충족(%)": pct(sum(c["slope"] <= t for c in C), len(C)),
+                    "경사·향·표고 동시 충족(%)": pct(ok, len(C)), "적합면적(ha)": round(ok * 0.81, 2),
+                    "향 기준": "135~225° (북 0° 시계방향)", "표고 기준": "원 안 최저 셀 %.0f m + 50 m 이내(가정)" % zmin,
+                    "DEM": "국토지리정보원 공개DEM 90 m (2025, 도엽 37608·37705, EPSG:5179)",
                     "브이월드 레이어": "LT_C_UQ111~114 용도지역(③과 중첩) · LP_PA_CBND_BUBUN 지목",
-                    "경계 처리": "표본 중심이 원(반경 %d m) 안이면 포함 — 중심점 규칙, 원 밖 이웃 표고는 경사 계산에만 사용" % R,
-                    "조회일": TODAY})
+                    "경계 처리": "90 m 셀 중심이 원(반경 %d m) 안이면 포함 — 중심점 규칙, 도엽 가장자리 셀은 이웃이 없어 제외" % R,
+                    "표본": "90 m 셀 %d개(셀 0.81 ha) · 경사·향 3×3 Horn" % len(C), "조회일": TODAY})
     return out
-
 
 def near_park(P, d=500):
     """주거지역 표본 중 공원·녹지 결정 표본까지 d m 이내 비율 — 근린생활권 근린공원 유치거리 500 m(도시공원법 시행규칙 별표 3)."""

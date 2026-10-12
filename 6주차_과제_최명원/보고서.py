@@ -46,7 +46,7 @@ summ = "".join("<tr><td class='k'>%s</td>%s</tr>" % (u, "".join(
     "<td>충족 %d · 조건부 %d · 미충족 %d</td>" % (cnt[s][u]["충족"], cnt[s][u]["조건부"], cnt[s][u]["미충족"]) for s in ("창신초", "종로구청")))
     for u in ("녹지", "상업업무", "주거", "공업"))
 
-v6 = "".join("<tr><td>%s</td><td>%s</td><td class='v'>%s%%</td><td class='v'><b>%s%%</b> · %s ha</td><td class='small'>GLO-90 90 m</td><td class='small'>LT_C_UQ111~114</td><td class='v'>%s</td></tr>" % (
+v6 = "".join("<tr><td>%s</td><td>%s</td><td class='v'>%s%%</td><td class='v'><b>%s%%</b> · %s ha</td><td class='small'>국토지리정보원 90 m</td><td class='small'>LT_C_UQ111~114</td><td class='v'>%s</td></tr>" % (
     E(r["후보지"]), E(r["임계값"]), E(r["경사 조건 충족(%)"]), E(r["경사·향·표고 동시 충족(%)"]), E(r["적합면적(ha)"]), E(r["조회일"])) for r in IND6)
 BND = IND6[0].get("경계 처리", "")
 
@@ -63,6 +63,9 @@ rv = "".join("<tr><td>%s</td><td class='v'>%.2f</td><td class='v'>%s</td><td>%s<
     E(r["지표"]), r["현재 가중치"], E(r["역전 가중치"]) if r["역전 가중치"] != "" else "—", E(r["해석"])) for r in REV)
 
 c, g = V["값"]["창신초"], V["값"]["종로구청"]
+ar = lambda a, u: float(area[(a, u)]["면적(ha)"])
+c15 = next(r for r in IND6 if r["후보지"] == "창신초" and "15" in r["임계값"])
+w1 = next(r for r in REV if r["지표"] == "I1")["역전 가중치"]
 doc = """<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <title>6주차 과제 — 입지인자 4축 표·배분 대안·대안 비교 매트릭스</title>
 <style>
@@ -88,8 +91,8 @@ td.v {{ white-space:nowrap; font-variant-numeric:tabular-nums; }}
 <div>
 <h1>6주차 과제 — 입지인자 4축 표 · 지표 ⑥ · 배분 대안 3안 · 대안 비교 매트릭스 · 가중치 역전점</h1>
 <div class="meta">스마트도시계획(캡스톤디자인) · 상명대학교 그린스마트시티학과 · 최명원 · 팀 저장소 github.com/choemyeongwon1-ui/kaya<br>
-<b>후보지</b> ① 창신초(종로구 창신동 128-32) ② 종로구청(종로구 수송동 146-12) — 각 반경 400 m(50.3 ha), 격자 30 m 표본 561점(점 하나 0.09 ha) · <b>조회일</b> {today}<br>
-자료: 브이월드 2D 데이터 API 2.0(용도지역·공원녹지 결정·국가유산·교육환경보호구역·연속지적도) · Copernicus GLO-90 DEM(Open-Meteo) · OpenStreetMap 간선도로·역. 좌표는 지오코더로 실행 때마다 구하고 저장하지 않음(지오코더 2.0 이용조건).</div>
+<b>후보지</b> ① 창신초(종로구 창신동 128-32) ② 종로구청(종로구 수송동 146-12) — 각 반경 400 m(50.3 ha), 지형은 국토지리정보원 공개DEM 90 m 셀(0.81 ha), 배분은 격자 30 m 표본 561점(0.09 ha) · <b>조회일</b> {today}<br>
+자료: 브이월드 2D 데이터 API 2.0(용도지역·공원녹지 결정·국가유산·교육환경보호구역·연속지적도) · 국토지리정보원 공개DEM 90 m(2025 · 도엽 37608·37705, 국토정보플랫폼) · OpenStreetMap 간선도로·역. 좌표는 지오코더로 실행 때마다 구하고 저장하지 않음(지오코더 2.0 이용조건).</div>
 
 <h2>① 입지인자 4축 표 — 요건 문장·근거 번호·조회값</h2>
 <table>
@@ -109,8 +112,8 @@ td.v {{ white-space:nowrap; font-variant-numeric:tabular-nums; }}
 <table>
 <tr><th>후보지</th><th>임계값</th><th>경사 조건만</th><th>① 값 — 경사·향·표고 동시 충족</th><th>③ DEM</th><th>④ 브이월드 레이어</th><th>⑤ 조회일</th></tr>{v6}
 </table>
-<div class="note">향 135~225°(북 0° 시계방향, 남향 ±45°) · 표고 = 원 안 최저 표고(간선 기반시설 기준) +50 m 이내 <b>가정</b> · 임계값 10·15·25%는 교재 범위(4% 이상적·10% 권장·25% 한계, 원본 19번) 안의 가정 · DEM Copernicus GLO-90 90 m(국토지리정보원 90 m 대용, Open-Meteo Elevation API) · 경사는 ±60 m 중앙차분 · 경계 처리: {bnd} · 조회 {today}.
-90 m DEM 이라 그보다 작은 급경사는 드러나지 않는다. 창신초는 경사만 보면 15% 기준 48%가 적합하지만, 향까지 겹치면 20%로 줄어든다.</div>
+<div class="note">향 135~225°(북 0° 시계방향, 남향 ±45°) · 표고 = 원 안 최저 표고(간선 기반시설 기준) +50 m 이내 <b>가정</b> · 임계값 10·15·25%는 교재 범위(4% 이상적·10% 권장·25% 한계, 원본 19번) 안의 가정 · DEM 국토지리정보원 공개DEM 90 m(2025, EPSG:5179) · 경사·향은 3×3 Horn 법 · 적합면적 = 참 셀 수 × 0.81 ha · 경계 처리: {bnd} · 조회 {today}.
+90 m DEM 이라 그보다 작은 급경사는 드러나지 않는다. 창신초는 경사만 보면 15% 기준 {c15s}%가 적합하지만, 향·표고까지 겹치면 {c15b}%로 줄어든다. 종로구청은 거의 평지(경사 10% 이하 100%)라 향 판정의 의미가 약하다.</div>
 
 <h2>③ 배분 대안 3안 — 창신초 반경 400 m · 녹지 선확정 후 배분만 변경</h2>
 <div class="key">배분 순서(원본 25~34번, 6주차 44쪽): ① 녹지 → ② 공업 → ③ 상업업무 → ④ 주거(잔여). 녹지와 기반·공공은 세 대안에 똑같이 먼저 확정하고, 남은 땅의 ②~④ 규칙만 바꾼다.</div>
@@ -128,8 +131,8 @@ td.v {{ white-space:nowrap; font-variant-numeric:tabular-nums; }}
 <table>
 <tr><th>용도</th>{alts_h}</tr>{va}
 </table>
-<div class="key">녹지 확보기준 확인(52쪽, 「도시공원법 시행규칙」 제4조·별표 2): 원 50.3 ha 는 30만~100만㎡ 구간 → 부지의 9% = 4.5 ha. 녹지 17.7 ha(35.1%), 그중 공원·녹지 결정만 {cpk}% → 기준 충족. 1인당 6㎡ 기준은 인구(SGIS) 조회 대기라 미산정.</div>
-<div class="note">47쪽 대안은 녹지 총량이 다르지만, 이 과제는 "녹지를 먼저 확정한 뒤 배분만 변경"이라 녹지는 세 안 동일하고 개발용지 규모로 보전·개발·절충을 나눴다. 목표인구를 두지 않아(인구 미조회) B 안의 주거 면적 감소(20.25 → 13.95 ha, −31%)는 매트릭스 밖 득실로 아래 대차대조표에 적었다. 공업은 창신동 봉제업 같은 도시형 공업(준공업 성격, 시행령 제30조)을 가정했다. C안은 교육환경보호구역(원의 {cedu}%)을 피하자 공업이 0.18 ha 로 줄어 주거 사이에 조각으로 남았다 — 매트릭스 I4 에서 드러난다.</div>
+<div class="key">녹지 확보기준 확인(52쪽, 「도시공원법 시행규칙」 제4조·별표 2): 원 50.3 ha 는 30만~100만㎡ 구간 → 부지의 9% = 4.5 ha. 녹지 {gha} ha({gpc}%), 그중 공원·녹지 결정만 {cpk}% → 기준 충족. 1인당 6㎡ 기준은 인구(SGIS) 조회 대기라 미산정.</div>
+<div class="note">47쪽 대안은 녹지 총량이 다르지만, 이 과제는 "녹지를 먼저 확정한 뒤 배분만 변경"이라 녹지는 세 안 동일하고 개발용지 규모로 보전·개발·절충을 나눴다. 목표인구를 두지 않아(인구 미조회) B 안의 주거 면적 감소({ra} → {rb} ha, {rd}%)는 매트릭스 밖 득실로 아래 대차대조표에 적었다. 공업은 창신동 봉제업 같은 도시형 공업(준공업 성격, 시행령 제30조)을 가정했다. C안은 교육환경보호구역(원의 {cedu}%)을 피하자 공업이 {ic} ha 로 줄어 주거 사이에 조각으로 남았다 — 매트릭스 I4 에서 드러난다.</div>
 </div>
 
 <div class="page">
@@ -142,13 +145,13 @@ td.v {{ white-space:nowrap; font-variant-numeric:tabular-nums; }}
 </table>
 <div class="note">채점 구간(고정): 클수록 좋음 0~20% → 1 · 20~40 → 2 · 40~60 → 3 · 60~80 → 4 · 80~100 → 5, 작을수록 좋음(I4)은 반대. 가중치 근거: 팀 가설 H-C′(근린주구)에 맞춰 균형발전·친환경·정합성(각 0.20)을 경쟁력·충돌(각 0.15)·간선 접근(0.10)보다 높게 둠.
 <b>예시와 다른 지표:</b> ④ 자원관리의 슬라이드 예시 '공원·녹지 비율'은 녹지를 세 안 동일하게 고정해 차이가 0 이라 공업–주거 충돌(원본 21번 이격)로 바꿨고, ⑥ 정합성은 상위계획(기본계획) 대신 현행 관리계획(용도지역)과의 일치로 잰 대용 지표다.
-<b>변별력 없음:</b> I2·I3 은 세 대안 모두 5점 — 녹지를 먼저 같은 범위로 확정했기 때문에(녹지가 원의 35%) 주거와 녹지 거리가 대안마다 다르지 않다. 승인 단계에서 유치거리를 250 m 보다 짧게 잡거나 다른 지표로 바꿀지 검토가 필요하다(사후 수정은 하지 않음).</div>
+<b>변별력 없음:</b> I2·I3 은 세 대안 모두 5점 — 녹지를 먼저 같은 범위로 확정했기 때문에(녹지가 원의 {gpc}%) 주거와 녹지 거리가 대안마다 다르지 않다. 승인 단계에서 유치거리를 250 m 보다 짧게 잡거나 다른 지표로 바꿀지 검토가 필요하다(사후 수정은 하지 않음).</div>
 
 <h2>계획 대차대조표 — 대안별 얻는 것(+)과 잃는 것(−) (리치필드 1976 방식, 56쪽)</h2>
 <table>
 <tr><th style="width:16%">피영향 집단</th><th>A 근린주거형</th><th>B 일자리형</th><th>C 절충형</th></tr>
-<tr><td class="k">주민(주거 수요)</td><td>+ 주거 20.25 ha 최대</td><td>− 주거 13.95 ha(−31%)</td><td>+ 주거 20.07 ha</td></tr>
-<tr><td class="k">봉제 소공인(일자리)</td><td>− 공업용지 0 — 기존 공장 이전 압박</td><td>+ 공업 3.51 ha · 상업 4.59 ha</td><td>− 공업 0.18 ha 조각뿐</td></tr>
+<tr><td class="k">주민(주거 수요)</td><td>+ 주거 {ra} ha 최대</td><td>− 주거 {rb} ha({rd}%)</td><td>+ 주거 {rc} ha</td></tr>
+<tr><td class="k">봉제 소공인(일자리)</td><td>− 공업용지 0 — 기존 공장 이전 압박</td><td>+ 공업 {ib} ha · 상업 {cb} ha</td><td>− 공업 {ic} ha 조각뿐</td></tr>
 <tr><td class="k">학생·학교</td><td>+ 영향 없음</td><td>− 공업 규칙이 교육환경보호구역(원의 {cedu}%)을 빼지 않음 — 교육환경보호법 제9조 검토 필요</td><td>+ 보호구역 밖에만 공업</td></tr>
 <tr><td class="k">인접 주거환경</td><td>+ 공업–주거 충돌 0%</td><td>− 공업의 {b4}%가 주거와 50 m 이내</td><td>− 조각 공업 전부(100%)가 주거 인접</td></tr>
 </table>
@@ -156,7 +159,7 @@ td.v {{ white-space:nowrap; font-variant-numeric:tabular-nums; }}
 <table>
 <tr><th style="width:8%">지표</th><th style="width:12%">현재 가중치</th><th style="width:14%">역전 가중치</th><th>해석 ({first} 1위 · {second} 2위)</th></tr>{rv}
 </table>
-<div class="key">1위 {first}({t1:.2f})는 I1 일자리 공간 비율 가중치가 0.15 에서 <b>0.452 이상</b>(약 3배)으로 커질 때만 {second}에게 1위를 내준다. 다른 지표는 0~1 범위 어디서도 1·2위가 바뀌지 않는다 — 순위는 "일자리를 얼마나 중시하는가" 하나에 걸려 있다.</div>
+<div class="key">1위 {first}({t1:.2f})는 I1 일자리 공간 비율 가중치가 0.15 에서 <b>{w1} 이상</b>(약 {w1x:.1f}배)으로 커질 때만 {second}에게 1위를 내준다. 다른 지표는 0~1 범위 어디서도 1·2위가 바뀌지 않는다 — 순위는 "일자리를 얼마나 중시하는가" 하나에 걸려 있다.</div>
 <div class="note">역전점 계산: 지표 k 의 가중치를 w 로 바꾸고 나머지를 (1−w)/(1−w<sub>k</sub>) 배로 줄여 합 1.00 을 유지 → 대안 총점 = w·s<sub>k</sub> + (1−w)·B, B = (현재 총점 − w<sub>k</sub>·s<sub>k</sub>)/(1−w<sub>k</sub>). 두 대안 총점이 같아지는 w. 매트릭스 원본(05_대안비교_매트릭스.xlsx)은 가중치 칸만 바꾸면 점수·순위·역전점이 수식으로 다시 계산된다.</div>
 
 <h2>한계 · 재현</h2>
@@ -168,7 +171,7 @@ Hill, M. (1968). A goals-achievement matrix for evaluating alternative plans. <i
 김태한. (2026). <i>스마트도시계획(캡스톤디자인) 6주차 강의자료: 입지조건 — 용도를 고르는 땅의 성질</i> [강의자료]. 상명대학교. ·
 「국토기본법」 제19조의2 (시행 2026. 6. 2.) · 「국토의 계획 및 이용에 관한 법률」 제25조·제36조 (시행 2026. 7. 1.) · 같은 법 시행령 제30조 (시행 2026. 9. 8.) · 「도시공원 및 녹지 등에 관한 법률」 제15조·제35조 (시행 2026. 8. 27.) · 같은 법 시행규칙 제4조·별표 2·3 · 「교육환경 보호에 관한 법률」 제9조. ·
 공간정보산업진흥원. (2026). <i>브이월드 2D 데이터 API 2.0</i> [Data set]. Retrieved {today}, from https://www.vworld.kr ·
-European Space Agency. (2021). <i>Copernicus DEM GLO-90</i> [Data set], via Open-Meteo Elevation API. Retrieved {today}, from https://open-meteo.com ·
+국토지리정보원. (2025). <i>공개 수치표고모형(DEM) 90 m — 도엽 37608·37705</i> [Data set]. 국토정보플랫폼. Retrieved {today}, from https://map.ngii.go.kr ·
 OpenStreetMap contributors. (2026). <i>OpenStreetMap</i> [Data set]. Retrieved {today}, from https://www.openstreetmap.org</div>
 </div>
 </body></html>""".format(
@@ -176,6 +179,11 @@ OpenStreetMap contributors. (2026). <i>OpenStreetMap</i> [Data set]. Retrieved {
     alts_h="".join("<th>%s</th>" % E(a) for a in ALTS), alts_h2="".join("<th>%s<br>값 → 점수</th>" % E(a) for a in ALTS),
     first=ORDER[0], second=ORDER[1], t1=T[ORDER[0]],
     c25=c["경사 25% 초과(%)"], cpk=c["공원·녹지 결정(%)"], cres=c["주거지역(%)"], c10=c["경사 10% 이하(%)"], c5=c["경사 5% 이하(%)"],
-    g10=g["경사 10% 이하(%)"], gst=g["최근접 도시철도역"], gart=g["간선 100 m 이내(%)"], gcom=g["상업·준주거(%)"], cedu=c["교육환경보호구역(%)"], bnd=E(BND), b4=X["B 일자리형"]["I4"])
+    g10=g["경사 10% 이하(%)"], gst=g["최근접 도시철도역"], gart=g["간선 100 m 이내(%)"], gcom=g["상업·준주거(%)"], cedu=c["교육환경보호구역(%)"], bnd=E(BND), c15s=c15["경사 조건 충족(%)"], c15b=c15["경사·향·표고 동시 충족(%)"],
+    gha=area[("A 근린주거형", "녹지")]["면적(ha)"], gpc=area[("A 근린주거형", "녹지")]["구성비(%)"],
+    ra=ar("A 근린주거형", "주거"), rb=ar("B 일자리형", "주거"), rc=ar("C 절충형", "주거"),
+    rd=round(100 * (ar("B 일자리형", "주거") - ar("A 근린주거형", "주거")) / ar("A 근린주거형", "주거")),
+    ib=ar("B 일자리형", "공업"), cb=ar("B 일자리형", "상업업무"), ic=ar("C 절충형", "공업"),
+    w1=w1, w1x=(w1 / 0.15 if w1 != "" else 0), b4=X["B 일자리형"]["I4"])
 open(os.path.join(HERE, "과제.html"), "w", encoding="utf-8").write(doc)
 print("과제.html 저장")
