@@ -5,7 +5,7 @@
 관측소 값(기상청 ASOS)이 아니므로 보고서에는 '재분석'이라고 적는다.
 """
 import math
-from .. import common
+from .. import common, overlay
 from ..common import row, http_json, save_raw, dist_m
 from ..config import CLIMATE_YEAR
 
@@ -49,6 +49,7 @@ def collect(site, r):
             pct = 100 * math.hypot(gx, gy)
             asp = (math.degrees(math.atan2(-gx, -gy)) + 360) % 360 if pct > 0 else None
             cells.append((pct, asp))
+            overlay.CELLS.append((grid[i * W + j][0], grid[i * W + j][1], pct, asp))   # ③×⑥ 중첩용 — 메모리에만
     src = "Open-Meteo Elevation API (Copernicus DEM GLO-90)"
     note = "반경 %d m 안 %d점 · 격자 100 m" % (r, len(zs))
     # 계산 조건(6주차 33쪽 ④) — 셀 크기·구간 경계·향 기준을 값과 함께 남긴다

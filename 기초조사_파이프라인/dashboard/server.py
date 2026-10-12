@@ -30,7 +30,7 @@ for _n in ("VWORLD_KEY", "VWORLD_DOMAIN", "SGIS_KEY", "SGIS_SECRET"):
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from pipeline import common, geocode
+from pipeline import common, geocode, overlay
 from pipeline.common import COLS, TODAY
 from pipeline.config import SITE, KEYS
 from pipeline.sources import meteo, vworld, sgis
@@ -89,6 +89,7 @@ def run(addr, typ, radius, name):
     site = dict(SITE, lat=lat, lon=lon, name=name or refined or addr)
     rows = [dict(geocode.catalog_row(addr, typ, refined, shown), 수집기="geocode")]
     log = []
+    overlay.reset()
     for nm, mod in (("meteo", meteo), ("vworld", vworld), ("sgis", sgis)):
         if nm == "sgis" and KEYS["SGIS_KEY"]:
             # config 의 SGIS 행정코드는 기본 대상지(종로구) 것 — 다른 주소에 그대로 쓰면 틀린 값이 된다
@@ -104,6 +105,7 @@ def run(addr, typ, radius, name):
         for g in got:
             g["수집기"] = nm
         rows += got
+    rows += [dict(d, 수집기="overlay") for d in overlay.rows(radius)]
     with open(os.path.join(out, "기초조사_결과.csv"), "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, COLS + ["수집기"])
         w.writeheader()
