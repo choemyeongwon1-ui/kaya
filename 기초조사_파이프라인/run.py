@@ -21,7 +21,7 @@ if "--out" in sys.argv:                           # pipeline 을 불러오기 �
 from pipeline.config import SITE, 항목표
 from pipeline.common import COLS, OUT, TODAY, row
 from pipeline.config import KEYS
-from pipeline import common
+from pipeline import common, overlay
 from pipeline import geocode
 from pipeline.sources import osm, meteo, khs, sgis, vworld, public, manual
 
@@ -60,9 +60,12 @@ def main():
     kept = []
     if a.only and os.path.exists(RESULT):
         with open(RESULT, encoding="utf-8-sig") as f:
-            kept = [d for d in csv.DictReader(f) if d.get("수집기") not in names and not (a.addr and d.get("수집기") == "geocode")]
+            both = "meteo" in names and "vworld" in names
+            kept = [d for d in csv.DictReader(f) if d.get("수집기") not in names and not (a.addr and d.get("수집기") == "geocode")
+                    and not (both and d.get("수집기") == "overlay")]
 
     rows = []
+    overlay.reset()
     print("대상지 %s (%s) 반경 %d m — %s" % (site["name"], "주소 " + a.addr + " → 지오코더 좌표(저장 안 함)" if a.addr else "%s, %s" % (site["lat"], site["lon"]), r, TODAY))
     for n in names:
         print("[%s] 수집 중…" % n)
@@ -76,7 +79,11 @@ def main():
             g["수집기"] = n
         print("    %d행" % len(got))
         rows += got
-    rows = kept + geo_rows + rows
+    ov = [dict(d, 수집기="overlay") for d in overlay.rows(r)]      # ③×⑥ — meteo·vworld 를 같은 실행에서 돌렸을 때만
+    if ov:
+        print("[overlay] ③×⑥ 용도지역별 경사·향 적합")
+        print("    %d행" % len(ov))
+    rows = kept + geo_rows + rows + ov
     order = {g: i for i, g in enumerate(항목표)}
     rows.sort(key=lambda d: (order.get(d["대항목"], 99), 항목표.get(d["대항목"], []).index(d["세부항목"])
                              if d["세부항목"] in 항목표.get(d["대항목"], []) else 99))

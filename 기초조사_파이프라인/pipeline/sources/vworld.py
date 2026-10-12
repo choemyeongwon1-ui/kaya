@@ -7,7 +7,7 @@
 """
 import csv, math, os
 from urllib.parse import urlencode
-from .. import common
+from .. import common, overlay
 from ..common import row, http_json, save_raw, Disk, join_rings, OUT, TODAY
 from ..config import KEYS
 
@@ -103,7 +103,9 @@ def collect(site, r):
     for layer, big in ZONE_LAYERS.items():
         for f in get_features(layer, box, key, domain):
             name = prop(f["properties"], "uname", "UNAME", "dgm_nm", "prpos_area_dstrc_nm") or big + "(세분 미표기)"
-            for p in disk.hits(rings_of(f["geometry"])):
+            rings = rings_of(f["geometry"])
+            overlay.ZONES.append((name, rings))                                # ③×⑥ 중첩용 — 메모리에만
+            for p in disk.hits(rings):
                 owner.setdefault(p, name)
     comp = {}
     for v in owner.values():
