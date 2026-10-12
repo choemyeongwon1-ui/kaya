@@ -203,7 +203,7 @@ def indicator6(S):
                     "DEM": "국토지리정보원 공개DEM 90 m (2025, 도엽 37608·37705, EPSG:5179)",
                     "브이월드 레이어": "LT_C_UQ111~114 용도지역(③과 중첩) · LP_PA_CBND_BUBUN 지목",
                     "경계 처리": "90 m 셀 중심이 원(반경 %d m) 안이면 포함 — 중심점 규칙, 도엽 가장자리 셀은 이웃이 없어 제외" % R,
-                    "표본": "90 m 셀 %d개(셀 0.81 ha) · 경사·향 3×3 Horn" % len(C), "조회일": TODAY})
+                    "표본": "90 m 셀 %d개(셀 0.81 ha) · 경사·향 3×3 Horn · 비율 분모 = 원 안 셀 합 %.2f ha(원 면적 50.27 ha 대신)" % (len(C), len(C) * 0.81), "조회일": TODAY})
     return out
 
 def near_park(P, d=500):
@@ -260,8 +260,11 @@ def allocate(S):
         "B 일자리형": lambda p: ("공업" if p["slope"] <= 5 and p["arterial_m"] <= 150 and p.get("zone") not in COM
                                 else "상업업무" if p.get("zone") in COM or (p["arterial_m"] <= 100 and p["slope"] <= 10)
                                 else "주거"),
+        # C 는 A·B 사이 — 공업은 B 보다 좁게(간선 100 m · 교육환경보호구역 밖), 상업은 간선 50 m 가로변까지만 확대
+        # (1차안은 상업을 현행 지정만 두어 A 와 0.18 ha 차이뿐이었음 → 독립 검토 후 수정, 지표·가중치·채점 구간은 그대로)
         "C 절충형": lambda p: ("공업" if p["slope"] <= 5 and p["arterial_m"] <= 100 and p.get("zone") not in COM and "edu" not in p
-                              else "상업업무" if p.get("zone") in COM else "주거"),
+                              else "상업업무" if p.get("zone") in COM or (p["arterial_m"] <= 50 and p["slope"] <= 10)
+                              else "주거"),
     }
     plans = {}
     for alt, rule in rules.items():
