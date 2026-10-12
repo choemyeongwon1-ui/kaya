@@ -59,7 +59,7 @@ def elevations(pts, cache_name):
 SITES = [("창신초", "서울특별시 종로구 창신동 128-32"), ("종로구청", "서울특별시 종로구 수송동 146-12")]
 R, STEP, NB = 400, 30.0, 2                                 # 반경 · 격자 간격 · 경사 차분 이웃(±2칸 = ±60 m)
 CELL_HA = STEP * STEP / 1e4
-OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
+OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
 RES = ("제1종전용주거지역", "제2종전용주거지역", "제1종일반주거지역", "제2종일반주거지역", "제3종일반주거지역")
 COM = ("중심상업지역", "일반상업지역", "근린상업지역", "유통상업지역", "준주거지역")
 FIXED_JIMOK = {"도": "도로", "철": "철도", "천": "하천", "구": "구거", "학": "학교", "종": "종교"}
@@ -149,8 +149,11 @@ def sample(name, addr):
     s, w_, n_, e = lat0 - 2 * R / 111320.0, lon0 - 2 * R / 111320.0 / math.cos(math.radians(lat0)), \
         lat0 + 2 * R / 111320.0, lon0 + 2 * R / 111320.0 / math.cos(math.radians(lat0))
     b = "%f,%f,%f,%f" % (s, w_, n_, e)
-    osm = overpass('[out:json][timeout:120];(way["highway"~"^(trunk|primary|secondary)$"](%s);'
+    cache = os.path.join(HERE, "raw", name + "_osm.json")       # OSM 공개자료 — 다시 받지 않게 보관(지오코더 결과 아님)
+    osm = json.load(open(cache, encoding="utf-8")) if os.path.exists(cache) else None
+    osm = osm or overpass('[out:json][timeout:120];(way["highway"~"^(trunk|primary|secondary)$"](%s);'
                    'node["railway"="station"](%s);node["station"="subway"](%s););out geom;' % (b, b, b))
+    json.dump(osm, open(cache, "w", encoding="utf-8"))
     segs = []
     for el in osm["elements"]:
         if el["type"] == "way":
@@ -182,8 +185,19 @@ def indicator6(S):
                     "경사·향·표고 동시 충족(%)": pct(ok, len(P)), "적합면적(ha)": round(ok * CELL_HA, 2),
                     "향 기준": "135~225° (북 0° 시계방향)", "표고 기준": "원 안 최저 %.0f m + 50 m 이내(가정)" % S["zmin"],
                     "DEM": "Copernicus GLO-90 90 m (Open-Meteo Elevation API) — 국토지리정보원 90 m 대용", "표본": "격자 30 m · %d점 · 경사 차분 ±60 m" % len(P),
+                    "브이월드 레이어": "LT_C_UQ111~114 용도지역(③과 중첩) · LP_PA_CBND_BUBUN 지목",
+                    "경계 처리": "표본 중심이 원(반경 %d m) 안이면 포함 — 중심점 규칙, 원 밖 이웃 표고는 경사 계산에만 사용" % R,
                     "조회일": TODAY})
     return out
+
+
+def near_park(P, d=500):
+    """주거지역 표본 중 공원·녹지 결정 표본까지 d m 이내 비율 — 근린생활권 근린공원 유치거리 500 m(도시공원법 시행규칙 별표 3)."""
+    park = [p["xy"] for p in P if "park" in p]
+    res = [p for p in P if p.get("zone") in RES]
+    if not res:
+        return 0.0
+    return pct(sum(any(math.hypot(p["xy"][0] - q[0], p["xy"][1] - q[1]) <= d for q in park) for p in res), len(res))
 
 
 def axes_values(S):
@@ -209,6 +223,8 @@ def axes_values(S):
         "주거지역(%)": pct(sum(p.get("zone") in RES for p in P), n),
         "상업·준주거(%)": pct(sum(p.get("zone") in COM for p in P), n),
         "도로(지목 도)(%)": pct(sum(p.get("jimok") == "도" for p in P), n),
+        "임야(지목 임)(%)": pct(sum(p.get("jimok") == "임" for p in P), n),
+        "주거지 중 공원·녹지 500 m 이내(%)": near_park(P),
         "표본 수": n,
     }
 
@@ -271,7 +287,7 @@ def main():
     sites = [sample(n, a) for n, a in SITES]
 
     write("02_지표6_경사향.csv", [r for S in sites for r in indicator6(S)],
-          ["후보지", "임계값", "경사 조건 충족(%)", "경사·향·표고 동시 충족(%)", "적합면적(ha)", "향 기준", "표고 기준", "DEM", "표본", "조회일"])
+          ["후보지", "임계값", "경사 조건 충족(%)", "경사·향·표고 동시 충족(%)", "적합면적(ha)", "향 기준", "표고 기준", "DEM", "브이월드 레이어", "경계 처리", "표본", "조회일"])
     vals = {S["name"]: axes_values(S) for S in sites}
     with open(os.path.join(HERE, "01_4축표_값.json"), "w", encoding="utf-8") as f:
         json.dump({"조회일": TODAY, "반경_m": R, "값": vals}, f, ensure_ascii=False, indent=1)
