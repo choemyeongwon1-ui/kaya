@@ -87,6 +87,39 @@ ul.tight{margin:0;padding-left:18px;display:grid;gap:3px}
 .gantt .h{color:var(--mute);text-align:center;font-size:12.5px;padding-bottom:2px}.gantt .h.now{color:var(--navy);font-weight:700}
 .gantt .b{height:20px;border-radius:3px;background:#EEF1F5}.gantt .b.f{background:var(--navy)}.gantt .b.o{background:var(--green)}
 .gantt .l{padding-right:8px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.gcard{border-top:4px solid var(--navy)}
+.gnum{font-size:34px;font-weight:700;color:var(--navy);line-height:1.1}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin:0}.dl dt{font-weight:700;color:var(--navy)}.dl dd{margin:0}
+.mock{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;display:grid;align-content:start;min-width:0}
+.mock .mh{background:var(--navy);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:14px}
+.mock .mh span:last-child{font-weight:500;color:#C9D6E6;white-space:nowrap}
+.mock .mb{padding:12px;display:grid;gap:10px}
+.mock .cap{padding:0 12px 12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kpi{border:1px solid var(--line);border-radius:6px;padding:8px;display:grid;gap:1px}.kpi .k{font-size:12.5px;color:var(--mute)}.kpi .v{font-size:20px;font-weight:700;color:var(--navy);line-height:1.25}.kpi .s{font-size:12px;color:var(--mute)}
+.prow{display:grid;grid-template-columns:20px 1fr 90px;gap:8px;align-items:center;font-size:13.5px}.prow .t{background:#EDF0F4;height:9px;border-radius:4px;overflow:hidden}.prow .t i{display:block;height:100%;background:var(--navy)}
+.phone{max-width:310px;width:100%;margin:12px auto;border:3px solid var(--ink);border-radius:28px;padding:16px 14px;display:grid;gap:10px;background:#fff}
+.phone .al{background:var(--crit-bg);color:#962A1F;border-left:4px solid var(--crit);border-radius:4px;padding:7px 10px;font-size:14px}
+.phone .rec{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:5px 0;font-size:14px}
+.phone .go{background:var(--navy);color:#fff;text-align:center;border-radius:6px;padding:9px;font-weight:700;font-size:14px}
+.flag{color:var(--warn);font-weight:700}
+/* 팀 컨셉(쾌적 시간·만족도 격차) */
+.lnk{appearance:none;border:0;background:none;color:var(--info);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;padding:0;text-align:left}.lnk:hover{text-decoration:underline}
+.step{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.step .q{font-size:13.5px;color:var(--mute)}.step .v{font-size:22px;font-weight:700;color:var(--navy);line-height:1.25}.step .v small{font-size:14px;font-weight:500}
+.rbar{display:grid;grid-template-columns:minmax(120px,1.3fr) 1fr 62px 40px;gap:8px;align-items:center;font-size:13.5px}
+.rbar .t{background:#EDF0F4;height:9px;border-radius:0 4px 4px 0;overflow:hidden}.rbar .t i{display:block;height:100%;border-radius:0 4px 4px 0}
+.rbar .n{text-align:right;font-variant-numeric:tabular-nums}
+.slider.wide{grid-template-columns:150px 1fr 52px}
+.sin{width:56px;font:inherit;font-size:13.5px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;text-align:right;font-variant-numeric:tabular-nums;background:#fff;color:var(--ink)}
+.sin::placeholder{color:#9AA5B1}
+.sin.set{border-color:var(--navy);background:#F3F7FC;font-weight:700}
+.qp{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-weight:700;font-size:13px}
+.qp i{display:inline-block;width:11px;height:11px;border-radius:3px}
+.zb{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:12.5px;margin-right:6px}
+.banner{background:var(--warn-bg);color:#6F3F06;border-left:4px solid var(--warn);border-radius:4px;padding:9px 12px;font-size:14px}
+.chart svg{display:block;width:100%;height:auto}
 footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font-size:12.5px}
 @media(prefers-reduced-motion:no-preference){.bar .t i{transition:width .2s}}
 </style>
@@ -94,7 +127,8 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
 <body>
 <header>
   <h1>Smart Park Dashboard</h1>
-  <span class="meta">서울숲 취약지역 진단·개선 | 2026-2 AI-CCS 학부생 주제 01 | 진행현황 기준일 <span id="asof"></span></span>
+  <span class="meta">서울숲 취약지역 진단·개선 | 팀 컨셉: 만족도 높은 공원 | 2026-2 AI-CCS 학부생 주제 01 | 진행현황 기준일 <span id="asof"></span></span>
+  <a class="meta" style="margin-left:auto" href="서울숲_진행현황_대시보드_수정전.html">컨셉 반영 전 버전 보기</a>
 </header>
 <nav role="tablist" aria-label="화면 선택" id="tabs"></nav>
 <main>
@@ -105,6 +139,11 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
     <span>지도와 수치는 공개 위성·공간 자료로 실제 계산한 값입니다. 혼잡과 접근성은 현장 계수 전이라 대리지표로 표시했고, 개선 효과는 시나리오 추정입니다.</span>
   </div>
   <div class="grid g4" id="tiles"></div>
+  <div class="card">
+    <div class="row"><h2>팀 컨셉: 만족도 높은 공원</h2><span class="pill p-first">취약한 곳과 불만인 곳은 다르다</span></div>
+    <div class="grid g3" id="conceptFlow"></div>
+    <p class="note">취약도는 물리적 조건만 봅니다. 여기에 시간을 더한 것이 쾌적 시간이고, 이용자의 체감을 더한 것이 만족도 격차입니다. 세 가지가 겹치는 곳을 먼저 고칩니다. 만족도는 설문 전이라 팀이 세운 가설값이며, 설문 결과를 입력하면 판정이 바뀝니다.</p>
+  </div>
   <div class="card">
     <div class="row"><h2>과업 요구사항 대비 진행상태</h2><div class="legend" id="stLegend"></div></div>
     <div class="statusbar" id="stBar" aria-hidden="true"></div>
@@ -149,6 +188,95 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
   </div>
 </section>
 
+<section class="view" id="v-comfort">
+  <div class="lead">
+    <b>쾌적 시간: 덥지 않고, 공기가 괜찮고, 비가 오지 않는 시간이 1년에 몇 시간인가</b>
+    <span>06~21시 가운데 모듈 1의 다섯 기준(체감온도·자외선·PM2.5·PM10·강수)이 모두 '정상'이고 기온이 0℃ 이상인 시간을 격자마다 셉니다. 햇볕에 노출된 칸은 더위와 자외선을, 도로에 가까운 칸은 미세먼지를 더 높게 봅니다.</span>
+  </div>
+  <div class="grid g4" id="cfTiles"></div>
+  <div class="grid split">
+    <div class="card">
+      <div class="row"><h2>격자별 쾌적 시간 (20m)</h2><div class="row" style="justify-content:flex-end"><div class="seg" id="cfPerSeg"></div><div class="seg" id="cfStSeg"></div></div></div>
+      <div class="mapbox" id="mapCf"></div>
+      <div class="legend" id="cfLegend"></div>
+      <p class="note">번호는 취약지역 진단의 우선 개선 구역입니다. 칸에 마우스를 올리면 오른쪽에 상세가 나옵니다.</p>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card" aria-live="polite">
+        <h3 id="cfInspTitle">공원 평균</h3>
+        <div id="cfInsp"></div>
+      </div>
+      <div class="card">
+        <h3 id="cfWhyTitle">쾌적하지 못한 이유</h3>
+        <div id="cfWhy" style="display:grid;gap:6px"></div>
+        <div class="legend"><span><i style="background:#2a78d6"></i>쾌적</span><span><i style="background:#eb6834"></i>위치에 따라 달라지는 손실</span><span><i style="background:#98A2AE"></i>공원 전체가 같은 요인</span></div>
+        <p class="note" id="cfWhyNote"></p>
+      </div>
+      <div class="card">
+        <div class="row"><h3>가정 조절</h3><button class="zbtn" style="display:block;padding:4px 10px" id="cfReset">기본값으로</button></div>
+        <div id="cfAssume" style="display:grid;gap:6px"></div>
+        <p class="note">햇볕 가산 3℃는 열지수(WBGT)에서 흑구온도 비중이 0.2이고 햇볕 아래 흑구온도가 기온보다 10~15℃ 높다고 가정한 값입니다. 도로 가산 20%도 가정이며, 둘 다 현장 측정으로 확인이 필요합니다.</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>월별 쾌적 시간 비율 (%, 06~21시)</h3>
+      <div class="tablewrap"><table class="hm" id="cfMonTable"></table></div>
+      <p class="note" id="cfMonNote"></p>
+    </div>
+    <div class="card">
+      <h3>구역별 쾌적 시간</h3>
+      <div class="tablewrap"><table id="cfZoneTable"></table></div>
+      <p class="note">구역은 만족도 설문 구역과 같습니다. 개선 후 값은 개선안 탭의 식재·그늘시설 시나리오를 적용한 추정입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-gap">
+  <div class="lead">
+    <b>취약한 곳과 불만인 곳은 다릅니다</b>
+    <span>격자 취약도 위에 구역별 설문 만족도를 겹쳐, 지수도 나쁘고 이용자도 불만인 곳부터 고칩니다. 지수는 나쁜데 불만이 없는 곳은 안내로, 지수는 좋은데 불만인 곳은 운영으로 대응합니다.</span>
+  </div>
+  <div class="banner" id="gapBanner"></div>
+  <div class="grid split">
+    <div class="card">
+      <div class="row"><h2>만족도 격차 지도</h2><div class="seg" id="gapSeg"></div></div>
+      <div class="mapbox" id="mapGap"></div>
+      <div class="legend" id="gapLegend"></div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h3 id="gapChartTitle">취약도와 만족도</h3>
+        <div class="chart" id="gapChart"></div>
+        <div class="legend"><span><svg width="14" height="14" style="vertical-align:-2px"><circle cx="7" cy="7" r="5" fill="#fff" stroke="#5C6B7E" stroke-width="2.5"/></svg> 가설값</span><span><svg width="14" height="14" style="vertical-align:-2px"><circle cx="7" cy="7" r="6" fill="#5C6B7E"/></svg> 설문 입력값</span></div>
+        <p class="note" id="gapChartNote"></p>
+      </div>
+      <div class="card">
+        <h3>판정별 대응</h3>
+        <div class="tablewrap"><table id="gapRxTable"></table></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row"><h2>구역별 만족도 입력</h2><div class="row"><span class="note" id="gapCount"></span><button class="zbtn" style="display:block;padding:4px 10px" id="gapClear">입력 지우기</button></div></div>
+    <div class="tablewrap"><table id="gapTable"></table></div>
+    <p class="note">만족도는 5점 척도입니다. 빈칸은 회색으로 보이는 가설값을 쓰고, 값을 넣으면 그 구역은 설문값으로 바뀝니다. 입력은 이 브라우저에 저장됩니다. 응답 15명 미만 구역은 표본 부족으로 표시합니다.</p>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>설문 설계(안)</h3>
+      <ul class="tight" id="gapDesign"></ul>
+    </div>
+    <div class="card">
+      <h3>설문 중요도로 지표 가중치 정하기</h3>
+      <div id="gapImp" style="display:grid;gap:6px"></div>
+      <p class="note" id="gapImpNote"></p>
+      <button class="zbtn" style="display:block;text-align:center" id="gapApply">이 가중치를 취약지도에 적용</button>
+    </div>
+  </div>
+</section>
+
 <section class="view" id="v-plan">
   <div class="grid g4" id="planTiles"></div>
   <div class="grid split">
@@ -160,9 +288,14 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
     <div class="grid" style="align-content:start" id="zoneCards"></div>
   </div>
   <div class="card">
+    <h2>쾌적 시간으로 본 개선 효과</h2>
+    <div class="tablewrap"><table id="planComfort"></table></div>
+    <p class="note" id="planComfortNote"></p>
+  </div>
+  <div class="card">
     <h2>개선안과 이용자 만족도 연결</h2>
     <div class="tablewrap"><table id="satTable"></table></div>
-    <p class="note">만족도 조사는 아직 하지 않았습니다. 계획: 구역별 40명, 총 120명(95% 신뢰수준 약 ±9%p) 현장 설문, 8개 항목의 중요도·만족도 5점 척도로 IPA 분석. 개선안 공개 전 사전 조사와 시나리오 제시 후 선호 조사로 비교합니다.</p>
+    <p class="note">만족도 조사는 아직 하지 않았습니다. 계획: 설문 구역 8곳에서 총 120명 현장 설문, 구역별 종합 만족도와 4개 항목 만족도·중요도를 5점 척도로 묻습니다. 구역별 판정은 만족도 격차 탭에서 봅니다. 개선안 공개 전 사전 조사와 시나리오 제시 후 선호 조사로 비교합니다.</p>
   </div>
   <div class="card">
     <h3>시나리오 가정</h3>
@@ -209,6 +342,25 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
   </div>
 </section>
 
+<section class="view" id="v-strategy">
+  <div class="lead">
+    <b>같은 데이터를 세 수요자의 결정에 맞춰 다르게 보여줍니다</b>
+    <span>기본요구 충족안 위에 얹는 특화전략입니다. 전문가는 조치, 행정정책은 예산, 일반인은 이동을 결정하며, 그룹마다 결정 질문 1문장·화면 1장·핵심 지표 3개 이하로 제한합니다.</span>
+  </div>
+  <div class="grid g3" id="grpCards"></div>
+  <div class="card">
+    <h2>수요자 그룹별 전략</h2>
+    <div class="tablewrap"><table id="stratTable"></table></div>
+    <p class="note"><b>지표를 3개로 줄이며 뺀 것</b> — 전문가: NDVI(그늘 비율과 중복) · 행정정책: 추천 수락률(기록 축적 전) · 일반인: PM2.5 수치(위험 단계 아이콘에 통합). 뺀 지표는 상세 화면에서만 표시합니다.</p>
+    <p class="note">요구 ID는 기본요구 충족안 표의 항목 번호입니다(V 취약지역, M1~M3 모듈 1~3). 자료: 10주차 강의자료 2차시(수요자별 결정 질문·화면 성격·핵심 지표 3개 이하).</p>
+  </div>
+  <div class="card">
+    <h2>그룹별 특화 화면 예시: 질문을 화면 제목에 두고 필요한 것만 보여줍니다</h2>
+    <p class="note">지도, 구역 순위, 후보 면적, 경고 시간은 이 대시보드의 실제 서울숲 분석값입니다. '연동 전'·'가안'·'추정' 표시는 아직 데이터나 근거가 없는 항목입니다.</p>
+    <div class="grid g3" id="mocks"></div>
+  </div>
+</section>
+
 <section class="view" id="v-data">
   <div class="card">
     <h2>지표 산출 방식과 불확실성</h2>
@@ -229,7 +381,8 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
 <script>
 const V = /*__VULN__*/null;
 const C = /*__CLIMATE__*/null;
-const ASOF = "2026-11-09";
+const K = /*__CONCEPT__*/null;
+const ASOF = "2026-11-14";
 
 /* 진행상태는 여기만 고치면 표와 막대가 함께 바뀝니다: done 완료 / first 1차 완료 / wip 진행 중 / todo 미착수 */
 const PROGRESS = [
@@ -240,9 +393,11 @@ const PROGRESS = [
  ["개선방안 계획도","산출물 03","필수","wip","격자 단위 후보 위치도","식재·시설 배치 도면화"],
  ["관리자 관제 화면","p.11","필수","wip","위험도 지수(A), 추천 맵(B) 구현","맞춤 코스(C)와 혼잡 추이(D)는 데이터 확보 후"],
  ["현장 답사·유동인구 계수","p.6, 18","필수","todo",`계수 지점 후보 추출 (출입구 28곳, 유인거점 40개)`,"주중·주말 거점 계수, 벤치·단차·경사 조사"],
- ["이용자 만족도 조사 (팀 추가 목표)","팀 목표","필수","todo","설문 설계안만 작성","현장 설문 120명, IPA 분석"],
+ ["만족도 격차 지도 (팀 컨셉)","팀 목표","필수","wip","설문 구역 8곳, 4분면 판정 화면, 구역별 가설값","현장 설문 120명으로 가설값 교체, 여름 재조사 계획"],
+ ["쾌적 시간 지표 (팀 컨셉)","팀 목표","특화","first","격자별 연간·여름 낮 쾌적 시간, 개선 후 증가분, 가정 조절","햇볕·도로 가산값을 현장 측정으로 확인"],
  ["이용자 모바일 화면","p.11","필수","todo","","위험 알림과 코스 카드 구성"],
  ["최종 보고서·발표자료","산출물 04","필수","todo","","12월 작성"],
+ ["수요자별 특화전략 (전문가·행정정책·일반인)","10주차 강의","특화","wip","그룹별 결정 질문, 핵심 지표 3개, 특화 화면 예시","개략 단가 출처 확인, 붐빔 데이터 연동, 화면 구현"],
  ["모듈 2 혼잡 예측·타겟 분산","p.8","선택","todo","","현장 계수 자료 양을 보고 착수 판단"],
  ["모듈 3 맞춤 코스 (A* 경로)","p.9","선택","todo","공원 내부 보행망 16.3km 구축","비용함수 구현, 건강정보는 가상 데이터로 시연"],
 ];
@@ -252,12 +407,13 @@ const ASKS = [
  "<b>수도박물관 남측과 청계천용수공급지</b>의 일반 이용 가능 여부. 앞쪽은 1순위 구역이고 뒤쪽은 보류 구역입니다.",
  "<b>서울숲 프로그램 운영 현황</b>과 실내 시설의 운영시간·냉방 정보.",
  "<b>지표 가중치 기본값</b> 의견. 현재 열 35, 접근성 25, 대기 25, 혼잡 15이며 혼잡은 실측 전이라 낮게 뒀습니다.",
+ "<b>공원 내 설문 조사</b> 가능 여부와 설문 구역 8곳 구분에 대한 의견.",
 ];
 const GANTT = [
  ["1차 결과 공유·피드백",[1,0,0,0,0,0,0]],
  ["API 키 발급·실측 연동",[1,1,0,0,0,0,0]],
  ["현장 계수·시설 조사",[0,1,1,1,0,0,0]],
- ["만족도 설문·IPA",[0,0,1,1,0,0,0]],
+ ["만족도 설문·격차 지도 확정",[0,0,1,1,0,0,0]],
  ["대리지표 보정·구역 확정",[0,0,0,1,1,0,0]],
  ["계획도·관리자/모바일 화면",[0,0,0,0,1,1,0]],
  ["최종 보고서·발표",[0,0,0,0,0,1,1]],
@@ -278,10 +434,10 @@ const RX = {
  4:{dom:"열",rx:["OSM상 공원 외 용수 시설로 표시되어 개선 물량에서 제외","일반 이용 공간으로 확인되면 다시 포함"],sat:"부지 확인 전 판단 보류"},
 };
 const SAT = [
- ["더위·그늘 부족","여름 LST, 수관 피복","1, 3순위","녹음 식재, 그늘시설","그늘·더위 쾌적성","개선 면적(㎡), 여름철 만족도 변화"],
- ["소음·매연","도로 노출 지수","1, 2순위","차폐 수림대, 층위 보강","공기·소음 쾌적성","수림 전후 PM 실측 차이"],
- ["쉴 곳·화장실이 멀다","편의시설까지 망거리","1, 2순위","휴게거점 6곳 추가","휴게·편의시설","평균 망거리 "+V.meta.scenario.rest_before+"m → "+V.meta.scenario.rest_after+"m"],
- ["붐빔","잠재 보행흐름(미검증)","현장 계수 후 확정","동선 분산, 대체 거점 안내","혼잡 체감","피크 시간대 거점 밀집도 변화"],
+ ["더위·그늘 부족","여름 LST, 수관 피복, 쾌적 시간","1, 3순위","녹음 식재, 그늘시설","더위·그늘","여름 낮 쾌적 시간 증가, 여름철 만족도 변화"],
+ ["소음·매연","도로 노출 지수","1, 2순위","차폐 수림대, 층위 보강","공기·소음","수림 전후 PM 실측 차이"],
+ ["쉴 곳·화장실이 멀다","편의시설까지 망거리","1, 2순위","휴게거점 6곳 추가","쉴 곳·편의","평균 망거리 "+V.meta.scenario.rest_before+"m → "+V.meta.scenario.rest_after+"m"],
+ ["붐빔","잠재 보행흐름(미검증)","현장 계수 후 확정","동선 분산, 대체 거점 안내","붐빔","피크 시간대 거점 밀집도 변화"],
  ["날씨 대응 정보 부족","위험 임계치 판정","공원 전역","실시간 경보, 대체 프로그램","안내 유용성","임계치 도달 시 대체안 제시율, 추천 수용률"],
 ];
 
@@ -292,13 +448,14 @@ const $ = id => document.getElementById(id);
 const pct = (a,b) => Math.round(a/b*100);
 
 /* ---------- 탭 ---------- */
-const TABS = [["progress","진행현황"],["vuln","취약지역 진단"],["plan","개선안"],["risk","위험 판정 (모듈 1)"],["data","데이터·한계"]];
+const TABS = [["progress","진행현황"],["vuln","취약지역 진단"],["comfort","쾌적 시간"],["gap","만족도 격차"],["plan","개선안"],["risk","위험 판정 (모듈 1)"],["strategy","특화전략"],["data","데이터·한계"]];
 function go(id){ if(!TABS.some(t=>t[0]===id)) id="progress";
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+id));
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===id)); }
 $("tabs").innerHTML = TABS.map(t=>`<button role="tab" data-t="${t[0]}" aria-selected="false">${t[1]}</button>`).join("");
 $("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;go(b.dataset.t);try{history.replaceState(null,"","#"+b.dataset.t)}catch(_){location.hash=b.dataset.t}});
 addEventListener("hashchange",()=>go(location.hash.slice(1)));
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;go(b.dataset.go);scrollTo(0,0);try{history.replaceState(null,"","#"+b.dataset.go)}catch(_){}});
 function seg(id,items,cur,cb){const el=$(id);el.innerHTML=items.map(([k,l])=>`<button aria-pressed="${k===cur}" data-k="${k}">${l}</button>`).join("");
   el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...el.children].forEach(c=>c.setAttribute("aria-pressed",c===b));cb(b.dataset.k)})}
 
@@ -306,7 +463,7 @@ function seg(id,items,cur,cb){const el=$(id);el.innerHTML=items.map(([k,l])=>`<b
 $("asof").textContent = ASOF;
 const req = PROGRESS.filter(p=>p[2]==="필수");
 const reqDone = req.filter(p=>p[3]==="first"||p[3]==="done").length;
-$("leadText").textContent = `필수 과업 ${req.length}개 중 ${reqDone}개가 1차 완료되었고, 서울숲 취약지역 ${Z.filter(z=>!z.hold).length}곳과 개선안을 도출했습니다. 다음 단계는 현장 계수와 만족도 조사로 검증하는 일입니다.`;
+$("leadText").textContent = `만족도 높은 공원을 목표로, 필수 과업 ${req.length}개 중 ${reqDone}개를 1차 완료했습니다. 서울숲 취약지역 ${Z.filter(z=>!z.hold).length}곳과 개선안에 쾌적 시간과 만족도 격차 지도를 더했고, 다음 단계는 현장 계수와 설문으로 검증하는 일입니다.`;
 const zTop = Z[0];
 $("tiles").innerHTML = [
  ["분석 면적",man(M.area),"만㎡",`20m 격자 ${fmt(N)}칸, 수면·건물·도로·정수센터 제외`],
@@ -353,7 +510,9 @@ function recompute(){const t=KEYS.reduce((a,k)=>a+W[k],0)||1;
  const s=[...liveScore].sort((a,b)=>a-b),q=p=>s[Math.floor(p*(N-1))],c6=q(.6),c8=q(.8),c9=q(.9);
  liveGrade=liveScore.map(v=>v>=c9?3:v>=c8?2:v>=c6?1:0);
  let both=0,base=0;for(let k=0;k<N;k++){if(X.grade[k]>=2){base++;if(liveGrade[k]>=2)both++}}
- $("wNote").textContent=`기본 가중치에서 취약으로 분류된 격자 중 ${pct(both,base)}%가 현재 설정에서도 취약입니다. 구역 번호는 기본 가중치 기준입니다. * 표시는 현장 계수 전 대리지표입니다.`}
+ $("wNote").textContent=`기본 가중치에서 취약으로 분류된 격자 중 ${pct(both,base)}%가 현재 설정에서도 취약입니다. 구역 번호는 기본 가중치 기준입니다. * 표시는 현장 계수 전 대리지표입니다.`;
+ onScore.forEach(f=>f())}
+const onScore=[];   /* 가중치가 바뀌면 다시 그릴 화면(만족도 격차) */
 function paint(){vRects.forEach((r,k)=>r.setAttribute("fill",layer==="score"?GRADE[liveGrade[k]]:seq(X[layer][k])));
  $("mapLegend").innerHTML=(layer==="score"?GN.map((g,i)=>`<span><i style="background:${GRADE[i]}"></i>${g}</span>`).join(""):`<span>낮음 0</span><span style="display:inline-block;width:150px;height:12px;border-radius:3px;background:linear-gradient(90deg,rgb(252,238,224),rgb(233,142,84),rgb(122,38,12))"></span><span>100 높음</span>`)+`<span><i style="background:#E4E7EB;border:1px dashed #9AA5B1"></i>정수센터(분석 제외)</span><span><i style="background:#BCD9EE"></i>수면</span><span><i style="background:#6B7684"></i>건물</span>`}
 seg("layerSeg",Object.entries(LAYERS),"score",k=>{layer=k;paint()});
@@ -370,7 +529,7 @@ $("zlist").addEventListener("click",e=>{const b=e.target.closest(".zbtn");if(b){
 $("mapVuln").addEventListener("mousemove",e=>{const r=e.target.closest("rect[data-k]");if(r)showCell(+r.dataset.k)});
 $("mapVuln").addEventListener("mouseleave",()=>{if(pinned!==null)showCell(pinned);else if(selZone)selectZone(selZone)});
 $("mapVuln").addEventListener("click",e=>{const r=e.target.closest("rect[data-k]");if(r){pinned=+r.dataset.k;showCell(pinned)}});
-function renderW(){$("weights").innerHTML=KEYS.map(k=>`<label class="slider"><span>${KL[k]}</span><input id="w-${k}" type="range" min="0" max="60" step="5" value="${Math.round(W[k]*100)}" aria-label="${KL[k]} 가중치"><span class="num" id="wv-${k}" style="text-align:right">${Math.round(W[k]*100)}</span></label>`).join("")}
+function renderW(){$("weights").innerHTML=KEYS.map(k=>`<label class="slider"><span>${KL[k]}</span><input id="w-${k}" type="range" min="0" max="60" step="1" value="${Math.round(W[k]*100)}" aria-label="${KL[k]} 가중치"><span class="num" id="wv-${k}" style="text-align:right">${Math.round(W[k]*100)}</span></label>`).join("")}
 renderW();
 $("weights").addEventListener("input",e=>{const k=e.target.id.slice(2);W[k]=+e.target.value/100;$("wv-"+k).textContent=e.target.value;recompute();paint()});
 $("wReset").addEventListener("click",()=>{W={...M.weights};renderW();recompute();paint()});
@@ -462,12 +621,183 @@ const iJ=hmo.indexOf(7),iA=hmo.indexOf(8);
 $("hourTable").innerHTML=`<thead><tr><th></th>${hrs.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`+[[7,iJ],[8,iA]].map(([m,i])=>`<tr><th>${m}월</th>${C.heat_warn[i].map(v=>`<td style="background:${v>0?seq(v/25*100):"#F4F5F7"};color:${v/25*100>62?"#fff":"#1A2433"}" title="${m}월 ${v}%">${v>0?Math.round(v):"·"}</td>`).join("")}</tr>`).join("")+"</tbody>";
 $("hourNote").textContent=`6월과 9월은 해당 시간이 없었습니다. 8월 15시 전후가 가장 높습니다. 연도별 경고 시간은 2024년 ${C.by_year[2024].heat_warn}시간, 2025년 ${C.by_year[2025].heat_warn}시간, 2026년 ${C.by_year[2026].heat_warn}시간이고 최고값은 ${C.max_feels}℃(${C.max_feels_at.slice(0,13)}시)입니다. 체감온도는 기상청 여름철 산출식을 약 11km ERA5에 적용해 도심 열섬은 덜 반영됩니다.`;
 
+/* ---------- 쾌적 시간 (팀 컨셉) ----------
+   정의와 가정은 analysis/05_concept.py 머리말 참고. 여기서는 격자별 판정만 다시 계산합니다. */
+const CF=K.comfort, RW=CF.rows, RN=RW.m.length, sum12=a=>a.reduce((p,c)=>p+c,0);
+const rW=RW.m.map(m=>1/CF.nyr[m-1]);
+const TH={h:CF.th.heat*10,u:CF.th.uv*10,p:CF.th.pm25*10,q:CF.th.pm10*10};
+const winY=sum12(CF.win), winD=sum12(CF.winD), baseY=sum12(CF.base), baseD=sum12(CF.baseD);
+const shade0=X.tree.map(v=>Math.max(0,Math.min(1,v)));
+const shade1=shade0.map((t,k)=>X.c_shade[k]?Math.min(1,t+.35):(X.c_plant[k]||X.c_buffer[k])?Math.max(t,.7):t);   /* 개선안 시나리오와 같은 가정 */
+const allK=[...Array(N).keys()], candK=allK.filter(k=>X.c_plant[k]||X.c_shade[k]||X.c_buffer[k]);
+const shK=allK.filter(k=>shade0[k]>=.7), suK=allK.filter(k=>shade0[k]<.3);
+const SZ=K.survey.sz, ZS=K.survey.zones, szK=ZS.map((_,i)=>allK.filter(k=>SZ[k]===i+1));
+const avg=(a,ks)=>ks.reduce((p,k)=>p+a[k],0)/(ks.length||1);
+function mix(st,t){t=Math.max(0,Math.min(1,t))*(st.length-1);const i=Math.min(st.length-2,Math.floor(t)),f=t-i,a=st[i],b=st[i+1];return `rgb(${a.map((c,n)=>Math.round(c+(b[n]-c)*f)).join(",")})`}
+const BLUE=[[205,226,251],[57,135,229],[13,54,107]], GRN=[[238,241,236],[112,190,142],[20,96,52]];
+const grad=st=>`linear-gradient(90deg,${st.map(c=>`rgb(${c.join(",")})`).join(",")})`;
+let cS=CF.S, cA=CF.A, cPer="y", cSt="now", cPin=null, cfNow, cfAft;
+function runComfort(shade){
+ const Y=new Float32Array(N),D=new Float32Array(N);let sun=0,road=0,sunD=0,roadD=0;
+ for(let k=0;k<N;k++){const e=1-shade[k],kk=1+cA*X.air[k]/100,se=cS*e/10;let y=0,d=0;
+  for(let r=0;r<RN;r++){const w=rW[r];
+   if(RW.f[r]+se*RW.s[r]>=TH.h||RW.u[r]*e>=TH.u){sun+=w;if(RW.d[r])sunD+=w}
+   else if(RW.p[r]*kk>=TH.p||RW.q[r]*kk>=TH.q){road+=w;if(RW.d[r])roadD+=w}
+   else{y+=w;if(RW.d[r])d+=w}}
+  Y[k]=baseY+y;D[k]=baseD+d}
+ return {Y,D,sun:sun/N,road:road/N,sunD:sunD/N,roadD:roadD/N}}
+function monthly(ks,shade){const mon=new Float64Array(12);
+ ks.forEach(k=>{const e=1-shade[k],kk=1+cA*X.air[k]/100,se=cS*e/10;
+  for(let r=0;r<RN;r++)if(RW.f[r]+se*RW.s[r]<TH.h&&RW.u[r]*e<TH.u&&RW.p[r]*kk<TH.p&&RW.q[r]*kk<TH.q)mon[RW.m[r]-1]+=rW[r]});
+ return [...mon].map((v,m)=>CF.base[m]+v/(ks.length||1))}
+const H=v=>fmt(Math.round(v));
+$("mapCf").innerHTML=svg(baseUnder()+`<g id="cfc">${cellRects()}</g>`+baseOver()+zoneMarks()+poiLabels()+scaleBar());
+const cfRects=[...document.querySelectorAll("#cfc rect")];
+function paintCf(){const a=cPer==="y"?"Y":"D";let v,lo,hi,st;
+ if(cSt==="gain"){v=cfNow[a].map((x,k)=>cfAft[a][k]-x);lo=0;hi=Math.max(10,Math.ceil(Math.max(...v)/10)*10);st=GRN}
+ else{v=cSt==="now"?cfNow[a]:cfAft[a];lo=Math.floor(Math.min(...cfNow[a],...cfAft[a])/50)*50;hi=Math.ceil(Math.max(...cfNow[a],...cfAft[a])/50)*50;st=BLUE}
+ cfRects.forEach((r,k)=>r.setAttribute("fill",mix(st,(v[k]-lo)/(hi-lo))));
+ $("cfLegend").innerHTML=`<span>${cSt==="gain"?"늘어나는 시간 ":""}${H(lo)}시간</span><span style="display:inline-block;width:150px;height:12px;border-radius:3px;background:${grad(st)}"></span><span>${H(hi)}시간</span><span>${cPer==="y"?`연간 06~21시 ${H(winY)}시간 중`:`6~9월 10~17시 ${H(winD)}시간 중`}</span><span><i style="background:#E4E7EB;border:1px dashed #9AA5B1"></i>정수센터(분석 제외)</span><span><i style="background:#BCD9EE"></i>수면</span><span><i style="background:#6B7684"></i>건물</span>`}
+function topBar(x,y0,w,h){const r=Math.min(3,h);return `M${x} ${y0}V${y0-h+r}Q${x} ${y0-h} ${x+r} ${y0-h}H${x+w-r}Q${x+w} ${y0-h} ${x+w} ${y0-h+r}V${y0}Z`}
+function monthChart(mon){const Wd=330,l=30,t=14,ph=74,y0=t+ph,st=24,bw=16,p=mon.map((v,m)=>v/CF.win[m]*100),iMin=p.indexOf(Math.min(...p)),iMax=p.indexOf(Math.max(...p));
+ let g=[0,50,100].map(v=>`<line x1="${l}" x2="${Wd-4}" y1="${y0-v/100*ph}" y2="${y0-v/100*ph}" stroke="${v?"#E4E8ED":"#B6C0CC"}"/><text x="${l-5}" y="${y0-v/100*ph+4}" text-anchor="end" font-size="10" fill="#5C6B7E">${v}${v===100?"%":""}</text>`).join("");
+ p.forEach((v,m)=>{const x=l+6+m*st;g+=`<path d="${topBar(x,y0,bw,v/100*ph)}" fill="#2a78d6"><title>${m+1}월 ${Math.round(mon[m])}시간 (${Math.round(v)}%)</title></path><text x="${x+bw/2}" y="${y0+13}" text-anchor="middle" font-size="10" fill="#5C6B7E">${m+1}</text>`;
+  if(m===iMin||m===iMax)g+=`<text x="${x+bw/2}" y="${y0-v/100*ph-3}" text-anchor="middle" font-size="10" font-weight="700" fill="#1A2433">${Math.round(v)}</text>`});
+ return `<div class="chart"><svg viewBox="0 0 ${Wd} 106" role="img" aria-label="월별 쾌적 시간 비율">${g}</svg></div><p class="note">월별 쾌적 시간 비율(%). 숫자는 가장 높은 달과 낮은 달입니다.</p>`}
+function cfDetail(k){const ks=k==null?allK:[k],y=avg(cfNow.Y,ks),d=avg(cfNow.D,ks),gy=avg(cfAft.Y,ks)-y,gd=avg(cfAft.D,ks)-d;
+ $("cfInspTitle").textContent=k==null?"공원 평균":`격자 ${X.i[k]}-${X.j[k]}${SZ[k]?" · "+ZS[SZ[k]-1].name:""}`;
+ $("cfInsp").innerHTML=`<div class="facts" style="margin-bottom:6px"><span>연간 <b class="num">${H(y)}시간</b> (${pct(y,winY)}%)</span><span>여름 낮 <b class="num">${H(d)}시간</b> (${pct(d,winD)}%)</span><span>그늘 <b class="num">${Math.round(avg(shade0,ks)*100)}%</b></span><span>도로 노출 <b class="num">${Math.round(avg(X.air,ks))}</b></span></div>`+
+  (gy>0.5?`<div class="facts" style="margin-bottom:6px"><span>개선 후(추정) 연간 <b class="num">+${H(gy)}시간</b></span><span>여름 낮 <b class="num">+${H(gd)}시간</b></span></div>`:"")+monthChart(monthly(ks,shade0))}
+function renderWhy(){const d=cPer==="d",u=d?CF.uniD:CF.uni,win=d?winD:winY,c=avg(d?cfNow.D:cfNow.Y,allK),G_="#98A2AE",O_="#eb6834",sun=d?cfNow.sunD:cfNow.sun,road=d?cfNow.roadD:cfNow.road;
+ const rows=[["미세먼지 (공원 전체 농도)",sum12(u.pm),G_],["추위 (기온 0℃ 미만)",sum12(u.cold),G_],["더위 (그늘에서도 31℃ 이상)",sum12(u.heat),G_],["비 (시간당 1mm 이상)",sum12(u.rain),G_],["햇볕 노출 (그늘 부족)",sun,O_],["도로 노출 (미세먼지 가산)",road,O_]].sort((a,b)=>b[1]-a[1]);
+ rows.unshift(["쾌적",c,"#2a78d6"]);
+ $("cfWhyTitle").textContent=`쾌적하지 못한 이유 (공원 평균, ${d?"여름 낮":"연간"})`;
+ $("cfWhy").innerHTML=rows.map(r=>`<div class="rbar"><span>${r[0]}</span><span class="t"><i style="width:${r[1]/win*100}%;background:${r[2]}"></i></span><span class="n">${H(r[1])}시간</span><span class="n">${Math.round(r[1]/win*100)}%</span></div>`).join("");
+ $("cfWhyNote").textContent=`쾌적하지 못한 ${H(win-c)}시간 가운데 위치에 따라 달라지는 부분은 평균 ${H(sun+road)}시간(${pct(sun+road,win-c)}%)입니다. 식재와 그늘시설로 줄일 수 있는 것은 햇볕 노출이고, 나머지는 시간대 안내(모듈 1)로 대응해야 합니다. 미세먼지는 CAMS 모델값이라 실측보다 많이 잡혔을 수 있습니다.`}
+function renderCf(){
+ const mY=avg(cfNow.Y,allK),mn=Math.min(...cfNow.Y),mx=Math.max(...cfNow.Y);
+ $("cfTiles").innerHTML=[
+  ["공원 평균 쾌적 시간",H(mY),"시간/년",`06~21시 ${H(winY)}시간의 ${pct(mY,winY)}%`],
+  ["칸 사이 격차",H(mx-mn),"시간/년",`가장 좋은 칸 ${H(mx)}시간, 가장 나쁜 칸 ${H(mn)}시간`],
+  ["여름 낮 쾌적 비율",pct(avg(cfNow.D,allK),winD),"%",`그늘 70% 이상 칸 ${pct(avg(cfNow.D,shK),winD)}%, 30% 미만 칸 ${pct(avg(cfNow.D,suK),winD)}% (6~9월 10~17시)`],
+  ["개선 후 증가 (추정)","+"+H(avg(cfAft.Y,candK)-avg(cfNow.Y,candK)),"시간/년",`후보 격자 ${candK.length}칸 평균, 여름 낮은 +${H(avg(cfAft.D,candK)-avg(cfNow.D,candK))}시간`],
+ ].map(t=>`<div class="tile"><span class="k">${t[0]}</span><span class="v num">${t[1]}<small>${t[2]}</small></span><span class="s">${t[3]}</span></div>`).join("");
+ paintCf();renderWhy();cfDetail(cPin);
+ const grp=[[`그늘 70% 이상 (${shK.length}칸)`,monthly(shK,shade0)],[`그늘 30% 미만 (${suK.length}칸)`,monthly(suK,shade0)],["공원 평균",monthly(allK,shade0)]];
+ $("cfMonTable").innerHTML=`<thead><tr><th>칸 구분</th>${MN.map(m=>`<th>${m}</th>`).join("")}</tr></thead><tbody>`+grp.map(([l,mon])=>`<tr><th>${l}</th>${mon.map((v,m)=>{const p=v/CF.win[m];return `<td style="background:${mix(BLUE,p)};color:${p>.55?"#fff":"#1A2433"}" title="${m+1}월 ${Math.round(v)}시간">${Math.round(p*100)}</td>`}).join("")}</tr>`).join("")+"</tbody>";
+ $("cfMonNote").textContent=`겨울과 봄은 추위와 미세먼지 때문에 위치와 관계없이 낮고, 여름에는 그늘에 따라 벌어집니다. 여름 낮(6~9월 10~17시 ${H(winD)}시간) 기준으로 그늘 30% 미만 칸은 ${H(avg(cfNow.D,suK))}시간, 70% 이상 칸은 ${H(avg(cfNow.D,shK))}시간입니다. 자료 기간 ${CF.period[0]}~${CF.period[1]}.`;
+ $("cfZoneTable").innerHTML=`<thead><tr><th>구역</th><th>그늘</th><th>연간</th><th>여름 낮</th><th>개선 후 여름 낮</th><th>증가</th></tr></thead><tbody>`+ZS.map((z,i)=>{const ks=szK[i],d=avg(cfNow.D,ks),d2=avg(cfAft.D,ks);return `<tr><td style="white-space:nowrap"><span class="zb">${z.id}</span>${z.name}</td><td class="num">${Math.round(avg(shade0,ks)*100)}%</td><td class="num">${H(avg(cfNow.Y,ks))}</td><td class="num">${H(d)}</td><td class="num">${H(d2)}</td><td class="num">${d2-d>=.5?"+"+H(d2-d):"-"}</td></tr>`}).join("")+"</tbody>";
+ const zr=Z.filter(z=>!z.hold).map(z=>[`${z.rank}순위 ${ZN[z.rank].split(" (")[0]}`,allK.filter(k=>X.zone[k]===z.rank)]).concat([[`개선 후보 격자 (${candK.length}칸)`,candK],["공원 전체",allK]]);
+ $("planComfort").innerHTML=`<thead><tr><th>대상</th><th>여름 낮 현재</th><th>개선 후</th><th>증가</th><th>연간 현재</th><th>개선 후</th><th>증가</th></tr></thead><tbody>`+zr.map(([l,ks])=>{const d=avg(cfNow.D,ks),d2=avg(cfAft.D,ks),y=avg(cfNow.Y,ks),y2=avg(cfAft.Y,ks);return `<tr><td><b style="font-weight:500">${l}</b></td><td class="num">${H(d)}시간</td><td class="num">${H(d2)}시간</td><td class="num"><b>+${H(d2-d)}</b></td><td class="num">${H(y)}시간</td><td class="num">${H(y2)}시간</td><td class="num"><b>+${H(y2-y)}</b></td></tr>`}).join("")+"</tbody>";
+ $("planComfortNote").textContent=`격자 평균 쾌적 시간입니다. 여름 낮은 6~9월 10~17시 ${H(winD)}시간, 연간은 06~21시 ${H(winY)}시간 기준입니다. 그늘이 늘어난 칸만 달라지며, 차폐 수림대의 미세먼지 저감과 휴게거점 추가는 반영하지 않았습니다. 햇볕 가산 ${cS}℃ 가정에 따른 추정입니다.`}
+function computeCf(){cfNow=runComfort(shade0);cfAft=runComfort(shade1);renderCf();onScore.forEach(f=>f())}
+function renderAssume(){$("cfAssume").innerHTML=`<label class="slider wide"><span>햇볕 아래 체감 가산</span><input id="cfS" type="range" min="0" max="${CF.Smax}" step="0.5" value="${cS}" aria-label="햇볕 아래 체감 가산"><span class="num" id="cfSv" style="text-align:right">${cS}℃</span></label><label class="slider wide"><span>도로변 미세먼지 가산</span><input id="cfA" type="range" min="0" max="${Math.round(CF.Amax*100)}" step="5" value="${Math.round(cA*100)}" aria-label="도로변 미세먼지 가산"><span class="num" id="cfAv" style="text-align:right">${Math.round(cA*100)}%</span></label>`}
+renderAssume();
+$("cfAssume").addEventListener("input",e=>{if(e.target.id==="cfS")$("cfSv").textContent=e.target.value+"℃";else $("cfAv").textContent=e.target.value+"%"});
+$("cfAssume").addEventListener("change",()=>{cS=+$("cfS").value;cA=+$("cfA").value/100;computeCf()});
+$("cfReset").addEventListener("click",()=>{cS=CF.S;cA=CF.A;renderAssume();computeCf()});
+seg("cfPerSeg",[["y","연간"],["d","여름 낮"]],"y",k=>{cPer=k;paintCf();renderWhy()});
+seg("cfStSeg",[["now","현재"],["after","개선 후(추정)"],["gain","증가분"]],"now",k=>{cSt=k;paintCf()});
+$("mapCf").addEventListener("mousemove",e=>{const r=e.target.closest("rect[data-k]");if(r)cfDetail(+r.dataset.k)});
+$("mapCf").addEventListener("mouseleave",()=>cfDetail(cPin));
+$("mapCf").addEventListener("click",e=>{const r=e.target.closest("rect[data-k]");cPin=r?+r.dataset.k:null;cfDetail(cPin)});
+
+/* ---------- 만족도 격차 (팀 컨셉) ---------- */
+const ITEMS=[["all","종합","score","종합 취약도"],["heat","더위·그늘","heat","열 지표"],["air","공기·소음","air","대기 지표"],["access","쉴 곳·편의","access","접근성 지표"],["crowd","붐빔","crowd","혼잡 지표"]];
+/* 설문 전 가설값(5점 척도): 팀이 예상하는 구역별 만족도와 근거. 조사 결과가 아니며, 설문 평균은 화면의 입력칸에 넣습니다 */
+const HYPO={
+ A:{all:3.1,heat:2.9,air:3.8,access:3.6,crowd:2.6,why:"지수는 양호하지만 주말 붐빔과 잔디마당 한낮 그늘 부족으로 불만이 있을 것으로 예상"},
+ B:{all:3.8,heat:3.5,air:3.9,access:4.1,crowd:3.2,why:"편의시설이 가깝고 도로에서 멀어 만족이 높을 것으로 예상"},
+ C:{all:3.6,heat:4.2,air:3.8,access:3.7,crowd:2.8,why:"그늘은 충분하지만 놀이터 주변 붐빔이 변수"},
+ D:{all:3.9,heat:3.6,air:3.5,access:3.4,crowd:3.5,why:"지수는 평균보다 나쁘지만 실내 관람 시설 덕분에 만족은 높을 것으로 예상"},
+ E:{all:4.0,heat:4.4,air:3.2,access:3.1,crowd:4.3,why:"한적한 숲길이라 만족이 높지만 도로 소음과 먼 편의시설이 변수"},
+ F:{all:2.7,heat:2.6,air:2.5,access:2.4,crowd:3.8,why:"열·대기·접근성이 모두 나쁘고 쉴 곳이 멀어 불만이 클 것으로 예상"},
+ G:{all:2.9,heat:2.3,air:3.0,access:3.3,crowd:3.4,why:"차량 방문객이 처음 지나는 포장 공간이라 더위 불만이 클 것으로 예상"},
+ H:{all:3.5,heat:3.6,air:2.9,access:3.0,crowd:4.2,why:"도로 노출이 크지만 통과 동선이라 불만으로 드러나지 않을 가능성"},
+};
+const IMP_H={heat:4.3,crowd:3.7,access:4.1,air:3.9};   /* 항목 중요도 가설값(5점) */
+const IMP_L={heat:"더위·그늘",crowd:"붐빔",access:"쉴 곳·편의",air:"공기·소음"};
+const QD=[["우선 개선","#d03b3b","▲"],["숨은 위험","#eda100","!"],["운영 문제","#2a78d6","◆"],["유지","#98A2AE","✓"]];
+const QRX=[["취약도 높음 · 만족 낮음","식재·그늘시설·휴게거점에 예산을 먼저 배정 (개선안 탭)"],["취약도 높음 · 만족 높음","이용자가 위험을 체감하지 못하는 곳. 시설보다 경보·우회 안내(모듈 1), 여름 재조사"],["취약도 낮음 · 만족 낮음","지표 밖 원인(붐빔·관리·프로그램)을 조사하고 동선 분산과 운영으로 대응"],["취약도 낮음 · 만족 높음","현 수준 유지, 위험 시 대체 거점으로 추천"]];
+const MIN_N=15, LSK="seoulforest_gap_v1";let SVY={},IMP={},gItem="all";
+try{const s=JSON.parse(localStorage.getItem(LSK)||"{}");SVY=s.sat||{};IMP=s.imp||{}}catch(_){}
+const saveGap=()=>{try{localStorage.setItem(LSK,JSON.stringify({sat:SVY,imp:IMP}))}catch(_){}};
+const gVal=(z,it)=>SVY[z]&&SVY[z][it]!=null?SVY[z][it]:HYPO[z][it];
+const gSv=(z,it)=>!!(SVY[z]&&SVY[z][it]!=null);
+const qp=q=>`<span class="qp"><i style="background:${QD[q][1]}"></i>${QD[q][2]} ${QD[q][0]}</span>`;
+function gapCalc(item){const key=ITEMS.find(i=>i[0]===item)[2],val=k=>key==="score"?liveScore[k]:X[key][k];
+ const inK=allK.filter(k=>SZ[k]),xc=inK.reduce((p,k)=>p+val(k),0)/inK.length,ys=ZS.map(z=>gVal(z.id,item)),yc=ys.reduce((p,c)=>p+c,0)/ys.length;
+ return {xc,yc,res:ZS.map((z,i)=>{const x=szK[i].reduce((p,k)=>p+val(k),0)/szK[i].length,y=ys[i];return {z,i,x,y,q:x>=xc?(y<yc?0:1):(y<yc?2:3),sv:gSv(z.id,item),n:SVY[z.id]&&SVY[z.id].n||0}})}}
+function groupEdges(arr,val){const set=new Set();for(let k=0;k<N;k++)if(arr[k]===val)set.add(X.i[k]+","+X.j[k]);let d="";
+ for(let k=0;k<N;k++){if(arr[k]!==val)continue;const i=X.i[k],j=X.j[k],l=px(X.x[k])-10,t=py(X.y[k])-10;
+  if(!set.has((i-1)+","+j))d+=`M${l} ${t}v20`;if(!set.has((i+1)+","+j))d+=`M${l+20} ${t}v20`;if(!set.has(i+","+(j-1)))d+=`M${l} ${t}h20`;if(!set.has(i+","+(j+1)))d+=`M${l} ${t+20}h20`}return d}
+$("mapGap").innerHTML=svg(baseUnder()+`<g id="gc" fill-opacity=".6">${cellRects()}</g>`+baseOver()+ZS.map((z,i)=>`<path d="${groupEdges(SZ,i+1)}" fill="none" stroke="#1F3A5F" stroke-width="2.5"/>`).join("")+`<g id="gBadge"></g>`+scaleBar());
+const gRects=[...document.querySelectorAll("#gc rect")];
+function drawScatter(G,it){const Wd=400,Hd=330,l=48,r=12,t=14,b=46,pw=Wd-l-r,ph=Hd-t-b,R=G.res;
+ const xv=R.map(d=>d.x).concat(G.xc),yv=R.map(d=>d.y).concat(G.yc);
+ const x0=Math.floor((Math.min(...xv)-4)/10)*10,x1=Math.ceil((Math.max(...xv)+4)/10)*10;
+ const y0=Math.max(1,Math.floor((Math.min(...yv)-.25)*2)/2),y1=Math.min(5,Math.ceil((Math.max(...yv)+.25)*2)/2);
+ const sx=v=>l+(v-x0)/(x1-x0)*pw,sy=v=>t+ph-(v-y0)/(y1-y0)*ph,cx=sx(G.xc),cy=sy(G.yc);
+ let g=[[cx,cy,l+pw-cx,t+ph-cy,0],[cx,t,l+pw-cx,cy-t,1],[l,cy,cx-l,t+ph-cy,2],[l,t,cx-l,cy-t,3]].map(([x,y,w,h,q])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${QD[q][1]}" fill-opacity=".1"/>`).join("");
+ for(let v=y0;v<=y1+1e-9;v+=.5)g+=`<line x1="${l}" x2="${l+pw}" y1="${sy(v)}" y2="${sy(v)}" stroke="#E4E8ED"/><text x="${l-6}" y="${sy(v)+4}" text-anchor="end" font-size="11" fill="#5C6B7E">${v.toFixed(1)}</text>`;
+ for(let v=x0;v<=x1;v+=10)g+=`<text x="${sx(v)}" y="${t+ph+16}" text-anchor="middle" font-size="11" fill="#5C6B7E">${v}</text>`;
+ g+=`<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="#7C8A9A" stroke-width="1.5"/><line x1="${l}" x2="${l+pw}" y1="${cy}" y2="${cy}" stroke="#7C8A9A" stroke-width="1.5"/>`;
+ g+=[[l+pw-6,t+ph-8,"end",0],[l+pw-6,t+15,"end",1],[l+6,t+ph-8,"start",2],[l+6,t+15,"start",3]].map(([x,y,a,q])=>`<text x="${x}" y="${y}" text-anchor="${a}" font-size="12" font-weight="700" fill="#5C6B7E">${QD[q][2]} ${QD[q][0]}</text>`).join("");
+ g+=`<text x="${l+pw/2}" y="${Hd-8}" text-anchor="middle" font-size="12" fill="#1A2433">${it[3]} (오른쪽일수록 취약)</text><text transform="translate(13 ${t+ph/2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#1A2433">${it[1]} 만족도 (5점)</text>`;
+ R.forEach((d,i)=>{const X_=sx(d.x),Y_=sy(d.y),c=QD[d.q][1],left=R.some((o,j)=>j<i&&Math.abs(sx(o.x)-X_)<32&&Math.abs(sy(o.y)-Y_)<15);
+  g+=`<g><title>${d.z.id} ${d.z.name}: ${it[3]} ${d.x.toFixed(1)}, 만족도 ${d.y.toFixed(1)} (${d.sv?"설문 "+d.n+"명":"가설값"}), ${QD[d.q][0]}</title><circle cx="${X_}" cy="${Y_}" r="16" fill="transparent"/>`+(d.sv?`<circle cx="${X_}" cy="${Y_}" r="9" fill="${c}" stroke="#fff" stroke-width="2"/>`:`<circle cx="${X_}" cy="${Y_}" r="7.5" fill="#fff" stroke="${c}" stroke-width="3"/>`)+`<text x="${X_+(left?-13:13)}" y="${Y_+4.5}" text-anchor="${left?"end":"start"}" font-size="13" font-weight="700" fill="#1A2433">${d.z.id}</text></g>`});
+ $("gapChart").innerHTML=`<svg viewBox="0 0 ${Wd} ${Hd}" role="img" aria-label="구역별 취약도와 만족도 산점도">${g}</svg>`}
+$("gapTable").innerHTML=`<thead><tr><th>구역</th><th id="gxHead">취약도</th><th>쾌적 시간</th>${ITEMS.map(i=>`<th>${i[1]}</th>`).join("")}<th>응답 수</th><th>판정</th><th>가설 근거</th></tr></thead><tbody>`+ZS.map(z=>`<tr><td style="white-space:nowrap"><span class="zb">${z.id}</span>${z.name}</td><td class="num" id="gx-${z.id}"></td><td class="num" id="gh-${z.id}"></td>${ITEMS.map(i=>`<td><input class="sin" type="number" min="1" max="5" step="0.1" data-z="${z.id}" data-it="${i[0]}" placeholder="${HYPO[z.id][i[0]].toFixed(1)}" aria-label="${z.name} ${i[1]} 만족도"></td>`).join("")}<td><input class="sin" type="number" min="0" step="1" data-z="${z.id}" data-it="n" placeholder="0" aria-label="${z.name} 응답 수"></td><td id="gq-${z.id}" style="white-space:nowrap"></td><td class="note" style="min-width:230px">${HYPO[z.id].why}</td></tr>`).join("")+"</tbody>";
+function fillGapInputs(){document.querySelectorAll("#gapTable .sin").forEach(el=>{const v=SVY[el.dataset.z]&&SVY[el.dataset.z][el.dataset.it];el.value=v==null?"":v;el.classList.toggle("set",v!=null)})}
+$("gapRxTable").innerHTML=`<thead><tr><th>판정</th><th>뜻과 대응</th><th>해당 구역</th></tr></thead><tbody>`+QD.map((q,i)=>`<tr><td>${qp(i)}</td><td><b style="font-weight:500">${QRX[i][0]}</b><br><span class="note">${QRX[i][1]}</span></td><td id="gz-${i}" style="white-space:nowrap"></td></tr>`).join("")+"</tbody>";
+function renderConcept(){const G=gapCalc("all"),pr=G.res.filter(d=>d.q===0).map(d=>d.z.id),nSv=G.res.filter(d=>d.sv).length,mn=Math.min(...cfNow.Y),mx=Math.max(...cfNow.Y);
+ $("conceptFlow").innerHTML=[
+  ["① 취약도","어디가 물리적으로 나쁜가",`${man(S.vuln_before)}<small>만㎡ 취약</small>`,`열·혼잡·접근성·대기 4개 지표, 20m 격자 ${fmt(N)}칸`,"vuln","취약지역 진단 보기"],
+  ["② 쾌적 시간","머물기 좋은 시간이 1년에 몇 시간인가",`${H(avg(cfNow.Y,allK))}<small>시간/년 (공원 평균)</small>`,`칸 사이 격차 ${H(mx-mn)}시간, 개선 후보 격자는 +${H(avg(cfAft.Y,candK)-avg(cfNow.Y,candK))}시간(추정)`,"comfort","쾌적 시간 보기"],
+  ["③ 만족도 격차","이용자는 어디에 불만인가",`${pr.length?pr.join("·"):"없음"}<small> 구역 우선 개선${nSv?"":" (가설)"}</small>`,`설문 구역 ${ZS.length}곳 중 설문값 ${nSv}곳, 가설값 ${ZS.length-nSv}곳`,"gap","만족도 격차 보기"],
+ ].map(s=>`<div class="step"><h3>${s[0]}</h3><span class="q">${s[1]}</span><span class="v num">${s[2]}</span><span class="note">${s[3]}</span><button class="lnk" data-go="${s[4]}">${s[5]} →</button></div>`).join("")}
+function renderGap(){const it=ITEMS.find(i=>i[0]===gItem),G=gapCalc(gItem),R=G.res,nSv=R.filter(d=>d.sv).length;
+ gRects.forEach((r,k)=>r.setAttribute("fill",SZ[k]?QD[R[SZ[k]-1].q][1]:"#FFFFFF"));
+ $("gBadge").innerHTML=R.map(d=>`<g transform="translate(${px(d.z.cx)} ${py(d.z.cy)})"><circle r="19" fill="#fff" stroke="#1F3A5F" stroke-width="3"/><text text-anchor="middle" y="8" font-size="22" font-weight="700" fill="#1A2433">${d.z.id}</text></g>`).join("");
+ $("gapLegend").innerHTML=QD.map((q,i)=>`<span>${qp(i)} ${R.filter(d=>d.q===i).length}곳</span>`).join("")+`<span><i style="background:#fff;border:1px solid #9AA5B1"></i>보류 부지(설문 제외)</span>`;
+ drawScatter(G,it);
+ $("gapChartTitle").textContent=`${it[3]}와 ${it[1]} 만족도`;
+ $("gapChartNote").textContent=`세로선은 공원 평균 ${it[3]} ${G.xc.toFixed(1)}, 가로선은 구역 평균 만족도 ${G.yc.toFixed(2)}입니다. 두 선으로 네 판정을 나눕니다.`;
+ $("gxHead").textContent=it[3];
+ R.forEach(d=>{$("gx-"+d.z.id).textContent=d.x.toFixed(1);$("gh-"+d.z.id).textContent=H(avg(cfNow.Y,szK[d.i]))+"시간";
+  $("gq-"+d.z.id).innerHTML=qp(d.q)+(d.sv?(d.n<MIN_N?` <span class="pill p-wip">표본 부족</span>`:` <span class="note">설문 ${d.n}명</span>`):` <span class="note">가설</span>`)});
+ QD.forEach((_,i)=>{$("gz-"+i).innerHTML=R.filter(d=>d.q===i).map(d=>`<span class="zb">${d.z.id}</span>`).join("")||`<span class="note">없음</span>`});
+ $("gapCount").textContent=`${it[1]} 기준: 설문값 ${nSv}곳, 가설값 ${R.length-nSv}곳`;
+ $("gapBanner").innerHTML=nSv?`<b>${it[1]} 만족도는 ${R.length}개 구역 중 ${nSv}곳에 설문값이 입력되었습니다.</b> 나머지 ${R.length-nSv}곳은 팀이 세운 가설값입니다.`:`<b>설문 전입니다.</b> 지금 보이는 만족도는 팀이 세운 가설값(검증 대상)이며 조사 결과가 아닙니다. 아래 표에 설문 평균을 넣으면 지도와 판정이 바로 바뀝니다.`;
+ renderConcept()}
+$("gapTable").addEventListener("input",e=>{const el=e.target;if(!el.classList.contains("sin"))return;const z=el.dataset.z,it=el.dataset.it;let v=el.value===""?null:+el.value;
+ if(v!=null&&!isNaN(v))v=it==="n"?Math.max(0,Math.round(v)):Math.max(1,Math.min(5,v));else v=null;
+ SVY[z]=SVY[z]||{};if(v==null)delete SVY[z][it];else SVY[z][it]=v;el.classList.toggle("set",v!=null);saveGap();renderGap()});
+$("gapClear").addEventListener("click",()=>{SVY={};IMP={};saveGap();fillGapInputs();renderImp();renderGap()});
+seg("gapSeg",ITEMS.map(i=>[i[0],i[1]]),"all",k=>{gItem=k;renderGap()});
+$("gapDesign").innerHTML=[
+ `<b>표본</b>: 현장 120명(주중·주말). 응답자가 지도에서 오늘 다녀온 구역을 최대 3곳 고르고 구역마다 평가합니다. 이용이 적은 구역(북측 연결로변 등)도 응답을 모으기 위한 방식입니다.`,
+ `<b>문항</b>: 구역별 종합 만족도와 4개 항목(더위·그늘, 공기·소음, 쉴 곳·편의, 붐빔) 5점 척도, 항목별 중요도 5점 척도, 동반 유형·연령대·방문 목적.`,
+ `<b>판정</b>: 취약도는 공원 평균, 만족도는 구역 평균을 기준선으로 네 가지로 나눕니다. 응답 ${MIN_N}명 미만 구역은 표본 부족으로 표시합니다.`,
+ `<b>한계</b>: 11~12월 조사라 여름 더위에 대한 만족도는 기억에 의존한 응답입니다. 여름 재조사 전까지 더위·그늘 항목은 참고값으로 봅니다. 만족도는 기대 수준과 방문 목적의 영향도 받습니다.`,
+].map(x=>`<li>${x}</li>`).join("");
+const impW=()=>{const v=KEYS.map(k=>IMP[k]!=null?IMP[k]:IMP_H[k]),t=v.reduce((p,c)=>p+c,0);return v.map(x=>x/t)};
+function renderImp(){const w=impW();
+ $("gapImp").innerHTML=`<div class="tablewrap"><table><thead><tr><th>지표</th><th>설문 항목</th><th>중요도 (5점)</th><th>기본 가중치</th><th>설문 기반</th></tr></thead><tbody>`+KEYS.map((k,i)=>`<tr><td>${KL[k].replace("*","")}</td><td>${IMP_L[k]}</td><td><input class="sin${IMP[k]!=null?" set":""}" type="number" min="1" max="5" step="0.1" data-k="${k}" placeholder="${IMP_H[k].toFixed(1)}" value="${IMP[k]!=null?IMP[k]:""}" aria-label="${IMP_L[k]} 중요도"></td><td class="num">${Math.round(M.weights[k]*100)}</td><td class="num" id="iw-${k}"><b>${Math.round(w[i]*100)}</b></td></tr>`).join("")+"</tbody></table></div>";
+ $("gapImpNote").textContent=`항목별 중요도 평균을 합이 100이 되도록 나눈 값입니다. 빈칸은 가설값입니다. 근거 없이 정한 기본 가중치를 설문 결과로 바꾸기 위한 장치이며, 적용하면 취약지역 진단 탭의 가중치와 이 탭의 종합 취약도가 함께 바뀝니다.`}
+$("gapImp").addEventListener("input",e=>{const el=e.target;if(!el.classList.contains("sin"))return;let v=el.value===""?null:+el.value;if(v!=null&&!isNaN(v))v=Math.max(1,Math.min(5,v));else v=null;
+ if(v==null)delete IMP[el.dataset.k];else IMP[el.dataset.k]=v;el.classList.toggle("set",v!=null);saveGap();const w=impW();KEYS.forEach((k,i)=>{$("iw-"+k).innerHTML=`<b>${Math.round(w[i]*100)}</b>`})});
+$("gapApply").addEventListener("click",()=>{const w=impW();KEYS.forEach((k,i)=>{W[k]=Math.round(w[i]*100)/100});renderW();recompute();paint();$("gapApply").textContent="적용했습니다 (취약지역 진단 탭의 '기본값으로'로 되돌릴 수 있습니다)"});
+fillGapInputs();renderImp();onScore.push(renderGap);computeCf();
+
 /* ---------- 데이터·한계 ---------- */
 $("methodTable").innerHTML=`<thead><tr><th>지표</th><th>산출 방식</th><th>근거 수준</th><th>화소·해상도</th><th>취득일·기간</th><th>주요 가정과 한계</th></tr></thead><tbody>`+[
  ["열","지표면온도 편차 60% + 수관 비피복 40%",'<span class="pill p-done">실측 위성</span>',"Landsat 열적외 100m(30m 재배열), WorldCover 10m",M.lst.scenes.map(s=>s.date.slice(2)).join(", "),`장면 평균 차이 제거 후 평균. 격자 편차 표준편차 ±${(()=>{const a=X.lst_anom,m=a.reduce((p,c)=>p+c,0)/N;return Math.sqrt(a.reduce((p,c)=>p+(c-m)**2,0)/N).toFixed(1)})()}℃. 20m 격자보다 센서 해상도가 거칠어 작은 그늘은 구분 불가. 수관 자료는 2021년`],
  ["대기","간선도로 등급별 거리감쇠 합(감쇠거리 120m)",'<span class="pill p-wip">대리지표</span>',"OSM 도로 벡터","2026-11-09 수집","교통량·풍향 미반영. 공원 내 PM 실측 없음"],
  ["접근성*","편의시설까지 보행망 거리 65% + 출입구 거리 35%",'<span class="pill p-wip">대리지표</span>',`보행망 ${M.osm_counts.path_km}km, 편의거점 ${M.osm_counts.rest}개`,"2026-11-09 수집",`경사·단차 미반영. OSM 벤치는 ${M.osm_counts.bench}개, 계단은 ${M.osm_counts.steps}곳만 입력되어 현장 조사 필요`],
  ["혼잡*","출입구→유인거점 최단경로 누적 60% + 거점 밀도 40%",'<span class="pill p-crit">미검증</span>',`출입구 ${M.osm_counts.entr}곳, 거점 ${M.osm_counts.attr}개`,"2026-11-09 수집","실제 인원이 아닌 구조적 잠재치. 가중치 15%로 제한. 현장 계수로 보정 예정"],
+ ["쾌적 시간","06~21시 중 비·추위·미세먼지·더위·자외선 기준을 모두 통과한 시간 수. 격자별로 햇볕 노출(1-그늘 비율)과 도로 노출을 반영",'<span class="pill p-wip">가정 포함</span>',"기상 ERA5 약 11km, 대기 CAMS 약 40km. 격자 차이는 수관 10m와 도로 거리에서만 발생",`${CF.period[0]}~${CF.period[1]} 시간별`,`햇볕 가산 ${CF.S}℃와 도로 가산 ${Math.round(CF.A*100)}%는 근거 측정이 없는 가정. 추위 기준(0℃)은 과제에 없어 팀이 추가. 공원 안 기온·미세먼지 실측 없음`],
+ ["만족도","구역별 5점 척도 설문 평균(종합과 4개 항목). 공원 평균 취약도와 구역 평균 만족도로 4분면 판정",'<span class="pill p-crit">설문 전</span>',`설문 구역 ${ZS.length}곳`,"11~12월 조사 예정","현재 값은 팀 가설이며 조사 결과가 아님. 겨울 조사라 더위 항목은 회상 응답. 구역당 응답 수가 적으면 판정이 불안정"],
 ].map(r=>`<tr>${r.map((c,i)=>`<td>${i==0?`<b style="font-weight:700">${c}</b>`:c}</td>`).join("")}</tr>`).join("")+"</tbody>";
 $("dataTable").innerHTML=`<thead><tr><th>자료 (슬라이드 p.6)</th><th>현재 사용</th><th>상태</th><th>필요 조치</th></tr></thead><tbody>`+[
  ["기상 (기상청 API허브)","ERA5 재분석 + 예보 (Open-Meteo)","wip","API 키 발급 후 초단기실황 연동"],
@@ -475,7 +805,8 @@ $("dataTable").innerHTML=`<thead><tr><th>자료 (슬라이드 p.6)</th><th>현�
  ["위성·지표 (Landsat, Sentinel-2)",`Landsat ${M.lst.scenes.length}장면, Sentinel-2 ${M.ndvi_scenes.length}장면`,"done","완료"],
  ["공원 공간 (표준데이터, V-World)","OSM 경계·시설·보행망","wip","공식 경계와 시설물로 검증"],
  ["유동인구 (서울 생활인구, 현장 계수)","없음","todo","생활인구 키 신청, 거점 계수"],
- ["이용자 (설문, 페르소나)","없음","todo","현장 설문, 페르소나 작성"],
+ ["이용자 (설문, 페르소나)","설문 구역·문항 설계, 구역별 가설값","todo","현장 설문 120명, 페르소나 작성"],
+ ["일사량 (팀 추가, 쾌적 시간용)","ERA5 시간별 지표 일사량 (Open-Meteo)","wip","현장 흑구온도 측정으로 햇볕 가산값 확인"],
 ].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td><span class="pill ${ST[r[2]][1]}">${{done:"확보",wip:"대체 자료",todo:"미확보"}[r[2]]}</span></td><td>${r[3]}</td></tr>`).join("")+"</tbody>";
 $("findings").innerHTML=[
  `OSM 공원 경계 안에 <b>뚝도아리수정수센터 ${fmt(M.restricted_area)}㎡</b>가 포함되어 있어 제외했습니다. 포함하면 이 부지가 1순위로 잘못 나옵니다.`,
@@ -483,7 +814,73 @@ $("findings").innerHTML=[
  `Copernicus DEM은 수관 높이를 포함하는 표면모델이라 경사 지표에 쓰지 않았습니다. 수치지형도나 현장 측정이 필요합니다.`,
  `슬라이드 p.13은 곤충식물원을 4개 테마구역 중 하나로 적었는데, 통상 4구역은 문화예술공원·생태숲·체험학습원·습지생태원이어서 확인이 필요합니다.`,
  `슬라이드 p.7의 대체 추천 중 식물원 전환은 강우·미세먼지에는 적합하지만 폭염에는 온실 온도를 확인해야 합니다.`,
+ `쾌적하지 못한 시간의 대부분은 미세먼지(연 ${H(sum12(CF.uni.pm))}시간)와 추위(${H(sum12(CF.uni.cold))}시간)처럼 공간 개선으로 바꿀 수 없는 요인입니다. 위치에 따라 달라지는 손실은 공원 평균 연 ${H(cfNow.sun+cfNow.road)}시간이고, 개선안으로 되찾는 시간은 후보 격자 평균 연 ${H(avg(cfAft.Y,candK)-avg(cfNow.Y,candK))}시간입니다. 나머지는 시간대 안내(모듈 1)가 맡아야 합니다.`,
+ `설문 구역 가운데 북측 연결로변은 이용강도가 낮아 현장에서 응답자를 만나기 어렵습니다. 다른 구역 응답자에게 다녀온 구역을 함께 묻는 방식으로 보완합니다.`,
 ].map(x=>`<li>${x}</li>`).join("");
+
+/* ---------- 특화전략 ---------- */
+const GROUPS = [
+ ["01","전문가","무엇을 어디에 어떻게 조치하는가","조경·생태·도시계획 실무자의 조치 결정","분석형 화면: 지도 레이어·필터·원자료 내려받기","원값·산식·출처·불확실성의 표기"],
+ ["02","행정정책","어디에 먼저 예산을 쓰는가","지자체·발주처의 예산 우선순위 결정","요약형 화면: KPI 타일·우선순위 표·시나리오 비교","순위·목표 대비 달성률·근거 조문의 표기"],
+ ["03","일반인","지금 어디로 가서 무엇을 하는가","공원 이용자·시민의 이동·이용 결정","안내형 화면: 모바일 한 화면·알림·추천 동선","쉬운 말·아이콘·행동 권고"],
+];
+$("grpCards").innerHTML = GROUPS.map(g=>`<div class="card gcard"><span class="gnum">${g[0]}</span><h3>${g[1]}: ${g[2]}</h3><dl class="dl"><dt>정의</dt><dd>${g[3]}</dd><dt>형식</dt><dd>${g[4]}</dd><dt>기준</dt><dd>${g[5]}</dd></dl></div>`).join("");
+const STRAT = [
+ ["전문가","분석형","조경·생태 실무자","서울숲 어느 칸에 어떤 처방을 먼저 넣을까?","V-02 · V-03 · V-04","격자 레이어 지도 + 가중치 조절 + 후보지 표 + 원자료 내려받기",["칸별 취약지수 (합산 · 계절)","여름 오후 지표면온도 (Landsat · 16일)","그늘 비율 (Sentinel-2 · 연 1회)"],"원값·산식·출처 공개, 가중치를 바꿔도 결론이 유지되는지 <b>순위 범위</b>를 함께 표시"],
+ ["행정정책","요약형","서울시·성동구","올해 예산으로 어느 구역을 먼저 고칠까?","V-04 · M1-03 · M2-03","KPI 타일 3개 + 구역 우선순위 표 + 예산안 A/B 비교",["개선 면적 목표 달성률 (V-04 · 분기)","연간 폭염·미세먼지 경고 시간 (M1 · 매일)","주말 '붐빔' 시간 (도시데이터 · 매일)"],"순위와 달성률 중심, 처방별 <b>개략 단가</b>를 붙여 예산 판단 근거 제공 <span class=\"flag\">(단가 출처 미확인)</span>"],
+ ["일반인","안내형","가족·청년·고령 방문객","지금 서울숲 어디로 가면 안전하고 덜 붐빌까?","M1-03 · M1-04 · M2-03 · M3-04","휴대폰 한 화면: 경보 → 추천 3곳 → 길 안내 → 지도",["지금 위험 단계 (M1 · 실시간)","구역별 붐빔 (도시데이터 · 실시간)","추천 장소까지 도보 시간 (OSM · 고정)"],"쉬운 말·아이콘, 나이대별 추천(가족→체험학습원, 고령→숲길), <b>운영 중인 시설만</b> 추천"],
+];
+$("stratTable").innerHTML = `<thead><tr><th>그룹</th><th>결정 질문 (연계 요구 ID)</th><th>특화 화면</th><th>핵심 지표 3개 (데이터 · 주기)</th><th>전략 포인트</th></tr></thead><tbody>`+
+ STRAT.map(s=>`<tr><td style="white-space:nowrap"><b style="font-weight:700">${s[0]}</b><br><span class="pill p-first">${s[1]}</span><br><span class="note">${s[2]}</span></td><td><b style="font-weight:700">${s[3]}</b><br><span class="note">${s[4]}</span></td><td>${s[5]}</td><td>${s[6].map((x,i)=>"①②③"[i]+" "+x).join("<br>")}</td><td>${s[7]}</td></tr>`).join("")+"</tbody>";
+
+const sum = a => a.reduce((p,c)=>p+c,0);
+function miniCells(fill){let s="";for(let k=0;k<N;k++)s+=`<rect x="${px(X.x[k])-10}" y="${py(X.y[k])-10}" width="19" height="19" fill="${fill(k)}"/>`;return s}
+function pin(x,y,t,c){return `<g transform="translate(${px(x)} ${py(y)})"><circle r="20" fill="${c}" stroke="#fff" stroke-width="3"/><text text-anchor="middle" y="8" font-size="23" font-weight="700" fill="#fff">${t}</text></g>`}
+/* 전문가: 실제 격자·가중치·상위 후보 칸 */
+const rxOf = k => X.c_plant[k]?"녹음 식재":X.c_shade[k]?"그늘시설":X.c_buffer[k]?"차폐 수림대":"후보 외";
+const topCells = [...Array(N).keys()].filter(k=>!X.hold[k]).sort((a,b)=>X.score[b]-X.score[a]).slice(0,5);
+const mockExpert = `<div class="mock"><div class="mh"><span>전문가 · 어느 칸에 어떤 처방을?</span><span>분석형</span></div><div class="mb">
+ <div class="mapbox">${svg(baseUnder()+miniCells(k=>GRADE[X.grade[k]])+baseOver()+scaleBar())}</div>
+ <div class="legend">${GN.map((g,i)=>`<span><i style="background:${GRADE[i]}"></i>${g}</span>`).join("")}</div>
+ <div><b style="font-size:13.5px">가중치 (기본값)</b>${bars({heat:M.weights.heat*100,crowd:M.weights.crowd*100,access:M.weights.access*100,air:M.weights.air*100})}</div>
+ <div class="tablewrap"><table style="font-size:13px"><thead><tr><th>칸 ID</th><th>지수</th><th>취약 유지율</th><th>처방</th></tr></thead><tbody>${topCells.map(k=>`<tr><td class="num">${X.i[k]}-${X.j[k]}</td><td class="num">${X.score[k].toFixed(1)}</td><td class="num">${Math.round(X.robust[k]*100)}%</td><td>${rxOf(k)}</td></tr>`).join("")}</tbody></table></div>
+ <button class="zbtn" style="display:block;text-align:center" id="csvBtn">격자 원자료 CSV 받기 (${fmt(N)}칸)</button></div>
+ <p class="note cap"><b>전문가</b>: 원값·산식·조회일을 화면 안에 표시. 취약 유지율은 가중치 2,000회 변동 중 취약으로 남은 비율입니다.</p></div>`;
+/* 행정정책: 실제 구역 순위·후보 면적·경고 시간 */
+const zAct = Z.filter(z=>!z.hold), prMax = Math.max(...zAct.map(z=>z.priority));
+const target = S.plant+S.shade+S.buffer, areaA = sum(zAct.map(z=>z.plant+z.shade+z.buffer));
+const heatW = Math.round(sum(C.table.feels.warning)), pmW = Math.round(sum(C.table.pm2_5.warning));
+const mockAdmin = `<div class="mock"><div class="mh"><span>행정정책 · 올해 어디부터 고칠까?</span><span>요약형</span></div><div class="mb">
+ <div class="kpis">
+  <div class="kpi"><span class="k">개선 면적 달성률</span><span class="v num">0%</span><span class="s">시공 전, 목표 ${fmt(target)}㎡ (가안)</span></div>
+  <div class="kpi"><span class="k">연간 경고 시간</span><span class="v num">${heatW}h · ${pmW}h</span><span class="s">폭염 · PM2.5, 06~21시 연평균</span></div>
+  <div class="kpi"><span class="k">주말 붐빔</span><span class="v num">-</span><span class="s">도시데이터 연동 전</span></div>
+ </div>
+ <b style="font-size:13.5px">구역 우선순위</b>
+ <div style="display:grid;gap:6px">${zAct.map(z=>`<div class="prow"><b>${z.rank}</b><span>${ZN[z.rank].split(" (")[0]}<br><span class="note">${RX[z.rank].dom} · ${fmt(z.plant+z.shade+z.buffer)}㎡</span></span><span class="t"><i style="width:${pct(z.priority,prMax)}%"></i></span></div>`).join("")}</div>
+ <b style="font-size:13.5px">예산안 A / B 비교 (가안)</b>
+ <div style="display:grid;gap:6px">
+  <div class="prow"><b>A</b><span>우선 구역 ${zAct.length}곳 집중<br><span class="note num">개선 ${fmt(areaA)}㎡</span></span><span class="t"><i style="width:${pct(areaA,target)}%"></i></span></div>
+  <div class="prow"><b>B</b><span>후보 격자 전체<br><span class="note num">개선 ${fmt(target)}㎡</span></span><span class="t"><i style="width:100%"></i></span></div>
+ </div>
+ <p class="note"><span class="flag">개략 단가 출처 미확인</span>: 비용은 표시하지 않고 면적만 비교했습니다.</p></div>
+ <p class="note cap"><b>행정정책</b>: 순위와 목표 대비 달성률 중심. 목표 면적과 A/B안 구성은 팀 가안입니다.</p></div>`;
+/* 일반인: 폭염 사례 시각 기준, 가족마당 출발 추정 */
+const o0 = poiXY("가족마당")||[X.x[0],X.y[0]];
+const walk = q => Math.max(1,Math.round(Math.hypot(q[0]-o0[0],q[1]-o0[1])*1.3/67));
+let shadeK = -1, shadeD = 1e9; for(let k=0;k<N;k++){ if(X.tree[k]<.7) continue; const d=Math.hypot(X.x[k]-o0[0],X.y[k]-o0[1]); if(d<shadeD){shadeD=d;shadeK=k} }
+const recs = [["방문자센터","실내",poiXY("서울숲 방문자센터")],["수변휴게실","실내",poiXY("서울숲 수변휴게실 커뮤니티센터")],["가까운 숲길","그늘",shadeK>=0?[X.x[shadeK],X.y[shadeK]]:null]].filter(r=>r[2]).map(r=>[...r,walk(r[2])]).sort((a,b)=>a[3]-b[3]);
+const heatLv = RULE.feels(P.heat.feels);
+const mockCitizen = `<div class="mock"><div class="mh"><span>일반인 · 지금 어디로 갈까요?</span><span>안내형</span></div>
+ <div class="phone"><b style="font-size:16px;color:var(--navy)">지금 어디로 갈까요?</b>
+  <div class="al"><b>${LV[heatLv][3]} 폭염 ${LV[heatLv][0]}</b> 잔디밭은 잠시 피하세요</div>
+  <div>${recs.map((r,i)=>`<div class="rec"><span><b>${"①②③"[i]} ${r[0]}</b> ${r[1]}</span><span class="note num">붐빔 연동 전 · ${r[3]}분</span></div>`).join("")}</div>
+  <div class="mapbox">${svg(baseUnder()+miniCells(k=>X.tree[k]>=.7?"#9CCBAE":"#EEF0E8")+baseOver()+`<circle cx="${px(o0[0])}" cy="${py(o0[1])}" r="14" fill="#C0392B" stroke="#fff" stroke-width="3"/>`+recs.map((r,i)=>pin(r[2][0],r[2][1],i+1,"#1F3A5F")).join(""))}</div>
+  <div class="go">길 안내 시작</div></div>
+ <p class="note cap"><b>일반인</b>: 지도보다 목록이 먼저. 예시 상황은 ${P.heat.time} 체감 ${P.heat.feels}℃, 가족마당(빨간 점) 출발입니다. 도보 시간은 직선거리×1.3, 시속 4km 추정이고 온실형 시설은 폭염 추천에서 뺐습니다.</p></div>`;
+$("mocks").innerHTML = mockExpert+mockAdmin+mockCitizen;
+$("csvBtn").addEventListener("click",()=>{const ks=Object.keys(X),rows=[ks.join(",")];for(let k=0;k<N;k++)rows.push(ks.map(c=>X[c][k]).join(","));
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.join("\n")],{type:"text/csv"}));a.download="seoulforest_grid.csv";a.click()});
 
 go(location.hash.slice(1)||"progress");
 </script>
