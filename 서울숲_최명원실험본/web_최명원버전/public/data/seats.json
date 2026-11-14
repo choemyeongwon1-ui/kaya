@@ -1,0 +1,213 @@
+{
+  "built": "2026-11-15T04:02",
+  "source": "OpenStreetMap (seoulforest_osm_20261109_1433.json) · 계수는 가정값",
+  "radius": 120,
+  "params": {
+    "bench_seats": 3,
+    "shelter_seats": 8,
+    "lawn_usable": 0.5,
+    "lawn_m2_per_person": 3.6
+  },
+  "parkBenchesOSM": 27,
+  "parkSheltersOSM": 5,
+  "parkLawnM2": 16987,
+  "totalSeats": 2293,
+  "hubs": [
+    {
+      "id": "family-lawn",
+      "type": "outdoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 7840,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 1089,
+        "total": 1089
+      },
+      "note": null
+    },
+    {
+      "id": "mirror-pond",
+      "type": "outdoor",
+      "benches": 0,
+      "shelters": 1,
+      "lawnM2": 923,
+      "seats": {
+        "bench": 0,
+        "shelter": 8,
+        "lawn": 128,
+        "total": 136
+      },
+      "note": null
+    },
+    {
+      "id": "horse-plaza",
+      "type": "outdoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 0,
+        "total": 0
+      },
+      "note": null
+    },
+    {
+      "id": "stage",
+      "type": "outdoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 7377,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 1025,
+        "total": 1025
+      },
+      "note": null
+    },
+    {
+      "id": "courts",
+      "type": "outdoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 130,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 18,
+        "total": 18
+      },
+      "note": null
+    },
+    {
+      "id": "visitor",
+      "type": "indoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 0,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    },
+    {
+      "id": "forest-play",
+      "type": "shade",
+      "benches": 0,
+      "shelters": 3,
+      "lawnM2": 10,
+      "seats": {
+        "bench": 0,
+        "shelter": 24,
+        "lawn": 1,
+        "total": 25
+      },
+      "note": null
+    },
+    {
+      "id": "insect",
+      "type": "indoor",
+      "benches": 3,
+      "shelters": 0,
+      "lawnM2": 1654,
+      "seats": {
+        "bench": 9,
+        "shelter": 0,
+        "lawn": 230,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    },
+    {
+      "id": "butterfly",
+      "type": "indoor",
+      "benches": 3,
+      "shelters": 0,
+      "lawnM2": 2554,
+      "seats": {
+        "bench": 9,
+        "shelter": 0,
+        "lawn": 355,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    },
+    {
+      "id": "deer",
+      "type": "shade",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 0,
+        "total": 0
+      },
+      "note": null
+    },
+    {
+      "id": "lake",
+      "type": "indoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 798,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 111,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    },
+    {
+      "id": "wetland",
+      "type": "shade",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 0,
+        "total": 0
+      },
+      "note": null
+    },
+    {
+      "id": "culture-ctr",
+      "type": "indoor",
+      "benches": 0,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 0,
+        "shelter": 0,
+        "lawn": 0,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    },
+    {
+      "id": "water-museum",
+      "type": "indoor",
+      "benches": 2,
+      "shelters": 0,
+      "lawnM2": 0,
+      "seats": {
+        "bench": 6,
+        "shelter": 0,
+        "lawn": 0,
+        "total": null
+      },
+      "note": "실내 좌석 수 미확인 (현장 확인 필요)"
+    }
+  ]
+}
