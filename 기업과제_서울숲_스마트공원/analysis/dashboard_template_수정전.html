@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서울숲 스마트 공원 진행현황</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 관제 화면 구조: 상단 네이비 바 + 5개 뷰. 한 화면에서 요약 먼저, 상세는 카드로. 발표용 단일 라이트 테마 */
+:root{
+  color-scheme:light;
+  --navy:#1F3A5F; --green:#2E8B57; --bg:#F3F5F8; --card:#FFFFFF; --ink:#1A2433; --mute:#5C6B7E; --line:#DCE3EB;
+  --heat:#C8501E; --crowd:#3B6FB6; --access:#2E8B57; --air:#7A5AA6;
+  --ok:#2E8B57; --ok-bg:#E3F2E9; --warn:#B9690F; --warn-bg:#FCEFDD; --crit:#C0392B; --crit-bg:#FBE4E1; --idle:#5C6B7E; --idle-bg:#E8ECF1; --info:#1F5FA8; --info-bg:#E2EDF8;
+  --display:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif; --body:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;word-break:keep-all}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;color:var(--navy)}
+h2{font-size:20px;font-weight:700} h3{font-size:16px;font-weight:700}
+p{margin:0} .num{font-variant-numeric:tabular-nums}
+header{background:var(--navy);color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+header h1{color:#fff;font-size:19px} header .meta{color:#C9D6E6;font-size:13.5px}
+nav{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;padding:0 16px;overflow-x:auto;position:sticky;top:0;z-index:5}
+nav button{appearance:none;border:0;background:none;font:inherit;font-weight:500;color:var(--mute);padding:12px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--navy);border-bottom-color:var(--green);font-weight:700}
+nav button:hover{color:var(--navy)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--crowd);outline-offset:2px}
+main{max-width:1400px;margin:0 auto;padding:18px 20px 40px;display:grid;gap:16px}
+section.view{display:none;gap:16px} section.view.on{display:grid}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:grid;gap:10px;align-content:start;min-width:0}
+.lead{background:var(--navy);color:#fff;border-radius:8px;padding:16px 20px;display:grid;gap:4px}
+.lead b{font-size:18px;font-weight:700;line-height:1.45} .lead span{color:#D5E0EE;font-size:14px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.split{grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr)}
+@media(max-width:980px){.split{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:2px}
+.tile .k{color:var(--mute);font-size:13.5px} .tile .v{font-size:27px;font-weight:700;color:var(--navy);line-height:1.2} .tile .v small{font-size:15px;font-weight:500;margin-left:2px}
+.tile .s{color:var(--mute);font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.p-done{background:var(--ok-bg);color:#1E6B41}.p-first{background:var(--info-bg);color:var(--info)}.p-wip{background:var(--warn-bg);color:#8A4E08}.p-todo{background:var(--idle-bg);color:var(--idle)}.p-crit{background:var(--crit-bg);color:#962A1F}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:#EEF2F7;color:var(--navy);text-align:left;font-weight:700;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.note{color:var(--mute);font-size:13px}
+.statusbar{display:flex;height:22px;gap:2px;border-radius:4px;overflow:hidden}
+.statusbar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);align-items:center}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:3px;margin-right:4px;vertical-align:-2px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff}
+.seg button{appearance:none;border:0;border-right:1px solid var(--line);background:none;font:inherit;font-size:13.5px;padding:6px 12px;color:var(--ink);cursor:pointer}
+.seg button:last-child{border-right:0}.seg button[aria-pressed=true]{background:var(--navy);color:#fff;font-weight:700}.seg button:hover:not([aria-pressed=true]){background:#EEF2F7}
+.mapbox{background:#EEF3EE;border-radius:6px;overflow:hidden}
+.mapbox svg{display:block;width:100%;height:auto;max-height:700px}
+.mapbox rect[data-k]{cursor:crosshair}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.bars{display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:62px 1fr 34px;gap:8px;align-items:center;font-size:13px}
+.bar .t{background:#EDF0F4;height:9px;border-radius:0 4px 4px 0;overflow:hidden}.bar .t i{display:block;height:100%;border-radius:0 4px 4px 0}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums}
+.slider{display:grid;grid-template-columns:62px 1fr 38px;gap:8px;align-items:center;font-size:13.5px}
+.slider input{width:100%;accent-color:var(--navy)}
+.zlist{display:grid;gap:6px}
+.zbtn{appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;padding:8px 10px;font:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center}
+.zbtn:hover{border-color:var(--navy)}.zbtn.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.rank{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:13.5px;display:grid;place-items:center}
+.rank.hold{background:var(--idle)}
+.zcard{border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:10px;background:#fff}
+.zcard.hold{background:#F7F8FA;border-style:dashed}
+.zhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.facts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13.5px;color:var(--mute)}.facts b{color:var(--ink);font-weight:700}
+ul.tight{margin:0;padding-left:18px;display:grid;gap:3px}
+.gauge{border-radius:8px;padding:16px;display:grid;gap:2px;text-align:center}
+.gauge .lv{font-size:32px;font-weight:700;line-height:1.2}
+.gauge.ok{background:var(--ok-bg);color:#1E6B41}.gauge.warn{background:var(--warn-bg);color:#8A4E08}.gauge.crit{background:var(--crit-bg);color:#962A1F}
+.alt{display:grid;gap:6px}.alt div{background:#F3F6FA;border-radius:6px;padding:8px 11px;font-size:14px}
+.hm{font-size:12.5px;font-variant-numeric:tabular-nums;width:100%;border-collapse:separate;border-spacing:2px}
+.hm th{background:none;border:0;padding:2px 4px;font-weight:500;color:var(--mute);text-align:center}.hm th:first-child{text-align:left;color:var(--ink)}
+.hm td{border:0;text-align:center;padding:5px 2px;border-radius:3px}
+.gantt{display:grid;grid-template-columns:minmax(190px,1.2fr) repeat(7,minmax(46px,1fr));gap:3px 2px;font-size:13.5px;min-width:620px}
+.gantt .h{color:var(--mute);text-align:center;font-size:12.5px;padding-bottom:2px}.gantt .h.now{color:var(--navy);font-weight:700}
+.gantt .b{height:20px;border-radius:3px;background:#EEF1F5}.gantt .b.f{background:var(--navy)}.gantt .b.o{background:var(--green)}
+.gantt .l{padding-right:8px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.gcard{border-top:4px solid var(--navy)}
+.gnum{font-size:34px;font-weight:700;color:var(--navy);line-height:1.1}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin:0}.dl dt{font-weight:700;color:var(--navy)}.dl dd{margin:0}
+.mock{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;display:grid;align-content:start;min-width:0}
+.mock .mh{background:var(--navy);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:14px}
+.mock .mh span:last-child{font-weight:500;color:#C9D6E6;white-space:nowrap}
+.mock .mb{padding:12px;display:grid;gap:10px}
+.mock .cap{padding:0 12px 12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kpi{border:1px solid var(--line);border-radius:6px;padding:8px;display:grid;gap:1px}.kpi .k{font-size:12.5px;color:var(--mute)}.kpi .v{font-size:20px;font-weight:700;color:var(--navy);line-height:1.25}.kpi .s{font-size:12px;color:var(--mute)}
+.prow{display:grid;grid-template-columns:20px 1fr 90px;gap:8px;align-items:center;font-size:13.5px}.prow .t{background:#EDF0F4;height:9px;border-radius:4px;overflow:hidden}.prow .t i{display:block;height:100%;background:var(--navy)}
+.phone{max-width:310px;width:100%;margin:12px auto;border:3px solid var(--ink);border-radius:28px;padding:16px 14px;display:grid;gap:10px;background:#fff}
+.phone .al{background:var(--crit-bg);color:#962A1F;border-left:4px solid var(--crit);border-radius:4px;padding:7px 10px;font-size:14px}
+.phone .rec{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:5px 0;font-size:14px}
+.phone .go{background:var(--navy);color:#fff;text-align:center;border-radius:6px;padding:9px;font-weight:700;font-size:14px}
+.flag{color:var(--warn);font-weight:700}
+footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font-size:12.5px}
+@media(prefers-reduced-motion:no-preference){.bar .t i{transition:width .2s}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Smart Park Dashboard</h1>
+  <span class="meta">서울숲 취약지역 진단·개선 | 2026-2 AI-CCS 학부생 주제 01 | 진행현황 기준일 <span id="asof"></span></span>
+</header>
+<nav role="tablist" aria-label="화면 선택" id="tabs"></nav>
+<main>
+
+<section class="view" id="v-progress">
+  <div class="lead">
+    <b id="leadText"></b>
+    <span>지도와 수치는 공개 위성·공간 자료로 실제 계산한 값입니다. 혼잡과 접근성은 현장 계수 전이라 대리지표로 표시했고, 개선 효과는 시나리오 추정입니다.</span>
+  </div>
+  <div class="grid g4" id="tiles"></div>
+  <div class="card">
+    <div class="row"><h2>과업 요구사항 대비 진행상태</h2><div class="legend" id="stLegend"></div></div>
+    <div class="statusbar" id="stBar" aria-hidden="true"></div>
+    <div class="tablewrap"><table id="reqTable"></table></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>남은 일정(안)</h2>
+      <div class="tablewrap"><div class="gantt" id="gantt"></div></div>
+      <p class="note">11월 9일을 10주차로 본 추정입니다. 학사 일정에 맞춰 조정이 필요합니다. 슬라이드 일정의 여름철 폭염 답사는 시기가 지나 위성 여름 영상과 재분석 자료로 대체했습니다.</p>
+    </div>
+    <div class="card">
+      <h2>한국종합기술에 확인 요청</h2>
+      <ul class="tight" id="asks"></ul>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-vuln">
+  <div class="grid split">
+    <div class="card">
+      <div class="row"><h2>격자별 취약도 (20m)</h2><div class="seg" id="layerSeg"></div></div>
+      <div class="mapbox" id="mapVuln"></div>
+      <div class="legend" id="mapLegend"></div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h3>우선 개선 구역</h3>
+        <div class="zlist" id="zlist"></div>
+        <p class="note">취약 상위 20% 격자가 8칸(3,200㎡) 이상 이어진 구역입니다. 순위는 평균 취약도 × (0.7 + 0.3 × 이용강도)로 정했습니다.</p>
+      </div>
+      <div class="card" aria-live="polite">
+        <h3 id="inspTitle">격자 상세</h3>
+        <div id="insp"></div>
+      </div>
+      <div class="card">
+        <div class="row"><h3>지표 가중치</h3><button class="zbtn" style="display:block;padding:4px 10px" id="wReset">기본값으로</button></div>
+        <div id="weights" style="display:grid;gap:6px"></div>
+        <p class="note" id="wNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-plan">
+  <div class="grid g4" id="planTiles"></div>
+  <div class="grid split">
+    <div class="card">
+      <div class="row"><h2>개선 후보 위치</h2><div class="seg" id="beforeSeg"></div></div>
+      <div class="mapbox" id="mapPlan"></div>
+      <div class="legend" id="planLegend"></div>
+    </div>
+    <div class="grid" style="align-content:start" id="zoneCards"></div>
+  </div>
+  <div class="card">
+    <h2>개선안과 이용자 만족도 연결</h2>
+    <div class="tablewrap"><table id="satTable"></table></div>
+    <p class="note">만족도 조사는 아직 하지 않았습니다. 계획: 구역별 40명, 총 120명(95% 신뢰수준 약 ±9%p) 현장 설문, 8개 항목의 중요도·만족도 5점 척도로 IPA 분석. 개선안 공개 전 사전 조사와 시나리오 제시 후 선호 조사로 비교합니다.</p>
+  </div>
+  <div class="card">
+    <h3>시나리오 가정</h3>
+    <ul class="tight" id="assume"></ul>
+  </div>
+</section>
+
+<section class="view" id="v-risk">
+  <div class="grid split">
+    <div class="card">
+      <div class="row"><h2>위험 판정 시뮬레이터 (모듈 1)</h2><div class="seg" id="presetSeg"></div></div>
+      <div class="grid g2" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+        <div style="display:grid;gap:10px;align-content:start">
+          <div class="gauge" id="gauge"></div>
+          <div id="riskInputs" style="display:grid;gap:7px"></div>
+          <label style="font-size:14px"><input type="checkbox" id="rainAlert"> 호우특보 발효</label>
+        </div>
+        <div style="display:grid;gap:10px;align-content:start">
+          <div class="tablewrap"><table id="riskTable"></table></div>
+          <h3>대체 프로그램 추천</h3>
+          <div class="alt" id="alts"></div>
+        </div>
+      </div>
+      <p class="note" id="liveNote"></p>
+    </div>
+    <div class="card">
+      <h3>대체 시설과 그늘 구간</h3>
+      <div class="mapbox" id="mapRisk"></div>
+      <div class="legend"><span><i style="background:#2E8B57"></i>수관 피복 70% 이상 격자</span><span><i style="background:var(--navy);border-radius:50%"></i>실내 대체 시설</span></div>
+      <p class="note">시설 운영시간과 냉방 여부는 아직 연동하지 않았습니다. 온실형 시설은 폭염 시 더 더울 수 있어 폭염 추천에서 뺐습니다.</p>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="row"><h3>월별 임계치 도달 시간 (연평균, 06~21시)</h3><div class="seg" id="hmSeg"></div></div>
+      <div class="tablewrap"><table class="hm" id="hmTable"></table></div>
+      <p class="note" id="hmNote"></p>
+    </div>
+    <div class="card">
+      <h3>여름 시간대별 체감온도 33℃ 이상 비율 (%)</h3>
+      <div class="tablewrap"><table class="hm" id="hourTable"></table></div>
+      <p class="note" id="hourNote"></p>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-strategy">
+  <div class="lead">
+    <b>같은 데이터를 세 수요자의 결정에 맞춰 다르게 보여줍니다</b>
+    <span>기본요구 충족안 위에 얹는 특화전략입니다. 전문가는 조치, 행정정책은 예산, 일반인은 이동을 결정하며, 그룹마다 결정 질문 1문장·화면 1장·핵심 지표 3개 이하로 제한합니다.</span>
+  </div>
+  <div class="grid g3" id="grpCards"></div>
+  <div class="card">
+    <h2>수요자 그룹별 전략</h2>
+    <div class="tablewrap"><table id="stratTable"></table></div>
+    <p class="note"><b>지표를 3개로 줄이며 뺀 것</b> — 전문가: NDVI(그늘 비율과 중복) · 행정정책: 추천 수락률(기록 축적 전) · 일반인: PM2.5 수치(위험 단계 아이콘에 통합). 뺀 지표는 상세 화면에서만 표시합니다.</p>
+    <p class="note">요구 ID는 기본요구 충족안 표의 항목 번호입니다(V 취약지역, M1~M3 모듈 1~3). 자료: 10주차 강의자료 2차시(수요자별 결정 질문·화면 성격·핵심 지표 3개 이하).</p>
+  </div>
+  <div class="card">
+    <h2>그룹별 특화 화면 예시: 질문을 화면 제목에 두고 필요한 것만 보여줍니다</h2>
+    <p class="note">지도, 구역 순위, 후보 면적, 경고 시간은 이 대시보드의 실제 서울숲 분석값입니다. '연동 전'·'가안'·'추정' 표시는 아직 데이터나 근거가 없는 항목입니다.</p>
+    <div class="grid g3" id="mocks"></div>
+  </div>
+</section>
+
+<section class="view" id="v-data">
+  <div class="card">
+    <h2>지표 산출 방식과 불확실성</h2>
+    <div class="tablewrap"><table id="methodTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>활용 데이터 현황</h2>
+    <div class="tablewrap"><table id="dataTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>검토 중 발견한 사항</h2>
+    <ul class="tight" id="findings"></ul>
+  </div>
+</section>
+</main>
+<footer>공간정보 © OpenStreetMap contributors (ODbL) · Landsat C2 L2 USGS · Sentinel-2·Copernicus 수정 데이터 · ESA WorldCover 2021 · 기상·대기 Open-Meteo(ERA5, CAMS)</footer>
+
+<script>
+const V = /*__VULN__*/null;
+const C = /*__CLIMATE__*/null;
+const ASOF = "2026-11-09";
+
+/* 진행상태는 여기만 고치면 표와 막대가 함께 바뀝니다: done 완료 / first 1차 완료 / wip 진행 중 / todo 미착수 */
+const PROGRESS = [
+ ["취약지역 도출 (열·혼잡·접근성·대기)","p.10","필수","first","20m 격자 1,097칸에 4개 지표 표준화·가중 중첩, 가중치 민감도 2,000회","혼잡·접근성 대리지표를 현장 계수로 보정"],
+ ["모듈 1 위험 판정·알림·대체 추천","p.7","필수","first","5개 지표 임계치 판정, 대체 추천 규칙, 2년 반 재분석 통계","기상청·에어코리아 API 키 발급 후 실측 연동"],
+ ["공간 개선방안 제시","p.10","필수","first","우선 구역별 처방, 후보 격자, 물량과 시나리오 효과","현장 확인 후 구역 확정"],
+ ["취약지역 분석도 (GIS)","산출물 02","필수","first","GeoPackage·CSV 출력 완료","지도 양식 정리"],
+ ["개선방안 계획도","산출물 03","필수","wip","격자 단위 후보 위치도","식재·시설 배치 도면화"],
+ ["관리자 관제 화면","p.11","필수","wip","위험도 지수(A), 추천 맵(B) 구현","맞춤 코스(C)와 혼잡 추이(D)는 데이터 확보 후"],
+ ["현장 답사·유동인구 계수","p.6, 18","필수","todo",`계수 지점 후보 추출 (출입구 28곳, 유인거점 40개)`,"주중·주말 거점 계수, 벤치·단차·경사 조사"],
+ ["이용자 만족도 조사 (팀 추가 목표)","팀 목표","필수","todo","설문 설계안만 작성","현장 설문 120명, IPA 분석"],
+ ["이용자 모바일 화면","p.11","필수","todo","","위험 알림과 코스 카드 구성"],
+ ["최종 보고서·발표자료","산출물 04","필수","todo","","12월 작성"],
+ ["수요자별 특화전략 (전문가·행정정책·일반인)","10주차 강의","특화","wip","그룹별 결정 질문, 핵심 지표 3개, 특화 화면 예시","개략 단가 출처 확인, 붐빔 데이터 연동, 화면 구현"],
+ ["모듈 2 혼잡 예측·타겟 분산","p.8","선택","todo","","현장 계수 자료 양을 보고 착수 판단"],
+ ["모듈 3 맞춤 코스 (A* 경로)","p.9","선택","todo","공원 내부 보행망 16.3km 구축","비용함수 구현, 건강정보는 가상 데이터로 시연"],
+];
+const ST = {done:["완료","p-done","#2E8B57"],first:["1차 완료","p-first","#1F5FA8"],wip:["진행 중","p-wip","#D98028"],todo:["미착수","p-todo","#B6C0CC"]};
+const ASKS = [
+ "<b>공식 공원 경계</b> 제공 가능 여부. 슬라이드는 약 49만㎡, OSM 경계는 59.3만㎡이며 정수센터를 뺀 값은 53.3만㎡입니다.",
+ "<b>수도박물관 남측과 청계천용수공급지</b>의 일반 이용 가능 여부. 앞쪽은 1순위 구역이고 뒤쪽은 보류 구역입니다.",
+ "<b>서울숲 프로그램 운영 현황</b>과 실내 시설의 운영시간·냉방 정보.",
+ "<b>지표 가중치 기본값</b> 의견. 현재 열 35, 접근성 25, 대기 25, 혼잡 15이며 혼잡은 실측 전이라 낮게 뒀습니다.",
+];
+const GANTT = [
+ ["1차 결과 공유·피드백",[1,0,0,0,0,0,0]],
+ ["API 키 발급·실측 연동",[1,1,0,0,0,0,0]],
+ ["현장 계수·시설 조사",[0,1,1,1,0,0,0]],
+ ["만족도 설문·IPA",[0,0,1,1,0,0,0]],
+ ["대리지표 보정·구역 확정",[0,0,0,1,1,0,0]],
+ ["계획도·관리자/모바일 화면",[0,0,0,0,1,1,0]],
+ ["최종 보고서·발표",[0,0,0,0,0,1,1]],
+];
+const WEEKS = ["11/9","11/16","11/23","11/30","12/7","12/14","12/21"];
+
+const LAYERS = {score:"종합",heat:"열",crowd:"혼잡*",access:"접근성*",air:"대기"};
+const KEYS = ["heat","crowd","access","air"];
+const KL = {heat:"열",crowd:"혼잡*",access:"접근성*",air:"대기"};
+const KC = {heat:"var(--heat)",crowd:"var(--crowd)",access:"var(--access)",air:"var(--air)"};
+const GRADE = ["#F1EBDF","#EFC79B","#DD7F3F","#8E2A12"];
+const GN = ["양호","관심","취약","매우 취약"];
+const ZN = {1:"남동측 수변 구간 (수도박물관 남쪽)",2:"북측 연결로변 (서울숲호수 북쪽)",3:"동측 공영주차장 일대",4:"청계천용수공급지 부지"};
+const RX = {
+ 1:{dom:"대기·열·접근성 복합",rx:["강변 쪽 도로변에 상록·낙엽 혼합의 다층 차폐 수림대 조성","포장면 동선에 그늘막·파고라 설치","휴게거점 추가: 평균 385m인 편의시설 거리 단축"],sat:"공기·더위·쉴 곳에 대한 불만을 함께 낮출 수 있어 만족도 효과가 가장 클 것으로 봅니다"},
+ 2:{dom:"대기(도로 노출)",rx:["수관은 이미 79%라 신규 교목보다 하층·관목층 보강으로 차폐 층위 형성","휴게거점 추가와 쉼터는 도로 반대편에 배치","고농도 시간대 우회 안내(모듈 1 연계)"],sat:"소음·매연 체감 개선이 목표이며 이용강도가 낮아 2단계로 검토합니다"},
+ 3:{dom:"열(포장·주차장)",rx:["주차장 절반 구간에 그늘 캐노피 또는 녹음 식재 섬 도입","보행 진입부에 쿨링포그·그늘시설 설치","투수성 포장 전환 검토"],sat:"차량으로 온 방문객이 처음 겪는 공간이라 첫인상 개선 효과가 큽니다"},
+ 4:{dom:"열",rx:["OSM상 공원 외 용수 시설로 표시되어 개선 물량에서 제외","일반 이용 공간으로 확인되면 다시 포함"],sat:"부지 확인 전 판단 보류"},
+};
+const SAT = [
+ ["더위·그늘 부족","여름 LST, 수관 피복","1, 3순위","녹음 식재, 그늘시설","그늘·더위 쾌적성","개선 면적(㎡), 여름철 만족도 변화"],
+ ["소음·매연","도로 노출 지수","1, 2순위","차폐 수림대, 층위 보강","공기·소음 쾌적성","수림 전후 PM 실측 차이"],
+ ["쉴 곳·화장실이 멀다","편의시설까지 망거리","1, 2순위","휴게거점 6곳 추가","휴게·편의시설","평균 망거리 "+V.meta.scenario.rest_before+"m → "+V.meta.scenario.rest_after+"m"],
+ ["붐빔","잠재 보행흐름(미검증)","현장 계수 후 확정","동선 분산, 대체 거점 안내","혼잡 체감","피크 시간대 거점 밀집도 변화"],
+ ["날씨 대응 정보 부족","위험 임계치 판정","공원 전역","실시간 경보, 대체 프로그램","안내 유용성","임계치 도달 시 대체안 제시율, 추천 수용률"],
+];
+
+const M = V.meta, X = V.cells, Z = V.zones, N = X.x.length, S = M.scenario;
+const fmt = n => Number(n).toLocaleString("ko-KR");
+const man = a => (a/10000).toFixed(1);
+const $ = id => document.getElementById(id);
+const pct = (a,b) => Math.round(a/b*100);
+
+/* ---------- 탭 ---------- */
+const TABS = [["progress","진행현황"],["vuln","취약지역 진단"],["plan","개선안"],["risk","위험 판정 (모듈 1)"],["strategy","특화전략"],["data","데이터·한계"]];
+function go(id){ if(!TABS.some(t=>t[0]===id)) id="progress";
+  document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+id));
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===id)); }
+$("tabs").innerHTML = TABS.map(t=>`<button role="tab" data-t="${t[0]}" aria-selected="false">${t[1]}</button>`).join("");
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;go(b.dataset.t);try{history.replaceState(null,"","#"+b.dataset.t)}catch(_){location.hash=b.dataset.t}});
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+function seg(id,items,cur,cb){const el=$(id);el.innerHTML=items.map(([k,l])=>`<button aria-pressed="${k===cur}" data-k="${k}">${l}</button>`).join("");
+  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...el.children].forEach(c=>c.setAttribute("aria-pressed",c===b));cb(b.dataset.k)})}
+
+/* ---------- 진행현황 ---------- */
+$("asof").textContent = ASOF;
+const req = PROGRESS.filter(p=>p[2]==="필수");
+const reqDone = req.filter(p=>p[3]==="first"||p[3]==="done").length;
+$("leadText").textContent = `필수 과업 ${req.length}개 중 ${reqDone}개가 1차 완료되었고, 서울숲 취약지역 ${Z.filter(z=>!z.hold).length}곳과 개선안을 도출했습니다. 다음 단계는 현장 계수와 만족도 조사로 검증하는 일입니다.`;
+const zTop = Z[0];
+$("tiles").innerHTML = [
+ ["분석 면적",man(M.area),"만㎡",`20m 격자 ${fmt(N)}칸, 수면·건물·도로·정수센터 제외`],
+ ["취약 지역 면적",man(S.vuln_before),"만㎡",`상위 20% 격자, 이 중 ${M.robust_share}%는 가중치를 바꿔도 안정적으로 취약`],
+ ["우선 개선 구역",Z.filter(z=>!z.hold).length,"곳",`1순위 ${ZN[1].split(" (")[0]} ${man(zTop.area)}만㎡, 보류 ${Z.filter(z=>z.hold).length}곳`],
+ ["개선 후 취약 면적 (추정)",man(S.vuln_after),"만㎡",`현재 ${man(S.vuln_before)}만㎡에서 ${pct(S.vuln_before-S.vuln_after,S.vuln_before)}% 감소, 시나리오`],
+].map(t=>`<div class="tile"><span class="k">${t[0]}</span><span class="v num">${t[1]}<small>${t[2]}</small></span><span class="s">${t[3]}</span></div>`).join("");
+const cnt = k => PROGRESS.filter(p=>p[3]===k).length;
+$("stBar").innerHTML = Object.keys(ST).filter(cnt).map(k=>`<i style="flex:${cnt(k)};background:${ST[k][2]}"></i>`).join("");
+$("stLegend").innerHTML = Object.keys(ST).filter(cnt).map(k=>`<span><i style="background:${ST[k][2]}"></i>${ST[k][0]} ${cnt(k)}</span>`).join("");
+$("reqTable").innerHTML = `<thead><tr><th>요구사항</th><th>근거</th><th>구분</th><th>상태</th><th>현재 결과</th><th>남은 일</th></tr></thead><tbody>`+
+ PROGRESS.map(p=>`<tr><td><b style="font-weight:500">${p[0]}</b></td><td class="note" style="white-space:nowrap">${p[1]}</td><td style="white-space:nowrap">${p[2]}</td><td><span class="pill ${ST[p[3]][1]}">${ST[p[3]][0]}</span></td><td>${p[4]||"-"}</td><td>${p[5]}</td></tr>`).join("")+"</tbody>";
+$("gantt").innerHTML = `<div></div>`+WEEKS.map((w,i)=>`<div class="h ${i==0?"now":""}">${w}</div>`).join("")+GANTT.map(g=>`<div class="l">${g[0]}</div>`+g[1].map((v,i)=>`<div class="b ${v?(i==0?"f":"o"):""}"></div>`).join("")).join("");
+$("asks").innerHTML = ASKS.map(a=>`<li>${a}</li>`).join("");
+
+/* ---------- 지도 ---------- */
+const xs=V.geo.park.map(p=>p[0]), ys=V.geo.park.map(p=>p[1]);
+const B={x0:Math.min(...xs)-25,x1:Math.max(...xs)+25,y0:Math.min(...ys)-25,y1:Math.max(...ys)+25};
+const W_=B.x1-B.x0,H_=B.y1-B.y0, px=x=>Math.round(x-B.x0), py=y=>Math.round(B.y1-y);
+const P2=p=>p.map(q=>px(q[0])+","+py(q[1])).join(" ");
+function labels(list,size=20){return list.map(([x,y,t,anchor])=>`<text x="${px(x)}" y="${py(y)}" text-anchor="${anchor||"middle"}" font-size="${size}" font-weight="500" fill="#1A2433" stroke="#fff" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${t}</text>`).join("")}
+function poiXY(name){const p=V.geo.poi.find(q=>q[2]===name);return p?[p[0],p[1]]:null}
+function scaleBar(){const x=24,y=H_-22;return `<g font-size="15" fill="#1A2433"><path d="M${x} ${y}h100M${x} ${y-5}v10M${x+100} ${y-5}v10" stroke="#1A2433" stroke-width="2.5" fill="none"/><text x="${x+50}" y="${y-9}" text-anchor="middle">100 m</text></g><g transform="translate(36 40)"><path d="M0 -20L9 8L0 3L-9 8Z" fill="#1A2433"/><text y="26" text-anchor="middle" font-size="16" fill="#1A2433">N</text></g>`}
+function baseUnder(){return V.geo.restrict.map(p=>`<polygon points="${P2(p)}" fill="#E4E7EB" stroke="#9AA5B1" stroke-dasharray="6 5" stroke-width="1.5"/>`).join("")+V.geo.water.map(p=>`<polygon points="${P2(p)}" fill="#BCD9EE"/>`).join("")}
+function baseOver(){return V.geo.bld.map(p=>`<polygon points="${P2(p)}" fill="#6B7684"/>`).join("")+V.geo.paths.map(p=>`<polyline points="${P2(p)}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2"/>`).join("")+`<polygon points="${P2(V.geo.park)}" fill="none" stroke="#1F3A5F" stroke-width="2.5"/>`}
+function cellRects(){let s="";for(let k=0;k<N;k++)s+=`<rect data-k="${k}" x="${px(X.x[k])-10}" y="${py(X.y[k])-10}" width="19" height="19"/>`;return s}
+function zoneEdges(rank){const set=new Set();for(let k=0;k<N;k++)if(X.zone[k]===rank)set.add(X.i[k]+","+X.j[k]);let d="";
+ for(let k=0;k<N;k++){if(X.zone[k]!==rank)continue;const i=X.i[k],j=X.j[k],l=px(X.x[k])-10,t=py(X.y[k])-10;
+  if(!set.has((i-1)+","+j))d+=`M${l} ${t}v20`;if(!set.has((i+1)+","+j))d+=`M${l+20} ${t}v20`;if(!set.has(i+","+(j-1)))d+=`M${l} ${t}h20`;if(!set.has(i+","+(j+1)))d+=`M${l} ${t+20}h20`}return d}
+function zoneMarks(){return Z.map(z=>`<path class="zedge" data-z="${z.rank}" d="${zoneEdges(z.rank)}" fill="none" stroke="${z.hold?"#5C6B7E":"#1F3A5F"}" stroke-width="3" ${z.hold?'stroke-dasharray="7 5"':""}/>`).join("")+Z.map(z=>`<g transform="translate(${px(z.cx)} ${py(z.cy)})"><circle r="16" fill="${z.hold?"#5C6B7E":"#1F3A5F"}" stroke="#fff" stroke-width="2.5"/><text text-anchor="middle" y="6" font-size="18" font-weight="700" fill="#fff">${z.rank}</text></g>`).join("")}
+const KEYPOI=[["가족마당"],["거울연못"],["곤충식물원"],["서울숲호수"],["사슴우리"],["서울숲 방문자센터","방문자센터"]];
+function poiLabels(){return labels(KEYPOI.map(([n,l])=>{const q=poiXY(n);return q?[q[0],q[1],l||n]:null}).filter(Boolean))}
+function svg(inner){return `<svg viewBox="0 0 ${W_} ${H_}" role="img" aria-label="서울숲 격자 지도" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`}
+
+const seqStops=[[252,238,224],[233,142,84],[122,38,12]];
+function seq(v){const t=Math.max(0,Math.min(1,v/100))*2,i=Math.min(1,Math.floor(t)),f=t-i,a=seqStops[i],b=seqStops[i+1];return `rgb(${a.map((c,n)=>Math.round(c+(b[n]-c)*f)).join(",")})`}
+
+/* 취약지역 맵 */
+$("mapVuln").innerHTML = svg(baseUnder()+`<g id="vc">${cellRects()}</g>`+baseOver()+zoneMarks()+poiLabels()+scaleBar());
+const vRects=[...document.querySelectorAll("#vc rect")];
+let layer="score", W={...M.weights}, liveScore=X.score.slice(), liveGrade=X.grade.slice(), pinned=null, selZone=null;
+function recompute(){const t=KEYS.reduce((a,k)=>a+W[k],0)||1;
+ liveScore=X.score.map((_,k)=>KEYS.reduce((a,c)=>a+W[c]*X[c][k],0)/t);
+ const s=[...liveScore].sort((a,b)=>a-b),q=p=>s[Math.floor(p*(N-1))],c6=q(.6),c8=q(.8),c9=q(.9);
+ liveGrade=liveScore.map(v=>v>=c9?3:v>=c8?2:v>=c6?1:0);
+ let both=0,base=0;for(let k=0;k<N;k++){if(X.grade[k]>=2){base++;if(liveGrade[k]>=2)both++}}
+ $("wNote").textContent=`기본 가중치에서 취약으로 분류된 격자 중 ${pct(both,base)}%가 현재 설정에서도 취약입니다. 구역 번호는 기본 가중치 기준입니다. * 표시는 현장 계수 전 대리지표입니다.`}
+function paint(){vRects.forEach((r,k)=>r.setAttribute("fill",layer==="score"?GRADE[liveGrade[k]]:seq(X[layer][k])));
+ $("mapLegend").innerHTML=(layer==="score"?GN.map((g,i)=>`<span><i style="background:${GRADE[i]}"></i>${g}</span>`).join(""):`<span>낮음 0</span><span style="display:inline-block;width:150px;height:12px;border-radius:3px;background:linear-gradient(90deg,rgb(252,238,224),rgb(233,142,84),rgb(122,38,12))"></span><span>100 높음</span>`)+`<span><i style="background:#E4E7EB;border:1px dashed #9AA5B1"></i>정수센터(분석 제외)</span><span><i style="background:#BCD9EE"></i>수면</span><span><i style="background:#6B7684"></i>건물</span>`}
+seg("layerSeg",Object.entries(LAYERS),"score",k=>{layer=k;paint()});
+function bars(o,w){return `<div class="bars">`+KEYS.map(k=>`<div class="bar"><span>${KL[k]}</span><span class="t"><i style="width:${o[k]}%;background:${KC[k]}"></i></span><span class="n">${Math.round(o[k])}</span></div>`).join("")+`</div>`}
+function showCell(k){$("inspTitle").textContent="격자 상세";
+ $("insp").innerHTML=`<div class="facts" style="margin-bottom:8px"><span>종합 <b class="num">${liveScore[k].toFixed(1)}</b></span><span>등급 <b>${GN[liveGrade[k]]}</b></span><span>가중치 변동 시 취약 유지 <b class="num">${Math.round(X.robust[k]*100)}%</b></span></div>`+bars({heat:X.heat[k],crowd:X.crowd[k],access:X.access[k],air:X.air[k]})+
+ `<div class="facts" style="margin-top:8px"><span>여름 지표면온도 <b class="num">${X.lst_abs[k].toFixed(1)}℃</b></span><span>수관 <b class="num">${Math.round(X.tree[k]*100)}%</b></span><span>NDVI <b class="num">${X.ndvi[k].toFixed(2)}</b></span><span>편의시설 망거리 <b class="num">${X.d_rest[k]}m</b></span><span>간선도로 <b class="num">${X.d_road[k]}m</b></span></div>`}
+function showZone(z){$("inspTitle").textContent=`${z.rank}순위 ${ZN[z.rank]||""}`;
+ $("insp").innerHTML=`<div class="facts" style="margin-bottom:8px"><span>면적 <b class="num">${fmt(z.area)}㎡</b></span><span>평균 취약도 <b class="num">${z.score}</b></span><span>가중치 변동 시 취약 유지 <b class="num">${Math.round(z.robust*100)}%</b></span></div>`+bars(z.dm)+
+ `<div class="facts" style="margin-top:8px"><span>여름 지표면온도 <b class="num">${z.lst}℃</b></span><span>수관 <b class="num">${z.tree}%</b></span><span>포장·건축 <b class="num">${z.built}%</b></span><span>간선도로 <b class="num">${z.droad}m</b></span></div>`}
+function selectZone(r){selZone=r;document.querySelectorAll(".zedge").forEach(e=>e.setAttribute("stroke-width",+e.dataset.z===r?6:3));document.querySelectorAll("#zlist .zbtn").forEach(b=>b.classList.toggle("on",+b.dataset.z===r));showZone(Z.find(z=>z.rank===r))}
+$("zlist").innerHTML=Z.map(z=>`<button class="zbtn" data-z="${z.rank}"><span class="rank ${z.hold?"hold":""}">${z.rank}</span><span>${ZN[z.rank]}<br><span class="note">${z.hold?"부지 확인 전 보류":RX[z.rank].dom} · ${fmt(z.area)}㎡</span></span><span class="num" style="font-weight:700">${z.score}</span></button>`).join("");
+$("zlist").addEventListener("click",e=>{const b=e.target.closest(".zbtn");if(b){pinned=null;selectZone(+b.dataset.z)}});
+$("mapVuln").addEventListener("mousemove",e=>{const r=e.target.closest("rect[data-k]");if(r)showCell(+r.dataset.k)});
+$("mapVuln").addEventListener("mouseleave",()=>{if(pinned!==null)showCell(pinned);else if(selZone)selectZone(selZone)});
+$("mapVuln").addEventListener("click",e=>{const r=e.target.closest("rect[data-k]");if(r){pinned=+r.dataset.k;showCell(pinned)}});
+function renderW(){$("weights").innerHTML=KEYS.map(k=>`<label class="slider"><span>${KL[k]}</span><input id="w-${k}" type="range" min="0" max="60" step="5" value="${Math.round(W[k]*100)}" aria-label="${KL[k]} 가중치"><span class="num" id="wv-${k}" style="text-align:right">${Math.round(W[k]*100)}</span></label>`).join("")}
+renderW();
+$("weights").addEventListener("input",e=>{const k=e.target.id.slice(2);W[k]=+e.target.value/100;$("wv-"+k).textContent=e.target.value;recompute();paint()});
+$("wReset").addEventListener("click",()=>{W={...M.weights};renderW();recompute();paint()});
+recompute();paint();selectZone(1);
+
+/* ---------- 개선안 ---------- */
+$("planTiles").innerHTML=[
+ ["녹음 식재 후보",fmt(S.plant),"㎡",`낙엽 교목 약 ${S.trees}주 (8m 간격 가정)`],
+ ["그늘시설 후보",fmt(S.shade),"㎡","포장·주차 공간이라 식재가 어려운 곳"],
+ ["차폐 수림대 후보",fmt(S.buffer),"㎡",`도로 80m 이내, 약 ${S.buf_trees}주 (가정 동일)`],
+ ["휴게거점 추가",S.rest_add,"곳",`편의시설 평균 망거리 ${S.rest_before}m → ${S.rest_after}m`],
+].map(t=>`<div class="tile"><span class="k">${t[0]}</span><span class="v num">${t[1]}<small>${t[2]}</small></span><span class="s">${t[3]}</span></div>`).join("");
+const GRAY=["#F2F1EC","#DEDCD3","#B9B6AB","#8D8A7F"];
+const planC={plant:"#2E8B57",shade:"#C8501E",buffer:"#7A5AA6"};
+function star(x,y){return `<g transform="translate(${px(x)} ${py(y)})"><circle r="13" fill="#3B6FB6" stroke="#fff" stroke-width="2.5"/><path d="M-6 0h12M0 -6v12" stroke="#fff" stroke-width="3"/></g>`}
+let ov="";for(let k=0;k<N;k++){const t=X.c_plant[k]?"plant":X.c_shade[k]?"shade":X.c_buffer[k]?"buffer":null;if(t)ov+=`<rect x="${px(X.x[k])-10}" y="${py(X.y[k])-10}" width="19" height="19" fill="${planC[t]}"/>`}
+$("mapPlan").innerHTML=svg(baseUnder()+`<g id="pc">${cellRects()}</g>${ov}`+baseOver()+V.geo.added.map(p=>star(p[0],p[1])).join("")+zoneMarks()+poiLabels()+scaleBar());
+const pRects=[...document.querySelectorAll("#pc rect")];
+const grade2=X.score2.map(v=>v>=M.cut90?3:v>=M.cut80?2:v>=M.cut60?1:0);
+function paintPlan(m){pRects.forEach((r,k)=>r.setAttribute("fill",GRAY[m==="after"?grade2[k]:X.grade[k]]))}
+paintPlan("before");seg("beforeSeg",[["before","현재 등급"],["after","개선 후 등급(추정)"]],"before",paintPlan);
+$("planLegend").innerHTML=`<span><i style="background:${planC.plant}"></i>녹음 식재</span><span><i style="background:${planC.shade}"></i>그늘시설</span><span><i style="background:${planC.buffer}"></i>차폐 수림대</span><span><i style="background:#3B6FB6;border-radius:50%"></i>휴게거점 추가</span><span>바탕 회색: 짙을수록 취약</span>`;
+$("zoneCards").innerHTML=Z.map(z=>`<div class="zcard ${z.hold?"hold":""}"><div class="zhead"><span class="rank ${z.hold?"hold":""}">${z.rank}</span><h3 style="flex:1;min-width:160px">${ZN[z.rank]}</h3>${z.hold?'<span class="pill p-todo">보류</span>':`<span class="pill p-first">${RX[z.rank].dom}</span>`}</div>
+<div class="facts"><span>면적 <b class="num">${fmt(z.area)}㎡</b></span><span>취약도 <b class="num">${z.score}${z.hold?"":" → "+z.score2}</b></span><span>수관 <b class="num">${z.tree}%</b></span><span>여름 LST <b class="num">${z.lst}℃</b></span></div>
+<ul class="tight">${RX[z.rank].rx.map(x=>`<li>${x}</li>`).join("")}</ul>
+${z.hold?"":`<div class="facts"><span>식재 <b class="num">${fmt(z.plant)}㎡</b></span><span>그늘 <b class="num">${fmt(z.shade)}㎡</b></span><span>수림대 <b class="num">${fmt(z.buffer)}㎡</b></span></div>`}
+<p class="note">${RX[z.rank].sat}</p></div>`).join("");
+$("satTable").innerHTML=`<thead><tr><th>이용자 불편</th><th>진단 지표</th><th>대상</th><th>처방</th><th>설문 항목</th><th>성과 측정</th></tr></thead><tbody>`+SAT.map(r=>`<tr>${r.map((c,i)=>`<td>${i==0?`<b style="font-weight:500">${c}</b>`:c}</td>`).join("")}</tr>`).join("")+"</tbody>";
+$("assume").innerHTML=[
+ `식재 후보: 열 지표 상위 30%, 수관 35% 미만, 보행로 25m 이내. 잔디광장 안쪽(가장자리 25m 제외)과 운동·놀이 시설은 프로그램 보존을 위해 제외했습니다.`,
+ `식재 후 수관은 격자당 70%로 가정했고, 수량은 비수관 면적의 50%를 8m 간격(64㎡당 1주)으로 계산했습니다. 수종과 기반 조건은 현장 확인 후 정합니다.`,
+ `지표면온도 변화는 공원 내부 단면 회귀(수관 100%당 ${M.lst.slope}℃, R² ${M.lst.r2})로 추정했습니다. 후보 격자 평균 ${S.lst_cand}℃이며 인과 효과가 아니라 참고값입니다.`,
+ `그늘시설은 그늘 비율 +35%로만 반영했습니다. 차폐 수림대의 미세먼지 저감과 혼잡 분산은 근거 자료가 없어 효과 계산에서 뺐습니다.`,
+].map(x=>`<li>${x}</li>`).join("");
+
+/* ---------- 위험 판정 ---------- */
+const SN=C.snapshot, P=C.presets;
+const presets={
+ now:{l:"현재",v:{feels:SN.feels_kma,uv:SN.uv,pm25:SN.pm25,pm10:SN.pm10,pp:SN.pp},a:false,t:`${SN.time.slice(0,16)} 스냅샷`},
+ heat:{l:"폭염 사례",v:{feels:P.heat.feels,uv:P.heat.uv,pm25:P.heat.pm25,pm10:P.heat.pm10,pp:10},a:false,t:`${P.heat.time} 재분석값. 강수확률은 가정`},
+ dust:{l:"고농도 사례",v:{feels:P.dust.feels,uv:P.dust.uv,pm25:P.dust.pm25,pm10:P.dust.pm10,pp:0},a:false,t:`${P.dust.time} CAMS 모델값. 강수확률은 가정`},
+ rain:{l:"호우 사례",v:{feels:P.rain.feels,uv:P.rain.uv,pm25:P.rain.pm25,pm10:P.rain.pm10,pp:90},a:true,t:`${P.rain.time} 재분석값(시간당 ${P.rain.rainmm}mm). 강수확률과 특보는 가정`},
+};
+const RI=[["feels","체감온도","℃",-10,40,.5],["uv","자외선",  "",0,12,.5],["pm25","PM2.5","㎍/㎥",0,180,1],["pm10","PM10","㎍/㎥",0,240,1],["pp","강수확률","%",0,100,5]];
+const RULE={feels:v=>v>=33?2:v>=31?1:0,uv:v=>v>=8?2:v>=6?1:0,pm25:v=>v>=76?2:v>=36?1:0,pm10:v=>v>=151?2:v>=81?1:0,pp:(v,a)=>a?2:v>=60?1:0};
+const RTXT={feels:["31℃ 미만","31℃ 이상","33℃ 이상"],uv:["6 미만","6~7","8 이상"],pm25:["35 이하","36~75","76 이상"],pm10:["80 이하","81~150","151 이상"],pp:["60% 미만","60% 이상","호우특보"]};
+const LV=[["정상","p-done","ok","✓"],["주의","p-wip","warn","!"],["경고","p-crit","crit","▲"]];
+let R={...presets.now.v},alertOn=false,srcNote=presets.now.t;
+$("riskInputs").innerHTML=RI.map(([k,l,u,a,b,s])=>`<label class="slider"><span>${l}</span><input id="r-${k}" type="range" min="${a}" max="${b}" step="${s}" aria-label="${l}"><span class="num" id="rv-${k}" style="text-align:right"></span></label>`).join("");
+function evalRisk(){const out={};RI.forEach(([k])=>out[k]=RULE[k](R[k],alertOn));return out}
+function altsFor(o){const list=[];
+ if(o.pp==2||o.pp==1)list.push(["강우","야외 프로그램을 곤충식물원·나비정원·방문자센터 실내 프로그램으로 전환"]);
+ if(o.pm25>=1||o.pm10>=1)list.push([o.pm25==2||o.pm10==2?"미세먼지 경고":"미세먼지 주의",o.pm25==2||o.pm10==2?"야외 활동 중단 안내, 곤충식물원·방문자센터로 이동 권고":"격렬한 운동은 자제, 도로에서 먼 숲 안쪽 동선 안내 (1·2순위 구역 회피)"]);
+ if(o.feels==2)list.push(["폭염 경고","러닝·피크닉을 방문자센터·수변휴게실로 전환하고, 야외는 지도의 수관 70% 이상 숲길만 안내. 7~8월 12~17시 프로그램 일정 조정"]);
+ else if(o.feels==1)list.push(["폭염 주의","숲길 그늘 코스 안내, 3순위 주차장 일대와 1순위 포장 동선 체류 자제"]);
+ if(o.uv>=1)list.push(["자외선","잔디마당 대신 수관 아래 프로그램으로 안내"]);
+ if(!list.length)list.push(["정상","계획된 야외 프로그램을 그대로 운영합니다"]);return list}
+function renderRisk(){RI.forEach(([k])=>{$("r-"+k).value=R[k];$("rv-"+k).textContent=R[k]});$("rainAlert").checked=alertOn;
+ const o=evalRisk(),mx=Math.max(...Object.values(o)),n=Object.values(o).filter(v=>v==mx&&mx>0).length;
+ $("gauge").className="gauge "+LV[mx][2];$("gauge").innerHTML=`<span style="font-size:14px">통합 위험 단계</span><span class="lv">${LV[mx][3]} ${LV[mx][0]}</span><span style="font-size:13.5px">${mx?`${n}개 지표가 해당 단계`:"모든 지표가 기준 이내"}</span>`;
+ $("riskTable").innerHTML=`<thead><tr><th>지표</th><th>현재</th><th>단계</th><th>판정 기준</th></tr></thead><tbody>`+RI.map(([k,l,u])=>`<tr><td>${l}</td><td class="num">${k=="pp"&&alertOn?"특보":R[k]+u}</td><td><span class="pill ${LV[o[k]][1]}">${LV[o[k]][3]} ${LV[o[k]][0]}</span></td><td class="note">${RTXT[k][o[k]]}</td></tr>`).join("")+"</tbody>";
+ $("alts").innerHTML=altsFor(o).map(a=>`<div><b style="font-weight:700">${a[0]}</b> · ${a[1]}</div>`).join("");
+ $("liveNote").textContent=`입력값: ${srcNote}. 슬라이더로 직접 바꿔 볼 수 있습니다. 혼잡도는 실측 전이라 통합 지수에서 뺐습니다.`}
+seg("presetSeg",Object.entries(presets).map(([k,p])=>[k,p.l]),"now",k=>{const p=presets[k];R={...p.v};alertOn=p.a;srcNote=p.t;renderRisk()});
+$("riskInputs").addEventListener("input",e=>{const k=e.target.id.slice(2);R[k]=+e.target.value;srcNote="직접 입력";renderRisk()});
+$("rainAlert").addEventListener("change",e=>{alertOn=e.target.checked;srcNote="직접 입력";renderRisk()});
+renderRisk();
+/* 로컬에서 열면 실시간 호출, 차단되면 스냅샷 유지 */
+(async()=>{try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const q="latitude=37.5444&longitude=127.0374&timezone=Asia%2FSeoul";
+ const [a,b]=await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,relative_humidity_2m&hourly=uv_index,precipitation_probability&forecast_days=1`,{signal:c.signal}).then(r=>r.json()),fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${q}&current=pm2_5,pm10`,{signal:c.signal}).then(r=>r.json())]);
+ const t=a.current.time.slice(0,13),i=a.hourly.time.findIndex(x=>x.startsWith(t)),T=a.current.temperature_2m,H=a.current.relative_humidity_2m,m=+t.slice(5,7);
+ const tw=T*Math.atan(.151977*Math.sqrt(H+8.313659))+Math.atan(T+H)-Math.atan(H-1.67633)+.00391838*H**1.5*Math.atan(.023101*H)-4.686035;
+ const f=m>=5&&m<=9?+(-.2442+.55399*tw+.45535*T-.0022*tw*tw+.00278*tw*T+3).toFixed(1):T;
+ presets.now.v={feels:f,uv:a.hourly.uv_index[i],pm25:Math.round(b.current.pm2_5),pm10:Math.round(b.current.pm10),pp:a.hourly.precipitation_probability[i]};presets.now.t=`${a.current.time.replace("T"," ")} Open-Meteo 실시간`;
+ if(document.querySelector("#presetSeg button[aria-pressed=true]").dataset.k==="now"){R={...presets.now.v};srcNote=presets.now.t;renderRisk()}}catch(_){}})();
+/* 대체 시설 지도 */
+let cc="";for(let k=0;k<N;k++)cc+=`<rect x="${px(X.x[k])-10}" y="${py(X.y[k])-10}" width="19" height="19" fill="${X.tree[k]>=.7?"#2E8B57":"#E7EBE3"}"/>`;
+const ALT=[["곤충식물원","곤충식물원"],["나비정원","나비정원"],["서울숲 방문자센터","방문자센터"],["서울숲 수변휴게실 커뮤니티센터","수변휴게실"]];
+const am=ALT.map(([n,l])=>{const q=poiXY(n);if(!q)return"";return `<circle cx="${px(q[0])}" cy="${py(q[1])}" r="15" fill="#1F3A5F" stroke="#fff" stroke-width="2.5"/>`}).join("");
+function altLab(){const o={"곤충식물원":[-16,-14,"end"],"나비정원":[16,26,"start"],"서울숲 방문자센터":[-16,-12,"end"],"서울숲 수변휴게실 커뮤니티센터":[0,-18,"middle"]};return labels(ALT.map(([n,l])=>{const q=poiXY(n);if(!q)return null;const d=o[n];return [q[0]+d[0],q[1]-d[1],l,d[2]]}).filter(Boolean),30)}
+$("mapRisk").innerHTML=svg(baseUnder()+cc+baseOver()+am+altLab()+scaleBar());
+/* 히트맵 표 */
+const IND=["feels","uv_index","pm2_5","pm10","rain"];const MN=[...Array(12)].map((_,i)=>(i+1)+"월");
+function hm(mode){const t=C.table;$("hmTable").innerHTML=`<thead><tr><th>지표</th>${MN.map(m=>`<th>${m}</th>`).join("")}</tr></thead><tbody>`+IND.map(k=>{const d=t[k],lab=k==="rain"?"강수 1mm/h 이상":d.label;const vals=d.caution.map((c,i)=>mode==="warning"?d.warning[i]:c+d.warning[i]);return `<tr><th>${lab}</th>${vals.map(v=>{const bg=v>0?seq(Math.sqrt(v/250)*100):"#F4F5F7",fg=Math.sqrt(v/250)*100>62?"#fff":"#1A2433";return `<td style="background:${bg};color:${fg}" title="${lab} ${Math.round(v)}시간">${v>0?Math.round(v):"·"}</td>`}).join("")}</tr>`}).join("")+"</tbody>";
+ $("hmNote").textContent=`${C.period[0]}~${C.period[1]} 시간별 자료. PM은 약 40km CAMS 모델값으로 에어코리아 실측과 차이가 납니다. 재분석은 짧은 호우를 평활화해 호우 경고(3시간 60mm)는 0시간으로 나와 표시하지 않았습니다.`}
+seg("hmSeg",[["all","주의 이상"],["warning","경고만"]],"all",hm);hm("all");
+const hrs=C.heat_hours,hmo=C.heat_months;
+const iJ=hmo.indexOf(7),iA=hmo.indexOf(8);
+$("hourTable").innerHTML=`<thead><tr><th></th>${hrs.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`+[[7,iJ],[8,iA]].map(([m,i])=>`<tr><th>${m}월</th>${C.heat_warn[i].map(v=>`<td style="background:${v>0?seq(v/25*100):"#F4F5F7"};color:${v/25*100>62?"#fff":"#1A2433"}" title="${m}월 ${v}%">${v>0?Math.round(v):"·"}</td>`).join("")}</tr>`).join("")+"</tbody>";
+$("hourNote").textContent=`6월과 9월은 해당 시간이 없었습니다. 8월 15시 전후가 가장 높습니다. 연도별 경고 시간은 2024년 ${C.by_year[2024].heat_warn}시간, 2025년 ${C.by_year[2025].heat_warn}시간, 2026년 ${C.by_year[2026].heat_warn}시간이고 최고값은 ${C.max_feels}℃(${C.max_feels_at.slice(0,13)}시)입니다. 체감온도는 기상청 여름철 산출식을 약 11km ERA5에 적용해 도심 열섬은 덜 반영됩니다.`;
+
+/* ---------- 데이터·한계 ---------- */
+$("methodTable").innerHTML=`<thead><tr><th>지표</th><th>산출 방식</th><th>근거 수준</th><th>화소·해상도</th><th>취득일·기간</th><th>주요 가정과 한계</th></tr></thead><tbody>`+[
+ ["열","지표면온도 편차 60% + 수관 비피복 40%",'<span class="pill p-done">실측 위성</span>',"Landsat 열적외 100m(30m 재배열), WorldCover 10m",M.lst.scenes.map(s=>s.date.slice(2)).join(", "),`장면 평균 차이 제거 후 평균. 격자 편차 표준편차 ±${(()=>{const a=X.lst_anom,m=a.reduce((p,c)=>p+c,0)/N;return Math.sqrt(a.reduce((p,c)=>p+(c-m)**2,0)/N).toFixed(1)})()}℃. 20m 격자보다 센서 해상도가 거칠어 작은 그늘은 구분 불가. 수관 자료는 2021년`],
+ ["대기","간선도로 등급별 거리감쇠 합(감쇠거리 120m)",'<span class="pill p-wip">대리지표</span>',"OSM 도로 벡터","2026-11-09 수집","교통량·풍향 미반영. 공원 내 PM 실측 없음"],
+ ["접근성*","편의시설까지 보행망 거리 65% + 출입구 거리 35%",'<span class="pill p-wip">대리지표</span>',`보행망 ${M.osm_counts.path_km}km, 편의거점 ${M.osm_counts.rest}개`,"2026-11-09 수집",`경사·단차 미반영. OSM 벤치는 ${M.osm_counts.bench}개, 계단은 ${M.osm_counts.steps}곳만 입력되어 현장 조사 필요`],
+ ["혼잡*","출입구→유인거점 최단경로 누적 60% + 거점 밀도 40%",'<span class="pill p-crit">미검증</span>',`출입구 ${M.osm_counts.entr}곳, 거점 ${M.osm_counts.attr}개`,"2026-11-09 수집","실제 인원이 아닌 구조적 잠재치. 가중치 15%로 제한. 현장 계수로 보정 예정"],
+].map(r=>`<tr>${r.map((c,i)=>`<td>${i==0?`<b style="font-weight:700">${c}</b>`:c}</td>`).join("")}</tr>`).join("")+"</tbody>";
+$("dataTable").innerHTML=`<thead><tr><th>자료 (슬라이드 p.6)</th><th>현재 사용</th><th>상태</th><th>필요 조치</th></tr></thead><tbody>`+[
+ ["기상 (기상청 API허브)","ERA5 재분석 + 예보 (Open-Meteo)","wip","API 키 발급 후 초단기실황 연동"],
+ ["대기질 (에어코리아)","CAMS 모델 (Open-Meteo)","wip","성동구 측정소 실측으로 교체"],
+ ["위성·지표 (Landsat, Sentinel-2)",`Landsat ${M.lst.scenes.length}장면, Sentinel-2 ${M.ndvi_scenes.length}장면`,"done","완료"],
+ ["공원 공간 (표준데이터, V-World)","OSM 경계·시설·보행망","wip","공식 경계와 시설물로 검증"],
+ ["유동인구 (서울 생활인구, 현장 계수)","없음","todo","생활인구 키 신청, 거점 계수"],
+ ["이용자 (설문, 페르소나)","없음","todo","현장 설문, 페르소나 작성"],
+].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td><span class="pill ${ST[r[2]][1]}">${{done:"확보",wip:"대체 자료",todo:"미확보"}[r[2]]}</span></td><td>${r[3]}</td></tr>`).join("")+"</tbody>";
+$("findings").innerHTML=[
+ `OSM 공원 경계 안에 <b>뚝도아리수정수센터 ${fmt(M.restricted_area)}㎡</b>가 포함되어 있어 제외했습니다. 포함하면 이 부지가 1순위로 잘못 나옵니다.`,
+ `도로로 분리된 북측 ${fmt(M.north_area)}㎡도 OSM상 서울숲이나, 슬라이드의 면적과 맞춰 이번 분석에서는 뺐습니다.`,
+ `Copernicus DEM은 수관 높이를 포함하는 표면모델이라 경사 지표에 쓰지 않았습니다. 수치지형도나 현장 측정이 필요합니다.`,
+ `슬라이드 p.13은 곤충식물원을 4개 테마구역 중 하나로 적었는데, 통상 4구역은 문화예술공원·생태숲·체험학습원·습지생태원이어서 확인이 필요합니다.`,
+ `슬라이드 p.7의 대체 추천 중 식물원 전환은 강우·미세먼지에는 적합하지만 폭염에는 온실 온도를 확인해야 합니다.`,
+].map(x=>`<li>${x}</li>`).join("");
+
+/* ---------- 특화전략 ---------- */
+const GROUPS = [
+ ["01","전문가","무엇을 어디에 어떻게 조치하는가","조경·생태·도시계획 실무자의 조치 결정","분석형 화면: 지도 레이어·필터·원자료 내려받기","원값·산식·출처·불확실성의 표기"],
+ ["02","행정정책","어디에 먼저 예산을 쓰는가","지자체·발주처의 예산 우선순위 결정","요약형 화면: KPI 타일·우선순위 표·시나리오 비교","순위·목표 대비 달성률·근거 조문의 표기"],
+ ["03","일반인","지금 어디로 가서 무엇을 하는가","공원 이용자·시민의 이동·이용 결정","안내형 화면: 모바일 한 화면·알림·추천 동선","쉬운 말·아이콘·행동 권고"],
+];
+$("grpCards").innerHTML = GROUPS.map(g=>`<div class="card gcard"><span class="gnum">${g[0]}</span><h3>${g[1]}: ${g[2]}</h3><dl class="dl"><dt>정의</dt><dd>${g[3]}</dd><dt>형식</dt><dd>${g[4]}</dd><dt>기준</dt><dd>${g[5]}</dd></dl></div>`).join("");
+const STRAT = [
+ ["전문가","분석형","조경·생태 실무자","서울숲 어느 칸에 어떤 처방을 먼저 넣을까?","V-02 · V-03 · V-04","격자 레이어 지도 + 가중치 조절 + 후보지 표 + 원자료 내려받기",["칸별 취약지수 (합산 · 계절)","여름 오후 지표면온도 (Landsat · 16일)","그늘 비율 (Sentinel-2 · 연 1회)"],"원값·산식·출처 공개, 가중치를 바꿔도 결론이 유지되는지 <b>순위 범위</b>를 함께 표시"],
+ ["행정정책","요약형","서울시·성동구","올해 예산으로 어느 구역을 먼저 고칠까?","V-04 · M1-03 · M2-03","KPI 타일 3개 + 구역 우선순위 표 + 예산안 A/B 비교",["개선 면적 목표 달성률 (V-04 · 분기)","연간 폭염·미세먼지 경고 시간 (M1 · 매일)","주말 '붐빔' 시간 (도시데이터 · 매일)"],"순위와 달성률 중심, 처방별 <b>개략 단가</b>를 붙여 예산 판단 근거 제공 <span class=\"flag\">(단가 출처 미확인)</span>"],
+ ["일반인","안내형","가족·청년·고령 방문객","지금 서울숲 어디로 가면 안전하고 덜 붐빌까?","M1-03 · M1-04 · M2-03 · M3-04","휴대폰 한 화면: 경보 → 추천 3곳 → 길 안내 → 지도",["지금 위험 단계 (M1 · 실시간)","구역별 붐빔 (도시데이터 · 실시간)","추천 장소까지 도보 시간 (OSM · 고정)"],"쉬운 말·아이콘, 나이대별 추천(가족→체험학습원, 고령→숲길), <b>운영 중인 시설만</b> 추천"],
+];
+$("stratTable").innerHTML = `<thead><tr><th>그룹</th><th>결정 질문 (연계 요구 ID)</th><th>특화 화면</th><th>핵심 지표 3개 (데이터 · 주기)</th><th>전략 포인트</th></tr></thead><tbody>`+
+ STRAT.map(s=>`<tr><td style="white-space:nowrap"><b style="font-weight:700">${s[0]}</b><br><span class="pill p-first">${s[1]}</span><br><span class="note">${s[2]}</span></td><td><b style="font-weight:700">${s[3]}</b><br><span class="note">${s[4]}</span></td><td>${s[5]}</td><td>${s[6].map((x,i)=>"①②③"[i]+" "+x).join("<br>")}</td><td>${s[7]}</td></tr>`).join("")+"</tbody>";
+
+const sum = a => a.reduce((p,c)=>p+c,0);
+function miniCells(fill){let s="";for(let k=0;k<N;k++)s+=`<rect x="${px(X.x[k])-10}" y="${py(X.y[k])-10}" width="19" height="19" fill="${fill(k)}"/>`;return s}
+function pin(x,y,t,c){return `<g transform="translate(${px(x)} ${py(y)})"><circle r="20" fill="${c}" stroke="#fff" stroke-width="3"/><text text-anchor="middle" y="8" font-size="23" font-weight="700" fill="#fff">${t}</text></g>`}
+/* 전문가: 실제 격자·가중치·상위 후보 칸 */
+const rxOf = k => X.c_plant[k]?"녹음 식재":X.c_shade[k]?"그늘시설":X.c_buffer[k]?"차폐 수림대":"후보 외";
+const topCells = [...Array(N).keys()].filter(k=>!X.hold[k]).sort((a,b)=>X.score[b]-X.score[a]).slice(0,5);
+const mockExpert = `<div class="mock"><div class="mh"><span>전문가 · 어느 칸에 어떤 처방을?</span><span>분석형</span></div><div class="mb">
+ <div class="mapbox">${svg(baseUnder()+miniCells(k=>GRADE[X.grade[k]])+baseOver()+scaleBar())}</div>
+ <div class="legend">${GN.map((g,i)=>`<span><i style="background:${GRADE[i]}"></i>${g}</span>`).join("")}</div>
+ <div><b style="font-size:13.5px">가중치 (기본값)</b>${bars({heat:M.weights.heat*100,crowd:M.weights.crowd*100,access:M.weights.access*100,air:M.weights.air*100})}</div>
+ <div class="tablewrap"><table style="font-size:13px"><thead><tr><th>칸 ID</th><th>지수</th><th>취약 유지율</th><th>처방</th></tr></thead><tbody>${topCells.map(k=>`<tr><td class="num">${X.i[k]}-${X.j[k]}</td><td class="num">${X.score[k].toFixed(1)}</td><td class="num">${Math.round(X.robust[k]*100)}%</td><td>${rxOf(k)}</td></tr>`).join("")}</tbody></table></div>
+ <button class="zbtn" style="display:block;text-align:center" id="csvBtn">격자 원자료 CSV 받기 (${fmt(N)}칸)</button></div>
+ <p class="note cap"><b>전문가</b>: 원값·산식·조회일을 화면 안에 표시. 취약 유지율은 가중치 2,000회 변동 중 취약으로 남은 비율입니다.</p></div>`;
+/* 행정정책: 실제 구역 순위·후보 면적·경고 시간 */
+const zAct = Z.filter(z=>!z.hold), prMax = Math.max(...zAct.map(z=>z.priority));
+const target = S.plant+S.shade+S.buffer, areaA = sum(zAct.map(z=>z.plant+z.shade+z.buffer));
+const heatW = Math.round(sum(C.table.feels.warning)), pmW = Math.round(sum(C.table.pm2_5.warning));
+const mockAdmin = `<div class="mock"><div class="mh"><span>행정정책 · 올해 어디부터 고칠까?</span><span>요약형</span></div><div class="mb">
+ <div class="kpis">
+  <div class="kpi"><span class="k">개선 면적 달성률</span><span class="v num">0%</span><span class="s">시공 전, 목표 ${fmt(target)}㎡ (가안)</span></div>
+  <div class="kpi"><span class="k">연간 경고 시간</span><span class="v num">${heatW}h · ${pmW}h</span><span class="s">폭염 · PM2.5, 06~21시 연평균</span></div>
+  <div class="kpi"><span class="k">주말 붐빔</span><span class="v num">-</span><span class="s">도시데이터 연동 전</span></div>
+ </div>
+ <b style="font-size:13.5px">구역 우선순위</b>
+ <div style="display:grid;gap:6px">${zAct.map(z=>`<div class="prow"><b>${z.rank}</b><span>${ZN[z.rank].split(" (")[0]}<br><span class="note">${RX[z.rank].dom} · ${fmt(z.plant+z.shade+z.buffer)}㎡</span></span><span class="t"><i style="width:${pct(z.priority,prMax)}%"></i></span></div>`).join("")}</div>
+ <b style="font-size:13.5px">예산안 A / B 비교 (가안)</b>
+ <div style="display:grid;gap:6px">
+  <div class="prow"><b>A</b><span>우선 구역 ${zAct.length}곳 집중<br><span class="note num">개선 ${fmt(areaA)}㎡</span></span><span class="t"><i style="width:${pct(areaA,target)}%"></i></span></div>
+  <div class="prow"><b>B</b><span>후보 격자 전체<br><span class="note num">개선 ${fmt(target)}㎡</span></span><span class="t"><i style="width:100%"></i></span></div>
+ </div>
+ <p class="note"><span class="flag">개략 단가 출처 미확인</span>: 비용은 표시하지 않고 면적만 비교했습니다.</p></div>
+ <p class="note cap"><b>행정정책</b>: 순위와 목표 대비 달성률 중심. 목표 면적과 A/B안 구성은 팀 가안입니다.</p></div>`;
+/* 일반인: 폭염 사례 시각 기준, 가족마당 출발 추정 */
+const o0 = poiXY("가족마당")||[X.x[0],X.y[0]];
+const walk = q => Math.max(1,Math.round(Math.hypot(q[0]-o0[0],q[1]-o0[1])*1.3/67));
+let shadeK = -1, shadeD = 1e9; for(let k=0;k<N;k++){ if(X.tree[k]<.7) continue; const d=Math.hypot(X.x[k]-o0[0],X.y[k]-o0[1]); if(d<shadeD){shadeD=d;shadeK=k} }
+const recs = [["방문자센터","실내",poiXY("서울숲 방문자센터")],["수변휴게실","실내",poiXY("서울숲 수변휴게실 커뮤니티센터")],["가까운 숲길","그늘",shadeK>=0?[X.x[shadeK],X.y[shadeK]]:null]].filter(r=>r[2]).map(r=>[...r,walk(r[2])]).sort((a,b)=>a[3]-b[3]);
+const heatLv = RULE.feels(P.heat.feels);
+const mockCitizen = `<div class="mock"><div class="mh"><span>일반인 · 지금 어디로 갈까요?</span><span>안내형</span></div>
+ <div class="phone"><b style="font-size:16px;color:var(--navy)">지금 어디로 갈까요?</b>
+  <div class="al"><b>${LV[heatLv][3]} 폭염 ${LV[heatLv][0]}</b> 잔디밭은 잠시 피하세요</div>
+  <div>${recs.map((r,i)=>`<div class="rec"><span><b>${"①②③"[i]} ${r[0]}</b> ${r[1]}</span><span class="note num">붐빔 연동 전 · ${r[3]}분</span></div>`).join("")}</div>
+  <div class="mapbox">${svg(baseUnder()+miniCells(k=>X.tree[k]>=.7?"#9CCBAE":"#EEF0E8")+baseOver()+`<circle cx="${px(o0[0])}" cy="${py(o0[1])}" r="14" fill="#C0392B" stroke="#fff" stroke-width="3"/>`+recs.map((r,i)=>pin(r[2][0],r[2][1],i+1,"#1F3A5F")).join(""))}</div>
+  <div class="go">길 안내 시작</div></div>
+ <p class="note cap"><b>일반인</b>: 지도보다 목록이 먼저. 예시 상황은 ${P.heat.time} 체감 ${P.heat.feels}℃, 가족마당(빨간 점) 출발입니다. 도보 시간은 직선거리×1.3, 시속 4km 추정이고 온실형 시설은 폭염 추천에서 뺐습니다.</p></div>`;
+$("mocks").innerHTML = mockExpert+mockAdmin+mockCitizen;
+$("csvBtn").addEventListener("click",()=>{const ks=Object.keys(X),rows=[ks.join(",")];for(let k=0;k<N;k++)rows.push(ks.map(c=>X[c][k]).join(","));
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.join("\n")],{type:"text/csv"}));a.download="seoulforest_grid.csv";a.click()});
+
+go(location.hash.slice(1)||"progress");
+</script>
+</body>
+</html>
