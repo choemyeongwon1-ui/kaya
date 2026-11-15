@@ -48,7 +48,7 @@ function renderShell() {
     h('nav', { class: 'tabs goals-nav', 'aria-label': '목표 선택' },
       h('a', { class: 'tab', href: '../#home' }, '소개'),
       h('a', { class: 'tab goal-tab g1', href: '../#citizen' }, h('span', { class: 'tab-n' }, '1'), '지금 머물기 좋은 곳'),
-      h('a', { class: 'tab goal-tab g2', href: '../#expert' }, h('span', { class: 'tab-n' }, '2'), '머물 땅을 넓히다'),
+      h('a', { class: 'tab goal-tab g2', href: '../#expert' }, h('span', { class: 'tab-n' }, '2'), '머물기 어려운 곳을 개선하다'),
       h('a', { class: 'tab goal-tab g3', href: './', 'aria-current': 'page', 'aria-selected': 'true' }, h('span', { class: 'tab-n' }, '3'), '나에게 맞는 곳')),
     h('div', { class: 'spacer' }), h('div', { class: 'meta-bar' }, themeBtn)));
   const when = app.now.date.toLocaleString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
