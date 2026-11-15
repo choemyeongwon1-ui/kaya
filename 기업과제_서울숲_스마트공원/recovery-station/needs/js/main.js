@@ -47,14 +47,14 @@ function renderShell() {
       h('div', null, h('div', { class: 'brand-title' }, '서울숲, 머무는 숲'), h('div', { class: 'brand-sub' }, '성수에서 사지 않아도 머물 수 있는 단 하나의 숲'))),
     h('nav', { class: 'tabs goals-nav', 'aria-label': '목표 선택' },
       h('a', { class: 'tab', href: '../#home' }, '소개'),
-      h('a', { class: 'tab goal-tab g1', href: '../#citizen' }, h('span', { class: 'tab-n' }, '1'), '지금 머물기 좋은 곳'),
-      h('a', { class: 'tab goal-tab g2', href: '../#expert' }, h('span', { class: 'tab-n' }, '2'), '머물기 어려운 곳을 개선하다'),
-      h('a', { class: 'tab goal-tab g3', href: './', 'aria-current': 'page', 'aria-selected': 'true' }, h('span', { class: 'tab-n' }, '3'), '나에게 맞는 곳')),
+      h('a', { class: 'tab goal-tab g1', href: '../#citizen' }, h('span', { class: 'tab-n' }, '1'), '실시간 탐색'),
+      h('a', { class: 'tab goal-tab g2', href: '../#expert' }, h('span', { class: 'tab-n' }, '2'), '취약지역 개선'),
+      h('a', { class: 'tab goal-tab g3', href: './', 'aria-current': 'page', 'aria-selected': 'true' }, h('span', { class: 'tab-n' }, '3'), '맞춤형 추천')),
     h('div', { class: 'spacer' }), h('div', { class: 'meta-bar' }, themeBtn)));
   const when = app.now.date.toLocaleString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
   const live = app.scenario === 'live' && app.time === 'now';
   const goal = h('section', { class: 'goalbar g3' },
-    h('div', { class: 'goalbar-top' }, h('div', { class: 'goalbar-id' }, h('span', { class: 'goalbar-n' }, '목표 3'), h('h1', null, '나에게 맞는 자리와 길을 찾다'),
+    h('div', { class: 'goalbar-top' }, h('div', { class: 'goalbar-id' }, h('span', { class: 'goalbar-n' }, '목표 3'), h('h1', null, '맞춤형 추천'),
       h('p', null, '하고 싶은 일·머물 시간·같이 온 사람에 맞춰 갈 곳과 산책길을 골라 주고, 쉬기 어려운 곳은 관리자가 고칠 수 있게 알려 줍니다.'))),
     h('div', { class: 'goalbar-bottom' },
       h('nav', { class: 'subtabs', role: 'tablist', 'aria-label': '세부 화면' }, TABS.map(t => h('button', { type: 'button', role: 'tab', class: 'subtab', 'aria-selected': app.tab === t.key, onclick: () => go(t.key) }, icon(t.icon, 16), h('b', null, t.label), h('span', null, t.sub)))),

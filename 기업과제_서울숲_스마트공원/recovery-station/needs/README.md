@@ -1,4 +1,4 @@
-# 나에게 맞는 곳 — 맞춤 추천·산책 코스 화면
+# 맞춤형 추천 — 갈 곳 추천·산책 코스 화면 (목표 3)
 
 「서울숲, 머무는 숲」 대시보드에 더한 세 번째 화면입니다. 컨셉은 **개인의 니즈에 따른 공간 추천과 산책 루트 찾기**입니다.
 
@@ -15,7 +15,7 @@
 
 ## 여는 법
 
-- 배포본: `recovery-station/` 폴더째 올리면 `…/recovery-station/needs/` 로 열립니다. 기존 대시보드 위쪽 탭 줄에 「3 나에게 맞는 곳」이 생깁니다.
+- 배포본: `recovery-station/` 폴더째 올리면 `…/recovery-station/needs/` 로 열립니다. 기존 대시보드 위쪽 탭 줄에 「3 맞춤형 추천」이 생깁니다.
 - 내 컴퓨터에서: 파일을 더블클릭하면 안 열립니다(모듈과 자료를 불러올 수 없음). `recovery-station` 폴더에서 `python -m http.server 8000` 을 실행하고 `http://localhost:8000/needs/` 로 엽니다.
 
 ## 폴더
@@ -24,7 +24,7 @@
 |---|---|
 | `index.html`, `needs.css` | 페이지와 이 화면에서 더한 스타일(모두 `nd-` 로 시작) |
 | `base.css` | 기존 대시보드 스타일의 사본. 대시보드를 다시 빌드해 CSS 파일 이름이 바뀌어도 화면이 깨지지 않게 하는 예비용 |
-| `link.js` | 기존 대시보드에 목표 3을 붙이는 스크립트: 탭 줄의 「3 나에게 맞는 곳」, 소개 화면 PART 3의 목표 3 카드, 맨 아래 「목표 3 · 나에게 맞는 곳 →」 단추 |
+| `link.js` | 기존 대시보드에 목표 3을 붙이는 스크립트: 탭 줄의 「3 맞춤형 추천」, 소개 화면 PART 3의 목표 3 카드, 맨 아래 「목표 3 · 맞춤형 추천 →」 단추 |
 | `js/config.js` | **선택지·기준값·가정값을 모은 곳. 팀이 고칠 값은 이 파일만 보면 됩니다** |
 | `js/model.js` | 자료를 읽어 계산용 모형으로 엮음 |
 | `js/recommend.js` | 갈 곳 추천, 머물 수 있는 시간, 근처 무료 장소 |
@@ -50,14 +50,14 @@
 1. `needs/` 폴더를 프로젝트의 `public/needs/` 에 넣습니다. Vite는 `public/` 을 그대로 복사합니다.
 2. 탭 줄 컴포넌트에 링크를 직접 넣고 `link.js` 는 지웁니다. 소스의 `index.html` 에 위 한 줄을 넣어도 됩니다.
    ```jsx
-   <a className="tab goal-tab g3" href="./needs/"><span className="tab-n">3</span>나에게 맞는 곳</a>
+   <a className="tab goal-tab g3" href="./needs/"><span className="tab-n">3</span>맞춤형 추천</a>
    ```
    링크를 직접 넣을 때는 `link.js` 안의 `--goal3` 색과 `.goal-tab.g3 .tab-n` 규칙을 대시보드 CSS에 옮깁니다.
    소개 화면의 목표 3 카드(`#solution .ans` 안 세 번째 `article.ans-card.g3`)와 맨 아래 단추(`.invite-btns`)도 `link.js` 의 `makeCard()`·`makeInvite()` 내용과 `.ans-card.g3` 규칙을 그대로 옮기면 됩니다.
 3. 빌드하면 CSS 파일 이름(`index-CS1fLUE9.css`)이 바뀝니다. `needs/index.html` 의 `<link href="../assets/index-….css">` 를 새 이름으로 고칩니다. 고치지 않아도 `base.css` 로 넘어가 화면은 그대로 나오지만, 대시보드 디자인을 바꾼 경우에는 옛 모습으로 남습니다.
 4. 이 화면이 읽는 대시보드 자료: `data/park.geojson`, `grid.geojson`, `network.json`, `features.geojson`, `context.geojson`, `hubs.json`, `team.json`, `meta.json`. 이 파일들의 구조를 바꾸면 `js/model.js` 를 맞춰야 합니다.
 
-탭 이름(「나에게 맞는 곳」, 「목표 3」)은 `link.js` 와 `js/main.js` 에서 바꿉니다. 테마(라이트·다크)는 기존 대시보드와 같은 저장 이름(`sf-theme`)을 써서 함께 바뀝니다.
+탭 이름(「맞춤형 추천」, 「목표 3」)은 `link.js` 와 `js/main.js` 에서 바꿉니다. 테마(라이트·다크)는 기존 대시보드와 같은 저장 이름(`sf-theme`)을 써서 함께 바뀝니다.
 
 ## 계산 방법
 

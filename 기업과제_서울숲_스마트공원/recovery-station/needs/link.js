@@ -1,9 +1,9 @@
-// 기존 대시보드(서울숲, 머무는 숲)의 위쪽 탭 줄에 '3 나에게 맞는 곳'을 더합니다.
+// 기존 대시보드(서울숲, 머무는 숲)의 위쪽 탭 줄에 '3 맞춤형 추천'을 더합니다.
 // 대시보드는 빌드된 묶음 파일(assets/index-*.js)이라 직접 고칠 수 없어, 화면이 그려진 뒤 탭 하나를 덧붙입니다.
 // 대시보드를 다시 빌드할 때는 React 소스의 탭 줄에 같은 링크를 넣고 이 파일은 지우면 됩니다(README 참고).
 (function () {
   'use strict';
-  var HREF = './needs/', ID = 'nd-link', LABEL = '나에게 맞는 곳';
+  var HREF = './needs/', ID = 'nd-link', LABEL = '맞춤형 추천';
 
   var style = document.createElement('style');
   style.textContent = [
@@ -65,7 +65,7 @@
     ], { 'aria-label': '화면 예시' });
     var card = el('article', 'ans-card g3 nd-g3-card', [
       el('div', 'ans-tag', [el('span', null, ['목표 3']), '사람마다 다른 필요 · 할 일 · 머물 시간 · 동행']),
-      el('h3', null, [el('span', 'ans-name', ['나에게 맞는 곳']), '누구와, 무엇을, 얼마나 머물지에 맞춰', el('br'), '갈 곳과 걷는 길을 골라 드립니다']),
+      el('h3', null, [el('span', 'ans-name', ['맞춤형 추천']), '누구와, 무엇을, 얼마나 머물지에 맞춰', el('br'), '갈 곳과 걷는 길을 골라 드립니다']),
       el('p', 'ans-lede', ['추천마다 그늘·화장실·붐빔·머물 수 있는 시간을 이유로 보여 주고, 서울숲이 맞지 않는 날에는 근처 도서관·주민센터를 알려 줍니다. 관리자에게는 쉬기 어려운 곳과 벤치·그늘·화장실이 필요한 자리를 보여 주고, AI가 보고서를 씁니다.']),
       demo,
       el('div', 'ans-gos', [
@@ -83,7 +83,7 @@
 
   // 소개 화면 맨 아래 '직접 찾아보세요' 단추 줄에 목표 3 단추를 더합니다
   function makeInvite() {
-    return el('a', 'btn nd-invite-g3', ['목표 3 · 나에게 맞는 곳 →'], { href: HREF, id: 'nd-invite-g3' });
+    return el('a', 'btn nd-invite-g3', ['목표 3 · 맞춤형 추천 →'], { href: HREF, id: 'nd-invite-g3' });
   }
 
   // 부모 안에 id 요소가 맨 끝에 있도록 둡니다(React가 다시 그려 지워지면 새로 만듭니다)
