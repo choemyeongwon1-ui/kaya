@@ -1,0 +1,157 @@
+/* 맞춤 추천 화면에서 더한 스타일. 바탕은 기존 대시보드의 스타일(../assets/index-*.css)이고, 여기 것은 모두 nd- 로 시작합니다. */
+:root{--goal3:#1f4e79;--goal3-2:#2f6fa3;--goal3-wash:#e3edf7}
+:root[data-theme=dark]{--goal3:#5fa3dc;--goal3-2:#7db8ea;--goal3-wash:#14222f}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--goal3:#5fa3dc;--goal3-2:#7db8ea;--goal3-wash:#14222f}}
+[hidden]{display:none!important}
+#app{min-height:100%}
+
+/* ── 위쪽 띠: 세 번째 목표 ── */
+a.tab{text-decoration:none}
+.goal-tab.g3 .tab-n{box-shadow:inset 0 0 0 2px var(--goal3);background:transparent;color:var(--goal3)}
+.goal-tab.g3[aria-selected=true]{background:#1f4e79;color:#fff}
+.goal-tab.g3[aria-selected=true] .tab-n{background:#cfe3f6;color:#0f2a44;box-shadow:none}
+.goalbar.g3 .goalbar-top{background:linear-gradient(120deg,#1f4e79 0%,#2f6fa3 100%)}
+.goalbar.g3 .subtab[aria-selected=true]{background:var(--goal3-wash);box-shadow:inset 0 0 0 2px var(--goal3);color:var(--goal3)}
+[data-goal="3"] .page-head .eyebrow{color:var(--goal3-2)}
+[data-goal="3"] .page-head{margin:26px 0 18px}
+
+/* ── 공통 ── */
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg,.chip svg{flex:none}
+.nd-row{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap}
+.nd-mt{margin-top:12px}
+.nd-select,.nd-input{border:0;background:var(--surface-2);border-radius:12px;padding:9px 12px;font-weight:600;font-size:13.5px;color:var(--ink);min-width:0;width:100%}
+.nd-input{flex:1 1 220px;font-weight:500}
+.nd-select.nd-time{width:auto;flex:none;padding:7px 12px;font-size:12.5px;border-radius:999px;background:var(--surface-3)}
+.nd-field{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 200px}
+.nd-field>.nd-input,.nd-field>.nd-select{flex:none}
+.nd-field .cond-l{margin:0;display:flex;align-items:center;gap:4px}
+.nd-attr{position:absolute;right:10px;bottom:8px;z-index:500;font-size:10px;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);padding:1px 6px;border-radius:6px;pointer-events:none}
+.nd-legend2{margin-top:5px}
+.legend i.nd-lg-line{background:var(--goal3);height:4px;width:16px;border-radius:2px;vertical-align:2px}
+.legend i.nd-lg-dash{background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 7px);height:3px;width:16px;border-radius:0;vertical-align:3px}
+.nd-warn{background:var(--warning-wash);align-items:flex-start}
+.nd-warn svg{flex:none;margin-top:2px}
+.nd-more-wrap{margin-top:0}
+.more.card summary{border-radius:var(--radius)}
+
+/* ── 시민 화면 ── */
+.nd-citizen>.grid{gap:14px}
+.nd-form{display:flex;flex-direction:column;gap:14px}
+.nd-form-row{display:flex;gap:12px 18px;align-items:flex-end;flex-wrap:wrap}
+.nd-form-row .toggle{padding-bottom:8px}
+.nd-hero-text{flex:1 1 280px;min-width:0}
+.nd-picks{display:flex;flex-direction:column;gap:10px}
+.nd-pick{border-radius:16px;background:var(--surface-2);padding:12px 14px;cursor:pointer;transition:background .15s,box-shadow .15s;display:flex;flex-direction:column;gap:10px}
+.nd-pick:hover{background:var(--surface-3)}
+.nd-pick.on{background:var(--surface);box-shadow:0 0 0 2px var(--goal3),var(--shadow)}
+.nd-pick-top{display:flex;align-items:center;gap:12px}
+.nd-pick.on .pick-rank{color:var(--goal3)}
+.nd-pick.on .pick-ico{background:var(--goal3);color:#fff}
+:root[data-theme=dark] .nd-pick.on .pick-ico{color:#08130d}
+.nd-pick .pick-title{white-space:normal}
+.nd-tags{display:flex;gap:6px;flex-wrap:wrap}
+.nd-tags:empty{display:none}
+.nd-reasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.nd-reason{background:var(--surface);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0;border-left:3px solid var(--axis)}
+.nd-pick.on .nd-reason{background:var(--surface-2)}
+.nd-r-k{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);font-weight:700}
+.nd-reason b{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+.nd-reason small{font-size:11.5px;color:var(--ink-2);line-height:1.4}
+.nd-reason.nd-good{border-left-color:var(--good)}
+.nd-reason.nd-good b{color:var(--success-text)}
+.nd-reason.nd-mid{border-left-color:var(--warning)}
+.nd-reason.nd-bad{border-left-color:var(--critical)}
+.nd-reason.nd-bad b{color:var(--critical)}
+.nd-facts{display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:10px}
+.nd-fact{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.nd-stops{margin-top:8px}
+.route-why b{color:inherit}
+.route-controls>.seg{align-self:flex-start}
+.nd-near{cursor:pointer;border-radius:12px;padding:10px 8px;align-items:flex-start}
+.nd-near.off{opacity:.55}
+.nd-near.on{background:var(--goal3-wash)}
+.nd-near .row-title{white-space:normal}
+.nd-more{margin-top:8px;align-self:flex-start}
+.nd-how p{margin:0 0 8px;font-size:13px;color:var(--ink-2)}
+.pick-ico.nd-k-library,.nd-mk-near.nd-k-library{color:#7a4fc0}
+.pick-ico.nd-k-community,.nd-mk-near.nd-k-community{color:#c2571f}
+.pick-ico.nd-k-park,.nd-mk-near.nd-k-park{color:#1f7a45}
+
+/* ── 지도 표지 ── */
+.nd-mk{display:grid;place-items:center;border-radius:50%;box-sizing:border-box;font-weight:800;font-size:12px;color:#fff;line-height:1}
+.nd-mk svg{display:block}
+span.nd-mk{width:26px;height:26px;flex:none}
+.nd-c-free{background:var(--good)}.nd-c-normal{background:var(--warning)}.nd-c-busy{background:var(--serious)}.nd-c-very{background:var(--critical)}
+.nd-mk-hub{border:2px solid var(--surface);box-shadow:0 1px 3px #0005}
+.nd-mk-pick{border:2px solid var(--surface);box-shadow:0 2px 6px #0006;font-size:13px;cursor:pointer}
+.nd-mk-pick.on{outline:3px solid var(--goal3);outline-offset:1px}
+.nd-mk-start{background:var(--ink);color:var(--page);border:2px solid var(--surface);box-shadow:0 2px 6px #0006}
+.nd-mk-stop{background:var(--surface);color:var(--success-text);border:2px solid var(--good)}
+.nd-mk-fac{background:var(--surface);border:1.5px solid currentColor;opacity:.92}
+.nd-mk-fac.nd-f-toilet{color:var(--v-buffer)}.nd-mk-fac.nd-f-seat{color:var(--g4)}.nd-mk-fac.nd-f-water{color:var(--series-1)}
+.nd-mk-fac.surveyed{border-style:dashed;border-width:2px}
+.legend i.nd-f-toilet{background:var(--v-buffer)}.legend i.nd-f-seat{background:var(--g4)}
+.nd-mk-near{background:var(--surface);border:2px solid currentColor;box-shadow:0 1px 4px #0004;cursor:pointer}
+.nd-mk-near.off{opacity:.5}
+.nd-mk-near.on{outline:3px solid var(--goal3);outline-offset:1px}
+.nd-mk-site{border:2px solid var(--surface);box-shadow:0 2px 6px #0006}
+.nd-s-bench{background:#1f7a45}.nd-s-shade{background:#c2571f}.nd-s-toilet{background:#7a4fc0}
+.nd-mk-team{background:transparent;border:2px dashed var(--ink);opacity:.75}
+
+/* ── 관리자 화면 ── */
+.nd-who{margin:0 0 10px}
+.nd-admin{display:flex;flex-direction:column;gap:18px}
+.nd-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;align-items:start}
+.nd-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.nd-admin .part-head{margin:14px 0 14px}
+.nd-mapcard{padding:0 8px 8px;display:flex;flex-direction:column;position:sticky;top:84px}
+.nd-mapcard .expert-map{height:calc(100vh - 236px);min-height:460px;max-height:780px}
+.nd-ctrl{padding:16px 14px 12px;display:flex;flex-direction:column;gap:10px}
+.nd-side{display:flex;flex-direction:column;gap:18px}
+.nd-side .ba-kpi b{font-size:36px}
+.nd-side .checks-3 .chk{grid-template-columns:22px minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1fr)}
+.nd-sitegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.nd-sitecol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.nd-sitehead{display:flex;align-items:center;gap:10px}
+.nd-sitehead b{font-size:16px}
+.nd-step{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:999px;padding:3px}
+.nd-step button{border:0;width:28px;height:28px;border-radius:50%;background:var(--surface);font-weight:800;font-size:16px;line-height:1;box-shadow:0 1px 3px #00000014}
+.nd-step span{font-weight:800;min-width:38px;text-align:center}
+.nd-sitelist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.nd-sitelist button{width:100%;border:0;background:var(--surface-2);border-radius:12px;padding:8px 10px;display:flex;gap:10px;align-items:flex-start;text-align:left}
+.nd-sitelist button:hover{background:var(--surface-3)}
+.nd-sitelist .nd-n{font-weight:800;color:var(--muted);min-width:20px;flex:none;white-space:nowrap}
+.nd-sitelist b{display:block;font-size:13.5px}
+.nd-sitelist small{display:block;font-size:11.5px;color:var(--ink-2)}
+.nd-rule{margin-top:0}
+.nd-rule p{margin:4px 0 0}
+.nd-ai-key{display:flex;gap:10px 12px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.nd-ai-key .toggle{padding-bottom:8px}
+.nd-ai-log{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.nd-ai-msg{border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.6}
+.nd-ai-msg.me{background:var(--surface-3);align-self:flex-end;max-width:85%}
+.nd-ai-msg.ai{background:var(--surface-2)}
+.nd-ai-msg h4{font-size:14px;margin:10px 0 4px}
+.nd-ai-msg h4:first-child{margin-top:0}
+.nd-ai-msg p{margin:0 0 6px}
+.nd-ai-msg ul{margin:0 0 6px;padding-left:18px}
+.nd-ai-data{margin-top:12px;font-size:12.5px}
+.nd-ai-data summary{cursor:pointer;color:var(--ink-2);font-weight:700}
+.nd-ai-data pre{max-height:260px;overflow:auto;background:var(--surface-2);border-radius:12px;padding:10px;font-size:11px;white-space:pre-wrap;margin:8px 0 0}
+
+/* ── 좁은 화면 ── */
+@media(max-width:1100px){.nd-top,.nd-bottom{grid-template-columns:minmax(0,1fr)}.nd-sitegrid{grid-template-columns:minmax(0,1fr)}.nd-mapcard{position:static}.nd-mapcard .expert-map{height:480px;min-height:0;max-height:none}}
+/* 좁은 화면에서는 고르기 → 상태 → 갈 곳 → 지도 → 길 순서로 한 줄에 놓습니다 */
+@media(max-width:980px){
+  .nd-citizen{grid-template-columns:minmax(0,1fr);gap:14px}
+  .nd-citizen>.grid{display:contents}
+  .nd-citizen>.grid>:nth-child(1){order:1}.nd-citizen>.grid>:nth-child(2){order:2}.nd-citizen>.grid>:nth-child(3){order:3}
+  .nd-citizen .citizen-map{position:static;height:56vh;min-height:340px;max-height:520px;order:4}
+  .nd-citizen>.grid>:nth-child(4){order:5}.nd-citizen>.grid>:nth-child(5){order:6}.nd-citizen>.grid>:nth-child(6){order:7}
+}
+@media(max-width:760px){.goalbar.g3 .subtabs{flex:1 1 100%}.goalbar.g3 .goalbar-weather{flex:1 1 100%}.goals-nav{scrollbar-width:none}.goals-nav::-webkit-scrollbar{display:none}.goals-nav .tab{flex:0 0 auto}}
+@media(max-width:560px){.hero.wide .hero-facts{flex-basis:100%}.nd-pick{padding:12px}.nd-reason{padding:8px 9px}}
+@media(max-width:340px){.nd-reasons{grid-template-columns:minmax(0,1fr)}}

@@ -1,0 +1,134 @@
+// 선택지·기준값·가정값을 한곳에 모았습니다. 팀이 고칠 값은 이 파일만 보면 됩니다.
+// (가정)이라고 적은 값은 근거 측정이 없는 값입니다. 현장 조사·설문 뒤에 바꿔야 합니다.
+
+export const CENTER = { lat: 37.5443, lon: 127.0374 };          // 기존 대시보드와 같은 기준점(날씨 조회 위치)
+export const SPEED = { normal: 70, slow: 53 };                    // 걷는 속도 m/분 = 4.2km/h, 3.2km/h (기존 대시보드와 같은 값)
+
+// ── 시민 화면 선택지 ─────────────────────────────────────────────
+export const NEEDS = [
+  { key: 'rest',   label: '앉아서 쉬기',  icon: 'leaf'  },
+  { key: 'walk',   label: '걷기',        icon: 'walk'  },
+  { key: 'play',   label: '놀기·체험',    icon: 'spark' },
+  { key: 'active', label: '운동하기',     icon: 'run'   },
+  { key: 'learn',  label: '구경·배우기',  icon: 'book'  },
+  { key: 'meet',   label: '모임·피크닉',  icon: 'users' },
+];
+export const STAYS = [
+  { key: 30,  label: '30분' },
+  { key: 60,  label: '1시간' },
+  { key: 120, label: '2시간' },
+  { key: 180, label: '3시간 이상' },
+];
+export const COMPANY = [
+  { key: 'alone',   label: '혼자',       group: null },
+  { key: 'friends', label: '친구·연인과', group: 'youth' },
+  { key: 'kids',    label: '아이와',      group: 'family' },
+  { key: 'elders',  label: '어르신과',    group: 'senior' },
+];
+export const ACTIVE_NEEDS = new Set(['walk', 'active', 'play']);    // 몸을 움직이는 일: 추위 기준을 낮게 봄
+
+// 장소별 '하고 싶은 일' 적합도 0~1 (가정). 1.0에 가까운 값은 기존 대시보드의 프로그램 목적과 맞춘 것이고,
+// 그보다 낮은 값은 장소 성격을 보고 팀이 정한 값입니다. 설문 결과가 나오면 이 표를 바꿉니다.
+export const AFFINITY = {
+  'family-lawn':  { rest: .7, walk: .3, play: .8, active: .5, learn: 0,  meet: 1  },
+  'mirror-pond':  { rest: .6, walk: .5, play: .7, active: 0,  learn: .2, meet: .6 },
+  'horse-plaza':  { rest: .2, walk: .3, play: .2, active: 0,  learn: .2, meet: .8 },
+  'stage':        { rest: .5, walk: .2, play: .3, active: .2, learn: .2, meet: .8 },
+  'courts':       { rest: 0,  walk: .2, play: .5, active: 1,  learn: 0,  meet: .3 },
+  'visitor':      { rest: .4, walk: 0,  play: .2, active: 0,  learn: .9, meet: .2 },
+  'forest-play':  { rest: .3, walk: .2, play: 1,  active: .4, learn: .2, meet: .3 },
+  'insect':       { rest: .2, walk: 0,  play: .6, active: 0,  learn: 1,  meet: .1 },
+  'butterfly':    { rest: .2, walk: 0,  play: .6, active: 0,  learn: .9, meet: .1 },
+  'deer':         { rest: .6, walk: 1,  play: .5, active: .3, learn: .6, meet: .2 },
+  'lake':         { rest: 1,  walk: .6, play: .2, active: 0,  learn: .1, meet: .6 },
+  'wetland':      { rest: .8, walk: .9, play: .2, active: .2, learn: .6, meet: .2 },
+  'culture-ctr':  { rest: .1, walk: 0,  play: .2, active: .9, learn: .2, meet: .2 },
+  'water-museum': { rest: .2, walk: .2, play: .3, active: 0,  learn: .9, meet: .1 },
+};
+export const AFFINITY_DEFAULT = .3;       // 표에 없는 장소(나중에 추가된 거점)
+export const AFF_FIT = .45;              // 이 값 이상이면 '그 일을 할 수 있는 곳'으로 봄
+export const AFF_MIN = .3;               // 이 값 미만인 곳은 추천에서 뺌
+
+// 건물 안에 화장실이 있다고 본 실내 시설 (가정. 박물관·체육센터·안내센터·휴게실 건물)
+export const TOILET_INSIDE = new Set(['visitor', 'lake', 'culture-ctr', 'water-museum']);
+export const SNAP_PARK = 150;             // 출발점·거점이 공원 밖 막다른 길에 붙으면, 이 거리(m) 안의 공원 안 길에 대신 붙임
+
+// 장소 한 줄 설명
+export const PLACE_NOTE = {
+  'family-lawn': '넓은 잔디마당', 'mirror-pond': '거울연못과 바닥분수', 'horse-plaza': '군마상 앞 광장', 'stage': '야외무대',
+  'courts': '운동 코트', 'visitor': '안내·생태교육', 'forest-play': '숲속 놀이터', 'insect': '곤충·열대식물 관람',
+  'butterfly': '나비 체험', 'deer': '생태숲 길과 사슴우리', 'lake': '호숫가 실내 휴게실', 'wetland': '습지 관찰 산책로',
+  'culture-ctr': '실내 체육시설', 'water-museum': '수도박물관 전시',
+};
+
+// ── 운영시간 ────────────────────────────────────────────────────
+// sure: true = 공식 자료로 확인 / false = 확인 못 해 보수적으로 잡은 값(화면에 '확인 필요'로 표시)
+// closedDow: 휴관 요일(0=일 … 1=월) / seasons: 운영 월과 시각
+export const HOURS = {
+  'insect': { sure: true, fee: '무료', closedDow: [1],
+    seasons: [{ months: [3, 4, 5, 6, 7, 8, 9, 10], open: 10, close: 17 }, { months: [11, 12, 1, 2], open: 11, close: 16 }],
+    src: '서울시 미디어허브 2025.2.13 · 월요일 휴관, 3~10월 10~17시, 11~2월 11~16시' },
+  'butterfly': { sure: true, fee: '무료', closedDow: [1],
+    seasons: [{ months: [5, 6, 7, 8, 9, 10], open: 10, close: 17 }],
+    src: '서울시 미디어허브 2025.2.13 · 5~10월에만 운영, 월요일 휴관' },
+  'water-museum': { sure: false, fee: '무료', closedDow: [1],
+    seasons: [{ months: 'all', open: 10, close: 18 }],
+    src: '월요일 휴관·무료는 확인. 관람시간은 자료마다 달라 겹치는 10~18시로 계산' },
+  'culture-ctr': { sure: false, fee: '이용료 확인 필요', closedDow: [],
+    seasons: [{ months: 'all', open: 10, close: 17 }],
+    src: '수영장·헬스장 등 강습 위주 체육시설(2022 개관 기사). 운영시간·요금 미확인' },
+};
+export const HOURS_DEFAULT_INDOOR = { sure: false, closedDow: [], seasons: [{ months: 'all', open: 10, close: 17 }], src: '운영시간 미확인 — 10~17시로 가정' };
+
+// ── 판정 기준 ───────────────────────────────────────────────────
+// 날씨 단계는 기존 대시보드와 같은 값입니다(주의/경고).
+export const STAGE = [
+  { key: 'feels', label: '더위',     caution: 31, warning: 33 },
+  { key: 'uv',    label: '자외선',   caution: 6,  warning: 8 },
+  { key: 'pm25',  label: '초미세먼지', caution: 36, warning: 76 },
+  { key: 'pm10',  label: '미세먼지',  caution: 81, warning: 151 },
+  { key: 'pop',   label: '비',       caution: 60, warning: Infinity },
+];
+export const HEAVY_RAIN = 15;              // mm/h 이상이면 경고 (기존 대시보드와 같음)
+export const CROWD_STOP = .85;             // 수용 대비 이 비율 이상이면 '붐벼서 머물기 어려움' (기존 대시보드와 같음)
+export const COLD = { still: 0, active: -8 };   // 체감 ℃ 미만이면 야외에 오래 머물기 어려움 (가정. 0℃는 팀의 '쾌적 시간' 기준과 같음)
+export const COOL = 12;                    // 체감 ℃ 미만이면 그늘보다 볕 드는 자리가 낫다고 봄 (가정)
+export const WARM = 26;                    // 체감 ℃ 이상이면 그늘이 중요하다고 봄 (가정)
+export const NIGHT = { from: 22, to: 6 };  // 이 시간대의 야외 자리는 안내하지 않음 (가정)
+export const LOOKAHEAD = 12;               // 몇 시간 앞까지 볼지
+export const LATER_MAX = 3;                // '지금은 어렵지만 곧 가능한 곳'은 이 시간 안에 풀리는 곳만 추천에 넣음
+
+// 추천 점수 가중치 (가정). 합이 100이 아니어도 됩니다(비율로 계산).
+export const WEIGHTS = { need: 35, company: 15, stay: 20, crowd: 12, thermal: 10, toilet: 5, walk: 8 };
+
+// ── 길·코스 ────────────────────────────────────────────────────
+export const ROUTE_W = 2.5;                // 고른 조건(그늘·한산함)에 주는 가중치 (기존 대시보드의 '우선' 모드와 같은 크기)
+export const STEP_PENALTY = 40;            // 계단 한 구간당 더하는 거리 m (기존 대시보드와 같음)
+export const OUT_PENALTY = 1.5;            // 산책 코스가 공원 밖 길로 나가는 것을 꺼리는 정도
+export const REST_DETOUR = 1.35;           // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
+export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈
+export const COURSE_MIN = [20, 40, 60];
+
+// ── 관리자 화면: 쉬기 어려운 곳 판정 기준 (가정. 기존 진단 화면의 기준을 따름) ──
+export const REST_STD = {
+  all:  { label: '일반 이용자',   seat: 150, toilet: 250, shade: .30, crowd: 60 },
+  care: { label: '어르신·유아',   seat: 100, toilet: 150, shade: .50, crowd: 50 },
+};
+export const REST_REASONS = [
+  { key: 'seat',   label: '앉을 곳이 멂',   short: '앉을 곳', color: '--series-1' },
+  { key: 'shade',  label: '그늘이 없음',    short: '그늘',   color: '--g4' },
+  { key: 'toilet', label: '화장실이 멂',    short: '화장실', color: '--v-buffer' },
+  { key: 'crowd',  label: '붐빔',          short: '붐빔',   color: '--serious' },
+];
+export const HARD_FROM = 2;                // 네 가지 중 이 개수 이상 부족하면 '쉬기 어려운 곳'
+export const SITE_DEFAULT = { bench: 10, shade: 8, toilet: 2 };
+
+// ── AI ─────────────────────────────────────────────────────────
+// 관리자 화면의 AI 도우미. 공식 Anthropic SDK(vendor/anthropic-sdk.mjs)로 Claude를 부릅니다.
+export const AI = {
+  model: 'claude-opus-5-5',
+  maxTokens: 16000,                        // 답은 짧지만 생각하는 데 쓰는 토큰도 여기에 들어가므로 넉넉히 둠
+  effort: 'medium',                        // low | medium | high — 값이 클수록 꼼꼼하지만 느리고 비쌈
+  fallbackBeta: 'server-side-fallback-2026-07-01',   // 모델이 답을 거절했을 때 다른 모델로 이어 답하게 하는 설정
+  keyStore: 'sf-needs-ai-key',             // 브라우저에 API 키를 넣어 두는 이름
+};
