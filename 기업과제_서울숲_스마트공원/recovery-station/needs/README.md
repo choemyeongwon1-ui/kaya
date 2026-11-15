@@ -24,7 +24,7 @@
 |---|---|
 | `index.html`, `needs.css` | 페이지와 이 화면에서 더한 스타일(모두 `nd-` 로 시작) |
 | `base.css` | 기존 대시보드 스타일의 사본. 대시보드를 다시 빌드해 CSS 파일 이름이 바뀌어도 화면이 깨지지 않게 하는 예비용 |
-| `link.js` | 기존 대시보드 탭 줄에 「3 나에게 맞는 곳」을 붙이는 스크립트 |
+| `link.js` | 기존 대시보드에 목표 3을 붙이는 스크립트: 탭 줄의 「3 나에게 맞는 곳」, 소개 화면 PART 3의 목표 3 카드, 맨 아래 「목표 3 · 나에게 맞는 곳 →」 단추 |
 | `js/config.js` | **선택지·기준값·가정값을 모은 곳. 팀이 고칠 값은 이 파일만 보면 됩니다** |
 | `js/model.js` | 자료를 읽어 계산용 모형으로 엮음 |
 | `js/recommend.js` | 갈 곳 추천, 머물 수 있는 시간, 근처 무료 장소 |
@@ -53,6 +53,7 @@
    <a className="tab goal-tab g3" href="./needs/"><span className="tab-n">3</span>나에게 맞는 곳</a>
    ```
    링크를 직접 넣을 때는 `link.js` 안의 `--goal3` 색과 `.goal-tab.g3 .tab-n` 규칙을 대시보드 CSS에 옮깁니다.
+   소개 화면의 목표 3 카드(`#solution .ans` 안 세 번째 `article.ans-card.g3`)와 맨 아래 단추(`.invite-btns`)도 `link.js` 의 `makeCard()`·`makeInvite()` 내용과 `.ans-card.g3` 규칙을 그대로 옮기면 됩니다.
 3. 빌드하면 CSS 파일 이름(`index-CS1fLUE9.css`)이 바뀝니다. `needs/index.html` 의 `<link href="../assets/index-….css">` 를 새 이름으로 고칩니다. 고치지 않아도 `base.css` 로 넘어가 화면은 그대로 나오지만, 대시보드 디자인을 바꾼 경우에는 옛 모습으로 남습니다.
 4. 이 화면이 읽는 대시보드 자료: `data/park.geojson`, `grid.geojson`, `network.json`, `features.geojson`, `context.geojson`, `hubs.json`, `team.json`, `meta.json`. 이 파일들의 구조를 바꾸면 `js/model.js` 를 맞춰야 합니다.
 
