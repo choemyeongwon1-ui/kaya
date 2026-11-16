@@ -30,6 +30,7 @@
 | `analysis/05_concept.py` | 팀 컨셉 산출: 쾌적 시간 판정 자료와 설문 구역. 일사량 자료(`sw.json`)가 없으면 내려받습니다 |
 | `analysis/04_build.py` | `dashboard_template.html`에 결과를 넣어 대시보드 생성 |
 | `analysis/06_needs.py` | 맞춤 추천 화면용 자료(공원 안 화장실·벤치·쉼터, 공원 밖 무료 장소, 지도 배경). `python -I analysis/06_needs.py .` |
+| `analysis/07_legal.py` | 맞춤 추천 화면용 법적 구역(공원·하천구역·유수지·정수장 부지). 브이월드 연속지적도 + 토지이음 조회. 환경변수 `VWORLD_KEY`(브이월드 인증키) 필요. `python -I analysis/07_legal.py .` |
 | `recovery-station/` | 팀 대시보드 「서울숲, 머무는 숲」의 빌드본. `needs/`는 여기에 더한 **맞춤 추천·산책 코스 화면**(시민·관리자)이며 설명은 [`recovery-station/needs/README.md`](recovery-station/needs/README.md)에 있습니다 |
 | `output/` | GIS 산출물(`.gpkg`, `.csv`)과 대시보드용 JSON. 쾌적 시간 격자는 `seoulforest_comfort_grid.*` |
 

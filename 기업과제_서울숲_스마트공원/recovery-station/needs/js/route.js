@@ -2,10 +2,13 @@
 import { ROUTE_W, OUT_PENALTY, REST_DETOUR } from './config.js';
 import { dijkstra, pathTo, makeCost, summarize } from './graph.js';
 
-/** prefs: {shade, rest, nostairs, quiet} / env: {scale(시각별 혼잡 배수), sunMode('shade'|'sun'|'none')} */
+/** prefs: {shade, rest, nostairs, quiet} / env: {scale(시각별 혼잡 배수), sunMode('shade'|'sun'|'none'), floodPenalty(큰비 때 물이 차는 구역 구간 벌점 Map | null)} */
 function costOf(prefs, env, extra = {}) {
-  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? ROUTE_W : 0, quiet: prefs.quiet ? ROUTE_W : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', ...extra });
+  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? ROUTE_W : 0, quiet: prefs.quiet ? ROUTE_W : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', penalty: env.floodPenalty ?? null, ...extra });
 }
+
+/** 길이 물이 차는 구역(유수지·하천구역)을 지나는 길이 m */
+const floodLen = (model, sum) => model.floodPenalty ? Math.round(sum.edges.reduce((a, e) => a + (model.floodPenalty.has(e.id) ? e.len : 0), 0)) : 0;
 
 /** 길이 지나는 쉼터와 쉼터 사이 가장 긴 구간 */
 export function restsAlong(model, sum) {
@@ -20,7 +23,7 @@ export function restsAlong(model, sum) {
 
 function finish(model, legs, speed) {
   const s = summarize(model.g, legs);
-  return { ...s, minutes: Math.max(1, Math.round(s.meters / speed)), ...restsAlong(model, s) };
+  return { ...s, minutes: Math.max(1, Math.round(s.meters / speed)), floodLen: floodLen(model, s), ...restsAlong(model, s) };
 }
 
 /**

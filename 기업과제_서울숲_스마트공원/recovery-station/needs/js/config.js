@@ -123,6 +123,14 @@ export const REST_REASONS = [
 export const HARD_FROM = 2;                // 네 가지 중 이 개수 이상 부족하면 '쉬기 어려운 곳'
 export const SITE_DEFAULT = { bench: 10, shade: 8, toilet: 2 };
 
+// ── 법적 구역 (data/legal.json: 브이월드 연속지적도 필지마다 토지이음 토지이용계획을 조회해 붙인 지정) ──
+// 유수지·하천구역은 큰비 때 물이 차거나 빗물을 담는 곳입니다(legal.json의 zones[*].flood).
+export const FLOOD_AFTER = 3;              // 큰비가 그친 뒤 이 시간 동안도 물이 차는 구역의 야외 자리는 추천하지 않음 (가정)
+export const FLOOD_PENALTY = 4;            // 큰비 때 물이 차는 구역을 지나는 길 구간의 비용 배수 (가정. 산책 코스의 되짚기 벌점과 같은 크기)
+export const LEGAL_COLOR = {
+  park: '#3F6B5C', park_river: '#78AAC8', park_plant: '#9DB3A7', detention: '#2F4F6F', plant: '#B7793A', river: '#4F86B5', other: '#B9BBB5',
+};
+
 // ── AI ─────────────────────────────────────────────────────────
 // 관리자 화면의 AI 도우미. 공식 Anthropic SDK(vendor/anthropic-sdk.mjs)로 Claude를 부릅니다.
 export const AI = {

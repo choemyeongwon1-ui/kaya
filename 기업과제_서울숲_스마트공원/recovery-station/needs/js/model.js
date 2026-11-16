@@ -1,16 +1,17 @@
 // 자료를 읽어 계산에 쓰는 모형으로 엮습니다.
 // 기존 대시보드의 data/*.json(공원·보행망·격자·거점)과 이 화면의 data/*.json(시설·근처 장소)을 함께 씁니다.
-import { PLACE_NOTE, REST_NEAR, SNAP_PARK, TOILET_INSIDE } from './config.js';
+import { PLACE_NOTE, REST_NEAR, SNAP_PARK, TOILET_INSIDE, FLOOD_PENALTY } from './config.js';
 import { toXY, inPolygon, PointIndex } from './geo.js';
 import { buildGraph, nearestNode, dijkstra } from './graph.js';
 
 export const APP_FILES = ['park.geojson', 'grid.geojson', 'network.json', 'features.geojson', 'context.geojson', 'hubs.json', 'team.json', 'meta.json'];
-export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json'];
+export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json'];
+const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json'];      // 없어도 화면은 열림
 
 /** loadJson(경로) → 자료 묶음. appBase: 기존 대시보드 data 폴더, ownBase: 이 화면 data 폴더 */
 export async function loadData(loadJson, appBase = '../data/', ownBase = './data/') {
   const names = [...APP_FILES.map(f => appBase + f), ...OWN_FILES.map(f => ownBase + f)];
-  const got = await Promise.all(names.map(n => loadJson(n).catch(err => { if (n.endsWith('survey.json') || n.endsWith('backdrop.json')) return null; throw new Error(`${n} — ${err.message}`); })));
+  const got = await Promise.all(names.map(n => loadJson(n).catch(err => { if (OPTIONAL.some(o => n.endsWith(o))) return null; throw new Error(`${n} — ${err.message}`); })));
   const key = n => n.split('/').pop().replace(/\.(geo)?json$/, '');
   return Object.fromEntries(names.map((n, i) => [key(n), got[i]]));
 }
@@ -25,11 +26,15 @@ export function buildModel(data, extra = []) {
   const parkGeom = data.park.features[0].geometry;
   const inPark = (lon, lat) => inPolygon(lon, lat, parkGeom);
 
+  // ── 법적 구역 (없으면 null — 그 경우 구역 표시와 큰비 규칙을 쓰지 않음) ──
+  const legal = data.legal?.zones && data.legal?.cells ? data.legal : null;
+  const zoneOf = k => (k && legal?.zones[k]) || null;
+
   // ── 팀 20m 격자 ──
   const cells = data.team.grid.features.map(f => {
     const ring = f.geometry.coordinates[0];
     const lon = (ring[0][0] + ring[2][0]) / 2, lat = (ring[0][1] + ring[2][1]) / 2, [x, y] = toXY(lon, lat);
-    return { id: f.properties.id, lon, lat, x, y, p: f.properties, hold: !!f.properties.hold };
+    return { id: f.properties.id, lon, lat, x, y, p: f.properties, hold: !!f.properties.hold, legal: legal?.cells[String(f.properties.id)] ?? null };
   });
   const cellIndex = new PointIndex(cells, 40);
   const cellAt = (lon, lat) => { const [x, y] = toXY(lon, lat); const r = cellIndex.nearest(x, y, 15); return r ? cells[r.i] : null; };
@@ -79,12 +84,16 @@ export function buildModel(data, extra = []) {
     const s = snap(h.lon, h.lat), [x, y] = toXY(h.lon, h.lat);
     const around = cellIndex.within(x, y, 45).map(i => cells[i]);
     const mean = k => around.length ? around.reduce((a, c) => a + c.p[k], 0) / around.length : null;
-    return { ...h, x, y, node: s.node, off: s.off, note: PLACE_NOTE[h.id] ?? '', tree: mean('tree'), lst: mean('lst'), dRoad: mean('dRoad'),
+    const legalKey = legal?.hubs?.[h.id] ?? null;
+    return { ...h, x, y, node: s.node, off: s.off, note: PLACE_NOTE[h.id] ?? '', legal: legalKey, flood: !!zoneOf(legalKey)?.flood, tree: mean('tree'), lst: mean('lst'), dRoad: mean('dRoad'),
       dToilet: TOILET_INSIDE.has(h.id) ? 0 : Math.round(dToilet[s.node] + s.off), toiletInside: TOILET_INSIDE.has(h.id), dSeat: Math.round(dSeat[s.node] + s.off) };
   });
   const places = hubs.filter(h => h.type !== 'gate'), gates = hubs.filter(h => h.type === 'gate');
   const treeMean = cells.filter(c => !c.hold).reduce((a, c) => a + c.p.tree, 0) / cells.filter(c => !c.hold).length;
 
   return { data, g, inPark, cells, cellIndex, cellAt, nodeCells, nodeIndex, fac, toilets, seats, restSpots, dToilet, dSeat, hubs, places, gates,
-    hubById: Object.fromEntries(hubs.map(h => [h.id, h])), treeMean, snap, dPark };
+    hubById: Object.fromEntries(hubs.map(h => [h.id, h])), treeMean, snap, dPark,
+    legal, zoneOf,
+    // 큰비 때 길 찾기에서 물이 차는 구역(유수지·하천구역)의 구간을 덜 고르도록 하는 벌점
+    floodPenalty: legal?.floodEdges?.length ? new Map(legal.floodEdges.map(id => [id, FLOOD_PENALTY])) : null };
 }

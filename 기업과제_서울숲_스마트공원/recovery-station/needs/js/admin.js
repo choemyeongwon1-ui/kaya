@@ -1,6 +1,6 @@
 // 관리자 화면: 쉬기 어려운 곳과 이유(지도), 벤치·그늘·화장실이 필요한 자리, 현장 조사 입력, AI 도우미
-import { REST_STD, REST_REASONS, HARD_FROM, SITE_DEFAULT, AI } from './config.js';
-import { diagnose, siteFacilities, ruleSummary, briefData, nearLabel } from './rest.js';
+import { REST_STD, REST_REASONS, HARD_FROM, SITE_DEFAULT, AI, LEGAL_COLOR } from './config.js';
+import { diagnose, siteFacilities, ruleSummary, briefData, nearLabel, siteZone, needsPermit, permitSites } from './rest.js';
 import { FAC_LABEL } from './model.js';
 import { toXY } from './geo.js';
 import { askAI, keyStore, firstMessage, REPORT_TASK, AIError } from './ai.js';
@@ -54,7 +54,7 @@ export function createAdmin(root, app) {
   function renderCtrl() {
     el.ctrl.replaceChildren(h('div', { class: 'nd-ctrl' },
       h('div', { class: 'nd-row' },
-        segGroup([{ key: 'count', label: '모자란 가짓수' }, { key: 'reason', label: '이유별로 보기' }], st.layer, v => set({ layer: v }), '지도에 보일 것'),
+        segGroup([{ key: 'count', label: '모자란 가짓수' }, { key: 'reason', label: '이유별로 보기' }, ...(app.model.legal ? [{ key: 'legal', label: '법적 구역' }] : [])], st.layer, v => set({ layer: v }), '지도에 보일 것'),
         st.layer === 'reason' ? chipGroup(REST_REASONS.map(r => ({ key: r.key, label: r.label })), st.reason, v => set({ reason: v }), '이유') : null),
       h('div', { class: 'nd-row' },
         segGroup([{ key: 'before', label: '지금' }, { key: 'after', label: '제안대로 놓은 뒤' }], st.when, v => set({ when: v }), '시점'),
@@ -88,8 +88,10 @@ export function createAdmin(root, app) {
         h('div', { class: 'checks checks-3' },
           chk('seat', '앉을 곳까지', `${v.dSeat}m`, `${std.seat}m 안`), chk('shade', '나무 그늘', pct(v.tree), `${pct(std.shade)} 이상`),
           chk('toilet', '화장실까지', `${v.dToilet}m`, `${std.toilet}m 안`), chk('crowd', '붐빔 지수', Math.round(v.crowd), `${std.crowd} 미만`)),
+        zoneBox(row.c.legal),
         h('button', { type: 'button', class: 'btn nd-mt', onclick: () => set({ sel: null }) }, '고른 칸 지우기'))));
     }
+    if (st.layer === 'legal' && app.model.legal) blocks.push(legalCard(d));
     const top = d.clusters.slice(0, 6);
     blocks.push(card('먼저 볼 구역', '붙어 있는 칸을 묶어 넓이와 이용 정도 순으로 세움', top.length ? h('div', { class: 'zlist' }, top.map(c =>
       h('button', { type: 'button', class: `zbtn${st.focus === c.rank ? ' on' : ''}`, onclick: () => { set({ focus: c.rank, sel: null }); view?.fit(c.cells.map(r => [r.c.lat, r.c.lon]), 70); } },
@@ -97,6 +99,32 @@ export function createAdmin(root, app) {
         h('span', { class: 'zmain' }, h('b', null, `${c.label} 일대`), h('span', null, c.reasons.map(r => r.label).join(' · '))),
         h('span', { class: 'znum num' }, c.ha, h('small', null, 'ha'))))) : h('div', { class: 'assume' }, '쉬기 어려운 곳이 없습니다.')));
     el.side.replaceChildren(...blocks);
+  }
+
+  // ── 법적 구역 (브이월드 지적도 + 토지이음) ──
+  /** 고른 칸의 법적 구역: 적용 법 · 관리 주체 · 시설을 놓을 때 절차 */
+  function zoneBox(key) {
+    const z = app.model.zoneOf(key);
+    if (!app.model.legal) return null;
+    if (!z) return h('div', { class: 'nd-zone small muted' }, '법적 구역: 지적 자료와 겹치지 않는 칸');
+    return h('div', { class: 'nd-zone' },
+      h('div', null, h('i', { class: 'sw', style: { background: LEGAL_COLOR[key] } }), h('b', null, z.label), h('span', { class: 'small muted' }, ` · ${z.law}`)),
+      h('div', { class: 'small ink2' }, `관리: ${z.agency}`),
+      h('div', { class: `small ${key === 'park' ? 'ink2' : 'nd-zone-rule'}` }, `시설을 놓을 때: ${z.rule}`),
+      z.flood ? h('div', { class: 'small nd-zone-rule' }, '큰비 때 물이 차거나 빗물을 담는 곳 — 시민 화면에서 큰비 경고 때 추천·길 안내에서 피함') : null);
+  }
+  /** 법적 구역별 칸 수 · 쉬기 어려운 칸 · 제안 자리 */
+  function legalCard(d) {
+    const L = app.model.legal, rows = new Map();
+    for (const r of d.rows) { const k = r.c.legal ?? 'none'; const o = rows.get(k) ?? rows.set(k, { n: 0, hard: 0, sites: 0 }).get(k); o.n++; if (r.hard) o.hard++; }
+    for (const list of Object.values(plan.sites)) for (const s of list) { const k = siteZone(app.model, s)?.key ?? 'none'; (rows.get(k) ?? rows.set(k, { n: 0, hard: 0, sites: 0 }).get(k)).sites++; }
+    const order = Object.keys(L.zones).filter(k => rows.has(k));
+    return card('법적 구역', `판정한 칸 · 토지이음 조회 ${L.checked}`, h('div', null,
+      h('table', { class: 'nd-ztable small' },
+        h('thead', null, h('tr', null, h('th', null, '구역'), h('th', null, '칸'), h('th', null, '쉬기 어려움'), h('th', null, '제안 자리'))),
+        h('tbody', null, order.map(k => { const o = rows.get(k); return h('tr', null,
+          h('td', null, h('i', { class: 'sw', style: { background: LEGAL_COLOR[k] } }), L.zones[k].label), h('td', { class: 'num' }, o.n), h('td', { class: 'num' }, o.hard), h('td', { class: 'num' }, o.sites || '—')); }))),
+      h('div', { class: 'assume' }, '습지생태원(유수지)은 팀 격자 밖이라 지도에만 표시합니다. 칸은 가장 넓게 겹치는 필지의 지정을 따릅니다. 토지이음 열람 정보는 법적 효력이 없어, 실제 설치 전에는 토지이용계획확인서로 확인해야 합니다.')));
   }
 
   // ── 어디에 무엇이 필요한가 ──
@@ -110,26 +138,35 @@ export function createAdmin(root, app) {
         h('div', { class: 'small muted' }, k.hint),
         list.length ? h('ol', { class: 'nd-sitelist' }, list.map((s, i) => h('li', null, h('button', { type: 'button', onclick: () => { view?.panTo(s.lat, s.lon, 17.5); document.querySelector('.nd-mapcard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
           h('span', { class: 'num nd-n' }, i + 1), h('span', null, h('b', null, s.label),
-            h('small', null, k.key === 'shade' ? `지금 나무 그늘 ${pct(s.tree)} · 둘레 ${s.cells}칸${s.team ? ' · 팀 식재 후보와 겹침' : ''}${s.nearSeat ? ' · 앉을 곳 옆' : ''}` : `${s.cells}칸(${s.ha}ha)이 기준 안으로 들어옴`))))))
+            h('small', null, k.key === 'shade' ? `지금 나무 그늘 ${pct(s.tree)} · 둘레 ${s.cells}칸${s.team ? ' · 팀 식재 후보와 겹침' : ''}${s.nearSeat ? ' · 앉을 곳 옆' : ''}` : `${s.cells}칸(${s.ha}ha)이 기준 안으로 들어옴`),
+            permitTag(siteZone(app.model, s)))))))
           : h('div', { class: 'assume' }, st.counts[k.key] ? '더 놓아도 줄어드는 칸이 없습니다.' : '0곳으로 두었습니다.'),
         k.key !== 'shade' && plan.left[k.key] ? h('div', { class: 'small muted' }, `놓은 뒤에도 기준 밖으로 남는 칸 ${plan.left[k.key]}개`) : null);
     });
-    const e = plan.effect;
+    const e = plan.effect, pz = permitSites(app.model, plan);
     el.sites.replaceChildren(
       h('div', { class: 'part-head' }, h('span', { class: 'part-n' }, '2'), h('div', null, h('h2', null, '어디에 무엇이 필요한가'), h('p', null, '개수를 바꾸면 자리와 효과를 다시 계산합니다. 자리를 누르면 지도가 그곳으로 갑니다.'))),
       h('section', { class: 'card card-pad' },
         h('div', { class: 'nd-sitegrid' }, cols),
         h('div', { class: 'rx-effect' }, icon('check', 18), h('span', null, `제안대로 놓으면 쉬기 어려운 곳이 ${e.hard.before}칸에서 ${e.hard.after}칸으로 줄어듭니다(−${e.hard.ha}ha, ${pct(e.hard.cut)}). 이용이 많은 정도로 따진 비율은 ${pct(e.useShare.before)}에서 ${pct(e.useShare.after)}가 됩니다.`)),
+        pz.length ? h('div', { class: 'notice nd-warn nd-mt' }, icon('alert', 16), h('span', null, h('b', null, '허가·협의가 필요한 자리 '),
+          pz.map(z => `${z.label} ${z.n}곳(${z.rule})`).join(' · '), ' — 법적 구역은 브이월드 지적도와 토지이음 조회 기준')) : null,
         h('div', { class: 'nd-row nd-mt' },
           h('button', { type: 'button', class: 'btn', onclick: () => download('서울숲_시설제안.csv', '﻿' + sitesCsv(), 'text/csv') }, icon('download', 15), '제안 자리 내려받기 (CSV)'),
           h('button', { type: 'button', class: 'btn', onclick: () => download('서울숲_시설제안.geojson', JSON.stringify(sitesGeo(), null, 1), 'application/geo+json') }, icon('download', 15), 'GeoJSON'),
           h('button', { type: 'button', class: 'btn', onclick: () => set({ when: st.when === 'after' ? 'before' : 'after' }) }, st.when === 'after' ? '지도에 지금 모습 보기' : '지도에 놓은 뒤 모습 보기')),
         h('div', { class: 'assume' }, '자리는 공원 안 길 위에서만 고르고 보류 칸과 물 위는 뺍니다. 그늘 한 곳은 둘레 한 칸까지 덮는다고 가정했습니다. 붐빔은 시설로 줄지 않아 그대로 둡니다. 실제 설치 가능 여부(지하 매설물, 수목 보호, 예산)는 현장에서 확인해야 합니다.')));
   }
-  const siteRows = () => KINDS.flatMap(k => plan.sites[k.key].map((s, i) => ({ kind: k.label, rank: i + 1, lat: +s.lat.toFixed(6), lon: +s.lon.toFixed(6), where: s.label, cells: s.cells, ha: s.ha,
-    memo: k.key === 'shade' ? `지금 나무 그늘 ${pct(s.tree)}${s.team ? ', 팀 식재 후보와 겹침' : ''}` : '기준 안으로 들어오는 넓이' })));
-  const sitesCsv = () => ['종류,순위,위도,경도,위치,칸수,넓이_ha,비고', ...siteRows().map(r => [r.kind, r.rank, r.lat, r.lon, `"${r.where}"`, r.cells, r.ha, `"${r.memo}"`].join(','))].join('\r\n');
-  const sitesGeo = () => ({ type: 'FeatureCollection', name: '서울숲 시설 제안', features: siteRows().map(r => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [r.lon, r.lat] }, properties: { 종류: r.kind, 순위: r.rank, 위치: r.where, 칸수: r.cells, 넓이_ha: r.ha, 비고: r.memo, 기준: diag.std.label } })) });
+  /** 제안 자리 아래 붙는 법적 구역 꼬리표. 공원 단독 구역이면 구역 이름만, 아니면 절차까지 */
+  function permitTag(z) {
+    if (!z) return null;
+    return h('small', { class: needsPermit(z) ? 'nd-zone-rule' : 'muted' }, needsPermit(z) ? `${z.label} — ${z.rule}` : z.label);
+  }
+  const siteRows = () => KINDS.flatMap(k => plan.sites[k.key].map((s, i) => { const z = siteZone(app.model, s); return { kind: k.label, rank: i + 1, lat: +s.lat.toFixed(6), lon: +s.lon.toFixed(6), where: s.label, cells: s.cells, ha: s.ha,
+    memo: k.key === 'shade' ? `지금 나무 그늘 ${pct(s.tree)}${s.team ? ', 팀 식재 후보와 겹침' : ''}` : '기준 안으로 들어오는 넓이',
+    zone: z?.label ?? '', agency: z?.agency ?? '', rule: z?.rule ?? '' }; }));
+  const sitesCsv = () => ['종류,순위,위도,경도,위치,칸수,넓이_ha,비고,법적구역,관리,설치절차', ...siteRows().map(r => [r.kind, r.rank, r.lat, r.lon, `"${r.where}"`, r.cells, r.ha, `"${r.memo}"`, `"${r.zone}"`, `"${r.agency}"`, `"${r.rule}"`].join(','))].join('\r\n');
+  const sitesGeo = () => ({ type: 'FeatureCollection', name: '서울숲 시설 제안', features: siteRows().map(r => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [r.lon, r.lat] }, properties: { 종류: r.kind, 순위: r.rank, 위치: r.where, 칸수: r.cells, 넓이_ha: r.ha, 비고: r.memo, 법적구역: r.zone, 관리: r.agency, 설치절차: r.rule, 기준: diag.std.label } })) });
 
   // ── 현장 조사로 시설 추가 ──
   function renderSurvey() {
@@ -207,18 +244,25 @@ export function createAdmin(root, app) {
     view.cells(id => {
       const r = d.byId.get(id);
       if (!r) return null;
+      if (st.layer === 'legal') return r.c.legal ? { fill: LEGAL_COLOR[r.c.legal], opacity: r.hard ? .75 : .4 } : null;
       if (st.layer === 'reason') return r.fails.includes(st.reason) ? { fill: rc, opacity: .62 } : null;
       return r.n ? { fill: ramp[r.n - 1], opacity: r.hard ? .78 : .4 } : null;
     }, (id, latlng) => { if (st.addMode) addPoint(latlng.lat, latlng.lng); else set({ sel: st.sel === id ? null : id }); });
     view.selectCell(st.sel);
+    // 법적 구역 보기: 격자 밖(습지생태원·정수장)까지 구역 경계를 흐리게 깔아 둡니다
+    view.zones(st.layer === 'legal' ? k => LEGAL_COLOR[k] ?? null : null);
     view.markers('fac', st.showFac ? m.fac.map(f => { const k = f.kind === 'toilet' ? 'toilet' : f.kind === 'water' ? 'water' : 'seat';
       return { lat: f.lat, lon: f.lon, size: 20, cls: `nd-mk-fac nd-f-${k}${f.surveyed ? ' surveyed' : ''}`, html: mk(k === 'toilet' ? 'toilet' : k === 'water' ? 'water' : 'bench', 12), tip: `${esc(f.name || FAC_LABEL[f.kind])}${f.surveyed ? ' · 현장 조사로 더함' : ''}` }; }) : []);
     view.markers('sites', st.showSites ? KINDS.flatMap(k => plan.sites[k.key].map((s, i) => ({ lat: s.lat, lon: s.lon, size: 26, cls: `nd-mk-site nd-s-${k.key}`, html: String(i + 1), z: 400,
       tip: `<b>${k.label} 제안 ${i + 1}</b><br>${esc(s.label)}` }))) : []);
     view.markers('team', st.showTeam ? (m.data.team.addedRest ?? []).map(([lat, lon]) => ({ lat, lon, size: 18, cls: 'nd-mk-team', html: '', tip: '팀이 앞서 제안한 쉼터 자리' })) : []);
     view.cursor(st.addMode ? 'crosshair' : null);
+    const Lz = m.legal;
     el.legend.replaceChildren(
-      st.layer === 'count'
+      st.layer === 'legal' && Lz
+        ? h('div', null, h('div', { class: 'legend' }, Object.keys(Lz.zones).filter(k => Lz.areaM2?.[k]).map(k => h('span', null, h('i', { style: { background: LEGAL_COLOR[k] } }), Lz.zones[k].label))),
+            h('div', { class: 'legend' }, h('span', { class: 'muted' }, '진한 칸 = 쉬기 어려운 곳 · 칸을 누르면 적용 법과 관리 주체')))
+        : st.layer === 'count'
         ? h('div', null, h('div', { class: 'legend-ramp' }, ramp.map(c => h('span', { style: { background: c } }))), h('div', { class: 'legend' }, h('span', null, '모자란 가짓수 1 → 4'), h('span', { class: 'muted' }, '진한 칸 = 쉬기 어려운 곳(2가지 이상)')))
         : h('div', { class: 'legend' }, h('span', null, h('i', { style: { background: rc } }), `${reason.label} (${d.summary.byReason[st.reason].n}칸)`)),
       h('div', { class: 'legend nd-legend2' }, h('span', null, h('i', { class: 'nd-s-bench' }), '벤치 제안'), h('span', null, h('i', { class: 'nd-s-shade' }), '그늘 제안'), h('span', null, h('i', { class: 'nd-s-toilet' }), '화장실 제안'),

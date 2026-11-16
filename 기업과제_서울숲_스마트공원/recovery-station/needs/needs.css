@@ -155,3 +155,13 @@ span.nd-mk{width:26px;height:26px;flex:none}
 @media(max-width:760px){.goalbar.g3 .subtabs{flex:1 1 100%}.goalbar.g3 .goalbar-weather{flex:1 1 100%}.goals-nav{scrollbar-width:none}.goals-nav::-webkit-scrollbar{display:none}.goals-nav .tab{flex:0 0 auto}}
 @media(max-width:560px){.hero.wide .hero-facts{flex-basis:100%}.nd-pick{padding:12px}.nd-reason{padding:8px 9px}}
 @media(max-width:340px){.nd-reasons{grid-template-columns:minmax(0,1fr)}}
+/* 법적 구역 (브이월드 지적도 + 토지이음) */
+.nd-zone{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;display:grid;gap:3px}
+.nd-zone .sw{border-radius:3px}
+.nd-zone-rule{color:var(--serious, #b7793a);font-weight:600}
+.nd-ztable{width:100%;border-collapse:collapse}
+.nd-ztable th,.nd-ztable td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}
+.nd-ztable th:first-child,.nd-ztable td:first-child{text-align:left}
+.nd-ztable th{font-weight:600;color:var(--muted)}
+.nd-ztable .sw{border-radius:3px}
+.nd-sitelist small.nd-zone-rule,.nd-sitelist small.muted{display:block}

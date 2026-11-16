@@ -1,5 +1,5 @@
 // 시민 화면: 하고 싶은 일·머물 시간·같이 온 사람 → 갈 곳 3곳과 이유
-import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED } from './config.js';
+import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED, HEAVY_RAIN, FLOOD_AFTER } from './config.js';
 import { hubLoad, crowdLabel } from './crowd.js';
 import { dijkstra } from './graph.js';
 
@@ -21,17 +21,23 @@ export function openState(place, month, dow, hour) {
   return { open: true, closeAt: season.close, info };
 }
 
+/** 큰비(호우 경고 단계: 기존 대시보드와 같은 기준) */
+export const isHeavyRain = h => !!h.heavyRain || (h.precip ?? 0) >= HEAVY_RAIN;
+
 /**
- * 한 시각에 그 자리에 머물 수 있는지와 안 되는 이유(운영시간 → 밤 → 날씨 → 추위).
+ * 한 시각에 그 자리에 머물 수 있는지와 안 되는 이유(운영시간 → 밤 → 물이 차는 구역 → 날씨 → 추위).
  * 붐빔은 머물 수 있는 시간과 따로 봅니다(crowded).
+ * flooded: 큰비가 오거나 그친 지 FLOOD_AFTER시간이 안 됐고, 그 자리가 유수지·하천구역인지 (stayWindow에서 계산)
  */
-export function hourStatus(place, h, dow, month, need) {
+export function hourStatus(place, h, dow, month, need, flooded = false) {
   const load = hubLoad(place, dow, h.hour, h);
   const base = { load, crowded: (load?.ratio ?? 0) >= CROWD_STOP };
   const o = openState(place, month, dow, h.hour);
   if (!o.open) return { ok: false, why: 'hours', o, ...base };
   if (place.type !== 'indoor') {
     if (h.hour >= NIGHT.from || h.hour < NIGHT.to) return { ok: false, why: 'night', ...base };
+    // 유수지·하천구역(법적 구역, data/legal.json)은 큰비 때 빗물을 담거나 물이 차는 곳이라 야외 자리를 권하지 않습니다.
+    if (flooded) return { ok: false, why: 'flood', ...base };
     // 날씨: 야외는 주의 단계부터 어렵고, 그늘 자리는 경고 단계의 미세먼지일 때 어렵습니다(기존 대시보드와 같음).
     // 비가 올 때는 그늘 자리도 어렵다고 봅니다(이 화면에서 더한 규칙).
     const wet = h.heavyRain || (h.pop ?? 0) >= 60 || (h.precip ?? 0) >= 1;
@@ -48,6 +54,7 @@ function stopText(s) {
   if (!s) return null;
   if (s.why === 'hours') return { season: '지금 계절에는 운영하지 않음', dayoff: '오늘은 휴관일', before: `${s.o.openAt}시에 문을 엶`, after: `${s.o.closeAt}시 운영 종료` }[s.o.sub];
   if (s.why === 'night') return `밤 ${NIGHT.from}시 이후`;
+  if (s.why === 'flood') return '큰비로 물이 차는 구역';
   if (s.why === 'weather') return DRIVER_WORD[s.driver] ?? '날씨';
   if (s.why === 'cold') return '추위';
   return null;
@@ -55,9 +62,12 @@ function stopText(s) {
 
 /** 지금부터 몇 시까지 머물 수 있는지 (운영시간·밤·날씨·추위 기준) */
 export function stayWindow(place, wx, now, need) {
+  let lastHeavy = -Infinity;
   const tl = wx.hourly.slice(0, LOOKAHEAD + 1).map(h => {
     const dow = (now.dow + Math.floor((now.hour + h.offset) / 24)) % 7;
-    return { hour: h.hour, offset: h.offset, ...hourStatus(place, h, dow, wx.month ?? now.month, need) };
+    if (isHeavyRain(h)) lastHeavy = h.offset;
+    const flooded = !!place.flood && h.offset - lastHeavy <= FLOOD_AFTER;
+    return { hour: h.hour, offset: h.offset, ...hourStatus(place, h, dow, wx.month ?? now.month, need, flooded) };
   });
   let hours = 0;
   while (hours < tl.length && tl[hours].ok) hours++;
@@ -111,7 +121,7 @@ function shadeReason(place, mode) {
 }
 
 const WHY_TEXT = {
-  crowd: '붐비는 시간대라', hours: '문을 연 곳이 적어', night: '밤이라', weather: '날씨 때문에', cold: '추워서', short: '머물 수 있는 시간이 짧아', need: '이 일에 맞는 자리가 적어',
+  crowd: '붐비는 시간대라', hours: '문을 연 곳이 적어', night: '밤이라', flood: '큰비로 물이 차는 구역이라', weather: '날씨 때문에', cold: '추워서', short: '머물 수 있는 시간이 짧아', need: '이 일에 맞는 자리가 적어',
 };
 
 /**
@@ -183,6 +193,7 @@ export function recommend(model, wx, now, input) {
     const flags = [];
     if (tier === 1) { if (crowded) flags.push('지금 매우 붐빔'); if (!enough) flags.push(`${fmtDur(win.remainMin)}만 머물 수 있음`); if (!crowded && enough) flags.push(`‘${needLabel}’${josa(needLabel, '과', '와')}는 조금 다른 자리`); }
     if (tier === 2 || tier === 3) flags.push(nextText);
+    if (tier < 9 && win.timeline.some(t => t.why === 'flood')) flags.unshift(`${model.zoneOf?.(place.legal)?.label ?? '물이 차는 구역'} · 큰비 뒤 ${FLOOD_AFTER}시간은 피함`);
     // 서울숲이 맞지 않는 까닭을 셀 때 쓰는 값
     const miss = suitable ? null : aff < AFF_FIT ? 'need' : !usable ? win.timeline[0].why : crowded ? 'crowd' : 'short';
     return { place, score, parts, win, crowd: laterC ?? nowC, crowded, avg, walkM, walkMin, aff, reasons, match, flags, suitable, usable, tier, miss };

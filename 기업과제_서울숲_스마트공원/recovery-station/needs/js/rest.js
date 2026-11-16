@@ -175,6 +175,28 @@ export function siteFacilities(model, diag, counts) {
   return { sites: { bench: bench.picked, toilet: toilet.picked, shade }, left: { bench: bench.left, toilet: toilet.left }, before: diag, after, effect };
 }
 
+/** 제안 자리의 법적 구역 정보 {key, label, law, agency, rule, flood} 또는 null (legal.json이 없거나 격자 밖) */
+export function siteZone(model, s) {
+  if (!model.legal) return null;
+  const c = s.cell != null ? model.cells.find(k => k.id === s.cell) : model.cellAt(s.lon, s.lat);
+  const key = c?.legal ?? null, z = model.zoneOf(key);
+  return z ? { key, ...z } : null;
+}
+/** 공원만으로 정해진 구역이 아니어서 설치 전에 허가·협의가 필요한지 */
+export const needsPermit = z => !!z && z.key !== 'park';
+
+/** 제안 자리 전체를 법적 구역별로 셈: [{key, label, rule, n}] (공원 아닌 구역만) */
+export function permitSites(model, plan) {
+  if (!model.legal || !plan) return [];
+  const out = new Map();
+  for (const list of Object.values(plan.sites)) for (const s of list) {
+    const z = siteZone(model, s);
+    if (!needsPermit(z)) continue;
+    (out.get(z.key) ?? out.set(z.key, { key: z.key, label: z.label, rule: z.rule, n: 0 }).get(z.key)).n++;
+  }
+  return [...out.values()].sort((a, b) => b.n - a.n);
+}
+
 /** 관리자 화면에 늘 보이는 규칙 기반 요약(AI 없이 계산) */
 export function ruleSummary(model, diag, plan) {
   const s = diag.summary, top = REST_REASONS.map(k => ({ ...k, ...s.byReason[k.key] })).sort((a, b) => b.inHard - a.inHard)[0];
@@ -187,6 +209,8 @@ export function ruleSummary(model, diag, plan) {
   if (plan) {
     const e = plan.effect, k = plan.sites;
     lines.push(`벤치 ${k.bench.length}곳·그늘 ${k.shade.length}곳·화장실 ${k.toilet.length}곳을 제안한 자리에 놓으면 쉬기 어려운 곳이 ${e.hard.before}칸에서 ${e.hard.after}칸으로 ${pct(e.hard.cut)} 줄어듭니다.`);
+    const pz = permitSites(model, plan);
+    if (pz.length) lines.push(`제안 자리 가운데 ${pz.map(z => `${z.label} ${z.n}곳`).join(', ')}은 공원 단독 구역이 아니라 설치 전에 허가·협의가 필요합니다(${pz.map(z => z.rule).join(' / ')}).`);
   }
   return lines;
 }
@@ -200,11 +224,13 @@ export function briefData(model, diag, plan) {
       부족개수별칸수: Object.fromEntries(s.hist.map((n, i) => [`${i}가지`, n])) },
     이유별: Object.fromEntries(REST_REASONS.map(k => [k.label, { 칸수: s.byReason[k.key].n, 비율_pct: r1(s.byReason[k.key].share), 쉬기어려운곳_안: s.byReason[k.key].inHard }])),
     쉬기어려운구역_상위: diag.clusters.slice(0, 6).map(c => ({ 순위: c.rank, 위치: c.label, 면적_ha: c.ha, 주된이유: c.reasons.map(r => r.short), 앉을곳까지_m: c.mean.dSeat, 화장실까지_m: c.mean.dToilet, 나무그늘_pct: Math.round(c.mean.tree * 100), 붐빔지수: c.mean.crowd })),
+    법적구역_칸수: model.legal ? Object.fromEntries(Object.entries(diag.rows.reduce((a, r) => { const z = model.zoneOf(r.c.legal)?.label ?? '모름'; a[z] = (a[z] ?? 0) + 1; return a; }, {}))) : null,
     지금_있는_시설: { 화장실: model.toilets.length, 앉을곳: model.seats.length, 현장조사로_더한_시설: model.fac.filter(f => f.surveyed).length, 주의: '앉을 곳은 OpenStreetMap에 등록된 것만 셌으므로 실제보다 적을 수 있음' },
     제안: plan ? {
-      벤치: plan.sites.bench.map(b => ({ 위치: b.label, 기준안으로_들어오는_면적_ha: b.ha })),
-      그늘: plan.sites.shade.map(b => ({ 위치: b.label, 지금_나무그늘_pct: Math.round(b.tree * 100), 팀_식재후보와_겹침: !!b.team })),
-      화장실: plan.sites.toilet.map(b => ({ 위치: b.label, 기준안으로_들어오는_면적_ha: b.ha })),
+      벤치: plan.sites.bench.map(b => ({ 위치: b.label, 기준안으로_들어오는_면적_ha: b.ha, 법적구역: siteZone(model, b)?.label ?? '모름' })),
+      그늘: plan.sites.shade.map(b => ({ 위치: b.label, 지금_나무그늘_pct: Math.round(b.tree * 100), 팀_식재후보와_겹침: !!b.team, 법적구역: siteZone(model, b)?.label ?? '모름' })),
+      화장실: plan.sites.toilet.map(b => ({ 위치: b.label, 기준안으로_들어오는_면적_ha: b.ha, 법적구역: siteZone(model, b)?.label ?? '모름' })),
+      허가_협의가_필요한_자리: permitSites(model, plan).map(z => ({ 구역: z.label, 자리수: z.n, 절차: z.rule })),
       효과: { 쉬기어려운칸_전: plan.effect.hard.before, 쉬기어려운칸_후: plan.effect.hard.after, 줄어드는면적_ha: plan.effect.hard.ha,
         이유별_전후: Object.fromEntries(REST_REASONS.map(k => [k.label, `${plan.effect.reasons[k.key].before} → ${plan.effect.reasons[k.key].after}`])) },
     } : null,

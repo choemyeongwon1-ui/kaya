@@ -1,6 +1,6 @@
 // 시민 화면: 하고 싶은 일·머물 시간·같이 온 사람 → 갈 곳 3곳과 이유, 가는 길·산책 코스, 근처 무료 장소
 import { NEEDS, STAYS, COMPANY, COURSE_MIN, WEIGHTS, CROWD_STOP, COLD, NIGHT, SNAP_PARK } from './config.js';
-import { recommend, nearbyPlaces, MODE_TEXT, fmtDur } from './recommend.js';
+import { recommend, nearbyPlaces, MODE_TEXT, fmtDur, isHeavyRain } from './recommend.js';
 import { planRoute, planCourse } from './route.js';
 import { crowdScale, hubLoad, crowdLabel } from './crowd.js';
 import { STAGE_LABEL, DRIVER_TEXT } from './weather.js';
@@ -133,7 +133,9 @@ export function createCitizen(root, app) {
   function computePlan() {
     const s = startPoint(), p = rec.picks[st.pick], m = app.model;
     const sunMode = !rec.mode.day ? 'none' : rec.mode.key === 'cool' || rec.mode.key === 'cold' ? 'sun' : 'shade';
-    const env = { scale: crowdScale(app.now.dow, app.now.hour), sunMode }, prefs = { ...st.prefs, nostairs: st.prefs.nostairs || st.slow };
+    // 큰비(지금~1시간 뒤)면 물이 차는 구역(유수지·하천구역) 길을 덜 고릅니다
+    const flood = app.wx.hourly.slice(0, 2).some(isHeavyRain) ? m.floodPenalty : null;
+    const env = { scale: crowdScale(app.now.dow, app.now.hour), sunMode, floodPenalty: flood }, prefs = { ...st.prefs, nostairs: st.prefs.nostairs || st.slow };
     const a = Math.round(s.off);
     if (st.mode === 'course') {
       const loop = st.end === 'loop' || !p, to = loop ? s.node : p.place.node, b = loop ? a : Math.round(p.place.off);
@@ -182,6 +184,12 @@ export function createCitizen(root, app) {
         else if (Math.abs(sum.minutes - st.minutes) >= 4) notes.push(`길이 맞는 코스가 없어 ${sum.minutes}분 코스로 잡았습니다.`);
         if (sum.repeat > 60) notes.push(`${fmtM(sum.repeat)}는 같은 길을 되짚습니다.`);
         if (sum.outLen > 60) notes.push(`${fmtM(sum.outLen)}는 공원 밖 길입니다.`);
+      }
+      // 큰비 경고 때: 물이 차는 구역(유수지·하천구역)을 지나는지 알려 줍니다(관련 있을 때만)
+      if (plan.env.floodPenalty) {
+        if (sum.floodLen) notes.push(`큰비 경고: 물이 차는 구역(유수지·하천구역) 길을 되도록 피했지만 ${fmtM(sum.floodLen)}는 지나야 합니다.`);
+        else if (plan.kind === 'route' && plan.base?.floodLen) notes.push(`큰비 경고: 가장 짧은 길은 물이 차는 구역(유수지·하천구역)을 ${fmtM(plan.base.floodLen)} 지나서, 그곳을 피하는 길로 안내합니다.`);
+        else if (plan.kind === 'course') notes.push('큰비 경고: 물이 차는 구역(유수지·하천구역)을 피한 코스입니다.');
       }
       if (st.slow) notes.push('계단을 피하고 천천히 걷는 속도(시속 3.2km)로 계산했습니다.');
       body = h('div', null,

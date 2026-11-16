@@ -90,8 +90,18 @@ export function createMap(el, model) {
   }
   const selectCell = id => { cellSel = id; cellLayer?.setStyle(styleCell); };
 
+  /** 법적 구역 경계(격자 밖 습지생태원까지 덮음). colorOf(zone) → 색 또는 null이면 숨김 */
+  let zoneLayer = null;
+  function zones(colorOf) {
+    if (!data.legal?.shapes) return;
+    if (!colorOf) { zoneLayer?.remove(); zoneLayer = null; return; }
+    zoneLayer?.remove();
+    zoneLayer = L.geoJSON(data.legal.shapes, { interactive: false, renderer: R.cover,
+      style: f => { const c = colorOf(f.properties.zone); return c ? { stroke: true, color: c, weight: 1, opacity: .8, fillColor: c, fillOpacity: .45 } : { stroke: false, fillOpacity: 0 }; } }).addTo(map);
+  }
+
   return {
-    map, markers, lines, cells, selectCell, restyle, parkBounds,
+    map, markers, lines, cells, selectCell, zones, restyle, parkBounds,
     color: k => C[k],
     clear: key => groups.get(key)?.clearLayers(),
     fit: (pts, pad = 40) => { const b = L.latLngBounds(pts); if (b.isValid()) map.fitBounds(b, { padding: [pad, pad], maxZoom: 17.5 }); },
