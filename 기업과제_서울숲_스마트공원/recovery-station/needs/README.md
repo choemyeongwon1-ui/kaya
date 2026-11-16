@@ -55,7 +55,7 @@
    ```
    링크를 직접 넣을 때는 `link.js` 안의 `--goal3` 색과 `.goal-tab.g3 .tab-n` 규칙을 대시보드 CSS에 옮깁니다.
    소개 화면의 목표 3 카드(`#solution .ans` 안 세 번째 `article.ans-card.g3`)와 맨 아래 단추(`.invite-btns`)도 `link.js` 의 `makeCard()`·`makeInvite()` 내용과 `.ans-card.g3` 규칙을 그대로 옮기면 됩니다.
-3. 빌드하면 CSS 파일 이름(`index-CS1fLUE9.css`)이 바뀝니다. `needs/index.html` 의 `<link href="../assets/index-….css">` 를 새 이름으로 고칩니다. 고치지 않아도 `base.css` 로 넘어가 화면은 그대로 나오지만, 대시보드 디자인을 바꾼 경우에는 옛 모습으로 남습니다.
+3. 빌드하면 CSS 파일 이름(지금은 `index-5a-PIen-.css`)이 바뀝니다. `needs/index.html` 의 `<link href="../assets/index-….css">` 를 새 이름으로 고칩니다. 고치지 않아도 `base.css` 로 넘어가 화면은 그대로 나오지만, 대시보드 디자인을 바꾼 경우에는 옛 모습으로 남습니다.
 4. 이 화면이 읽는 대시보드 자료: `data/park.geojson`, `grid.geojson`, `network.json`, `features.geojson`, `context.geojson`, `hubs.json`, `team.json`, `meta.json`. 이 파일들의 구조를 바꾸면 `js/model.js` 를 맞춰야 합니다.
 
 탭 이름(「맞춤형 추천」, 「목표 3」)은 `link.js` 와 `js/main.js` 에서 바꿉니다. 테마(라이트·다크)는 기존 대시보드와 같은 저장 이름(`sf-theme`)을 써서 함께 바뀝니다.

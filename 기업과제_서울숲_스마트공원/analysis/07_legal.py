@@ -1,4 +1,4 @@
-"""맞춤 추천·산책 코스 화면(recovery-station/needs)의 법적 구역 자료 needs/data/legal.json
+"""법적 구역 자료 legal.json — 맞춤 추천 화면(recovery-station/needs/data/)과 메인 대시보드(recovery-station/data/)가 함께 씀
   브이월드 연속지적도(LP_PA_CBND_BUBUN) 필지마다 토지이음 토지이용계획을 조회해 지정(공원·하천구역·유수지·수도시설)을 붙이고,
   팀 20m 격자 칸 · 거점 · 보행망 구간(큰비 때 피할 곳)에 옮깁니다.
 사용: python -I analysis/07_legal.py <프로젝트 폴더>
@@ -129,7 +129,7 @@ for k, z in zones.items():
 
 meta = {
     "park":       {"label": "공원",            "law": "도시공원법",                 "agency": "공원 관리 기관",                 "rule": "공원시설 기준으로 설치",                         "flood": False},
-    "park_river": {"label": "공원 + 하천구역",  "law": "도시공원법 + 하천법",         "agency": "공원 관리 기관 + 하천 관리청",     "rule": "시설을 놓으려면 하천점용허가가 필요",              "flood": True},
+    "park_river": {"label": "공원 + 하천구역",  "law": "도시공원법 + 하천법",         "agency": "공원 관리 기관 + 하천 관리청",     "rule": "하천점용허가가 필요",              "flood": True},
     "park_plant": {"label": "공원 + 정수장 부지", "law": "도시공원법 + 수도시설(지목 수도용지)", "agency": "공원 관리 기관 + 상수도사업본부", "rule": "수도시설과 겹쳐 상수도사업본부와 협의가 필요",     "flood": False},
     "detention":  {"label": "유수지",           "law": "국토계획법 도시계획시설(유수지)", "agency": "유수지 관리 부서",               "rule": "큰비 때 빗물을 담는 기능이 우선 · 시설은 기능을 해치지 않는 범위에서만", "flood": True},
     "plant":      {"label": "정수장(공원 아님)", "law": "수도시설",                    "agency": "상수도사업본부",                 "rule": "공원 시설 설치 대상이 아님",                      "flood": False},
@@ -144,4 +144,6 @@ out = {
     "shapes": {"type": "FeatureCollection", "features": feats},
 }
 json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-import os; print("저장", OUT, os.path.getsize(OUT), "bytes")
+# 메인 대시보드(「머무는 숲」 React 빌드본)도 같은 파일을 data/legal.json 으로 읽습니다
+import shutil; shutil.copyfile(OUT, ROOT/"recovery-station/data/legal.json")
+print("저장", OUT, "+ recovery-station/data/legal.json", os.path.getsize(OUT), "bytes")
