@@ -1,6 +1,6 @@
 // 시민 화면: 하고 싶은 일·머물 시간·같이 온 사람 → 갈 곳 3곳과 이유
-import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED, HEAVY_RAIN, FLOOD_AFTER } from './config.js';
-import { hubLoad, crowdLabel } from './crowd.js';
+import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, COMPANY_W, PET, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED, HEAVY_RAIN, FLOOD_AFTER, QUIET_LEVEL } from './config.js';
+import { hubLoad, crowdLabel, dayCurve } from './crowd.js';
 import { dijkstra } from './graph.js';
 
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -136,10 +136,9 @@ export function recommend(model, wx, now, input) {
   const group = COMPANY.find(c => c.key === company)?.group ?? null;
   const mode = thermalMode(wx, stay);
   const fromStart = dijkstra(model.g, [{ node: input.startNode, d0: input.startOff ?? 0 }], e => e.len, { barrierFree: !!input.slow });
-  const w = { ...WEIGHTS };
-  if (company === 'alone') w.crowd = 18;
-  if (company === 'kids' || company === 'elders') { w.toilet = 10; w.walk = 12; }
+  const w = { ...WEIGHTS, ...(COMPANY_W[company] ?? {}) };
   if (stay <= 30) w.walk = Math.max(w.walk, 15);
+  const pet = company === 'pet';
   const wsum = Object.values(w).reduce((a, b) => a + b, 0);
   const needLabel = NEEDS.find(n => n.key === need)?.label ?? '';
   const want = Math.min(stay, 180), walkCap = clamp(stay * .25, 10, 25);
@@ -158,7 +157,8 @@ export function recommend(model, wx, now, input) {
     const calm = crowded ? win.timeline.slice(0, win.hours || 0).find(t => (t.load?.ratio ?? 0) < .7) ?? null : null;
     const parts = {
       need: aff,
-      company: group ? (place.groups?.includes(group) ? 1 : .35) : .6,
+      // 반려견: 산책하기 좋은 야외 자리일수록 높게(걷기 적합도를 씀)
+      company: pet ? clamp(.4 + .6 * (AFFINITY[place.id]?.walk ?? AFFINITY_DEFAULT)) : group ? (place.groups?.includes(group) ? 1 : .35) : .6,
       stay: clamp(win.remainMin / want),
       crowd: 1 - clamp(avg),
       thermal: thermalScore(place, mode),
@@ -187,10 +187,13 @@ export function recommend(model, wx, now, input) {
     };
     const match = [];
     if (aff >= .7) match.push(`‘${needLabel}’에 잘 맞는 곳`); else if (aff >= AFF_FIT) match.push(`‘${needLabel}’도 할 수 있는 곳`);
-    if (group && place.groups?.includes(group)) match.push(`${COMPANY.find(c => c.key === company).label} 가기 좋음`);
+    if (pet ? parts.company >= .8 : group && place.groups?.includes(group)) match.push(`${COMPANY.find(c => c.key === company).label} 가기 좋음`);
+    // 반려견과 함께면 건물 안·어린이 놀이터는 빼고(가정), 동물을 기르는 곳은 확인 필요로 알립니다
+    const petBlocked = pet && (PET.no.has(place.id) || (PET.noIndoor && place.type === 'indoor'));
     const usable = win.hours > 0 && reachable, suitable = usable && enough && !crowded && aff >= AFF_FIT;
-    const tier = suitable ? 0 : usable && aff >= AFF_MIN ? 1 : !usable && reachable && later && aff >= AFF_MIN ? (win.nextOffset <= LATER_MAX ? 2 : 3) : 9;
+    const tier = petBlocked ? 9 : suitable ? 0 : usable && aff >= AFF_MIN ? 1 : !usable && reachable && later && aff >= AFF_MIN ? (win.nextOffset <= LATER_MAX ? 2 : 3) : 9;
     const flags = [];
+    if (pet && PET.check.has(place.id)) flags.push('반려견 출입 확인 필요');
     if (tier === 1) { if (crowded) flags.push('지금 매우 붐빔'); if (!enough) flags.push(`${fmtDur(win.remainMin)}만 머물 수 있음`); if (!crowded && enough) flags.push(`‘${needLabel}’${josa(needLabel, '과', '와')}는 조금 다른 자리`); }
     if (tier === 2 || tier === 3) flags.push(nextText);
     if (tier < 9 && win.timeline.some(t => t.why === 'flood')) flags.unshift(`${model.zoneOf?.(place.legal)?.label ?? '물이 차는 구역'} · 큰비 뒤 ${FLOOD_AFTER}시간은 피함`);
@@ -207,6 +210,30 @@ export function recommend(model, wx, now, input) {
   for (const r of all) if (r.aff >= AFF_FIT && r.miss) why[r.miss] = (why[r.miss] ?? 0) + 1;
   const mainWhy = Object.entries(why).sort((a, b) => b[1] - a[1])[0]?.[0] ?? (good < 3 ? 'need' : null);
   return { picks, all, fit, suitable: good, mode, speed, mainWhy, whyText: mainWhy ? WHY_TEXT[mainWhy] : null, weights: w };
+}
+
+/**
+ * '언제 가면 한산한가': 앞으로 24시간 중 공원이 열린 낮 시간(6~22시)마다 방문 수준과 날씨를 함께 봅니다.
+ * 방문 수준은 요일·시각 곡선(crowd.js dayCurve, 서울숲 보행 계수기 연구의 패턴)이고, 날씨는 위 판정(주의 이상이면 야외에 머물기 어려움)과 추위 기준입니다.
+ * 반환: {hours:[{hour, offset, tomorrow, level, quiet, wxOk, why, good}], best:[연속된 좋은 시간대 {from, to, tomorrow}], now}
+ */
+export function quietHours(wx, now) {
+  const hours = wx.hourly.filter(h => h.hour >= NIGHT.to && h.hour < NIGHT.from).map(h => {
+    const day = Math.floor((now.hour + h.offset) / 24), dow = (now.dow + day) % 7;
+    const level = dayCurve(dow, h.hour), quiet = level < QUIET_LEVEL;
+    const cold = h.feels != null && h.feels < COLD.still;
+    const wxOk = h.ev.overall === 0 && !cold;
+    const why = wxOk ? null : cold ? '추위' : DRIVER_WORD[h.ev.drivers[0]] ?? '날씨';
+    return { hour: h.hour, offset: h.offset, tomorrow: day > 0, level, quiet, wxOk, why, good: quiet && wxOk };
+  });
+  const best = [];
+  for (const x of hours) {
+    const last = best[best.length - 1];
+    if (!x.good) continue;
+    if (last && last.toOffset === x.offset - 1) { last.to = (x.hour + 1) % 24; last.toOffset = x.offset; }
+    else best.push({ from: x.hour, to: (x.hour + 1) % 24, toOffset: x.offset, tomorrow: x.tomorrow });
+  }
+  return { hours, best, now: hours.find(x => x.offset === 0) ?? null };
 }
 
 /** 공원 밖 무료 장소. 날씨가 나쁘면 실내를, 붐빌 때는 공원을 먼저 보여 줍니다 */

@@ -150,7 +150,7 @@ span.nd-mk{width:26px;height:26px;flex:none}
   .nd-citizen>.grid{display:contents}
   .nd-citizen>.grid>:nth-child(1){order:1}.nd-citizen>.grid>:nth-child(2){order:2}.nd-citizen>.grid>:nth-child(3){order:3}
   .nd-citizen .citizen-map{position:static;height:56vh;min-height:340px;max-height:520px;order:4}
-  .nd-citizen>.grid>:nth-child(4){order:5}.nd-citizen>.grid>:nth-child(5){order:6}.nd-citizen>.grid>:nth-child(6){order:7}
+  .nd-citizen>.grid>:nth-child(4){order:5}.nd-citizen>.grid>:nth-child(5){order:6}.nd-citizen>.grid>:nth-child(6){order:7}.nd-citizen>.grid>:nth-child(7){order:8}.nd-citizen>.grid>:nth-child(8){order:9}
 }
 @media(max-width:760px){.goalbar.g3 .subtabs{flex:1 1 100%}.goalbar.g3 .goalbar-weather{flex:1 1 100%}.goals-nav{scrollbar-width:none}.goals-nav::-webkit-scrollbar{display:none}.goals-nav .tab{flex:0 0 auto}}
 @media(max-width:560px){.hero.wide .hero-facts{flex-basis:100%}.nd-pick{padding:12px}.nd-reason{padding:8px 9px}}
@@ -165,3 +165,25 @@ span.nd-mk{width:26px;height:26px;flex:none}
 .nd-ztable th{font-weight:600;color:var(--muted)}
 .nd-ztable .sw{border-radius:3px}
 .nd-sitelist small.nd-zone-rule,.nd-sitelist small.muted{display:block}
+/* 언제 가면 한산할까 (요일·시각 곡선 + 날씨 판정) */
+.nd-qhead{display:grid;gap:2px;margin-bottom:8px}
+.nd-qhead b{font-size:15px}
+.nd-qbars{display:flex;align-items:flex-end;gap:2px;height:96px;margin:10px 0 6px;padding-bottom:16px;position:relative}
+.nd-qbar{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+.nd-qbar i{display:block;width:100%;border-radius:3px 3px 0 0;background:var(--surface-3)}
+.nd-qbar.good i{background:var(--good)}
+.nd-qbar.quiet i{background:var(--surface-3)}
+.nd-qbar.busy i{background:var(--warning)}
+.nd-qbar.badwx i{background:repeating-linear-gradient(135deg,var(--critical) 0 3px,transparent 3px 6px);opacity:.75}
+.nd-qbar.now i{outline:2px solid var(--ink);outline-offset:1px}
+.nd-qbar span{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+.legend i.nd-q-good{background:var(--good)}.legend i.nd-q-busy{background:var(--warning)}
+.legend i.nd-q-badwx{background:repeating-linear-gradient(135deg,var(--critical) 0 3px,transparent 3px 6px)}
+/* 서울숲 소식 */
+.nd-news .row.fit{background:var(--goal3-wash);border-radius:10px}
+.nd-news .pick-ico{flex:0 0 auto}
+.nd-news-garden{color:var(--g4)}.nd-news-program{color:var(--goal3)}.nd-news-notice{color:var(--muted)}
+.nd-ml{margin-left:6px;vertical-align:1px}
+.nd-newsform{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:span 2}
+@media(max-width:760px){.nd-newsform{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:1/-1}}

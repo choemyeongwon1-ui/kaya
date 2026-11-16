@@ -4,6 +4,7 @@ import { seoulNow, fetchWeather, sampleWeather, applyScenario, annotate, SCENARI
 import { createCitizen } from './citizen.js';
 import { createAdmin } from './admin.js';
 import { h, icon, segGroup } from './ui.js';
+import { loadNews, NEWS_KEY } from './news.js';
 
 const SURVEY_KEY = 'sf-needs-survey', THEME_KEY = 'sf-theme';            // 테마는 기존 대시보드와 같은 이름으로 저장해 함께 바뀝니다
 const TABS = [
@@ -28,7 +29,12 @@ const app = {
   extra: (() => { try { const v = JSON.parse(store.get(SURVEY_KEY, '[]')); return Array.isArray(v) ? v.filter(p => p && typeof p.kind === 'string' && Number.isFinite(p.lat) && Number.isFinite(p.lon)) : []; } catch { return []; } })(),
   /** 현장 조사 시설을 바꾸면 모형을 다시 만들고 두 화면을 고칩니다 */
   setExtra(list) { app.extra = list; store.set(SURVEY_KEY, JSON.stringify(list)); app.model = buildModel(app.data, list); screens.citizen?.update(); screens.admin?.update(); },
+  /** 관리자가 올린 서울숲 소식(정원·프로그램·공지). 올리는 즉시 시민 화면에 보입니다 */
+  news: loadNews(store),
+  setNews(list) { app.news = list; store.set(NEWS_KEY, JSON.stringify(list)); screens.citizen?.update(); screens.admin?.update(); },
 };
+// 다른 탭(예: 관리자 화면을 연 다른 창)에서 소식을 바꾸면 이 창의 시민 화면도 바로 고칩니다
+window.addEventListener('storage', ev => { if (ev.key === NEWS_KEY) { app.news = loadNews(store); screens.citizen?.update(); screens.admin?.update(); } });
 const screens = { citizen: null, admin: null };
 const root = document.getElementById('app');
 const el = { bar: h('div'), pages: { citizen: h('div', { class: 'nd-page' }), admin: h('div', { class: 'nd-page' }) }, body: h('div'), foot: h('footer', { class: 'footer' }) };

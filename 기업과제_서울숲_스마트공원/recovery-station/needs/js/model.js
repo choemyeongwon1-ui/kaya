@@ -5,8 +5,8 @@ import { toXY, inPolygon, PointIndex } from './geo.js';
 import { buildGraph, nearestNode, dijkstra } from './graph.js';
 
 export const APP_FILES = ['park.geojson', 'grid.geojson', 'network.json', 'features.geojson', 'context.geojson', 'hubs.json', 'team.json', 'meta.json'];
-export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json'];
-const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json'];      // 없어도 화면은 열림
+export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json', 'programs.json'];
+const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json', 'programs.json'];      // 없어도 화면은 열림
 
 /** loadJson(경로) → 자료 묶음. appBase: 기존 대시보드 data 폴더, ownBase: 이 화면 data 폴더 */
 export async function loadData(loadJson, appBase = '../data/', ownBase = './data/') {

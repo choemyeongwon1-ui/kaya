@@ -1,8 +1,9 @@
 // 시민 화면: 하고 싶은 일·머물 시간·같이 온 사람 → 갈 곳 3곳과 이유, 가는 길·산책 코스, 근처 무료 장소
 import { NEEDS, STAYS, COMPANY, COURSE_MIN, WEIGHTS, CROWD_STOP, COLD, NIGHT, SNAP_PARK } from './config.js';
-import { recommend, nearbyPlaces, MODE_TEXT, fmtDur, isHeavyRain } from './recommend.js';
+import { recommend, nearbyPlaces, quietHours, MODE_TEXT, fmtDur, isHeavyRain } from './recommend.js';
 import { planRoute, planCourse } from './route.js';
-import { crowdScale, hubLoad, crowdLabel } from './crowd.js';
+import { crowdScale, hubLoad, crowdLabel, CURVE_SRC } from './crowd.js';
+import { activeNews, NEWS_KINDS } from './news.js';
 import { STAGE_LABEL, DRIVER_TEXT } from './weather.js';
 import { FAC_LABEL } from './model.js';
 import { createMap, mk } from './mapview.js';
@@ -29,14 +30,14 @@ export function createCitizen(root, app) {
   let view = null, rec = null, plan = null;
 
   // ── 틀 ──
-  const el = { form: h('div'), status: h('div'), picks: h('div'), route: h('div'), near: h('div'), how: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
+  const el = { form: h('div'), status: h('div'), picks: h('div'), quiet: h('div'), news: h('div'), route: h('div'), near: h('div'), how: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
   root.append(
     h('header', { class: 'page-head' },
       h('div', { class: 'eyebrow' }, '이용자용 · 모바일 웹'),
       h('h1', { class: 'page-q' }, '오늘 서울숲에서 무엇을 하고 싶으세요?'),
       h('p', { class: 'page-why' }, '하고 싶은 일, 머물 시간, 같이 온 사람을 고르면 지금 가기 좋은 곳 3곳과 그 이유, 가는 길과 산책 코스를 골라 드립니다. 서울숲이 맞지 않는 날에는 근처의 무료 장소도 알려 드립니다.')),
     h('div', { class: 'citizen nd-citizen' },
-      h('div', { class: 'grid' }, el.form, el.status, el.picks, el.route, el.near, el.how),
+      h('div', { class: 'grid' }, el.form, el.status, el.picks, el.quiet, el.news, el.route, el.near, el.how),
       h('section', { class: 'card citizen-map' }, h('div', { class: 'map-wrap' }, el.map, el.legend, h('div', { class: 'nd-attr' }, '© OpenStreetMap 기여자')))));
 
   const set = patch => { Object.assign(st, patch); update(); };
@@ -127,6 +128,47 @@ export function createCitizen(root, app) {
         })));
     });
     el.picks.replaceChildren(card(`갈 곳 ${rec.picks.length}곳`, '눌러서 가는 길을 확인하세요 · 붐빔은 요일과 시각으로 어림한 값입니다', h('div', { class: 'nd-picks', role: 'radiogroup', 'aria-label': '추천 장소' }, list)));
+  }
+
+  // ── 언제 가면 한산한가 ──
+  function renderQuiet() {
+    const q = quietHours(app.wx, app.now), first = q.best[0];
+    const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
+    const calmWord = st.company === 'alone' ? '혼자 조용히 쉬기 좋은 때' : st.company === 'pet' ? '반려견과 걷기 좋은 때' : '한산하고 날씨 좋은 때';
+    const title = q.now?.good ? `지금이 ${calmWord}입니다` : first ? `${calmWord}: ${span(first)}` : '앞으로 하루 동안은 한산하면서 날씨 좋은 때가 없습니다';
+    const sub = q.now?.good ? (first && first.toOffset > 0 ? `${span(first)}까지 이어집니다` : null)
+      : first ? (q.now && !q.now.wxOk ? `지금은 ${q.now.why} 때문에 야외에 머물기 어렵습니다.` : q.now ? '지금은 붐비는 시간대입니다.' : '지금은 밤이라 야외는 안내하지 않습니다.')
+      : '붐비지 않는 시간에는 날씨가 나쁘거나, 날씨가 좋은 시간에는 붐빕니다. 실내 자리를 먼저 보세요.';
+    const bars = h('div', { class: 'nd-qbars', role: 'img', 'aria-label': `앞으로 24시간 시간대별 붐빔과 날씨. ${title}` }, q.hours.map(x =>
+      h('div', { class: `nd-qbar${x.good ? ' good' : !x.wxOk ? ' badwx' : x.quiet ? ' quiet' : ' busy'}${x.offset === 0 ? ' now' : ''}`, title: `${x.tomorrow ? '내일 ' : ''}${x.hour}시 · ${x.quiet ? '한산' : '붐빔'}${x.wxOk ? '' : ` · ${x.why}`}` },
+        h('i', { style: { height: `${Math.max(8, Math.round(Math.min(1, x.level) * 100))}%` } }),
+        h('span', null, x.offset === 0 ? '지금' : x.hour % 3 === 0 ? `${x.hour}` : ''))));
+    el.quiet.replaceChildren(card('언제 가면 한산할까요?', '앞으로 24시간 · 공원 낮 시간(6~22시)', h('div', null,
+      h('div', { class: 'nd-qhead' }, h('b', null, title), sub ? h('span', { class: 'small ink2' }, sub) : null),
+      q.best.length > 1 ? h('div', { class: 'nd-tags' }, q.best.slice(0, 4).map(b => h('span', { class: 'badge tone-good' }, span(b)))) : null,
+      bars,
+      h('div', { class: 'legend' }, h('span', null, h('i', { class: 'nd-q-good' }), '한산 · 날씨 좋음'), h('span', null, h('i', { class: 'nd-q-busy' }), '붐빔'), h('span', null, h('i', { class: 'nd-q-badwx' }), '날씨로 야외 어려움')),
+      h('div', { class: 'assume' }, `막대 높이는 요일·시각별 방문 수준입니다. ${CURVE_SRC}(평일 12시·19~20시, 주말 오후 2~3시에 몰리고 토요일 오후 2시가 가장 붐빔)에 맞춘 추정이고, 날씨는 위와 같은 판정입니다. 서울숲 실시간 인구 기록이 쌓이면 실측으로 바꿉니다.`))));
+  }
+
+  // ── 서울숲 소식 (관리자가 올린 정원·프로그램 소식 + 공공서비스예약 프로그램) ──
+  function renderNews() {
+    const items = activeNews(app.news ?? [], app.data.programs, app.now.date, st.company), progs = app.data.programs;
+    const kindOf = k => NEWS_KINDS.find(x => x.key === k) ?? NEWS_KINDS[2];
+    const period = n => n.from || n.to ? `${n.from ?? ''}${n.to && n.to !== n.from ? ` ~ ${n.to}` : ''}` : '';
+    const list = items.length ? h('div', { class: 'list nd-news' }, items.slice(0, 6).map(n => {
+      const k = kindOf(n.kind), place = app.model.hubById[n.place]?.name ?? n.place;
+      return h('div', { class: `row${n.fit === 0 ? ' fit' : ''}` },
+        h('span', { class: `pick-ico nd-news-${n.kind}` }, icon(k.icon, 18)),
+        h('div', { class: 'row-main' },
+          h('div', { class: 'row-title' }, n.title, n.fit === 0 ? h('span', { class: 'badge tone-good nd-ml' }, `${COMPANY.find(c => c.key === st.company)?.label ?? ''} 추천`) : null),
+          h('div', { class: 'row-sub' }, [k.label, place, period(n)].filter(Boolean).join(' · ')),
+          n.text ? h('div', { class: 'row-sub' }, n.text) : null,
+          n.url ? h('a', { class: 'small', href: n.url, target: '_blank', rel: 'noopener' }, '예약 페이지') : null));
+    })) : h('div', { class: 'assume' }, '오늘 올라온 소식이 없습니다.');
+    const src = progs?.items?.length ? `서울시 공공서비스예약 프로그램 ${progs.items.length}건(${progs.checked} 기준)과 관리자 소식` : '관리자가 올린 소식 · 공공서비스예약 프로그램은 서울 열린데이터광장 인증키를 받은 뒤 연결';
+    el.news.replaceChildren(card('오늘 서울숲 소식', src, h('div', null, list,
+      h('div', { class: 'assume' }, '정원 개화·프로그램·공지는 관리자 화면에서 올리면 바로 이곳에 보입니다. 같이 온 사람에게 맞는 소식을 위로 올립니다.'))));
   }
 
   // ── 가는 길 · 산책 코스 ──
@@ -226,7 +268,7 @@ export function createCitizen(root, app) {
     el.how.replaceChildren(h('div', { class: 'more-wrap nd-more-wrap' }, h('details', { class: 'more card' },
       h('summary', null, '이 추천은 어떻게 계산하나요?', h('span', { class: 'muted' }, '기준과 한계')),
       h('div', { class: 'more-body nd-how' },
-        h('p', null, `점수 비중: 하고 싶은 일 ${share('need')} · 머물 수 있는 시간 ${share('stay')} · 같이 온 사람 ${share('company')} · 붐빔 ${share('crowd')} · 날씨에 맞는 자리 ${share('thermal')} · 걷는 거리 ${share('walk')} · 화장실 ${share('toilet')}. 혼자면 붐빔을, 아이·어르신과 함께면 화장실과 걷는 거리를 더 봅니다.`),
+        h('p', null, `점수 비중: 하고 싶은 일 ${share('need')} · 머물 수 있는 시간 ${share('stay')} · 같이 온 사람 ${share('company')} · 붐빔 ${share('crowd')} · 날씨에 맞는 자리 ${share('thermal')} · 걷는 거리 ${share('walk')} · 화장실 ${share('toilet')}. 같이 온 사람에 따라 비중이 바뀝니다: 혼자면 붐빔, 연인과면 날씨에 맞는 자리, 친구와면 하고 싶은 일, 아이·어르신과면 화장실과 걷는 거리, 반려견과면 붐빔과 산책길을 더 봅니다(반려견과 함께면 건물 안과 어린이 놀이터는 뺌 · 출입 규정 확인 필요). 동반자 구분은 서울숲 SNS 연구(김지은 외 2019)를 따랐습니다.`),
         h('p', null, `머물 수 있는 시간은 운영 시간, 밤(${NIGHT.from}시 이후 야외는 안내하지 않음), 날씨(야외는 주의 단계부터, 비가 오면 그늘 자리도 어려움), 추위(체감 ${COLD.still}℃ 미만)로 정합니다. 수용 인원의 ${Math.round(CROWD_STOP * 100)}%를 넘게 붐비는 곳은 '지금 매우 붐빔'으로 표시하고 뒤로 미룹니다.`),
         h('p', null, '붐빔은 실제로 센 값이 아니라 요일·시각·날씨로 어림한 값입니다. 나무 그늘은 여름 위성 영상 기준이라 겨울에는 다릅니다. 방문자센터·수변휴게실처럼 운영 시간을 확인하지 못한 곳은 10~17시로 가정했고 화면에 ‘확인 필요’로 적었습니다. 장소별 적합도는 팀이 정한 가정값입니다.'),
         h('p', null, '앉을 곳(쉼터)은 OpenStreetMap에 등록된 것과 관리자 화면에서 현장 조사로 더한 것만 압니다. 실제 길가에는 벤치가 더 있으므로 ‘지나는 쉼터’는 적게 나옵니다. 걷는 시간은 시속 4.2km(아이·어르신·휠체어는 3.2km)로 계산합니다.')))));
@@ -280,7 +322,7 @@ export function createCitizen(root, app) {
     rec = recommend(app.model, app.wx, app.now, { need: st.need, stay: st.stay, company: st.company, slow: st.slow, startNode: s.node, startOff: s.off });
     if (st.pick >= rec.picks.length) st.pick = 0;
     plan = computePlan();
-    renderForm(); renderStatus(); renderPicks(); renderRoute();
+    renderForm(); renderStatus(); renderPicks(); renderQuiet(); renderNews(); renderRoute();
     const near = renderNear();
     renderHow();
     if (view) { view.cursor(st.picking ? 'crosshair' : null); drawMap(near); }

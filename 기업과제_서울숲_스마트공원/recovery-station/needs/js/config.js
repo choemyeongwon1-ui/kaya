@@ -19,12 +19,37 @@ export const STAYS = [
   { key: 120, label: '2시간' },
   { key: 180, label: '3시간 이상' },
 ];
+// 같이 온 사람: 서울숲 SNS 연구(김지은 외 2019, 한국조경학회지 47(2))의 동반자 분류를 따름
+// — 가족 65.3%, 연인 27.4%, 반려견 17.0%, 친구 5.8%, 혼자 1.5%(혼자는 사진을 덜 올려 적게 잡혔을 수 있음)
 export const COMPANY = [
-  { key: 'alone',   label: '혼자',       group: null },
-  { key: 'friends', label: '친구·연인과', group: 'youth' },
-  { key: 'kids',    label: '아이와',      group: 'family' },
-  { key: 'elders',  label: '어르신과',    group: 'senior' },
+  { key: 'alone',   label: '혼자',     group: null },
+  { key: 'couple',  label: '연인과',   group: 'youth' },
+  { key: 'friends', label: '친구와',   group: 'youth' },
+  { key: 'kids',    label: '아이와',   group: 'family' },
+  { key: 'elders',  label: '어르신과', group: 'senior' },
+  { key: 'pet',     label: '반려견과', group: 'pet' },
 ];
+
+// 같이 온 사람마다 추천 점수 비중을 바꿉니다(아래 WEIGHTS에 덮어씀). 값은 가정이고, 근거는 방향만 정합니다.
+//  혼자: 붐빔을 더 봄 — '일상 탈출' 동기가 만족도를 높임(조경진 외 2014), 같은 밀도도 목적에 따라 더 붐비게 느낌(Vaske & Shelby 2008)
+//  연인: 걷기·경관과 날씨에 맞는 자리 — 경관이 만족도 2순위 요인(이재호·김순기 2018)
+//  친구: 하고 싶은 일(모임·놀이) 비중을 높이고 붐빔은 덜 봄
+//  아이·어르신: 화장실과 걷는 거리 — 가족 이용자에게 편의시설이 중요하지만 성취도가 낮음(이지연 2012)
+//  반려견: 붐빔과 걷는 길(산책)
+export const COMPANY_W = {
+  alone:   { crowd: 20, need: 33 },
+  couple:  { crowd: 14, thermal: 13 },
+  friends: { need: 42, crowd: 8 },
+  kids:    { toilet: 10, walk: 12 },
+  elders:  { toilet: 10, walk: 12, thermal: 13 },
+  pet:     { crowd: 16, walk: 10 },
+};
+// 반려견과 함께일 때 (가정 · 서울숲 공식 안내로 확인 필요): 건물 안과 어린이 놀이터는 빼고, 동물을 기르는 곳은 확인 필요로 표시
+export const PET = { no: new Set(['forest-play']), noIndoor: true, check: new Set(['deer']) };
+
+// '언제 가면 한산한가' 안내: 이 값 미만의 방문 수준(crowd.js dayCurve, 가장 붐비는 주말 한낮 ≈ 1)이면 한산하다고 봄 (가정)
+// .45 = 평일 피크(12시, 17~20시)와 주말 10~20시를 뺀 시간이 한산으로 잡히는 값 (논문의 '평일 피크를 피한 시간'과 맞춤)
+export const QUIET_LEVEL = .45;
 export const ACTIVE_NEEDS = new Set(['walk', 'active', 'play']);    // 몸을 움직이는 일: 추위 기준을 낮게 봄
 
 // 장소별 '하고 싶은 일' 적합도 0~1 (가정). 1.0에 가까운 값은 기존 대시보드의 프로그램 목적과 맞춘 것이고,

@@ -5,6 +5,7 @@ import { FAC_LABEL } from './model.js';
 import { toXY } from './geo.js';
 import { askAI, keyStore, firstMessage, REPORT_TASK, AIError } from './ai.js';
 import { createMap, mk } from './mapview.js';
+import { NEWS_KINDS, NEWS_FOR, todayIso } from './news.js';
 import { h, icon, pct, esc, cssVar, download, md, segGroup, chipGroup, card } from './ui.js';
 
 const KINDS = [
@@ -21,7 +22,8 @@ export function createAdmin(root, app) {
   const ai = { key: keyStore.get(), remember: keyStore.remembered(), draft: null, busy: false, messages: [], log: [], live: '', err: null, ctl: null, stamp: '' };
   let view = null, diag = null, plan = null;
 
-  const el = { head: h('div'), ctrl: h('div'), side: h('div', { class: 'nd-side' }), sites: h('div'), survey: h('div'), ai: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
+  const el = { head: h('div'), ctrl: h('div'), side: h('div', { class: 'nd-side' }), sites: h('div'), news: h('div'), survey: h('div'), ai: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
+  const draft = { kind: 'garden', title: '', place: '', from: todayIso(app.now.date), to: '', for: 'all', text: '' };
   root.append(
     h('header', { class: 'page-head' },
       h('div', { class: 'eyebrow' }, '관리자용 · 데스크톱'),
@@ -34,6 +36,7 @@ export function createAdmin(root, app) {
         h('section', { class: 'card nd-mapcard' }, el.ctrl, h('div', { class: 'map-wrap expert-map' }, el.map, el.legend, h('div', { class: 'nd-attr' }, '© OpenStreetMap 기여자'))),
         el.side),
       el.sites,
+      el.news,
       h('div', { class: 'nd-bottom' }, el.survey, el.ai)));
 
   const set = patch => { Object.assign(st, patch); update(); };
@@ -168,6 +171,40 @@ export function createAdmin(root, app) {
   const sitesCsv = () => ['종류,순위,위도,경도,위치,칸수,넓이_ha,비고,법적구역,관리,설치절차', ...siteRows().map(r => [r.kind, r.rank, r.lat, r.lon, `"${r.where}"`, r.cells, r.ha, `"${r.memo}"`, `"${r.zone}"`, `"${r.agency}"`, `"${r.rule}"`].join(','))].join('\r\n');
   const sitesGeo = () => ({ type: 'FeatureCollection', name: '서울숲 시설 제안', features: siteRows().map(r => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [r.lon, r.lat] }, properties: { 종류: r.kind, 순위: r.rank, 위치: r.where, 칸수: r.cells, 넓이_ha: r.ha, 비고: r.memo, 법적구역: r.zone, 관리: r.agency, 설치절차: r.rule, 기준: diag.std.label } })) });
 
+  // ── 서울숲 소식 올리기 (정원 개화·프로그램·공지 → 시민 화면 '오늘 서울숲 소식'에 바로 보임) ──
+  function renderNews() {
+    const list = app.news ?? [], today = todayIso(app.now.date);
+    const field = (label, input) => h('label', { class: 'nd-field' }, h('span', { class: 'cond-l' }, label), input);
+    const text = (key, attrs = {}) => h('input', { class: 'nd-input', value: draft[key], oninput: ev => { draft[key] = ev.target.value; }, ...attrs });
+    const select = (key, opts) => h('select', { class: 'nd-select', onchange: ev => { draft[key] = ev.target.value; } }, opts.map(([v, l]) => h('option', { value: v, selected: draft[key] === v }, l)));
+    const add = () => {
+      if (!draft.title.trim()) return alert('제목을 넣어 주세요.');
+      if (draft.to && draft.from && draft.to < draft.from) return alert('끝나는 날이 시작하는 날보다 앞입니다.');
+      app.setNews([{ id: `n${Date.now()}`, kind: draft.kind, title: draft.title.trim(), place: draft.place || null, from: draft.from || null, to: draft.to || null, for: draft.for, text: draft.text.trim() }, ...list]);
+      Object.assign(draft, { title: '', text: '', place: '', to: '' });
+    };
+    const kindLabel = k => NEWS_KINDS.find(x => x.key === k)?.label ?? k;
+    const state = n => n.to && n.to < today ? '끝남' : n.from && n.from > today ? '예정' : '보이는 중';
+    el.news.replaceChildren(
+      h('div', { class: 'part-head' }, h('span', { class: 'part-n' }, '3'), h('div', null, h('h2', null, '서울숲 소식 올리기'), h('p', null, '정원 개화, 프로그램, 공지를 올리면 시민 화면의 ‘오늘 서울숲 소식’에 바로 보입니다. 같이 온 사람에 맞는 소식은 위로 올라갑니다.'))),
+      h('section', { class: 'card card-pad' },
+        h('div', { class: 'nd-newsform' },
+          field('종류', select('kind', NEWS_KINDS.map(k => [k.key, k.label]))),
+          field('제목', text('title', { placeholder: '예: 튤립 정원 개화 시작', maxlength: 60 })),
+          field('장소', select('place', [['', '공원 전체'], ...app.model.places.map(p => [p.id, p.name])])),
+          field('누구에게 먼저', select('for', NEWS_FOR.map(f => [f.key, f.label]))),
+          field('시작', text('from', { type: 'date' })),
+          field('끝', text('to', { type: 'date' })),
+          field('한 줄 설명', text('text', { placeholder: '예: 이번 주말까지가 절정입니다', maxlength: 80 }))),
+        h('div', { class: 'nd-row nd-mt' }, h('button', { type: 'button', class: 'btn btn-primary', onclick: add }, icon('plus', 15), '올리기')),
+        list.length ? h('div', { class: 'list nd-mt' }, list.map(n => h('div', { class: 'row' },
+          h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, `[${kindLabel(n.kind)}] ${n.title}`),
+            h('div', { class: 'row-sub' }, [app.model.hubById[n.place]?.name ?? '공원 전체', `${n.from ?? ''} ~ ${n.to ?? ''}`, NEWS_FOR.find(f => f.key === n.for)?.label, state(n)].filter(Boolean).join(' · '))),
+          h('button', { type: 'button', class: 'btn', 'aria-label': '지우기', onclick: () => app.setNews(list.filter(x => x.id !== n.id)) }, icon('trash', 15)))))
+          : h('div', { class: 'assume' }, '아직 올린 소식이 없습니다.'),
+        h('div', { class: 'assume' }, `시연 단계라 올린 소식은 이 브라우저에만 저장됩니다(같은 브라우저의 다른 창에도 바로 반영). 실제 운영에서는 서버 한 곳에 저장해 모든 시민 화면에 같이 보이게 합니다. 서울시 공공서비스예약의 서울숲 프로그램은 ${app.data.programs?.items?.length ? `${app.data.programs.items.length}건을 함께 보여 줍니다(${app.data.programs.checked} 기준)` : '서울 열린데이터광장 인증키를 받으면 analysis/08_programs.py로 가져옵니다'}.`)));
+  }
+
   // ── 현장 조사로 시설 추가 ──
   function renderSurvey() {
     const pts = app.extra;
@@ -285,7 +322,7 @@ export function createAdmin(root, app) {
     }
     const stamp = `${st.std}|${JSON.stringify(st.counts)}|${app.extra.length}|${app.model.fac.length}`;
     if (stamp !== ai.stamp) { if (ai.stamp && ai.log.length) { resetAI(); ai.err = '진단이 바뀌어 AI 대화를 새로 시작합니다.'; } ai.stamp = stamp; }
-    renderHead(); renderCtrl(); renderSide(); renderSites(); renderSurvey();
+    renderHead(); renderCtrl(); renderSide(); renderSites(); renderNews(); renderSurvey();
     if (!ai.busy) renderAI();
     if (view) drawMap();
   }
