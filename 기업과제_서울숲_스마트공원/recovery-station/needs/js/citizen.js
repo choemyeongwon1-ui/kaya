@@ -25,7 +25,9 @@ function withEnds(sum, a, b, speed) {
 }
 
 export function createCitizen(root, app) {
-  const st = { need: 'rest', stay: 60, company: 'alone', slow: false, start: { kind: 'hub', id: 'gate-station' }, pick: 0, mode: 'route', minutes: 40, end: 'loop',
+  // 코스 찾기(tour.html)에서 넘어오면 고른 값을 이어받습니다: ?need=walk&company=pet&stay=60
+  const q = new URLSearchParams(location.search), qv = (k, list, d) => { const v = q.get(k); const hit = list.find(o => String(o.key) === v); return hit ? hit.key : d; };
+  const st = { need: qv('need', NEEDS, 'rest'), stay: qv('stay', STAYS, 60), company: qv('company', COMPANY, 'alone'), slow: false, start: { kind: 'hub', id: 'gate-station' }, pick: 0, mode: 'route', minutes: 40, end: 'loop',
     prefs: { shade: false, rest: false, nostairs: false, quiet: false }, picking: false, moreNear: false, nearSel: null, gpsNote: null };
   let view = null, rec = null, plan = null;
 
@@ -35,7 +37,8 @@ export function createCitizen(root, app) {
     h('header', { class: 'page-head' },
       h('div', { class: 'eyebrow' }, '이용자용 · 모바일 웹'),
       h('h1', { class: 'page-q' }, '오늘 서울숲에서 무엇을 하고 싶으세요?'),
-      h('p', { class: 'page-why' }, '하고 싶은 일, 머물 시간, 같이 온 사람을 고르면 지금 가기 좋은 곳 3곳과 그 이유, 가는 길과 산책 코스를 골라 드립니다. 서울숲이 맞지 않는 날에는 근처의 무료 장소도 알려 드립니다.')),
+      h('p', { class: 'page-why' }, '하고 싶은 일, 머물 시간, 같이 온 사람을 고르면 지금 가기 좋은 곳 3곳과 그 이유, 가는 길과 산책 코스를 골라 드립니다. 서울숲이 맞지 않는 날에는 근처의 무료 장소도 알려 드립니다.'),
+      h('a', { class: 'btn btn-primary nd-tour-btn', href: './tour.html' }, icon('route', 16), '처음이라면 — 지도로 따라 고르기')),
     h('div', { class: 'citizen nd-citizen' },
       h('div', { class: 'grid' }, el.form, el.status, el.picks, el.quiet, el.news, el.route, el.near, el.how),
       h('section', { class: 'card citizen-map' }, h('div', { class: 'map-wrap' }, el.map, el.legend, h('div', { class: 'nd-attr' }, '© OpenStreetMap 기여자')))));

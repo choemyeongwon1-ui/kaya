@@ -1,10 +1,10 @@
 // 가는 길과 산책 코스. 조건: 그늘(추운 날은 볕) · 쉼터 · 계단 없음 · 한산함
-import { ROUTE_W, OUT_PENALTY, REST_DETOUR } from './config.js';
+import { ROUTE_W, OUT_PENALTY, REST_DETOUR, PREF_DETOUR } from './config.js';
 import { dijkstra, pathTo, makeCost, summarize } from './graph.js';
 
 /** prefs: {shade, rest, nostairs, quiet} / env: {scale(시각별 혼잡 배수), sunMode('shade'|'sun'|'none'), floodPenalty(큰비 때 물이 차는 구역 구간 벌점 Map | null)} */
-function costOf(prefs, env, extra = {}) {
-  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? ROUTE_W : 0, quiet: prefs.quiet ? ROUTE_W : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', penalty: env.floodPenalty ?? null, ...extra });
+function costOf(prefs, env, extra = {}, w = ROUTE_W) {
+  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? w : 0, quiet: prefs.quiet ? w : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', penalty: env.floodPenalty ?? null, ...extra });
 }
 
 /** 길이 물이 차는 구역(유수지·하천구역)을 지나는 길이 m */
@@ -33,19 +33,23 @@ function finish(model, legs, speed) {
 export function planRoute(model, from, to, prefs, env, speed) {
   const g = model.g, bf = !!prefs.nostairs;
   if (from === to) return null;
-  const len = e => e.len, cost = costOf(prefs, env);
+  const len = e => e.len;
   const baseTree = dijkstra(g, [from], len, { barrierFree: bf });
   const basePath = pathTo(baseTree, to);
   if (!basePath) return null;
   const base = finish(model, [basePath], speed);
-  const tree = new Map();                                    // 지점별 최소 비용 나무(필요할 때만 계산)
+  // 그늘·한산함 조건은 가장 짧은 길의 PREF_DETOUR배까지만 돌아가게 합니다. 넘으면 가중치를 줄이고, 그래도 넘으면 가장 짧은 길
+  let tree, cost, main, seq = [from, to];
   const treeOf = n => tree.get(n) ?? tree.set(n, dijkstra(g, [n], cost, { barrierFree: bf })).get(n);
-  const build = seq => {
+  const build = s => {
     const legs = [];
-    for (let i = 0; i < seq.length - 1; i++) { if (seq[i] === seq[i + 1]) continue; const p = pathTo(treeOf(seq[i]), seq[i + 1]); if (!p) return null; legs.push(p); }
+    for (let i = 0; i < s.length - 1; i++) { if (s[i] === s[i + 1]) continue; const p = pathTo(treeOf(s[i]), s[i + 1]); if (!p) return null; legs.push(p); }
     return legs.length ? finish(model, legs, speed) : null;
   };
-  let seq = [from, to], main = build(seq);
+  for (const w of [ROUTE_W, ROUTE_W / 2, ROUTE_W / 5, 0]) {
+    tree = new Map(); cost = costOf(prefs, env, {}, w); main = build(seq);
+    if (!main || main.meters <= base.meters * PREF_DETOUR + 20) break;
+  }
   const via = [];
   if (prefs.rest && main) {
     // 쉼터 사이가 먼 구간에 쉼터를 하나씩 끼워 넣습니다. 가장 짧은 길의 REST_DETOUR배까지만 돌아갑니다.

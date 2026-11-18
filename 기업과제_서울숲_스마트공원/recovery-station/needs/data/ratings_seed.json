@@ -1,0 +1,2486 @@
+{
+ "note": "시연용 가상 평가입니다(실제 이용자 평가 아님). 현장 설문·앱 기록이 쌓이면 이 파일을 지우거나 실제 자료로 바꿉니다. make_seed 스크립트로 만듦.",
+ "made": "2026-11-18",
+ "journeys": [
+  {
+   "id": "seed-0",
+   "at": "2026-11-15T16:00:00.000Z",
+   "need": "active",
+   "company": "friends",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "courts",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": "운동하기 좋은데 그늘이 없어요"
+    },
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-1",
+   "at": "2026-11-12T14:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-2",
+   "at": "2026-10-19T16:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "lake",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-3",
+   "at": "2026-11-06T12:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-4",
+   "at": "2026-11-10T09:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-5",
+   "at": "2026-11-06T10:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    }
+   ]
+  },
+  {
+   "id": "seed-6",
+   "at": "2026-10-08T09:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-7",
+   "at": "2026-10-06T10:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-8",
+   "at": "2026-11-05T12:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-9",
+   "at": "2026-10-01T14:00:00.000Z",
+   "need": "walk",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": "물가라 생각보다 시원했어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-10",
+   "at": "2026-10-21T17:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-11",
+   "at": "2026-11-15T16:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "나무 그늘 아래 놀이터라 시원해요"
+    },
+    {
+     "id": "butterfly",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-12",
+   "at": "2026-10-30T16:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    },
+    {
+     "id": "stage",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": "공연 있는 날 오면 좋아요"
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-13",
+   "at": "2026-11-15T10:00:00.000Z",
+   "need": "walk",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-14",
+   "at": "2026-11-09T16:00:00.000Z",
+   "need": "active",
+   "company": "friends",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "courts",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-15",
+   "at": "2026-11-02T11:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": "공연 있는 날 오면 좋아요"
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    }
+   ]
+  },
+  {
+   "id": "seed-16",
+   "at": "2026-11-05T13:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "주말엔 자리 잡기가 힘들어요"
+    },
+    {
+     "id": "stage",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-17",
+   "at": "2026-10-10T12:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-18",
+   "at": "2026-10-03T16:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 3,
+     "tags": [
+      "far"
+     ],
+     "comment": "건물이 예쁘고 생각보다 볼 게 많아요"
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-19",
+   "at": "2026-10-31T12:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "주말 오후엔 사람이 좀 많아요"
+    },
+    {
+     "id": "insect",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "비 올 때 가기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-20",
+   "at": "2026-11-14T17:00:00.000Z",
+   "need": "active",
+   "company": "friends",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "courts",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "운동하기 좋은데 그늘이 없어요"
+    },
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-21",
+   "at": "2026-10-05T16:00:00.000Z",
+   "need": "walk",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "조용해서 혼자 걷기 좋아요"
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": "데크에 앉아 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-22",
+   "at": "2026-11-11T11:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "butterfly",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "비 올 때 가기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-23",
+   "at": "2026-10-21T17:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "아이가 사슴 보고 정말 좋아했어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-24",
+   "at": "2026-10-03T10:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "그늘이 많아서 걷기 편했어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-25",
+   "at": "2026-10-16T16:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-26",
+   "at": "2026-10-02T11:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-27",
+   "at": "2026-10-25T14:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "butterfly",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "아이 체험으로 추천해요"
+    }
+   ]
+  },
+  {
+   "id": "seed-28",
+   "at": "2026-10-25T15:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": "나무 그늘 아래 놀이터라 시원해요"
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-29",
+   "at": "2026-11-12T12:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "그늘이 많아서 걷기 편했어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-30",
+   "at": "2026-10-23T12:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "주말엔 자리 잡기가 힘들어요"
+    },
+    {
+     "id": "stage",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-31",
+   "at": "2026-11-01T10:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "실내라 더울 때 쉬기 좋아요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "데크에 앉아 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-32",
+   "at": "2026-10-25T11:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-33",
+   "at": "2026-10-30T10:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-34",
+   "at": "2026-10-17T12:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "공연 있는 날 오면 좋아요"
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-35",
+   "at": "2026-11-16T13:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "주말 오후엔 사람이 좀 많아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-36",
+   "at": "2026-11-12T13:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "butterfly",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "온실 안이 조금 더워요"
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-37",
+   "at": "2026-10-13T12:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-38",
+   "at": "2026-10-25T14:00:00.000Z",
+   "need": "rest",
+   "company": "couple",
+   "stay": 30,
+   "seed": true,
+   "stops": [
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "물가라 생각보다 시원했어요"
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-39",
+   "at": "2026-10-25T14:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-40",
+   "at": "2026-10-09T13:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "주말 오후엔 사람이 좀 많아요"
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-41",
+   "at": "2026-11-02T13:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-42",
+   "at": "2026-11-06T13:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "건물이 예쁘고 생각보다 볼 게 많아요"
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "데크에 앉아 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-43",
+   "at": "2026-11-08T10:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-44",
+   "at": "2026-10-12T14:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "여름 한낮엔 그늘이 부족해요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "주말 오후엔 사람이 좀 많아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-45",
+   "at": "2026-10-03T09:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": "주말엔 자리 잡기가 힘들어요"
+    },
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-46",
+   "at": "2026-11-06T11:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "주말 오후엔 사람이 좀 많아요"
+    },
+    {
+     "id": "insect",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-47",
+   "at": "2026-11-02T17:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-48",
+   "at": "2026-11-05T09:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-49",
+   "at": "2026-11-15T11:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": "주말엔 자리 잡기가 힘들어요"
+    },
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": "실내라 더울 때 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-50",
+   "at": "2026-10-21T10:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "입구에서 조금 멀어요"
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-51",
+   "at": "2026-10-15T13:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": "물가라 생각보다 시원했어요"
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-52",
+   "at": "2026-10-30T13:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    },
+    {
+     "id": "stage",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-53",
+   "at": "2026-10-09T16:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-54",
+   "at": "2026-11-01T10:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-55",
+   "at": "2026-10-18T17:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "butterfly",
+     "rating": 3,
+     "tags": [
+      "weather"
+     ],
+     "comment": "온실 안이 조금 더워요"
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "아이 체험으로 추천해요"
+    }
+   ]
+  },
+  {
+   "id": "seed-56",
+   "at": "2026-10-24T16:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": "나무 그늘 아래 놀이터라 시원해요"
+    },
+    {
+     "id": "butterfly",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-57",
+   "at": "2026-10-19T09:00:00.000Z",
+   "need": "learn",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "나무 그늘 아래 놀이터라 시원해요"
+    },
+    {
+     "id": "butterfly",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-58",
+   "at": "2026-10-22T16:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-59",
+   "at": "2026-10-22T13:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "forest-play",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "아이가 사슴 보고 정말 좋아했어요"
+    },
+    {
+     "id": "insect",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "비 올 때 가기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-60",
+   "at": "2026-10-29T11:00:00.000Z",
+   "need": "walk",
+   "company": "couple",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "바닥분수에서 아이들이 잘 놀아요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-61",
+   "at": "2026-11-04T11:00:00.000Z",
+   "need": "meet",
+   "company": "friends",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "stage",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": "공연 있는 날 오면 좋아요"
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-62",
+   "at": "2026-10-23T12:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "insect",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "비 올 때 가기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-63",
+   "at": "2026-10-27T12:00:00.000Z",
+   "need": "rest",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": "돗자리 펴고 쉬기 좋아요"
+    },
+    {
+     "id": "wetland",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "조용해서 혼자 걷기 좋아요"
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "실내라 더울 때 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-64",
+   "at": "2026-11-09T10:00:00.000Z",
+   "need": "rest",
+   "company": "couple",
+   "stay": 30,
+   "seed": true,
+   "stops": [
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-65",
+   "at": "2026-10-10T10:00:00.000Z",
+   "need": "walk",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "view"
+     ],
+     "comment": "물가라 생각보다 시원했어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-66",
+   "at": "2026-10-07T11:00:00.000Z",
+   "need": "play",
+   "company": "kids",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "mirror-pond",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "forest-play",
+     "rating": 4,
+     "tags": [
+      "fun"
+     ],
+     "comment": "나무 그늘 아래 놀이터라 시원해요"
+    },
+    {
+     "id": "deer",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": "그늘이 많아서 걷기 편했어요"
+    },
+    {
+     "id": "insect",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-67",
+   "at": "2026-11-11T11:00:00.000Z",
+   "need": "walk",
+   "company": "pet",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "horse-plaza",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "햇빛을 피할 곳이 적어요"
+    },
+    {
+     "id": "mirror-pond",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "family-lawn",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": "주말엔 자리 잡기가 힘들어요"
+    }
+   ]
+  },
+  {
+   "id": "seed-68",
+   "at": "2026-10-07T11:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 4,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "데크에 앉아 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-69",
+   "at": "2026-10-13T13:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 3,
+     "tags": [
+      "far"
+     ],
+     "comment": null
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 5,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "실내라 더울 때 쉬기 좋아요"
+    },
+    {
+     "id": "lake",
+     "rating": 5,
+     "tags": [
+      "rest"
+     ],
+     "comment": null
+    }
+   ]
+  },
+  {
+   "id": "seed-70",
+   "at": "2026-10-10T17:00:00.000Z",
+   "need": "learn",
+   "company": "elders",
+   "stay": 120,
+   "seed": true,
+   "stops": [
+    {
+     "id": "water-museum",
+     "rating": 4,
+     "tags": [
+      "quiet"
+     ],
+     "comment": "건물이 예쁘고 생각보다 볼 게 많아요"
+    },
+    {
+     "id": "culture-ctr",
+     "rating": 3,
+     "tags": [
+      "boring"
+     ],
+     "comment": "실내라 더울 때 쉬기 좋아요"
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": "데크에 앉아 쉬기 좋아요"
+    }
+   ]
+  },
+  {
+   "id": "seed-71",
+   "at": "2026-11-14T16:00:00.000Z",
+   "need": "walk",
+   "company": "alone",
+   "stay": 60,
+   "seed": true,
+   "stops": [
+    {
+     "id": "wetland",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    },
+    {
+     "id": "deer",
+     "rating": 3,
+     "tags": [
+      "crowded"
+     ],
+     "comment": null
+    },
+    {
+     "id": "lake",
+     "rating": 4,
+     "tags": [
+      "view"
+     ],
+     "comment": null
+    }
+   ]
+  }
+ ]
+}

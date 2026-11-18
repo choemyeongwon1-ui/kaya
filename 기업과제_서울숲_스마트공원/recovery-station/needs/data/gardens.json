@@ -1,0 +1,18 @@
+{
+ "note": "서울숲 정원 정보. 관리자 화면 '서울숲 소식 올리기'에서 종류를 '정원'으로 올리면 이 목록 위에 새 소식으로 붙습니다. sure=false는 발표 자료만 보고 넣어 현장 확인이 필요한 것입니다.",
+ "checked": "2026-11-16",
+ "items": [
+  { "id": "expo2026", "name": "2026 서울국제정원박람회 작가정원", "place": null, "months": "all", "photo": "garden",
+    "text": "국제공모 작가정원 5곳과 초청정원 2곳(한 곳당 약 250㎡). 공고에 따르면 박람회(5.1~10.27)가 끝난 뒤에도 공원 안에 남깁니다. 정확한 위치는 확인되는 대로 관리자가 넣습니다.",
+    "src": "서울시 서울국제정원박람회 공고·보도자료(2026)", "url": "https://www.seoul.go.kr/festa/garden/y2026", "sure": false },
+  { "id": "welcome", "name": "맞이정원(웰컴정원)", "place": "horse-plaza", "months": "all", "photo": null,
+    "text": "군마상 주변에 서부해당화·애기배롱나무 같은 꽃나무와 톱풀·호스타 등 야생화를 심은 정원(서울시 '매력가든' 발표). 지금 조성 상태는 확인이 필요합니다.",
+    "src": "서울시 환경분야 누리집", "url": "https://news.seoul.go.kr/env/archives/520332", "sure": false },
+  { "id": "tulip", "name": "튤립 정원", "place": "mirror-pond", "months": [4], "photo": "tulip",
+    "text": "군마상에서 산책로를 따라 거울연못까지 이어지는 서울숲의 대표 봄꽃. 서울시 발표 기준 30종 약 10만 본.",
+    "src": "내 손안에 서울(서울시 미디어허브)", "url": "https://mediahub.seoul.go.kr/archives/2014200", "sure": true },
+  { "id": "butterfly", "name": "나비정원", "place": "butterfly", "months": [5, 6, 7, 8, 9, 10], "photo": "butterfly",
+    "text": "나비를 가까이 보는 온실 정원. 5~10월 운영, 월요일 휴관.",
+    "src": "내 손안에 서울 2025.2.13", "url": "https://mediahub.seoul.go.kr", "sure": true }
+ ]
+}

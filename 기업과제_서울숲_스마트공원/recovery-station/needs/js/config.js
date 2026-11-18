@@ -130,7 +130,8 @@ export const WEIGHTS = { need: 35, company: 15, stay: 20, crowd: 12, thermal: 10
 export const ROUTE_W = 2.5;                // 고른 조건(그늘·한산함)에 주는 가중치 (기존 대시보드의 '우선' 모드와 같은 크기)
 export const STEP_PENALTY = 40;            // 계단 한 구간당 더하는 거리 m (기존 대시보드와 같음)
 export const OUT_PENALTY = 1.5;            // 산책 코스가 공원 밖 길로 나가는 것을 꺼리는 정도
-export const REST_DETOUR = 1.35;           // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
+export const PREF_DETOUR = 1.2;            // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
+export const REST_DETOUR = 1.35;          // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
 export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈
 export const COURSE_MIN = [20, 40, 60];
 

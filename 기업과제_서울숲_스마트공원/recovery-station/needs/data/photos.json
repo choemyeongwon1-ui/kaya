@@ -1,0 +1,75 @@
+{
+ "note": "위키미디어 공용(Wikimedia Commons)의 자유 라이선스 사진. 표시할 때 찍은 사람과 라이선스를 함께 적습니다. 사진이 없는 장소는 아이콘으로 대신합니다. 장소 사진은 그 장소에서 찍은 것이 분명한 것만 붙였습니다(연못 사진은 습지생태원인지 확인 필요).",
+ "files": {
+  "deer": {
+   "src": "img/deer.jpg",
+   "caption": "서울숲 사슴",
+   "credit": "Drcbrothephotographer",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Sika_Deer_-_Seoul_Forest_(1).jpg"
+  },
+  "lake": {
+   "src": "img/lake.jpg",
+   "caption": "호숫가 데크",
+   "credit": "CartoonChess",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoul_Forest_boardwalk_with_tables.jpg"
+  },
+  "pond": {
+   "src": "img/pond.jpg",
+   "caption": "서울숲 연못",
+   "credit": "Enigma7seven",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoulforest_lake01.jpg"
+  },
+  "butterfly": {
+   "src": "img/butterfly.jpg",
+   "caption": "꽃과 나비",
+   "credit": "Youkseo",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Flowers_and_butterfly_in_seoul_forest_park.JPG"
+  },
+  "tulip": {
+   "src": "img/tulip.jpg",
+   "caption": "서울숲 튤립",
+   "credit": "Rachel.zrq",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:Tulips_in_Seoul_Forest.jpg"
+  },
+  "garden": {
+   "src": "img/garden.jpg",
+   "caption": "서울숲 정원 (2022년 5월)",
+   "credit": "CHO woohyuck",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoul_Forest_in_May_2022_(1).jpg"
+  },
+  "path": {
+   "src": "img/path.jpg",
+   "caption": "서울숲 산책로 (가을)",
+   "credit": "Enigma7seven",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoulforest_path01.jpg"
+  },
+  "sign": {
+   "src": "img/sign.jpg",
+   "caption": "서울숲 입구 조형물",
+   "credit": "No machine-readable author provided. JeongAhn assumed (based on copyright claims).",
+   "license": "Public domain",
+   "page": "https://commons.wikimedia.org/wiki/File:SeoulForest.jpg"
+  },
+  "forest": {
+   "src": "img/forest.jpg",
+   "caption": "메타세쿼이아 숲길 (가을)",
+   "credit": "Enigma7seven",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoulforest_001.jpg"
+  }
+ },
+ "places": {
+  "deer": "deer",
+  "lake": "lake",
+  "wetland": "pond",
+  "butterfly": "butterfly",
+  "insect": "butterfly"
+ }
+}

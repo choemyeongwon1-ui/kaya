@@ -187,3 +187,4 @@ span.nd-mk{width:26px;height:26px;flex:none}
 .nd-newsform{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:span 2}
 @media(max-width:760px){.nd-newsform{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:1/-1}}
+.nd-tour-btn{display:inline-flex;align-items:center;gap:6px;margin-top:12px;text-decoration:none}
