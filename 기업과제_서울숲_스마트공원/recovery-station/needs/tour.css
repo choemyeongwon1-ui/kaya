@@ -702,3 +702,9 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 @media (prefers-reduced-motion:reduce){.rv-face{animation:none;opacity:1;transform:none}.rv-face.pop .fc{animation:none}}
 .rv-word[data-f=good]{color:#5ef2a6}.rv-word[data-f=mid]{color:#ffc164}.rv-word[data-f=bad]{color:#ff9b8a}
 .tr-rate-why.anon{opacity:.75;font-size:11px;margin-top:-2px}
+/* 출발 전 컨셉 안내: 좋으면 그대로 · 별로면 다른 곳 */
+.tr-howto{margin:4px 0 12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.tr-howto>b{display:block;font-size:13.5px;margin-bottom:8px}
+.tr-howto-row{display:flex;gap:16px;flex-wrap:wrap}
+.tr-howto-row>span{display:inline-flex;align-items:center;gap:6px}
+.tr-howto-row em{font-style:normal;font-size:13px;opacity:.85}

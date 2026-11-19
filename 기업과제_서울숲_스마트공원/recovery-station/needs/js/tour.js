@@ -810,6 +810,11 @@ function renderPlan() {
     planNotes(legs),
     startRow(),
     h('ol', { class: 'tr-tl' }, legs.map((s, i) => tlItem(s, i))),
+    // 컨셉: 한 곳씩 들러 보고 → 좋으면 그대로, 별로면 바로 다른 곳으로
+    h('div', { class: 'tr-howto' }, h('b', null, '한 곳씩 들러 보고, 표정 하나만 눌러 주세요'),
+      h('div', { class: 'tr-howto-row' },
+        h('span', null, staticFace(5, 22), h('em', null, '좋으면 그대로')),
+        h('span', null, staticFace(1, 22), h('em', null, '별로면 바로 다른 곳으로')))),
     h('div', { class: 'tr-actions' },
       h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: startLeg }, '출발', h('span', { class: 'tr-cta-arrow' }, '→')),
       h('button', { type: 'button', class: 'tr-ghost', onclick: () => begin(null, legs.map(s => s.r.place.id).filter(id => !st.must.has(id))) }, '다른 코스')),
@@ -1050,7 +1055,7 @@ function renderArrived(s) {
     tripHead(), progress(),
     h('h2', { class: 'tr-q' }, p.name, rt && rt.count >= 2 ? h('small', { class: 'tr-q-sub' }, `좋아요 ${Math.round((rt.good ?? 0) / rt.count * 100)}%`) : null),
     h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '이 자리, 쾌적한가요?'), word), pick,
-      h('small', { class: 'tr-rate-why' }, '남겨 주신 의견으로 남은 코스를 바로 고쳐요'),
+      h('small', { class: 'tr-rate-why' }, '좋으면 그대로 가고, 별로면 남은 코스를 바로 바꿔요'),
       h('small', { class: 'tr-rate-why anon' }, '표정은 이름·위치 없이 공원 개선 통계에만 쓰여요'), form),
     h('div', { class: 'tr-actions' }, next, h('button', { type: 'button', class: 'tr-ghost small', onclick: () => { stop(); advance(s, 0, [], '', true); } }, '건너뛰기')),
     h('button', { type: 'button', class: 'tr-endlink', onclick: () => {
