@@ -832,6 +832,7 @@ function planNotes(legs) {
     else if (!sun && v >= 50) notes.push(['tree', `그늘진 길 ${v}%`]);
   }
   // 붐빔: 한산한 길(공간) + 덜 붐비는 때(시간) — Lin 2023 혼잡 대응
+  // 붐빔·동선은 서울숲의 오래된 약점: 2007 설문에서 '동선 및 밀도' 요인이 12개 공원 중 최저(주신하 2008, 서울숲 n=48)
   if ((live?.rank ?? 0) >= 2 || legs.some(s => s.cmp?.prefs?.quiet && s.r.reasons?.crowd?.tone === 'bad')) {
     const best = quietHours(app.wx, app.now).best[0];
     notes.push(['users', `${live?.level ? `지금 ${live.level} · ` : ''}한산한 길로 골랐어요${best ? ` · 덜 붐비는 때 ${best.tomorrow ? '내일 ' : ''}${best.from}~${best.to === 0 ? 24 : best.to}시` : ''}`]);
