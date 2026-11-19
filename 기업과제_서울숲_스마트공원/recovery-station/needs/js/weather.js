@@ -1,8 +1,8 @@
 // 날씨·대기 예보와 위험 단계 판정. 기준과 시연 시나리오는 기존 대시보드(머무는 숲)와 같습니다.
-import { CENTER, STAGE, HEAVY_RAIN } from './config.js';
+import { CENTER, STAGE, HEAVY_RAIN, KMA_URL, AIR_URL } from './config.js';
 import { sunTimes } from './geo.js';
 
-const FORECAST = `https://api.open-meteo.com/v1/forecast?latitude=${CENTER.lat}&longitude=${CENTER.lon}&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,uv_index,relative_humidity_2m,wind_speed_10m&timezone=Asia%2FSeoul&forecast_days=2`;
+const FORECAST = `https://api.open-meteo.com/v1/forecast?latitude=${CENTER.lat}&longitude=${CENTER.lon}&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,uv_index,relative_humidity_2m,wind_speed_10m&wind_speed_unit=ms&timezone=Asia%2FSeoul&forecast_days=2`;   // 바람은 m/s(기본값 km/h라 단위를 맞춤)
 const AIR = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${CENTER.lat}&longitude=${CENTER.lon}&hourly=pm2_5,pm10&timezone=Asia%2FSeoul&forecast_days=2`;
 const r1 = v => v == null ? null : Math.round(v * 10) / 10;
 
@@ -12,26 +12,111 @@ export function seoulNow(base = new Date()) {
   return { date: d, dow: d.getDay(), hour: d.getHours(), minute: d.getMinutes(), month: d.getMonth() + 1 };
 }
 
-/** 실시간 예보 24시간 (실패하면 예외) */
+/**
+ * 체감온도(기상청 생활기상지수 식). 5~9월은 습도를 반영한 여름 식, 10~4월은 바람을 반영한 겨울 식(기온 10℃ 이하·풍속 1.3m/s 이상일 때).
+ * 여름: 습구온도 Tw(Stull 2011)로 −0.2442 + 0.55399Tw + 0.45535Ta − 0.0022Tw² + 0.00278TwTa + 3.0
+ * 겨울: 13.12 + 0.6215Ta − 11.37V^0.16 + 0.3965Ta·V^0.16 (V: km/h)
+ */
+export function feelsLike(ta, rh, wind, month) {
+  if (ta == null) return null;
+  if (month >= 5 && month <= 9) {
+    if (rh == null) return ta;
+    const tw = ta * Math.atan(0.151977 * Math.sqrt(rh + 8.313659)) + Math.atan(ta + rh) - Math.atan(rh - 1.67633) + 0.00391838 * rh ** 1.5 * Math.atan(0.023101 * rh) - 4.686035;
+    return r1(-0.2442 + 0.55399 * tw + 0.45535 * ta - 0.0022 * tw * tw + 0.00278 * tw * ta + 3.0);
+  }
+  if (ta <= 10 && wind != null && wind >= 1.3) { const v = (wind * 3.6) ** 0.16; return r1(13.12 + 0.6215 * ta - 11.37 * v + 0.3965 * ta * v); }
+  return ta;
+}
+
+/** 기상청 단기예보(중계 서버). 반환: {base, hourly:[{time, temp, rh, pop, precip, snow, wind, sky, pty, coarse}], daily} 또는 null */
+export async function fetchKma(timeoutMs = 7000) {
+  if (!KMA_URL) return null;
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const r = await fetch(KMA_URL, { signal: ctl.signal, cache: 'no-cache' });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return Array.isArray(d?.hourly) && d.hourly.length ? d : null;
+  } catch { return null; } finally { clearTimeout(t); }
+}
+
+/** 에어코리아(중계 서버): 성동구 측정소 실측 + 서울 미세먼지 예보. 반환: {station, now, hours, forecast, overall} 또는 null */
+export async function fetchAir(timeoutMs = 7000) {
+  if (!AIR_URL) return null;
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const r = await fetch(AIR_URL, { signal: ctl.signal, cache: 'no-cache' });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d?.now?.time ? d : null;
+  } catch { return null; } finally { clearTimeout(t); }
+}
+
+/**
+ * 실시간 예보 (둘 다 실패하면 예외)
+ * 기온·습도·강수확률·강수량·바람은 기상청 단기예보(지금~3일 뒤), 자외선·미세먼지는 Open-Meteo.
+ * 기상청을 못 받으면 Open-Meteo만으로 24시간.
+ */
 export async function fetchWeather(now = new Date(), fetchFn = fetch) {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 7000);
-  let f, a;
+  const get = u => fetchFn(u, { signal: ctl.signal }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+  let f = null, a = null, k = null, ak = null;
   try {
-    [f, a] = await Promise.all([FORECAST, AIR].map(u => fetchFn(u, { signal: ctl.signal }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })));
+    [f, a, k, ak] = (await Promise.allSettled([get(FORECAST), get(AIR), fetchKma(), fetchAir()])).map(x => x.status === 'fulfilled' ? x.value : null);
   } finally { clearTimeout(timer); }
-  const s = seoulNow(now).date, p2 = n => String(n).padStart(2, '0');
-  const key = `${s.getFullYear()}-${p2(s.getMonth() + 1)}-${p2(s.getDate())}T${p2(s.getHours())}:00`;
-  const i0 = Math.max(0, f.hourly.time.indexOf(key));
-  const airIdx = Object.fromEntries(a.hourly.time.map((t, i) => [t, i]));
-  const hourly = [];
-  for (let i = i0; i < Math.min(i0 + 24, f.hourly.time.length); i++) {
-    const t = f.hourly.time[i], j = airIdx[t];
-    hourly.push({ time: t, hour: Number(t.slice(11, 13)), offset: i - i0,
-      temp: r1(f.hourly.temperature_2m[i]), feels: r1(f.hourly.apparent_temperature[i]), pop: f.hourly.precipitation_probability[i], precip: r1(f.hourly.precipitation[i]),
-      uv: r1(f.hourly.uv_index[i]), rh: f.hourly.relative_humidity_2m[i], wind: r1(f.hourly.wind_speed_10m[i]),
-      pm25: j == null ? null : r1(a.hourly.pm2_5[j]), pm10: j == null ? null : r1(a.hourly.pm10[j]) });
-  }
-  return { source: 'Open-Meteo (실시간 예보·대기질 모델)', live: true, hourly };
+  if (!f && !k) throw new Error('날씨를 받지 못했어요');
+  const s = seoulNow(now), d0 = s.date, p2 = n => String(n).padStart(2, '0');
+  const key = `${d0.getFullYear()}-${p2(d0.getMonth() + 1)}-${p2(d0.getDate())}T${p2(d0.getHours())}:00`;
+  const om = {};      // Open-Meteo 시각별
+  if (f) f.hourly.time.forEach((t, i) => { om[t] = { temp: r1(f.hourly.temperature_2m[i]), feels: r1(f.hourly.apparent_temperature[i]), pop: f.hourly.precipitation_probability[i], precip: r1(f.hourly.precipitation[i]), uv: r1(f.hourly.uv_index[i]), rh: f.hourly.relative_humidity_2m[i], wind: r1(f.hourly.wind_speed_10m[i]) }; });
+  const air = {};
+  if (a) a.hourly.time.forEach((t, i) => { air[t] = { pm25: r1(a.hourly.pm2_5[i]), pm10: r1(a.hourly.pm10[i]) }; });
+  const km = {};
+  if (k) for (const x of k.hourly) km[x.time] = x;
+  // 시간 축: 지금부터 24시간(추천·혼잡 판단용). 기상청 값이 있으면 그 시각은 기상청으로 덮어씀
+  const times = [];
+  for (let i = 0; i < 24; i++) { const t = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate(), d0.getHours() + i); times.push(`${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}T${p2(t.getHours())}:00`); }
+  const hourly = times.map((t, i) => {
+    const o = om[t] ?? {}, kk = km[t], q = air[t] ?? {};
+    const base = { time: t, hour: Number(t.slice(11, 13)), offset: i, uv: o.uv ?? null, pm25: q.pm25 ?? null, pm10: q.pm10 ?? null };
+    if (kk) return { ...base, temp: kk.temp, rh: kk.rh, pop: kk.pop, precip: kk.precip, wind: kk.wind, sky: kk.sky, pty: kk.pty, snow: kk.snow, feels: feelsLike(kk.temp, kk.rh, kk.wind, s.month), src: 'kma' };
+    return { ...base, temp: o.temp ?? null, feels: o.feels ?? null, pop: o.pop ?? null, precip: o.precip ?? null, rh: o.rh ?? null, wind: o.wind ?? null, src: 'om' };
+  }).filter(h => h.temp != null);
+  if (!hourly.length) throw new Error('날씨를 받지 못했어요');
+  // 지금 시각 미세먼지는 에어코리아 성동구 측정소 실측값으로(측정 2시간 반 안일 때 · 매시 측정이 늦게 올라오는 것 감안). 모델값이 없는 시각도 실측값으로 채움
+  const measured = ak && (now - new Date(ak.now.time.replace(' ', 'T') + ':00+09:00')) < 2.5 * 3600e3 ? ak.now : null;
+  if (measured) hourly.forEach((h, i) => {
+    if (i === 0) { if (measured.pm25 != null) h.pm25 = measured.pm25; if (measured.pm10 != null) h.pm10 = measured.pm10; h.airSrc = 'airkorea'; }
+    else { h.pm25 ??= measured.pm25; h.pm10 ??= measured.pm10; }
+  });
+  const source = (k ? `기상청 단기예보(${k.base} 발표)${f ? ' · 자외선 Open-Meteo' : ''}` : 'Open-Meteo (실시간 예보)')
+    + (measured ? ` · 미세먼지 에어코리아 ${ak.station} 측정소` : a ? ' · 미세먼지 Open-Meteo 모델' : '');
+  return { source, live: true, hourly, kma: k ? { base: k.base, hourly: k.hourly, daily: k.daily } : null, air: ak, i0key: key };
+}
+
+/** 기상청 3일 예보를 날짜별로 묶음: 오늘(남은 시간)·내일·모레·글피 */
+export function kmaDays(kma, now = seoulNow()) {
+  if (!kma?.hourly?.length) return [];
+  const p2 = n => String(n).padStart(2, '0'), d0 = now.date;
+  const keyOf = n => { const t = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + n); return `${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}`; };
+  const nowKey = `${keyOf(0)}T${p2(d0.getHours())}:00`;
+  return [0, 1, 2, 3].map(n => {
+    const date = keyOf(n), hs = kma.hourly.filter(h => h.time.startsWith(date) && (n > 0 || h.time >= nowKey));
+    if (!hs.length) return null;
+    const dl = kma.daily?.find(x => x.date === date) ?? {};
+    const temps = hs.map(h => h.temp).filter(v => v != null), max = a => a.length ? Math.max(...a) : null;
+    const day = hs.filter(h => +h.time.slice(11, 13) >= 9 && +h.time.slice(11, 13) <= 18);
+    const pick = day.length ? day : hs;
+    const pty = max(pick.map(h => h.pty ?? 0)), sky = Math.round(pick.reduce((a, h) => a + (h.sky ?? 1), 0) / pick.length);
+    return {
+      n, date, label: ['오늘', '내일', '모레', '글피'][n],
+      tmax: dl.tmax ?? max(temps), tmin: dl.tmin ?? (temps.length ? Math.min(...temps) : null),
+      pop: max(hs.map(h => h.pop ?? 0)), rain: Math.round(hs.reduce((a, h) => a + (h.precip ?? 0), 0) * 10) / 10,
+      wind: max(hs.map(h => h.wind ?? 0)), rh: Math.round(hs.reduce((a, h) => a + (h.rh ?? 0), 0) / hs.length),
+      kind: pty === 3 ? 'snow' : pty > 0 ? 'rain' : sky >= 4 ? 'cloud' : sky === 3 ? 'cloudsun' : 'sun',
+      coarse: hs.some(h => h.coarse),
+    };
+  }).filter(Boolean);
 }
 
 /** 네트워크가 안 될 때, 또는 시연 시각을 고를 때 쓰는 표본. startHour 를 주면 그 시각부터 24시간 */

@@ -53,8 +53,10 @@ export function planRoute(model, from, to, prefs, env, speed) {
   const via = [];
   if (prefs.rest && main) {
     // 쉼터 사이가 먼 구간에 쉼터를 하나씩 끼워 넣습니다. 가장 짧은 길의 REST_DETOUR배까지만 돌아갑니다.
-    const budget = base.meters * REST_DETOUR;
-    for (let round = 0; round < 3 && main.maxGap > 200; round++) {
+    // 간격 기준: 기본 200m, 어르신 동행은 prefs.restGap(= REST_STD.care.seat 100m, 팀 가정).
+    // 근거 방향: Lin, Li & Lin(2024) — 고령자 좌석 만족에서 가장 시급한 요소가 '설치 밀도'(중요/만족 1.355, 20개 중 1위)
+    const budget = base.meters * REST_DETOUR, gap = prefs.restGap ?? 200;
+    for (let round = 0; round < 3 && main.maxGap > gap; round++) {
       let best = null;
       for (const r of model.restSpots) {
         if (seq.includes(r.node)) continue;

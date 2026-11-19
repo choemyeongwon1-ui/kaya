@@ -71,6 +71,22 @@ export const AFFINITY = {
   'water-museum': { rest: .2, walk: .2, play: .3, active: 0,  learn: .9, meet: .1 },
 };
 export const AFFINITY_DEFAULT = .3;       // 표에 없는 장소(나중에 추가된 거점)
+
+// 물가 자리: 더운 날 시원함 점수에 더함(+WATER_BONUS). 근거: 조현민·권태경(2022) 한국조경학회지 50(6) — 서울숲 실측,
+// 10~16시 수변부(중앙호수) 29.0℃ · 광장부(가족마당) 30.6℃ · 공원 밖 도로 35.1℃, 33℃ 넘는 시간엔 수변부가 광장부보다도 유의하게 시원함(30.8 vs 32.7℃).
+// 다만 10~16시 평균과 체감 열스트레스(UTCI)에선 수변·광장 차이가 유의하지 않았고, 아침 5~9시엔 수변이 오히려 더 더웠음(같은 논문 p.35·38).
+// → 기온 33℃ 이상 & 10~16시에만 보너스를 줌(WATER_ON). 습지생태원은 실측 지점이 아니라 같은 물가로 본 팀 가정
+export const WATERSIDE = new Set(['lake', 'wetland']);
+export const WATER_BONUS = .2;
+export const WATER_ON = { temp: 33, from: 10, to: 16 };
+
+// 구역별 붐빔 민감도(붐빔 점수에 곱함, 1 = 보통). 근거: 주연이·정진우(2026) 서울숲 블로그 990건 LDA —
+// 생태숲·습지생태원은 '분위기·산책·자연' 경험이 중심이라 붐비면 경험 자체가 깨지고,
+// 문화예술공원은 '웨이팅·주말·팝업'이 경험의 일부로 함께 나옴. 배수 값 자체는 팀 가정
+export const CROWD_SENS = {
+  'deer': 1.25, 'wetland': 1.25, 'lake': 1.15,
+  'family-lawn': .85, 'mirror-pond': .85, 'horse-plaza': .85, 'stage': .85,
+};
 export const AFF_FIT = .45;              // 이 값 이상이면 '그 일을 할 수 있는 곳'으로 봄
 export const AFF_MIN = .3;               // 이 값 미만인 곳은 추천에서 뺌
 
@@ -130,7 +146,16 @@ export const WEIGHTS = { need: 35, company: 15, stay: 20, crowd: 12, thermal: 10
 export const ROUTE_W = 2.5;                // 고른 조건(그늘·한산함)에 주는 가중치 (기존 대시보드의 '우선' 모드와 같은 크기)
 export const STEP_PENALTY = 40;            // 계단 한 구간당 더하는 거리 m (기존 대시보드와 같음)
 export const OUT_PENALTY = 1.5;            // 산책 코스가 공원 밖 길로 나가는 것을 꺼리는 정도
-export const PREF_DETOUR = 1.2;            // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
+// 서울숲 실시간 인구를 받아 오는 중계 서버 주소(Supabase 'kaya' 프로젝트에 배포한 proxy/seoul-crowd · 서울시 장소 코드 POI101 '서울숲공원').
+// 인증키는 Supabase 비밀값 SEOUL_API_KEY에만 있음. 비워 두면 실시간 표시를 숨기고 요일·시간대 추정만 씀
+export const LIVE_CROWD_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-crowd';
+// 기상청 단기예보(기온·습도·강수확률·강수량·바람, 지금~3일 뒤) 중계 서버(proxy/kma-forecast · 서울숲 격자 nx=61, ny=126).
+// 인증키는 Supabase 비밀 보관함(Vault)의 'kma_api_key'에만 있음. 못 받으면 Open-Meteo만 씀
+export const KMA_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/kma-forecast';
+// 에어코리아 대기오염정보(성동구 측정소 실측 + 서울 미세먼지 예보 오늘~모레) 중계 서버(proxy/air-quality).
+// 인증키는 Vault의 'airkorea_api_key'에만 있음. 못 받으면 Open-Meteo 대기질 모델값만 씀
+export const AIR_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/air-quality';
+export const PREF_DETOUR = 1.2;           // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
 export const REST_DETOUR = 1.35;          // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
 export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈
 export const COURSE_MIN = [20, 40, 60];

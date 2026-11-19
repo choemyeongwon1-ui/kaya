@@ -537,3 +537,102 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
   .tr-shot{width:200px;left:20px}.tr-shot img{height:120px}.tr-shot small{top:100px}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
+
+/* ── 정돈(2026-11-19): 글 줄이기 · 공원 바깥 어둡게 ── */
+.tr-mask{opacity:.32;transition:opacity 1s var(--ease)}
+.tr-map.tr-focus .tr-mask{opacity:1}
+.tr-start-h>div{flex:1;min-width:0}
+.tr-start-h .tr-mini{color:var(--ink-2);border-color:var(--line-2)}
+.tr-start-opts[hidden]{display:none}
+.tr-sec-head>b{font-size:13px;font-weight:600;color:var(--ink-2)}
+.tr-pop .tr-course{grid-template-columns:44px 1fr;padding:6px}
+.tr-pop .tr-course-img{width:44px;height:44px;border-radius:10px}
+.tr-pop .tr-course-chain{color:var(--mute)}
+.tr-opt{padding:14px}
+.tr-opt-ico{margin-bottom:8px}
+.tr-q-sub{display:inline-block;margin-left:10px;font-size:14px;font-weight:600;color:var(--gold);letter-spacing:0;vertical-align:middle}
+.tr-none-why{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:6px}
+.tr-none-why li{font-size:14px;line-height:1.5;color:var(--ink-2);padding-left:14px;position:relative;word-break:keep-all}
+.tr-none-why li::before{content:'';position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--warn)}
+/* ── 실시간 인구 배지 ── */
+.tr-top-l{display:flex;align-items:center;gap:8px;min-width:0}
+.tr-live{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--line);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.tr-live[hidden]{display:none}
+.tr-live i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 currentColor;animation:trLivePulse 2s infinite}
+.tr-live b{font-weight:700;color:var(--ink)}
+.tr-live small{font-size:11px;color:var(--mute)}
+.tr-live.r0 i,.tr-live.r0 b{color:var(--mint)}
+.tr-live.r1 i,.tr-live.r1 b{color:#9fd8ff}
+.tr-live.r2 i,.tr-live.r2 b{color:var(--warn)}
+.tr-live.r3 i,.tr-live.r3 b{color:var(--bad)}
+@keyframes trLivePulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 55%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media(max-width:899px){.tr-live small,.tr-live span{display:none}.tr-live{padding:8px 11px}}
+/* 코스를 이렇게 짠 까닭(근거 논문 반영) */
+.tr-notes{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:6px}
+.tr-notes li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.45;color:var(--ink-2);padding:8px 11px;border-radius:var(--r-sm);background:var(--mint-soft);border:1px solid rgba(106,245,176,.14)}
+.tr-notes li svg{flex:none;margin-top:2px;color:var(--mint)}
+/* ── 지금 서울숲(실시간 인구 카드 · 배지를 누르면 뜨는 창) ── */
+.tr-live{cursor:pointer;font-family:inherit;transition:border-color .2s,background .2s}
+.tr-live:hover,.tr-live[aria-expanded="true"]{border-color:var(--line-2);background:rgba(16,28,22,.85)}
+.tr-live-wrap{position:relative}
+.tr-livepop{position:absolute;top:calc(100% + 8px);left:0;z-index:1200;width:min(340px,calc(100vw - 32px));padding:4px;border-radius:var(--r-md);background:var(--glass);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid var(--line-2);box-shadow:0 18px 50px rgba(0,0,0,.45);animation:trPopIn .25s var(--ease)}
+.tr-livepop[hidden]{display:none}
+.tr-livepop .tr-livecard{margin:0;border:0;background:transparent}
+.tr-livepop-x{position:absolute;top:8px;right:10px;width:26px;height:26px;border-radius:50%;border:0;background:var(--glass-3);color:var(--ink-2);font-size:16px;line-height:1;cursor:pointer}
+@keyframes trPopIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.tr-livecard{--c:var(--mint);margin:2px 0 18px;padding:14px 14px 12px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
+.tr-livecard.r1{--c:#9fd8ff}.tr-livecard.r2{--c:var(--warn)}.tr-livecard.r3{--c:var(--bad)}
+.tr-lc-head{display:flex;align-items:center;gap:7px}
+.tr-lc-dot{width:8px;height:8px;border-radius:50%;background:var(--c);animation:trLivePulse 2s infinite;color:var(--c)}
+.tr-lc-head small{font-size:12px;color:var(--mute)}
+.tr-lc-head b{font-size:15px;font-weight:700;color:var(--c)}
+.tr-lc-head strong{margin-left:auto;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.tr-lc-head strong small{font-size:12px;font-weight:500;color:var(--mute);margin-left:2px}
+.tr-livepop .tr-lc-head strong{margin-right:30px}
+.tr-lc-gauge{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:12px 0 4px}
+.tr-lc-gauge>div{display:flex;flex-direction:column;gap:5px}
+.tr-lc-gauge i{display:block;height:6px;border-radius:3px;background:var(--glass-3)}
+.tr-lc-gauge span{font-size:10.5px;color:var(--mute);text-align:center;white-space:nowrap}
+.tr-lc-gauge .on i{background:var(--c)}
+.tr-lc-gauge .on:last-of-type span,.tr-lc-gauge .on span{color:var(--ink-2)}
+.tr-lc-feel{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:12.5px;color:var(--ink-2)}
+.tr-lc-feel svg{color:var(--c);flex:none}
+.tr-lc-fc{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.tr-lc-bars{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;height:58px;align-items:end}
+.tr-lc-bars>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.tr-lc-bars i{display:block;width:100%;max-width:18px;height:calc(var(--h) * .72);border-radius:4px 4px 2px 2px;background:#6af5b066}
+.tr-lc-bars .s1 i{background:#9fd8ff77}.tr-lc-bars .s2 i{background:#ffc97899}.tr-lc-bars .s3 i{background:#ff9b8aaa}
+.tr-lc-bars .now i{background:var(--c)}
+.tr-lc-bars .calm i{outline:1.5px solid var(--mint);outline-offset:1px}
+.tr-lc-bars span{font-size:10px;color:var(--mute);line-height:1}
+.tr-lc-bars .now span{color:var(--ink);font-weight:600}
+.tr-lc-fc>small{display:block;margin-top:8px;font-size:12px;color:var(--ink-2)}
+.tr-lc-src{margin:10px 0 0;font-size:10.5px;color:var(--mute)}@media(max-width:899px){.tr-livepop{position:fixed;top:64px;left:16px;right:16px;width:auto}}
+/* ── 서울숲 날씨 3일(기상청 단기예보) ── */
+.tr-wxcard{margin:-8px 0 18px;padding:12px 12px 10px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
+.tr-wx-now{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:0 2px 10px;border-bottom:1px solid var(--line)}
+.tr-wx-now small{font-size:12px;color:var(--mute)}
+.tr-wx-now b{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.tr-wx-now span{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--ink-2)}
+.tr-wx-now span svg,.tr-wx-d span svg{color:var(--mute)}
+.tr-wx-days{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px}
+.tr-wx-d{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:12px}
+.tr-wx-d.wet{background:rgba(159,216,255,.08)}
+.tr-wx-d>small{font-size:11.5px;font-weight:600;color:var(--ink-2)}
+.tr-wx-d>.ico,.tr-wx-d>span:first-of-type{color:var(--gold)}
+.tr-wx-d svg{display:block}
+.tr-wx-d>b{font-size:14px;font-weight:700;color:var(--ink)}
+.tr-wx-d>b em{font-style:normal;font-weight:500;color:var(--mute);margin-left:3px;font-size:12px}
+.tr-wx-d>span{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--ink-2);white-space:nowrap}
+.tr-wx-d.wet .pop{color:#9fd8ff;font-weight:600}
+.tr-wx-tip{margin:8px 2px 0;font-size:12.5px;color:var(--ink-2)}
+.tr-wxcard .tr-lc-src{margin:4px 2px 0}
+/* 미세먼지(에어코리아) — 환경부 4단계 색 */
+.tr-wx-air{display:flex;gap:12px;flex-wrap:wrap;padding:8px 2px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}
+.tr-wx-air b{font-weight:700}
+.tr-wx-d>span.dust{margin-top:2px;padding:1px 6px;border-radius:999px;font-size:10.5px;background:rgba(255,255,255,.06);color:var(--mute)}
+.tr-wx-air .g1 b,.tr-wx-d>span.dust.g1{color:#7cc8ff}
+.tr-wx-air .g2 b,.tr-wx-d>span.dust.g2{color:#5ef2a6}
+.tr-wx-air .g3 b,.tr-wx-d>span.dust.g3{color:#ffc164}
+.tr-wx-air .g4 b,.tr-wx-d>span.dust.g4{color:#ff7a7a}
+.tr-wx-d>span.dust.g3,.tr-wx-d>span.dust.g4{background:rgba(255,160,90,.12);font-weight:600}

@@ -17,7 +17,11 @@ export function dayCurve(dow, hour) {
   return (dow === 6 ? SATURDAY : dow === 0 ? SUNDAY : dow === 5 ? FRIDAY : WEEKDAY)[hour - 6];
 }
 
-/** 날씨에 따른 이용 증감 (야외는 줄고 실내는 늘어남) */
+/**
+ * 날씨에 따른 이용 증감 (야외는 줄고 실내는 늘어남)
+ * 비 소식(강수확률 60%↑) 때 야외 ×0.6은 같은 논문의 회귀에서 비가 가장 큰 감소 요인(β −0.587/−0.489 ≈ 약 40% 감소)인 것과 맞음.
+ * 더위·미세먼지·호우 배수는 팀 가정(논문은 최적 기온 약 20~22℃, PM10이 늘수록 조금 줄어듦만 보고)
+ */
 function weatherFactor(type, wx = {}) {
   let k = 1;
   const heat = (wx.feels ?? 20) >= 33 ? 2 : (wx.feels ?? 20) >= 31 ? 1 : 0;

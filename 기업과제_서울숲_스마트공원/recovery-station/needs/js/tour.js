@@ -7,8 +7,8 @@
 //  4) 도착하면 그 자리에서 별점(+좋았던/아쉬운 점, 하고 싶은 말)을 받고, 바로 남은 코스를 고쳐 다음 곳으로 이어 갑니다.
 // 장소 점수는 맞춤형 추천 화면과 같은 recommend()를 매 구간 출발점에서 다시 계산해 쓰고, 이용자 별점을 얹습니다.
 import { loadData, buildModel } from './model.js';
-import { seoulNow, fetchWeather, sampleWeather, annotate } from './weather.js';
-import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT } from './config.js';
+import { seoulNow, fetchWeather, sampleWeather, annotate, applyScenario, kmaDays } from './weather.js';
+import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD } from './config.js';
 import { recommend, quietHours, josa, speedFor } from './recommend.js';
 import { planRoute } from './route.js';
 import { dijkstra } from './graph.js';
@@ -16,6 +16,7 @@ import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, fmtM, esc } from './ui.js';
 import { stars, staticStars, upsertJourney, loadReviews } from './review.js';
+import { fetchLiveCrowd, fmtPeople } from './live.js';
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -27,9 +28,7 @@ const desk = () => innerWidth >= 900;
 const panelW = () => Math.min(440, innerWidth * .4) + 40;
 const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
 
-const NEED_DESC = { rest: '벤치·그늘에서 쉬기', walk: '숲길 산책', play: '놀이터·체험', active: '뛰고 운동하기', learn: '곤충·사슴·전시 구경', meet: '잔디밭 피크닉' };
 const COMPANY_ICON = { alone: 'leaf', couple: 'spark', friends: 'users', kids: 'home', elders: 'bench', pet: 'walk' };
-const COMPANY_DESC = { alone: '조용한 곳 위주', couple: '경치와 날씨', friends: '함께 할 거리', kids: '화장실·짧은 거리', elders: '쉼터·천천히', pet: '산책길·한산함' };
 const PARK_CENTER = [37.5444, 127.0374];
 const PARK_INK = { park: '#0f241a', lawn: '#17402a', forest: '#123322', water: '#0f3147', building: '#1d2b25', path: '#a8f0c8' };
 const MINT = '#5ef2a6';
@@ -46,7 +45,8 @@ const BAD = [
   { key: 'far', label: '멀었어요', said: '멀었다', bump: { walk: 30 }, why: '더 가까운 곳' },
   { key: 'boring', label: '볼 게 별로였어요', said: '볼 게 별로였다', away: 34, why: '분위기가 다른 곳' },
   { key: 'weather', label: '덥거나 추웠어요', said: '덥거나 추웠다', bump: { thermal: 30 }, why: '그늘·실내가 있는 곳' },
-  { key: 'facility', label: '쉴 곳·화장실 부족', said: '쉴 곳·화장실이 부족했다', bump: { toilet: 25 }, why: '쉴 곳·화장실이 가까운 곳' },
+  // 쉴 곳·화장실은 서울숲 설문 IPA에서 '중점 개선'(박지영 2024 벤치 만족 2.53/중요 3.52 · 이주호 2023 편의시설) → 다른 태그보다 크게
+  { key: 'facility', label: '쉴 곳·화장실 부족', said: '쉴 곳·화장실이 부족했다', bump: { toilet: 40 }, why: '쉴 곳·화장실이 가까운 곳' },
 ];
 const TAG_LABEL = Object.fromEntries([...GOOD, ...BAD].map(x => [x.key, x.label]));
 // 글로 쓴 의견에서 읽어 내는 낱말(간단한 규칙 · 서버가 생기면 문장 분석으로 바꿀 자리)
@@ -90,9 +90,103 @@ addEventListener('pointermove', e => {
   t.style.setProperty('--mx', `${e.clientX - r.left}px`); t.style.setProperty('--my', `${e.clientY - r.top}px`);
 }, { passive: true });
 
+// ── 실시간 인구 배지(중계 서버가 있을 때만 보임) ──
+let live = null;
+const liveEl = h('button', { type: 'button', class: 'tr-live', hidden: true, 'aria-expanded': 'false', 'aria-label': '서울숲 실시간 붐빔 자세히', onclick: () => toggleLivePop() });
+const livePop = h('div', { class: 'tr-livepop', hidden: true });
+function paintLive() {
+  if (!live) { liveEl.hidden = true; livePop.hidden = true; return; }
+  liveEl.hidden = false;
+  liveEl.className = `tr-live r${live.rank}`;
+  liveEl.title = `${live.msg ?? ''}\n서울시 실시간 도시데이터(통신사 신호로 어림한 값) · ${live.time} 기준`;
+  liveEl.replaceChildren(h('i'), h('span', null, '서울숲 지금'), h('b', null, live.level),
+    live.min != null ? h('small', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}명 · ${String(live.time).slice(-5)}`) : null);
+  if (!livePop.hidden) livePop.replaceChildren(liveCard());
+  document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard() ?? ''));
+}
+async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
+function toggleLivePop(force) {
+  const open = force ?? livePop.hidden;
+  livePop.hidden = !open; liveEl.setAttribute('aria-expanded', String(open));
+  if (open) livePop.replaceChildren(liveCard(), h('button', { type: 'button', class: 'tr-livepop-x', 'aria-label': '닫기', onclick: () => toggleLivePop(false) }, '×'));
+}
+
+addEventListener('pointerdown', e => { if (!livePop.hidden && !e.target.closest?.('.tr-live-wrap')) toggleLivePop(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !livePop.hidden) toggleLivePop(false); });
+
+/** 서울숲 날씨: 지금 + 오늘·내일·모레·글피(기상청 단기예보). 시연 날씨일 땐 숨김 */
+function weatherCard() {
+  const w = app?.wx;
+  if (!w?.kma || w.scenario) return null;
+  const days = kmaDays(w.kma, app.now), h0 = w.hourly[0];
+  if (!days.length) return null;
+  const rainy = days.find(d => d.pop >= 60), windy = days.find(d => d.wind >= 9);
+  const tip = rainy ? `${rainy.label} 비 소식 · 최대 ${rainy.pop}%${rainy.rain >= 1 ? ` · 약 ${rainy.rain}mm` : ''}`
+    : windy ? `${windy.label} 바람이 강해요 · 최대 ${windy.wind}m/s` : '3일 동안 비 소식 없어요';
+  const deg = v => v == null ? '–' : `${Math.round(v)}°`;
+  // 미세먼지: 에어코리아 성동구 측정소 실측(지금) + 서울 예보 등급(오늘~모레). 두 등급 중 나쁜 쪽을 날짜 칸에 표시
+  const air = w.air, an = air?.now, G = ['좋음', '보통', '나쁨', '매우나쁨'];
+  const worse = (...gs) => gs.filter(g => G.includes(g)).sort((x, y) => G.indexOf(y) - G.indexOf(x))[0] ?? null;
+  const dustOf = d => { const f = air?.forecast?.find(x => x.date === d.date); return f ? worse(f.pm10, f.pm25) : null; };
+  const gcls = g => `g${G.indexOf(g) + 1}`;
+  const airRow = an ? h('div', { class: 'tr-wx-air' },
+    h('span', { class: gcls(an.pm10Label) }, '미세먼지 ', h('b', null, an.pm10Label ?? '–'), an.pm10 != null ? ` ${an.pm10}㎍` : ''),
+    h('span', { class: gcls(an.pm25Label) }, '초미세먼지 ', h('b', null, an.pm25Label ?? '–'), an.pm25 != null ? ` ${an.pm25}㎍` : '')) : null;
+  const dustBad = days.map(d => ({ d, g: dustOf(d) })).find(x => G.indexOf(x.g) >= 2);
+  return h('section', { class: 'tr-wxcard', 'aria-label': '서울숲 날씨 3일' },
+    h('div', { class: 'tr-wx-now' },
+      h('small', null, '지금'), h('b', null, `${Math.round(h0.temp)}℃`),
+      h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? h('span', null, `체감 ${Math.round(h0.feels)}℃`) : null,
+      h('span', null, icon('drop', 11), `${h0.rh ?? '–'}%`), h('span', null, icon('wind', 11), `${h0.wind ?? '–'}m/s`)),
+    airRow,
+    h('div', { class: 'tr-wx-days' }, days.map(d => { const g = dustOf(d); return h('div', { class: `tr-wx-d${d.pop >= 60 ? ' wet' : ''}` },
+      h('small', null, d.label), icon(d.kind, 20),
+      h('b', null, deg(d.tmax), h('em', null, deg(d.tmin))),
+      h('span', { class: 'pop' }, icon('rain', 10), `${d.pop}%`),
+      h('span', null, icon('wind', 10), `${Math.round(d.wind)}m/s`),
+      h('span', null, icon('drop', 10), `${d.rh}%`),
+      air ? h('span', { class: `dust ${g ? gcls(g) : ''}`, title: g ? '미세먼지 예보(서울)' : '미세먼지 예보는 모레까지' }, g ? `먼지 ${g}` : '먼지 –') : null); })),
+    h('p', { class: 'tr-wx-tip' }, dustBad ? `${dustBad.d.label} 미세먼지 ${dustBad.g} 예보 · 그날은 곤충식물원·나비정원 같은 실내도 생각해 보세요` : tip),
+    h('p', { class: 'tr-lc-src' }, `기상청 단기예보 · ${String(w.kma.base).slice(11, 13)}시 발표${days.some(d => d.coarse) ? ' · 글피는 3시간 간격' : ''}`
+      + (an ? ` · 미세먼지 에어코리아 ${air.station} 측정소 ${String(an.time).slice(11, 13)}시` : '')));
+}
+function paintWeather() { document.querySelectorAll('.tr-wxcard-slot').forEach(s => s.replaceChildren(weatherCard() ?? '')); }
+
+// 붐빔 4단계와 '가늠' 기준
+const LIVE_STEPS = ['여유', '보통', '약간 붐빔', '붐빔'];
+const PARK_M2 = 490000;      // 서울숲 면적(주제서 기준 약 49만㎡). 서울시 '서울숲공원' 집계 구역과 꼭 같지는 않음(검증 필요)
+const PITCH_M2 = 7140;       // 축구장 한 면(105×68m)
+const hh = t => String(t ?? '').slice(11, 13);
+/** 지금 서울숲: 붐빔 단계 · 인원 · 축구장 한 면당 몇 명 · 앞으로 몇 시간 */
+function liveCard() {
+  if (!live) return null;
+  const fc = (live.forecast ?? []).filter(f => f.max != null).slice(0, 8);
+  const top = Math.max(live.max ?? 0, ...fc.map(f => f.max)) || 1;
+  const perPitch = v => Math.round(v / PARK_M2 * PITCH_M2);
+  const day = fc.filter(f => +hh(f.time) >= 6 && +hh(f.time) < 22);      // 밤(22~6시)은 '한산한 때'로 권하지 않음
+  const calm = day.length ? day.reduce((a, f) => (f.max < a.max ? f : a)) : null;
+  const rankOf = lv => Math.max(0, LIVE_STEPS.indexOf(lv));
+  return h('section', { class: `tr-livecard r${live.rank}`, 'aria-label': '서울숲 실시간 붐빔' },
+    h('div', { class: 'tr-lc-head' },
+      h('span', { class: 'tr-lc-dot' }), h('small', null, '지금 서울숲'), h('b', null, live.level),
+      live.min != null ? h('strong', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}`, h('small', null, '명')) : null),
+    h('div', { class: 'tr-lc-gauge', role: 'img', 'aria-label': `4단계 중 ${live.rank + 1}단계 ${live.level}` },
+      LIVE_STEPS.map((s, i) => h('div', { class: i <= live.rank ? `on s${i}` : '' }, h('i'), h('span', null, s)))),
+    live.min != null ? h('p', { class: 'tr-lc-feel' }, icon('users', 13), `축구장 한 면 넓이에 약 ${perPitch(live.min)}~${perPitch(live.max)}명꼴`) : null,
+    fc.length ? h('div', { class: 'tr-lc-fc' },
+      h('div', { class: 'tr-lc-bars' },
+        h('div', { class: `now s${live.rank}`, style: `--h:${Math.max(8, 100 * (live.max ?? 0) / top)}%` }, h('i'), h('span', null, '지금')),
+        fc.map(f => h('div', { class: `s${rankOf(f.level)}${f === calm ? ' calm' : ''}`, style: `--h:${Math.max(8, 100 * f.max / top)}%`, title: `${hh(f.time)}시 ${f.level} · ${fmtPeople(f.min)}~${fmtPeople(f.max)}명` }, h('i'), h('span', null, hh(f.time))))),
+      calm && calm.max < (live.max ?? 0) ? h('small', null, `${hh(calm.time)}시쯤 가장 한산 · ${fmtPeople(calm.min)}~${fmtPeople(calm.max)}명`)
+        : day.length ? h('small', null, '밤 10시 전엔 지금보다 한산한 때가 없어요') : h('small', null, '앞으로 몇 시간 예보예요')) : null,
+    h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터 · 휴대폰 신호로 어림한 값 · ${String(live.time).slice(-5)} 기준`));
+}
+
 function renderTop() {
   el.top.replaceChildren(
-    h('a', { class: 'tr-brand', href: './' }, h('span', { class: 'tr-mark' }, icon('tree', 14)), h('b', null, '머무는 숲'), h('span', { class: 'tr-brand-sub' }, '코스 찾기')),
+    h('div', { class: 'tr-top-l' },
+      h('a', { class: 'tr-brand', href: './' }, h('span', { class: 'tr-mark' }, icon('tree', 14)), h('b', null, '머무는 숲'), h('span', { class: 'tr-brand-sub' }, '코스 찾기')),
+      h('div', { class: 'tr-live-wrap' }, liveEl, livePop)),
     h('div', { class: 'tr-top-r' },
       h('div', { class: 'tr-seg', role: 'group', 'aria-label': '지도 바탕' },
         h('button', { type: 'button', 'data-mode': 'sat', 'aria-pressed': 'true', onclick: () => setBase('sat') }, '위성'),
@@ -278,35 +372,32 @@ function ratings() {
   return (RT = agg);
 }
 const rtOf = id => ratings()[id] ?? null;
-function rtChip(id, size = 10) {
-  const r = rtOf(id);
-  if (!r || r.count < 2) return null;
-  return h('span', { class: 'tr-rt' }, staticStars(r.avg, size), h('b', null, r.avg.toFixed(1)), h('i', null, `(${r.count})`));
-}
 const hasSeed = () => (app.seed?.journeys ?? []).length > 0;
 
 // ── 2. 단계별 고르기 ──
 const STEPS = [
   null,
-  { key: 'need', q: '어떤 목적으로 오셨나요?', opts: () => NEEDS.map(n => ({ key: n.key, label: n.label, icon: n.icon, desc: NEED_DESC[n.key] })) },
-  { key: 'company', q: '누구와 오셨나요?', opts: () => COMPANY.map(c => ({ key: c.key, label: c.label.replace(/과$|와$/, ''), icon: COMPANY_ICON[c.key], desc: COMPANY_DESC[c.key] })) },
-  { key: 'stay', q: '얼마나 머무실 건가요?', opts: () => STAYS.map(s => ({ key: s.key, label: s.label, icon: 'clock', desc: `${STOPS_BY_STAY[s.key] ?? 3}곳 정도 · ${s.key <= 30 ? '잠깐 들르기' : s.key <= 60 ? '가볍게' : s.key <= 120 ? '여유 있게' : '하루 나들이'}` })) },
+  { key: 'need', q: '무엇을 하고 싶나요?', opts: () => NEEDS.map(n => ({ key: n.key, label: n.label, icon: n.icon })) },
+  { key: 'company', q: '누구와 왔나요?', opts: () => COMPANY.map(c => ({ key: c.key, label: c.label.replace(/과$|와$/, ''), icon: COMPANY_ICON[c.key] })) },
+  { key: 'stay', q: '얼마나 머물까요?', opts: () => STAYS.map(s => ({ key: s.key, label: s.label, icon: 'clock', desc: `${STOPS_BY_STAY[s.key] ?? 3}곳` })) },
 ];
 const hubName = id => app.model.hubById[id]?.name ?? id;
 function go(step) {
   st.step = step;
   const s = STEPS[step];
   const picked = [st.need && NEEDS.find(n => n.key === st.need)?.label, step > 2 && st.company && COMPANY.find(c => c.key === st.company)?.label].filter(Boolean);
+  setFocus(false);
   mount('tr-s-step', [
     h('div', { class: 'tr-panel-head' },
       h('div', { class: 'tr-stepno' }, h('b', null, `0${step}`), h('span', null, '/ 03')),
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
+    step === 1 ? h('div', { class: 'tr-livecard-slot' }, liveCard() ?? '') : null,
+    step === 1 ? h('div', { class: 'tr-wxcard-slot' }, weatherCard() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
-    picked.length || st.must.size ? h('div', { class: 'tr-picked' }, picked.map(p => h('span', null, p)), [...st.must].map(id => h('span', { class: 'must' }, icon('pin', 10), hubName(id)))) : null,
+    picked.length ? h('div', { class: 'tr-picked' }, picked.map(p => h('span', null, p))) : null,
     h('div', { class: 'tr-opts' }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
-      h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), h('small', null, o.desc)))),
-    step === 1 ? topRatedBlock() : null,
+      h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
     step === 1 ? popularBlock() : null,
   ]);
 }
@@ -319,31 +410,6 @@ async function choose(key, value, btn) {
   else begin();
 }
 
-/** 이용자 별점 높은 곳: 눌러 담으면 코스에 꼭 넣습니다 */
-function topRatedBlock() {
-  const list = app.model.places.map(p => ({ p, r: rtOf(p.id) })).filter(x => x.r && x.r.count >= 3)
-    .sort((a, b) => b.r.avg - a.r.avg || b.r.count - a.r.count).slice(0, 6);
-  if (!list.length) return null;
-  return h('section', { class: 'tr-rated' },
-    h('div', { class: 'tr-sec-head' }, h('div', null, h('small', null, 'TOP RATED'), h('b', null, '이용자 별점 높은 곳')), h('span', null, '눌러 담으면 코스에 넣어 드려요')),
-    h('div', { class: 'tr-rated-list' }, list.map(({ p, r }, i) => {
-      const ph = photoOf(p.id), on = st.must.has(p.id);
-      const card = h('button', { type: 'button', class: `tr-rcard tr-glow-on${on ? ' on' : ''}`, style: `--i:${i}`, 'aria-pressed': String(on), onclick: () => {
-        st.must.has(p.id) ? st.must.delete(p.id) : st.must.add(p.id);
-        const now = st.must.has(p.id);
-        card.classList.toggle('on', now); card.setAttribute('aria-pressed', String(now));
-        card.querySelector('.tr-rcard-add').textContent = now ? '담았어요' : '+ 담기';
-      } },
-        h('div', { class: 'tr-rcard-img' }, ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : icon(p.type === 'indoor' ? 'home' : 'tree', 20), h('span', { class: 'tr-rcard-rank' }, i + 1)),
-        h('b', null, p.name),
-        h('div', { class: 'tr-rcard-rt' }, staticStars(r.avg, 10), h('em', null, r.avg.toFixed(1)), h('i', null, `${r.count}명`)),
-        r.top[0] ? h('small', { class: 'tr-rcard-tag' }, TAG_LABEL[r.top[0]]) : null,
-        r.quote ? h('q', null, r.quote) : null,
-        h('span', { class: 'tr-rcard-add' }, on ? '담았어요' : '+ 담기'));
-      return card;
-    })),
-    hasSeed() ? h('p', { class: 'tr-pop-note' }, '별점은 이 기기에 남긴 평가와 시연용 가상 평가를 합친 값이에요. 실제 이용자 평가가 쌓이면 바뀝니다.') : null);
-}
 
 function popularCourses() {
   const known = new Map(COURSES.map(c => [c.stops.join('>'), { ...c, count: 0, sum: 0 }]));
@@ -378,18 +444,14 @@ function courseStats(c) {
 function popularBlock() {
   const list = popularCourses();
   return h('section', { class: 'tr-pop' },
-    h('div', { class: 'tr-sec-head' }, h('div', null, h('small', null, 'POPULAR'), h('b', null, '인기 산책 코스')), h('span', null, '고르면 바로 추천해요')),
+    h('div', { class: 'tr-sec-head' }, h('b', null, '또는, 추천 코스로 바로 출발')),
     h('div', { class: 'tr-pop-list' }, list.map((c, i) => {
       const s = courseStats(c), ph = c.stops.map(id => photoOf(id)).find(Boolean);
       return h('button', { type: 'button', class: 'tr-course tr-glow-on', style: `--i:${i}`, onclick: () => { watchMe(); Object.assign(st, { need: c.need, company: c.company, stay: c.stay }); begin(c); } },
         h('div', { class: 'tr-course-img' }, ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : icon('route', 20)),
         h('div', { class: 'tr-course-body' },
           h('b', null, c.name),
-          h('small', { class: 'tr-course-chain' }, c.stops.map(hubName).join(' → ')),
-          h('div', { class: 'tr-course-meta' },
-            c.count ? h('span', { class: 'star' }, staticStars(c.avg, 10), `${c.avg.toFixed(1)} · ${c.count}번 걸음`) : null,
-            h('span', null, `${s.minutes}분 · ${fmtM(s.meters)}`),
-            c.tag ? h('span', null, c.tag) : null)));
+          h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분`)));
     })));
 }
 
@@ -471,11 +533,18 @@ function makeLeg(from, r, rec) {
   const m = app.model, now = app.now, fb = trip.fb;
   const sunMode = !rec.mode.day ? 'none' : rec.mode.key === 'cool' || rec.mode.key === 'cold' ? 'sun' : 'shade';
   const env = { scale: crowdScale(now.dow, now.hour), sunMode, floodPenalty: null };
-  const prefs = { shade: rec.mode.key === 'hot' || !!fb.bump.thermal, rest: st.company === 'elders' || !!fb.bump.toilet, nostairs: st.company === 'kids' || st.company === 'elders', quiet: st.company === 'alone' || st.company === 'pet' || !!fb.bump.crowd };
+  // 실시간으로 '약간 붐빔' 이상이면 누구와 왔든 한산한 길을 고릅니다(Lin 2023: 혼잡 인지 → 공간 분산)
+  // 그늘 길: 더운 날 + 자외선 높은 날(Patel 2026 CoolPath · Lee & Park 2020 녹지 냉각)
+  // 쉼터 간격: 어르신 동행은 100m(팀 기준 REST_STD.care · 좌석 밀도가 1순위라는 Lin 2024 Kano-IPA가 방향 근거)
+  const elders = st.company === 'elders';
+  const prefs = { shade: rec.mode.key === 'hot' || (rec.mode.key === 'mild' && rec.mode.uvHigh) || !!fb.bump.thermal, rest: elders || !!fb.bump.toilet, restGap: elders ? REST_STD.care.seat : null, nostairs: st.company === 'kids' || elders, quiet: st.company === 'alone' || st.company === 'pet' || !!fb.bump.crowd || (live?.rank ?? 0) >= 2 };
   const route = planRoute(m, from.node, r.place.node, prefs, env, rec.speed);
   const coords = [[from.lat, from.lon], ...(route?.main?.coords ?? []), [r.place.lat, r.place.lon]];
   const meters = (route?.main?.meters ?? 0) + Math.round((from.off ?? 0) + r.place.off);
-  return { r, rec, coords, meters, walkMin: Math.max(1, Math.round(meters / rec.speed)), gardens: gardensNear(coords, r.place.id), rating: null };
+  // 가장 짧은 길과 견줄 값(햇볕 정보가 있는 구간 기준, 그늘 m)
+  const sh = x => x && x.shade != null ? { m: x.shade * x.sunKnown, k: x.sunKnown, len: x.meters } : null;
+  const cmp = { main: sh(route?.main), base: sh(route?.base), sunMode, prefs };
+  return { r, rec, coords, meters, cmp, walkMin: Math.max(1, Math.round(meters / rec.speed)), gardens: gardensNear(coords, r.place.id), rating: null };
 }
 /** 머물 시간을 넘지 않게 뒤에서부터 덜어 냅니다(담은 곳은 남기고, 빠진 자리 다음 구간은 다시 이어 그림) */
 function fitTime(legs, left) {
@@ -532,14 +601,67 @@ async function begin(course = null, avoid = []) {
   if (legs.length < 2 && avoid.length) legs = planFrom(trip.start, n, [], [], [...st.must]);
   legs = fitTime(legs, st.stay).legs;
   await sleep(Math.max(0, T(900) - (performance.now() - t0)));
-  if (!legs.length) return renderEnd();
+  if (!legs.length) return renderNone();
   trip.stops = legs;
+  setFocus(true);
   drawStart();
   flyBounds(L.latLngBounds(legs.flatMap(s => s.coords)), { ...padding(), maxZoom: 17 }, 1);
   await sleep(T(400));
   drawCourse({ reveal: true });
   renderPlan();
 }
+/** 갈 곳이 없을 때: 까닭을 한 줄로, 지금 되는 다른 선택을 버튼으로 */
+const NONE_WHY = {
+  cold: f => `체감 ${Math.round(f)}℃라 밖에 오래 머물기엔 추워요`,
+  hours: () => '지금 문을 연 실내 시설이 없어요',
+  night: () => '밤이라 야외 자리는 안내하지 않아요',
+  weather: () => '날씨가 좋지 않아 야외는 쉬는 게 좋아요',
+  flood: () => '큰비로 물이 차는 구역이 있어요',
+  crowd: () => '지금은 어디나 붐벼요',
+  need: () => '지금 이 목적에 맞는 자리가 없어요',
+};
+function renderNone() {
+  setFocus(false);
+  const m = app.model, s = trip.start, h0 = app.wx.hourly[0];
+  const run = need => recommend(m, app.wx, app.now, { need, stay: st.stay, company: st.company, slow: false, startNode: s.node, startOff: s.off ?? 0 });
+  const rec = run(st.need);
+  // 이 목적에 맞는 자리들이 왜 안 되는지(‘목적에 안 맞음’은 다른 까닭이 있으면 뺌)
+  const whys = [...new Set(rec.all.filter(r => r.aff >= .4 && r.miss && r.miss !== 'need').map(r => r.miss))];
+  const lines = (whys.length ? whys : [rec.mainWhy ?? 'need']).slice(0, 2).map(k => (NONE_WHY[k] ?? NONE_WHY.need)(h0?.feels ?? 0));
+  const alts = NEEDS.filter(n => n.key !== st.need && run(n.key).all.some(r => r.tier < 9));
+  const q = quietHours(app.wx, app.now), best = q.best[0];
+  mount('tr-s-result', [
+    tripHead(),
+    h('h2', { class: 'tr-q' }, '지금은 갈 만한 곳이 없어요'),
+    h('ul', { class: 'tr-none-why' }, lines.map(t => h('li', null, t))),
+    alts.length ? h('div', { class: 'tr-sec-head' }, h('b', null, '이건 지금 할 수 있어요')) : null,
+    alts.length ? h('div', { class: 'tr-opts' }, alts.map((n, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: () => { st.need = n.key; begin(); } },
+      h('span', { class: 'tr-opt-ico' }, icon(n.icon, 18)), h('b', null, n.label)))) : null,
+    best ? h('div', { class: 'tr-quiet' }, icon('clock', 15), h('span', null, `오기 좋은 때 · ${best.tomorrow ? '내일 ' : ''}${best.from}~${best.to === 0 ? 24 : best.to}시`)) : null,
+  ]);
+}
+
+/** 코스를 보여 줄 때 공원 바깥을 어둡게 눌러 서울숲만 또렷하게 */
+let maskLayer = null;
+function setFocus(on) {
+  if (!map || !app) return;
+  if (!maskLayer) {
+    if (!map.getPane('tr-mask')) { const p = map.createPane('tr-mask'); p.style.zIndex = 350; p.style.pointerEvents = 'none'; }
+    const holes = [];
+    const add = geom => {
+      if (!geom) return;
+      if (geom.type === 'Polygon') holes.push(geom.coordinates[0].map(([x, y]) => [y, x]));
+      else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(pg => holes.push(pg[0].map(([x, y]) => [y, x])));
+      else if (geom.type === 'Feature') add(geom.geometry);
+      else if (geom.type === 'FeatureCollection') geom.features.forEach(add);
+    };
+    add(app.model.data.park);
+    const world = [[-85, -180], [-85, 180], [85, 180], [85, -180]];
+    maskLayer = L.polygon([world, ...holes], { pane: 'tr-mask', interactive: false, stroke: false, fillColor: '#020805', fillOpacity: .78, className: 'tr-mask' }).addTo(map);
+  }
+  el.map.classList.toggle('tr-focus', on);
+}
+
 function drawStart() {
   const s = trip.start;
   if (s.mine) return;       // 내 위치 점이 곧 출발점
@@ -579,65 +701,73 @@ function photoOf(id) {
 function tripHead() {
   return h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-picked' }, labels().map(p => h('span', null, p))), h('button', { type: 'button', class: 'tr-back', onclick: restart }, '처음부터'));
 }
-function gardenTag(g) {
-  return h('span', { class: `tr-gtag${g.season ? '' : ' off'}` }, icon('leaf', 11), g.dest ? `${g.name}` : `가는 길 · ${g.name}`, g.season ? null : h('i', null, `${g.next}월`));
-}
 function startRow() {
   const s = trip.start, gates = app.model.gates;
   const opts = [{ key: 'me', label: '내 위치', on: !!s.mine, dis: !me.pos }, ...gates.map(g => ({ key: g.id, label: g.name.replace(/ 입구$/, ''), on: s.gate === g.id }))];
+  const box = h('div', { class: 'tr-start-opts', role: 'group', 'aria-label': '출발지 바꾸기', hidden: true }, opts.map(o => h('button', { type: 'button', class: o.on ? 'on' : '', disabled: o.dis, title: o.dis ? '위치를 쓸 수 없어요' : null, onclick: () => { st.startPick = o.key; begin(trip.courseObj); } }, o.key === 'me' ? icon('target', 11) : null, o.label)));
   return h('div', { class: 'tr-startrow' },
-    h('div', { class: 'tr-start-h' }, h('span', { class: `tr-start-ico${s.mine ? ' me' : ''}` }, icon(s.mine ? 'target' : 'pin', 13)), h('div', null, h('small', null, '출발'), h('b', null, s.name))),
-    s.note ? h('p', null, s.note) : null,
-    h('div', { class: 'tr-start-opts', role: 'group', 'aria-label': '출발지 바꾸기' }, opts.map(o => h('button', { type: 'button', class: o.on ? 'on' : '', disabled: o.dis, title: o.dis ? '위치를 쓸 수 없어요' : null, onclick: () => { st.startPick = o.key; begin(trip.courseObj); } }, o.key === 'me' ? icon('target', 11) : null, o.label))));
-}
-function gardenGallery(legs) {
-  const seen = new Map();
-  legs.forEach((s, i) => s.gardens.forEach(g => { if (!seen.has(g.id)) seen.set(g.id, { g, i }); }));
-  if (!seen.size) return null;
-  return h('section', { class: 'tr-gal' },
-    h('div', { class: 'tr-sec-head' }, h('div', null, h('small', null, 'ON THE WAY'), h('b', null, `가는 길에 만나는 정원 ${seen.size}곳`)), h('span', null, '지나갈 때 다시 알려 드려요')),
-    h('div', { class: 'tr-gal-list' }, [...seen.values()].map(({ g, i }, k) => {
-      const ph = gardenImg(g);
-      return h('button', { type: 'button', class: `tr-gcard${g.season ? '' : ' off'}`, style: `--i:${k}`, onclick: () => gardenShot(g) },
-        h('div', { class: 'tr-gcard-img' }, ph ? h('img', { src: ph.src, alt: ph.caption ?? '', loading: 'lazy' }) : h('span', null, icon('leaf', 22)),
-          h('em', null, g.season ? (g.dest ? `${i + 1}번 장소` : `${i ? `${i}→${i + 1}` : `출발→1`} 구간`) : `${g.next}월에 피어요`)),
-        h('b', null, g.name),
-        h('p', null, g.text?.length > 46 ? `${g.text.slice(0, 46)}…` : g.text));
-    })));
+    h('div', { class: 'tr-start-h' }, h('span', { class: `tr-start-ico${s.mine ? ' me' : ''}` }, icon(s.mine ? 'target' : 'pin', 13)),
+      h('div', null, h('small', null, '출발'), h('b', null, s.name)),
+      h('button', { type: 'button', class: 'tr-mini', onclick: () => { box.hidden = !box.hidden; } }, '바꾸기')),
+    box);
 }
 function renderPlan() {
   const legs = trip.stops, walk = sum(legs, s => s.walkMin), total = walk + dwell() * legs.length;
   mount('tr-s-result', [
     tripHead(),
-    h('div', { class: 'tr-kicker' }, 'YOUR COURSE · 추천 코스'),
-    h('h2', { class: 'tr-q' }, trip.course ? trip.course : `${legs.length}곳을 이어 걷는 코스예요`),
+    h('h2', { class: 'tr-q' }, trip.course ? trip.course : `${legs.length}곳을 걷는 코스`),
     h('div', { class: 'tr-stats' },
-      h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷는 시간')),
+      h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
       h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
-      h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '둘러보기 포함'))),
+      h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
+    planNotes(legs),
     startRow(),
     h('ol', { class: 'tr-tl' }, legs.map((s, i) => tlItem(s, i))),
-    gardenGallery(legs),
     h('div', { class: 'tr-actions' },
-      h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: startLeg }, '이 코스로 출발', h('span', { class: 'tr-cta-arrow' }, '→')),
+      h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: startLeg }, '출발', h('span', { class: 'tr-cta-arrow' }, '→')),
       h('button', { type: 'button', class: 'tr-ghost', onclick: () => begin(null, legs.map(s => s.r.place.id).filter(id => !st.must.has(id))) }, '다른 코스')),
-    h('p', { class: 'tr-hint' }, icon('chat', 13), '도착할 때마다 별점 한 번만 눌러 주세요. 그 답으로 남은 코스를 바로 고쳐 드려요.'),
   ]);
 }
+/** 이 코스를 왜 이렇게 짰는지 — 많아야 두 줄. 근거 논문은 README '근거 논문' */
+function planNotes(legs) {
+  const mode = legs[0]?.rec?.mode, notes = [];
+  // 미세먼지 나쁨(PM2.5 ≥36·PM10 ≥81 = 환경부 '나쁨' 등급). Shin 2022: 경보 때 야외 방문↓·실내 시설 방문↑ → 실내 위주 안내
+  if (mode?.key === 'dust') notes.push(['alert', '미세먼지 나쁨 · 실내 시설 위주로 골랐어요']);
+  // 그늘/볕: 가장 짧은 길과 견줌(Patel 2026 CoolPath)
+  const agg = k => legs.reduce((a, s) => { const c = s.cmp?.[k]; if (c) { a.m += c.m; a.k += c.k; a.len += c.len; } return a; }, { m: 0, k: 0, len: 0 });
+  const M = agg('main'), B = agg('base');
+  if (M.k > 50 && B.k > 50 && legs.some(s => s.cmp?.prefs?.shade || s.cmp?.sunMode === 'sun')) {
+    const sun = legs[0].cmp.sunMode === 'sun';
+    const pm = Math.round(100 * M.m / M.k), pb = Math.round(100 * B.m / B.k);
+    const v = sun ? 100 - pm : pm, gain = sun ? pb - pm : pm - pb, extra = Math.max(0, Math.round(M.len - B.len));
+    if (gain >= 3) notes.push([sun ? 'sun' : 'tree', `${sun ? '볕 드는' : '그늘진'} 길 ${v}% · 가장 짧은 길보다 +${gain}%p${extra >= 20 ? ` (${extra}m 더)` : ''}`]);
+    else if (!sun && v >= 50) notes.push(['tree', `그늘진 길 ${v}%`]);
+  }
+  // 붐빔: 한산한 길(공간) + 덜 붐비는 때(시간) — Lin 2023 혼잡 대응
+  if ((live?.rank ?? 0) >= 2 || legs.some(s => s.cmp?.prefs?.quiet && s.r.reasons?.crowd?.tone === 'bad')) {
+    const best = quietHours(app.wx, app.now).best[0];
+    notes.push(['users', `${live?.level ? `지금 ${live.level} · ` : ''}한산한 길로 골랐어요${best ? ` · 덜 붐비는 때 ${best.tomorrow ? '내일 ' : ''}${best.from}~${best.to === 0 ? 24 : best.to}시` : ''}`]);
+  }
+  if (legs.some(s => s.cmp?.prefs?.restGap)) notes.push(['bench', '어르신과 함께 · 100m마다 쉴 곳이 있게 이었어요']);
+  // 자전거와 길을 같이 씀: 서울숲엔 자전거 전용길이 없고 자전거를 포장길로 안내하지만 실제론 섞여 다님(송민아·윤희재 2023)
+  // 공원 산책로도 「보행안전 및 편의증진에 관한 법률」의 '보행자길'(§2 1호 마목)이고, 그 길에서 차마는 보행자를 방해하면 안 되며 걸음 속도로 다녀야 함(§22①③),
+  // 노인·어린이가 차별 없이 안전하게 다니도록 할 의무(§4②) → 아이·어르신 동행 때 안내
+  if (st.company === 'kids' || st.company === 'elders') notes.push(['alert', '자전거 전용길이 없어요 · 포장길에선 자전거를 살펴 주세요']);
+  // 도시공원법 제49조: 반려동물 배설물 방치 금지(①4), 조례로 정한 공원은 목줄 없이 입장 금지(②2)
+  if (st.company === 'pet') notes.push(['alert', '반려견은 목줄을 하고, 배설물은 꼭 치워 주세요']);
+  return notes.length ? h('ul', { class: 'tr-notes' }, notes.slice(0, 3).map(([ic, t]) => h('li', null, icon(ic, 13), h('span', null, t)))) : null;
+}
 function tlItem(s, i, opt = {}) {
-  const p = s.r, ph = photoOf(p.place.id), rt = rtOf(p.place.id);
+  const p = s.r, ph = photoOf(p.place.id);
   return h('li', { class: `tr-tl-i${opt.cls ? ` ${opt.cls}` : ''}`, style: `--i:${i}` },
     h('span', { class: 'tr-tl-dot' }, i + 1),
     h('button', { type: 'button', class: 'tr-tl-card tr-glow-on', onclick: () => showShot(s, i) },
       ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : h('span', { class: 'tr-tl-noimg' }, icon(p.place.type === 'indoor' ? 'home' : 'tree', 16)),
       h('div', null,
-        h('b', null, p.place.name, st.must.has(p.place.id) ? h('em', { class: 'must' }, '담은 곳') : null, opt.badge ? h('em', null, opt.badge) : null),
+        h('b', null, p.place.name, opt.badge ? h('em', null, opt.badge) : null),
         h('div', { class: 'tr-tl-meta' },
-          rtChip(p.place.id),
           h('span', null, icon('walk', 11), `${s.walkMin}분`),
-          h('span', { class: `t-${p.reasons.crowd.tone}` }, `붐빔 ${p.reasons.crowd.value}`),
-          ...s.gardens.map(gardenTag)),
-        rt?.quote ? h('q', { class: 'tr-tl-q' }, rt.quote) : null)));
+          h('span', { class: `t-${p.reasons.crowd.tone}` }, p.reasons.crowd.value)))));
 }
 const meterParts = m => m >= 1000 ? [(m / 1000).toFixed(1), h('small', null, 'km')] : [Math.round(m), h('small', null, 'm')];
 
@@ -696,7 +826,7 @@ function makeNav(s, live) {
     const rest = [tip, ...coords.slice(j)];
     line.setLatLngs(rest); glow.setLatLngs(rest);
     dot?.setLatLng(tip);
-    while (pending.length && d >= pending[0].d - 15) gardenPass(pending.shift());
+    while (pending.length && d >= pending[0].d - 60) gardenPass(pending.shift());
     navHud(total - d, s);
     if (d >= total - .5) { finished = true; cancelAnimationFrame(raf); dot?.remove(); resolve(); }
   };
@@ -771,14 +901,8 @@ function renderGoing(s, live) {
       h('div', { class: 'tr-nav-main' }, dist, h('div', null, h('strong', null, p.place.name), min)),
       h('div', { class: 'tr-nav-bar' }, bar)),
     s.why ? h('div', { class: 'tr-why-next' }, icon('spark', 13), s.why) : null,
-    h('div', { class: 'tr-chips' },
-      rtChip(p.place.id, 11),
-      h('span', { class: `t-${p.reasons.crowd.tone}` }, icon('crowd', 12), `붐빔 ${p.reasons.crowd.value}`),
-      h('span', null, icon('shade', 12), p.reasons.shade.value)),
-    s.gardens.length ? h('div', { class: 'tr-gline' }, s.gardens.map(gardenTag)) : null,
     h('div', { class: 'tr-actions' },
-      h('button', { type: 'button', class: 'tr-ghost', onclick: () => nav?.finish() }, live ? '도착했어요' : '바로 도착'),
-      live ? null : h('small', { class: 'tr-sim-note' }, '공원에서 열면 내 위치를 따라가요')),
+      h('button', { type: 'button', class: 'tr-ghost', onclick: () => nav?.finish() }, live ? '도착했어요' : '바로 도착')),
   ]);
 }
 
@@ -834,9 +958,7 @@ function renderArrived(s) {
   const rt = rtOf(p.id);
   mount('tr-s-result tr-s-ask', [
     tripHead(), progress(),
-    h('div', { class: 'tr-kicker' }, `STOP ${String(trip.idx + 1).padStart(2, '0')} / ${String(trip.stops.length).padStart(2, '0')} · 도착`, rt && rt.count >= 2 ? h('em', null, `이용자 평균 ★${rt.avg.toFixed(1)}`) : null),
-    h('h2', { class: 'tr-q' }, p.name),
-    p.note ? h('p', { class: 'tr-note' }, p.note) : null,
+    h('h2', { class: 'tr-q' }, p.name, rt && rt.count >= 2 ? h('small', { class: 'tr-q-sub' }, `★ ${rt.avg.toFixed(1)}`) : null),
     h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '여기 어땠어요?'), word), pick, form),
     h('div', { class: 'tr-actions' }, next, h('button', { type: 'button', class: 'tr-ghost small', onclick: () => { stop(); advance(s, 0, [], '', true); } }, '건너뛰기')),
     h('button', { type: 'button', class: 'tr-endlink', onclick: () => {
@@ -873,11 +995,13 @@ async function advance(s, v, tags, comment, skipped = false) {
   for (const b of bad) for (const [k, n] of Object.entries(b.bump ?? {})) fb.bump[k] = (fb.bump[k] ?? 0) + n;
   for (const c of cues) fb.bump[c.bump] = (fb.bump[c.bump] ?? 0) + 20;
   if (v && (v <= 2 || bad.some(b => b.away))) fb.disliked.push({ place: p, k: bad.find(b => b.away)?.away ?? 22 });
+  else if (v === 3) fb.disliked.push({ place: p, k: 12 });   // 3점은 약하게 멀리
   trip.from = asFrom(p); trip.idx++;
   save();
   const old = ahead();
   if (!old.length) return renderEnd();
-  const replan = skipped || (v && v <= 3 && (bad.length > 0 || v <= 2)) || cues.length > 0;
+  // 별 3개 이하는 아쉬움 신호로 봅니다(이주경·손용훈 2021: 서울숲 리뷰 중 3점 이하는 대부분 부정 내용)
+  const replan = skipped || (v && v <= 3) || cues.length > 0;
   const seen = trip.stops.slice(0, trip.idx).map(x => x.r.place.id);
   let next = replan ? planFrom(trip.from, old.length, seen, [], [...st.must]) : old;
   if (!next.length) next = old;
@@ -888,6 +1012,7 @@ async function advance(s, v, tags, comment, skipped = false) {
   const why = skipped ? '방금 곳과 다른 분위기로 골랐어요'
     : bad.length ? `${bad[0].said}고 하셔서 ${bad[0].why}${josa(bad[0].why, '으로', '로')} 골랐어요`
     : cues.length ? `남겨 주신 의견(${cues.map(c => c.label).join('·')})을 반영했어요`
+    : v && v <= 3 ? '아쉬웠다고 하셔서 다른 느낌의 곳으로 골랐어요'
     : v >= 4 ? `${p.name}${josa(p.name, '이', '가')} 좋았다고 하셔서 비슷한 느낌으로 이어 가요` : null;
   if (next[0]) next[0].why = changed.length || v >= 4 || skipped ? why : null;
   trip.stops = [...trip.stops.slice(0, trip.idx), ...next];
@@ -919,10 +1044,10 @@ function renderEnd() {
   const avg = done.length ? done.reduce((a, s) => a + s.rating, 0) / done.length : null;
   const q = quietHours(app.wx, app.now), best = q.best[0];
   const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
+  setFocus(trip.stops.length > 0);
   mount('tr-s-result', [
     tripHead(),
-    h('div', { class: 'tr-kicker' }, "TODAY'S WALK · 오늘의 산책"),
-    h('h2', { class: 'tr-q' }, done.length ? `${done.length}곳을 걸었어요` : '다음에 또 걸어요'),
+    h('h2', { class: 'tr-q' }, done.length ? `${done.length}곳을 걸었어요` : '산책을 마쳤어요'),
     trip.stops.length ? h('div', { class: 'tr-stats' },
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
@@ -935,13 +1060,11 @@ function renderEnd() {
         s.comment ? h('q', null, s.comment) : null,
         s.why ? h('small', null, s.why) : null),
       h('div', { class: 'tr-journey-r' }, staticStars(s.rating, 11))))) : null,
-    done.length ? h('p', { class: 'tr-note' }, '남겨 주신 별점과 의견은 이 기기에 저장되고, 다음 추천과 관리자 화면의 만족도 분석에 씁니다.') : null,
-    h('div', { class: `tr-quiet${q.now?.good ? ' good' : ''}` }, icon('clock', 15), h('span', null, q.now?.good ? '지금이 한산하고 날씨 좋은 때예요' : best ? `다음에 오기 좋은 때 · ${span(best)}` : '오늘은 한산하면서 날씨 좋은 때가 없어요')),
-    gardenCard(),
+    q.now?.good || best ? h('div', { class: `tr-quiet${q.now?.good ? ' good' : ''}` }, icon('clock', 15), h('span', null, q.now?.good ? '지금이 한산하고 날씨 좋은 때예요' : `다음에 오기 좋은 때 · ${span(best)}`)) : null,
     h('div', { class: 'tr-actions' },
       h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: restart }, '새 코스 찾기', h('span', { class: 'tr-cta-arrow' }, '→')),
       h('a', { class: 'tr-ghost', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
-    h('p', { class: 'tr-foot' }, `붐빔은 요일·시각으로 어림한 값(서울숲 보행 계수기 연구의 패턴)이고, 날씨는 실시간 예보입니다. ${app.wx.live ? '' : '지금은 예보를 받지 못해 표본 날씨를 씁니다. '}${hasSeed() ? '이용자 별점에는 시연용 가상 평가가 섞여 있습니다. ' : ''}사진: 위키미디어 공용(사진마다 찍은 사람·라이선스 표기)`),
+    h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 별점에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ]);
 }
 function countUp(v, digits = 0) {
@@ -952,26 +1075,6 @@ function countUp(v, digits = 0) {
   const f = t => { const k = Math.max(0, Math.min(1, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 3); n.textContent = (v * e).toFixed(digits); if (k < 1) requestAnimationFrame(f); };
   requestAnimationFrame(f);
   return n;
-}
-function gardenCard() {
-  const month = app.now.month, today = todayIso(app.now.date);
-  const inSeason = g => g.months === 'all' || (Array.isArray(g.months) && g.months.includes(month));
-  const fresh = (app.news ?? []).filter(n => n.kind === 'garden' && (!n.from || n.from <= today) && (!n.to || today <= n.to))
-    .map(n => ({ id: n.id, name: n.title, place: n.place, text: n.text, fresh: true, sure: true }));
-  const items = [...fresh, ...(app.gardens?.items ?? []).filter(inSeason)];
-  const later = (app.gardens?.items ?? []).filter(g => !inSeason(g) && Array.isArray(g.months)).map(g => ({ ...g, next: g.months.find(m => m > month) ?? g.months[0] }));
-  return h('section', { class: 'tr-garden' },
-    h('div', { class: 'tr-sec-head' }, h('div', null, h('small', null, 'GARDEN'), h('b', null, '지금 볼 만한 정원')), h('span', null, '서울국제정원박람회가 열린 서울숲')),
-    items.length ? h('div', { class: 'tr-garden-list' }, items.map(g => {
-      const hub = g.place ? app.model.hubById[g.place] : null, ph = gardenImg(g);
-      return h('div', { class: 'tr-gitem' },
-        ph ? h('img', { src: ph.src, alt: ph.caption, loading: 'lazy' }) : h('span', { class: 'tr-gico' }, icon('leaf', 16)),
-        h('div', null,
-          h('b', null, g.name, g.fresh ? h('em', null, '새 소식') : null, g.sure === false ? h('em', { class: 'check' }, '확인 필요') : null),
-          h('p', null, g.text),
-          hub ? h('button', { type: 'button', class: 'tr-mini', onclick: () => gardenShot({ ...g, hub, season: true }) }, icon('pin', 11), `${hub.name} 쪽 · 지도에서 보기`) : h('small', null, '위치 확인 중')));
-    })) : h('p', { class: 'tr-muted' }, '지금 올라온 정원 소식이 없어요.'),
-    later.length ? h('div', { class: 'tr-later' }, h('small', null, '곧 볼 수 있어요'), later.map(g => h('span', null, h('b', null, `${g.next}월`), g.name))) : null);
 }
 
 function restart() {
@@ -986,6 +1089,7 @@ function restart() {
 // ── 시작 ──
 async function boot() {
   renderTop(); makeMap(); renderIntro();
+  refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
   try {
@@ -996,8 +1100,11 @@ async function boot() {
     const model = buildModel(data, []);
     model.parkBounds = L.geoJSON(data.park).getBounds();
     if (seed?.journeys) seed.journeys.forEach(j => { j.seed = true; });
-    app = { data, model, now, wx: annotate(raw ?? sampleWeather(), now), photos, gardens, seed, news: loadNews(store) };
-    if (!raw) wxLive.then(w => { if (w) app.wx = annotate(w, now); });
+    // 시연용: tour.html?wx=heat|dust|rain|cold 이면 그 날씨로 고정
+    const demo = ['heat', 'dust', 'rain', 'cold'].find(k => k === new URLSearchParams(location.search).get('wx'));
+    const wxOf = w => annotate(demo ? applyScenario(w, demo) : w, now);
+    app = { data, model, now, wx: wxOf(raw ?? sampleWeather()), photos, gardens, seed, news: loadNews(store) };
+    if (!raw) wxLive.then(w => { if (w) { app.wx = wxOf(w); paintWeather(); } });
   } catch (err) {
     renderIntro(err.message);
     return;

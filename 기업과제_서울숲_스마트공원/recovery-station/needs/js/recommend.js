@@ -1,5 +1,5 @@
 // 시민 화면: 하고 싶은 일·머물 시간·같이 온 사람 → 갈 곳 3곳과 이유
-import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, COMPANY_W, PET, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED, HEAVY_RAIN, FLOOD_AFTER, QUIET_LEVEL } from './config.js';
+import { AFFINITY, AFFINITY_DEFAULT, AFF_FIT, AFF_MIN, HOURS, HOURS_DEFAULT_INDOOR, COMPANY, COMPANY_W, PET, NEEDS, ACTIVE_NEEDS, COLD, COOL, WARM, NIGHT, CROWD_STOP, LOOKAHEAD, LATER_MAX, WEIGHTS, SPEED, HEAVY_RAIN, FLOOD_AFTER, QUIET_LEVEL, CROWD_SENS, WATERSIDE, WATER_BONUS, WATER_ON } from './config.js';
 import { hubLoad, crowdLabel, dayCurve } from './crowd.js';
 import { dijkstra } from './graph.js';
 
@@ -92,13 +92,13 @@ export function thermalMode(wx, stayMin) {
 export const MODE_TEXT = { rain: '비가 옵니다', dust: '미세먼지가 나쁩니다', hot: '덥습니다', cold: '춥습니다', cool: '쌀쌀합니다', mild: '걷기 좋은 날씨입니다' };
 export const MODE_NOUN = { rain: '비', dust: '미세먼지', hot: '더위', cold: '추위', cool: '쌀쌀함', mild: '맑음' };
 
-function thermalScore(place, mode) {
+function thermalScore(place, mode, waterOn = false) {
   const tree = place.tree ?? .5, indoor = place.type === 'indoor';
   switch (mode.key) {
     case 'rain': return indoor ? 1 : place.type === 'shade' ? .3 : 0;
     case 'dust': return indoor ? 1 : .3;
     case 'cold': return indoor ? 1 : .2;
-    case 'hot':  return indoor ? .9 : tree;
+    case 'hot':  return indoor ? .9 : Math.min(1, tree + (waterOn && WATERSIDE.has(place.id) ? WATER_BONUS : 0));
     case 'cool': return indoor ? .8 : mode.day ? .4 + .6 * (1 - tree) : .5;
     default:     return indoor ? .6 : mode.uvHigh ? .5 + .5 * tree : .75;
   }
@@ -135,6 +135,9 @@ export function recommend(model, wx, now, input) {
   const speed = speedFor(company, input.slow);
   const group = COMPANY.find(c => c.key === company)?.group ?? null;
   const mode = thermalMode(wx, stay);
+  // 물가가 더 시원한 때: 기온 33℃ 이상인 10~16시(조현민·권태경 2022)
+  const h0 = wx.hourly?.[0] ?? {}, t0 = h0.temp ?? h0.feels;
+  const waterOn = t0 != null && t0 >= WATER_ON.temp && h0.hour >= WATER_ON.from && h0.hour <= WATER_ON.to;
   const fromStart = dijkstra(model.g, [{ node: input.startNode, d0: input.startOff ?? 0 }], e => e.len, { barrierFree: !!input.slow });
   const w = { ...WEIGHTS, ...(COMPANY_W[company] ?? {}) };
   if (stay <= 30) w.walk = Math.max(w.walk, 15);
@@ -160,8 +163,8 @@ export function recommend(model, wx, now, input) {
       // 반려견: 산책하기 좋은 야외 자리일수록 높게(걷기 적합도를 씀)
       company: pet ? clamp(.4 + .6 * (AFFINITY[place.id]?.walk ?? AFFINITY_DEFAULT)) : group ? (place.groups?.includes(group) ? 1 : .35) : .6,
       stay: clamp(win.remainMin / want),
-      crowd: 1 - clamp(avg),
-      thermal: thermalScore(place, mode),
+      crowd: 1 - clamp(avg * (CROWD_SENS[place.id] ?? 1)),
+      thermal: thermalScore(place, mode, waterOn),
       toilet: clamp(1 - place.dToilet / 300),
       walk: reachable ? clamp(1 - walkMin / walkCap) : 0,
     };

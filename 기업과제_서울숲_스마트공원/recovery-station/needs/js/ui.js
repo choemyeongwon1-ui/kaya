@@ -54,6 +54,12 @@ const ICONS = {
   target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
   chat: '<path d="M4 5h16v11H9l-5 4z"/>',
   layers: '<path d="M12 4l9 5-9 5-9-5zM3 14l9 5 9-5"/>',
+  cloud: '<path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.6 4.2 4.2 0 0 0 7 18z"/>',
+  cloudsun: '<path d="M8 6.5A3.5 3.5 0 0 1 14.3 8M8 2.5v1M3.5 7h1M4.8 3.8l.7.7"/><path d="M8 19h9a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8 12.3 3.4 3.4 0 0 0 8 19z"/>',
+  rain: '<path d="M7 14h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 5.6 4.2 4.2 0 0 0 7 14zM8 17l-1 3M12 17l-1 3M16 17l-1 3"/>',
+  snow: '<path d="M7 14h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 5.6 4.2 4.2 0 0 0 7 14zM8 18h.01M12 20h.01M16 18h.01M10 21h.01M14 21h.01"/>',
+  wind: '<path d="M3 9h11a3 3 0 1 0-3-3M3 15h15a3 3 0 1 1-3 3M3 12h7"/>',
+  drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
 };
 export function icon(name, size = 18) {
   const span = document.createElement('span');
