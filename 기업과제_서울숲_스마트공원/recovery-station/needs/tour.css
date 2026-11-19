@@ -651,8 +651,13 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
 .tr-hello-go .tr-cta-arrow{width:auto;height:auto;background:none;border:0;box-shadow:none;font-size:13px;color:inherit;margin:0}
 /* 서울숲 프로그램(공공서비스예약) */
 .tr-prog-list{display:grid;gap:6px}
-.tr-prog{display:grid;grid-template-columns:74px 1fr auto;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid var(--line);background:var(--glass-2);color:inherit;text-decoration:none}
-a.tr-prog:hover{border-color:rgba(94,242,166,.35)}
+.tr-pgm{border-radius:12px;border:1px solid var(--line);background:var(--glass-2);overflow:hidden}
+.tr-prog-main{display:grid;grid-template-columns:74px 1fr auto;align-items:center;gap:10px;padding:9px 11px;color:inherit;text-decoration:none}
+a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
+.tr-prog-add{display:block;width:100%;padding:7px 11px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink-2);font:inherit;font-size:11.5px;font-weight:600;text-align:left;cursor:pointer}
+.tr-prog-add:hover{color:var(--mint)}
+.tr-prog-add.on{color:var(--mint);background:rgba(94,242,166,.08)}
+.tr-prog-tt{font-size:11.5px;line-height:1.45}
 .tr-prog-when{font-size:11.5px;font-weight:650;color:var(--gold);line-height:1.3}
 .tr-prog-body{min-width:0}
 .tr-prog-body b{display:block;font-size:13px;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -31,6 +31,23 @@ export function shortTitle(title = '') {
     .replace(/\s*-\s*[월화수목금토일]\s*$/, '').replace(/\([^)]*\d+시[^)]*\)/g, '').replace(/\(\d{4}서울숲[^)]*\)/g, '').replace(/\s{2,}/g, ' ').trim();
 }
 const PLACE_HUB = [[/곤충식물원/, 'insect'], [/나비정원/, 'butterfly'], [/방문자센터/, 'visitor'], [/복합문화센터/, 'culture-ctr']];
+const HUB_NEAR_M = 80;
+const distM = (a, b) => { const k = Math.PI / 180, x = (b.lon - a.lon) * k * Math.cos((a.lat + b.lat) / 2 * k), y = (b.lat - a.lat) * k; return Math.hypot(x, y) * 6371000; };
+/**
+ * 프로그램이 열리는 곳 → 앱 거점. 예약 자료의 좌표로 가장 가까운 거점(80m 안)을 고르고, 좌표가 없으면 장소 이름으로.
+ * 예: '서울숲 커뮤니티센터' 좌표는 '서울숲호수·수변휴게실' 거점과 5m 안, '칠엽수 마당'은 방문자센터와 약 45m
+ * (2026-11-19 공공서비스예약 좌표 기준). '생태학습장'은 습지생태원에서 약 150m 떨어져 거점 없이 지도 점으로만 표시
+ */
+export const genericPlace = p => /^\s*서울숲\s*$/.test(p.place ?? '');     // 장소가 그냥 '서울숲'이면 좌표가 공원 대표점이라 쓰지 않음
+export function hubFor(p, hubs = []) {
+  if (genericPlace(p)) return null;
+  if (p.lat && p.lon) {
+    let best = null, bd = Infinity;
+    for (const hb of hubs) { if (hb.type === 'gate') continue; const d = distM(p, hb); if (d < bd) { bd = d; best = hb; } }
+    if (best && bd <= HUB_NEAR_M) return best.id;
+  }
+  return PLACE_HUB.find(([re]) => re.test(p.place ?? ''))?.[1] ?? null;
+}
 /** 누구를 위한 프로그램인지: group(단체만) / kids(어린이·가족) / adult(성인) / all */
 export function whoFor(p) {
   const t = `${p.target ?? ''} ${p.title ?? ''}`;
@@ -42,7 +59,7 @@ const minutesOf = hhmm => { const m = /^(\d{1,2}):(\d{2})/.exec(hhmm ?? ''); ret
  * 앞으로 14일 안에 열리는 회차. 반환: [{p, title, days, next(Date|null), nextLabel, hub, who, open(예약 가능)}]
  * 요일을 제목에서 못 읽으면 기간 안이면 '기간 중'으로 둠
  */
-export function upcomingPrograms(programs, now = new Date(), days = 14) {
+export function upcomingPrograms(programs, now = new Date(), days = 14, hubs = []) {
   const items = (programs?.items ?? []).filter(p => /^(교육강좌|문화체험)/.test(p.kind ?? '교육강좌') && p.useTo);
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const out = [];
@@ -69,7 +86,7 @@ export function upcomingPrograms(programs, now = new Date(), days = 14) {
     } else continue;
     out.push({
       p, title: shortTitle(p.title), days: ds, next, nextLabel: label,
-      hub: PLACE_HUB.find(([re]) => re.test(p.place ?? ''))?.[1] ?? null, who: whoFor(p),
+      hub: hubFor(p, hubs), who: whoFor(p),
       open: p.status === '접수중', soon: p.status === '안내중', full: /마감|종료/.test(p.status ?? ''),
     });
   }
