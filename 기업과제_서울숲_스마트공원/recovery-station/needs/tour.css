@@ -666,3 +666,39 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 .tr-prog-tag.open{background:rgba(94,242,166,.14);color:var(--mint)}
 .tr-prog-tip{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .tr-prog-tip>small{display:block;margin-bottom:7px;font-size:11.5px;font-weight:600;color:var(--ink-2)}
+/* 표정 3개 1탭 평가 */
+.rv-faces{display:flex;justify-content:center;gap:clamp(14px,5vw,26px);margin:14px 0 4px}
+.rv-face{--c:var(--mute);--t:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px 4px;border:0;background:none;color:var(--ink-2);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  opacity:0;transform:translateY(8px);animation:fcIn .45s var(--ease-out,cubic-bezier(.2,.8,.2,1)) forwards;animation-delay:calc(var(--i) * 70ms)}
+.rv-face.good{--c:#5ef2a6;--t:rgba(94,242,166,.16)}
+.rv-face.mid{--c:#ffc164;--t:rgba(255,193,100,.16)}
+.rv-face.bad{--c:#ff9b8a;--t:rgba(255,155,138,.16)}
+.rv-face small{font-size:12px;font-weight:600;color:var(--mute);transition:color .2s}
+.fc{display:block;transition:transform .25s cubic-bezier(.3,1.6,.5,1),filter .25s}
+.fc svg{display:block;width:100%;height:100%;overflow:visible}
+.fc .fc-bg{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.18);stroke-width:1.6;transition:fill .25s,stroke .25s}
+.fc .fc-line{fill:none;stroke:var(--ink-2);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .25s}
+.fc .fc-eye{fill:var(--ink-2);transition:fill .25s}
+.fc .fc-cheek{fill:#ff9bb0;opacity:0;transition:opacity .25s}
+.rv-face:hover .fc,.rv-face:focus-visible .fc{transform:translateY(-3px) scale(1.06)}
+.rv-face:hover .fc-bg,.rv-face:focus-visible .fc-bg{stroke:var(--c)}
+.rv-face:hover small{color:var(--ink-2)}
+.rv-face.on .fc{transform:scale(1.14);filter:drop-shadow(0 6px 16px var(--t))}
+.rv-face.on .fc-bg{fill:var(--t);stroke:var(--c);stroke-width:2}
+.rv-face.on .fc-line{stroke:var(--c)}
+.rv-face.on .fc-eye{fill:var(--c)}
+.rv-face.on .fc-cheek{opacity:.55}
+.rv-face.on small{color:var(--c)}
+.rv-faces.picked .rv-face:not(.on){opacity:.4}
+.rv-faces.picked .rv-face:not(.on) .fc{transform:scale(.92)}
+.rv-face.pop .fc{animation:fcPop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes fcIn{to{opacity:1;transform:none}}
+@keyframes fcPop{0%{transform:scale(1)}40%{transform:scale(1.28) rotate(-6deg)}70%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1.14)}}
+.rv-face-s{display:inline-flex}
+.rv-face-s .fc-bg{stroke-width:2}
+.rv-face-s.good .fc-bg{fill:rgba(94,242,166,.16);stroke:#5ef2a6}.rv-face-s.good .fc-line{stroke:#5ef2a6}.rv-face-s.good .fc-cheek{opacity:.5}
+.rv-face-s.mid .fc-bg{fill:rgba(255,193,100,.16);stroke:#ffc164}.rv-face-s.mid .fc-line{stroke:#ffc164}.rv-face-s.mid .fc-eye{fill:#ffc164}
+.rv-face-s.bad .fc-bg{fill:rgba(255,155,138,.16);stroke:#ff9b8a}.rv-face-s.bad .fc-line{stroke:#ff9b8a}.rv-face-s.bad .fc-eye{fill:#ff9b8a}
+@media (prefers-reduced-motion:reduce){.rv-face{animation:none;opacity:1;transform:none}.rv-face.pop .fc{animation:none}}
+.rv-word[data-f=good]{color:#5ef2a6}.rv-word[data-f=mid]{color:#ffc164}.rv-word[data-f=bad]{color:#ff9b8a}
+.tr-rate-why.anon{opacity:.75;font-size:11px;margin-top:-2px}

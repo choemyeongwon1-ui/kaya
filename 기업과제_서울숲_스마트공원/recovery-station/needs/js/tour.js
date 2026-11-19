@@ -15,7 +15,7 @@ import { dijkstra } from './graph.js';
 import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, fmtM, esc } from './ui.js';
-import { stars, staticStars, upsertJourney, loadReviews } from './review.js';
+import { faces, staticFace, upsertJourney, loadReviews, sendComfort } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 
@@ -58,7 +58,7 @@ const CUES = [
   { re: /화장실|벤치|앉을|쉴 ?곳|의자/, label: '쉴 곳·화장실', bump: 'toilet' },
   { re: /조용|한적|한산/, label: '조용한 곳', bump: 'crowd' },
 ];
-const STAR_WORD = ['', '별로였어요', '아쉬웠어요', '괜찮았어요', '좋았어요', '최고였어요'];
+const FACE_WORD = { 5: '좋았어요', 3: '그저 그랬어요', 1: '별로였어요' };
 // 기본 코스(팀이 정한 대표 코스 — 인기 순위가 아님)
 const COURSES = [
   { id: 'eco', name: '호숫가 지나 사슴 보러', tag: '가족·연인', need: 'walk', company: 'couple', stay: 60, stops: ['mirror-pond', 'lake', 'deer'] },
@@ -363,7 +363,7 @@ function ratings() {
   for (const j of allReviews()) for (const s of j.stops ?? []) {
     if (s.rating == null) continue;
     const a = agg[s.id] ??= { sum: 0, count: 0, tags: {}, comments: [], seed: 0 };
-    a.sum += s.rating; a.count++; if (j.seed) a.seed++;
+    a.sum += s.rating; a.count++; if (s.rating >= 4) a.good = (a.good ?? 0) + 1; if (j.seed) a.seed++;
     for (const t of s.tags ?? []) a.tags[t] = (a.tags[t] ?? 0) + 1;
     if (s.comment) a.comments.push({ text: s.comment, rating: s.rating, at: j.at, mine: !j.seed });
   }
@@ -1001,7 +1001,7 @@ function renderArrived(s) {
   const p = s.r.place, last = trip.idx === trip.stops.length - 1;
   let val = 0, timer = 0, noteOpen = false;
   const tags = new Set();
-  const word = h('span', { class: 'rv-word' }, '별을 눌러 주세요');
+  const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요');
   const tagBox = h('div', { class: 'tr-tagbox' });
   const note = h('textarea', { class: 'tr-text', rows: 3, maxlength: 300, placeholder: '예) 그늘이 부족했어요, 벤치가 더 있으면 좋겠어요', 'aria-label': '하고 싶은 말' });
   const count = h('small', { class: 'tr-count' }, '0 / 300');
@@ -1034,28 +1034,30 @@ function renderArrived(s) {
       countdown(1800);
     } }, x.label))));
   };
-  const pick = stars(34, v => {
+  // 표정 하나만 누르면 끝(1초 평가). 😊·😐는 잠깐 뒤 저절로 다음 곳, 😞는 까닭(붐빔·더위·쉴 곳…)을 고를 때까지 기다림
+  const pick = faces(v => {
     const flip = !val || (val >= 4) !== (v >= 4);
     val = v;
-    word.textContent = STAR_WORD[v]; word.classList.add('on');
+    word.textContent = FACE_WORD[v]; word.classList.add('on'); word.dataset.f = v >= 4 ? 'good' : v === 3 ? 'mid' : 'bad';
     if (flip) paintTags(v);
     form.classList.add('open');
     label.textContent = last ? '보내고 마치기' : '보내고 다음 곳으로';
-    if (v >= 4) countdown(2200); else stop();          // 좋았으면 잠깐 뒤 저절로 다음 곳, 아쉬웠으면 까닭을 고를 때까지 기다림
-  }, 'lg', `${p.name} 만족도`);
+    if (v >= 4) countdown(2200); else if (v === 3) countdown(3500); else stop();
+  }, `${p.name} 쾌적함`);
   const form = h('div', { class: 'tr-form' }, h('div', { class: 'tr-form-in' }, tagBox, h('div', { class: 'tr-form-row' }, more), noteBox));
   const rt = rtOf(p.id);
   mount('tr-s-result tr-s-ask', [
     tripHead(), progress(),
-    h('h2', { class: 'tr-q' }, p.name, rt && rt.count >= 2 ? h('small', { class: 'tr-q-sub' }, `★ ${rt.avg.toFixed(1)}`) : null),
-    h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '여기 어땠어요?'), word), pick,
-      h('small', { class: 'tr-rate-why' }, '남겨 주신 의견으로 남은 코스를 바로 고쳐요'), form),
+    h('h2', { class: 'tr-q' }, p.name, rt && rt.count >= 2 ? h('small', { class: 'tr-q-sub' }, `좋아요 ${Math.round((rt.good ?? 0) / rt.count * 100)}%`) : null),
+    h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '이 자리, 쾌적한가요?'), word), pick,
+      h('small', { class: 'tr-rate-why' }, '남겨 주신 의견으로 남은 코스를 바로 고쳐요'),
+      h('small', { class: 'tr-rate-why anon' }, '표정은 이름·위치 없이 공원 개선 통계에만 쓰여요'), form),
     h('div', { class: 'tr-actions' }, next, h('button', { type: 'button', class: 'tr-ghost small', onclick: () => { stop(); advance(s, 0, [], '', true); } }, '건너뛰기')),
     h('button', { type: 'button', class: 'tr-endlink', onclick: () => {
       stop();
       if (val) Object.assign(s, { rating: val, tags: [...tags], comment: note.value.trim() });
       s.done = true; trip.idx++;
-      if (val) save();
+      if (val) { save(); if (!app.wx.scenario) { const h0 = app.wx.hourly[0]; sendComfort({ place: p.id, face: val, reasons: [...tags], feels: h0?.feels, pm25: h0?.pm25, crowd: live?.rank, company: st.company }); } }
       renderEnd();
     } }, '여기서 산책 마치기'),
   ]);
@@ -1089,6 +1091,10 @@ async function advance(s, v, tags, comment, skipped = false) {
   else if (v === 3) fb.disliked.push({ place: p, k: 12 });   // 3점은 약하게 멀리
   trip.from = asFrom(p); trip.idx++;
   save();
+  if (v && !skipped && !app.wx.scenario) {   // 시연 날씨일 땐 보내지 않음
+    const h0 = app.wx.hourly[0];
+    sendComfort({ place: p.id, face: v, reasons: tags, feels: h0?.feels, pm25: h0?.pm25, crowd: live?.rank, company: st.company });
+  }
   const old = ahead();
   if (!old.length) return renderEnd();
   // 별 3개 이하는 아쉬움 신호로 봅니다(이주경·손용훈 2021: 서울숲 리뷰 중 3점 이하는 대부분 부정 내용)
@@ -1132,7 +1138,6 @@ function renderEnd() {
     L.polyline(all, { interactive: false, className: 'tr-ants', color: '#c8ffe0', weight: 2.4, opacity: .8, dashArray: '1 9', lineCap: 'round' }).addTo(layers.route);
   }
   const walkMin = sum(trip.stops, s => s.walkMin), meters = sum(trip.stops, s => s.meters);
-  const avg = done.length ? done.reduce((a, s) => a + s.rating, 0) / done.length : null;
   const q = quietHours(app.wx, app.now), best = q.best[0];
   const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
   setFocus(trip.stops.length > 0);
@@ -1142,7 +1147,7 @@ function renderEnd() {
     trip.stops.length ? h('div', { class: 'tr-stats' },
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
-      h('div', null, h('b', null, countUp(avg, 1), h('small', null, '★')), h('span', null, '평균 만족도'))) : null,
+      h('div', null, h('b', null, done.length ? countUp(done.filter(s => s.rating >= 4).length) : '–', h('small', null, done.length ? `/${done.length}곳` : '')), h('span', null, '좋았던 곳'))) : null,
     // 무료로 머무는 공간(왜 서울숲인가 2): 주변이 돈 내고 머무는 곳으로 바뀌는 성수에서, 돈 들지 않은 쉼을 숫자로 돌려줌
     trip.stops.length ? h('div', { class: 'tr-quiet good tr-free' }, icon('bench', 15), h('span', null, `돈 들이지 않고 숲에서 약 ${usedMin()}분 머물렀어요`)) : null,
     done.length ? h('ol', { class: 'tr-journey' }, done.map((s, i) => h('li', { class: s.rating <= 2 ? 'low' : '', style: `--i:${i}` },
@@ -1152,7 +1157,7 @@ function renderEnd() {
         (s.tags ?? []).length ? h('div', { class: 'tr-jtags' }, s.tags.map(t => h('span', { class: BAD.some(b => b.key === t) ? 'bad' : '' }, TAG_LABEL[t]))) : null,
         s.comment ? h('q', null, s.comment) : null,
         s.why ? h('small', null, s.why) : null),
-      h('div', { class: 'tr-journey-r' }, staticStars(s.rating, 11))))) : null,
+      h('div', { class: 'tr-journey-r' }, staticFace(s.rating, 22))))) : null,
     q.now?.good || best ? h('div', { class: `tr-quiet${q.now?.good ? ' good' : ''}` }, icon('clock', 15), h('span', null, q.now?.good ? '지금이 한산하고 날씨 좋은 때예요' : `다음에 오기 좋은 때 · ${span(best)}`)) : null,
     h('div', { class: 'tr-actions' },
       h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: restart }, '새 코스 찾기', h('span', { class: 'tr-cta-arrow' }, '→')),

@@ -6,6 +6,7 @@ import { toXY } from './geo.js';
 import { askAI, keyStore, firstMessage, REPORT_TASK, AIError } from './ai.js';
 import { createMap, mk } from './mapview.js';
 import { NEWS_KINDS, NEWS_FOR, todayIso } from './news.js';
+import { fetchComfort } from './review.js';
 import { h, icon, pct, esc, cssVar, download, md, segGroup, chipGroup, card } from './ui.js';
 
 const KINDS = [
@@ -22,7 +23,7 @@ export function createAdmin(root, app) {
   const ai = { key: keyStore.get(), remember: keyStore.remembered(), draft: null, busy: false, messages: [], log: [], live: '', err: null, ctl: null, stamp: '' };
   let view = null, diag = null, plan = null;
 
-  const el = { head: h('div'), ctrl: h('div'), side: h('div', { class: 'nd-side' }), sites: h('div'), news: h('div'), survey: h('div'), ai: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
+  const el = { head: h('div'), ctrl: h('div'), side: h('div', { class: 'nd-side' }), sites: h('div'), news: h('div'), comfort: h('div'), survey: h('div'), ai: h('div'), legend: h('div', { class: 'map-legend' }), map: h('div', { class: 'map' }) };
   const draft = { kind: 'garden', title: '', place: '', from: todayIso(app.now.date), to: '', for: 'all', text: '' };
   root.append(
     h('header', { class: 'page-head' },
@@ -37,6 +38,7 @@ export function createAdmin(root, app) {
         el.side),
       el.sites,
       el.news,
+      el.comfort,
       h('div', { class: 'nd-bottom' }, el.survey, el.ai)));
 
   const set = patch => { Object.assign(st, patch); update(); };
@@ -205,6 +207,63 @@ export function createAdmin(root, app) {
         h('div', { class: 'assume' }, `시연 단계라 올린 소식은 이 브라우저에만 저장됩니다(같은 브라우저의 다른 창에도 바로 반영). 실제 운영에서는 서버 한 곳에 저장해 모든 시민 화면에 같이 보이게 합니다. 서울시 공공서비스예약의 서울숲 프로그램은 ${app.data.programs?.items?.length ? `${app.data.programs.items.length}건을 함께 보여 줍니다(${app.data.programs.checked} 기준)` : '중계 서버(proxy/seoul-programs)로 받아 data/programs.json에 저장합니다'}.`)));
   }
 
+  // ── 방문자 쾌적함(도착 표정 3개, 익명 서버 합계) → 어디가·언제·어떤 상황에서 아쉬운가 ──
+  const COMFORT_MIN = 5;   // 응답이 이보다 적으면 '표본 적음'으로 흐리게
+  const REASON_LABEL = { crowded: '붐빔', far: '멂', boring: '볼 게 별로', weather: '덥거나 추움', facility: '쉴 곳·화장실 부족', quiet: '한산함', view: '경치', rest: '쉬기 좋음', fun: '할 거리' };
+  const BAD_REASONS = ['crowded', 'far', 'boring', 'weather', 'facility'];
+  const BANDS = [['오전', 6, 11], ['점심', 11, 14], ['오후', 14, 17], ['저녁', 17, 21], ['밤', 21, 30]];
+  const comfort = { days: 90, data: null, busy: false, failed: false };
+  async function loadComfort() {
+    comfort.busy = true; renderComfort();
+    const d = await fetchComfort(comfort.days);
+    Object.assign(comfort, { data: d, busy: false, failed: !d }); renderComfort();
+  }
+  function renderComfort() {
+    const d = comfort.data, rate = c => (c?.n ? c.good / c.n : null);
+    const pctTxt = c => (c?.n ? `${Math.round(c.good / c.n * 100)}%` : '–');
+    const bar = c => h('div', { class: `cf-bar${c.n < COMFORT_MIN ? ' few' : ''}`, title: `좋아요 ${c.good} · 보통 ${c.mid} · 별로 ${c.bad}` },
+      h('i', { class: 'g', style: `flex:${c.good}` }), h('i', { class: 'm', style: `flex:${c.mid}` }), h('i', { class: 'b', style: `flex:${c.bad}` }));
+    const head = h('div', { class: 'part-head' }, h('span', { class: 'part-n' }, '4'), h('div', null, h('h2', null, '방문자 쾌적함'),
+      h('p', null, '코스 찾기에서 도착한 곳마다 누른 표정(좋아요·보통·별로)을 모았습니다. 거점·시간대·날씨별로 어디가 아쉬운지 보고, 그늘·쉴 곳·동선 보완 근거로 씁니다.')));
+    const ctrl = h('div', { class: 'nd-row' },
+      segGroup([{ key: 7, label: '최근 7일' }, { key: 30, label: '30일' }, { key: 90, label: '90일' }, { key: 365, label: '1년' }], comfort.days, v => { comfort.days = v; loadComfort(); }, '기간'),
+      h('button', { type: 'button', class: 'btn', disabled: comfort.busy, onclick: loadComfort }, comfort.busy ? '불러오는 중…' : '새로고침'));
+    let body;
+    if (!d) body = h('div', { class: 'assume' }, comfort.busy ? '불러오는 중…' : comfort.failed ? '서버(proxy/comfort)에 닿지 못했습니다. 잠시 뒤 새로고침해 보세요.' : '');
+    else if (!d.total.n) body = h('div', { class: 'assume' }, `${d.since} 이후 모인 응답이 아직 없습니다. 방문자가 코스 찾기에서 표정을 누르면 여기에 쌓입니다.`);
+    else {
+      const name = id => app.model.hubById[id]?.name ?? id;
+      const rows = Object.entries(d.places).sort((a, b) => (rate(a[1]) ?? 1) - (rate(b[1]) ?? 1) || b[1].n - a[1].n);
+      const topBad = r => Object.entries(r.reasons).filter(([k]) => BAD_REASONS.includes(k)).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, n]) => `${REASON_LABEL[k]} ${n}`).join(' · ');
+      const placeTable = h('table', { class: 'cf-table' },
+        h('thead', null, h('tr', null, h('th', null, '거점'), h('th', null, '응답'), h('th', null, '좋아요'), h('th', { class: 'w' }, '좋아요 · 보통 · 별로'), h('th', null, '많이 꼽힌 아쉬움'))),
+        h('tbody', null, rows.map(([id, c]) => h('tr', { class: c.n < COMFORT_MIN ? 'few' : '' },
+          h('td', null, name(id)), h('td', null, String(c.n)), h('td', null, h('b', null, pctTxt(c))), h('td', { class: 'w' }, bar(c)), h('td', { class: 'muted' }, topBad(c) || '–')))));
+      const band = (byH, lo, hi) => { const c = { n: 0, good: 0, mid: 0, bad: 0 }; for (const [hr, x] of Object.entries(byH ?? {})) { const k = +hr < 6 ? +hr + 24 : +hr; if (k >= lo && k < hi) for (const f of ['n', 'good', 'mid', 'bad']) c[f] += x[f]; } return c; };
+      const heat = c => { const r = rate(c); return r == null ? '' : r >= .7 ? 'hi' : r >= .45 ? 'md' : 'lo'; };
+      const hourTable = h('table', { class: 'cf-table cf-heat' },
+        h('thead', null, h('tr', null, h('th', null, '거점'), BANDS.map(([l]) => h('th', null, l)))),
+        h('tbody', null, rows.map(([id]) => h('tr', null, h('td', null, name(id)), BANDS.map(([, lo, hi]) => { const c = band(d.byHour[id], lo, hi);
+          return h('td', { class: `${heat(c)}${c.n && c.n < COMFORT_MIN ? ' few' : ''}`, title: c.n ? `${c.n}건` : '' }, c.n ? pctTxt(c) : '·'); })))));
+      const pair = (label, a, aL, b, bL) => { const ra = rate(a), rb = rate(b), gap = ra != null && rb != null ? Math.round((ra - rb) * 100) : null;
+        return h('div', { class: 'cf-pair' }, h('b', null, label),
+          h('span', null, `${aL} ${pctTxt(a)}`, h('small', null, ` (${a.n}건)`)), h('span', null, `${bL} ${pctTxt(b)}`, h('small', null, ` (${b.n}건)`)),
+          h('em', { class: gap != null && gap <= -10 ? 'down' : '' }, a.n >= COMFORT_MIN && b.n >= COMFORT_MIN && gap != null ? `${gap > 0 ? '+' : ''}${gap}%p` : '표본 적음')); };
+      const cond = h('div', { class: 'cf-pairs' },
+        pair('더위', d.cond.hot, '체감 31℃ 이상', d.cond.notHot, '그 밖'),
+        pair('미세먼지', d.cond.dust, '초미세 36 이상', d.cond.clean, '그 밖'),
+        pair('붐빔', d.cond.crowded, '붐빔·매우 붐빔', d.cond.calm, '여유·보통'));
+      body = h('div', null,
+        h('div', { class: 'cf-kpi' }, h('div', null, h('small', null, '응답'), h('b', null, `${d.total.n}건`)), h('div', null, h('small', null, '좋아요'), h('b', null, pctTxt(d.total))),
+          h('div', { class: 'cf-kpi-bar' }, bar(d.total), h('small', null, `${d.since} ~ ${d.checked} 기준`))),
+        h('div', { class: 'diag-title nd-mt' }, '거점별 ', h('span', { class: 'muted' }, '좋아요 비율이 낮은 곳부터')), placeTable,
+        h('div', { class: 'diag-title nd-mt' }, '시간대별 좋아요 비율 ', h('span', { class: 'muted' }, '낮을수록 진한 주황 — 그 시간 그 자리에 그늘·쉴 곳·분산 안내가 필요한지 볼 곳')), hourTable,
+        h('div', { class: 'diag-title nd-mt' }, '상황별 비교 ', h('span', { class: 'muted' }, '도착 당시 날씨·붐빔에 따라 좋아요 비율이 얼마나 떨어지나')), cond);
+    }
+    el.comfort.replaceChildren(head, h('section', { class: 'card card-pad' }, ctrl, body,
+      h('div', { class: 'assume' }, `응답 ${COMFORT_MIN}건 미만인 칸은 흐리게 보여 줍니다(우연일 수 있음). 이름·기기·위치·IP는 저장하지 않고 장소·표정·까닭·당시 체감온도·초미세먼지·붐빔·동행 유형만 모읍니다. 같은 기기에서 같은 곳은 30분에 한 번만 셉니다. 시연 날씨로 본 산책은 보내지 않습니다.`)));
+  }
+
   // ── 현장 조사로 시설 추가 ──
   function renderSurvey() {
     const pts = app.extra;
@@ -330,7 +389,7 @@ export function createAdmin(root, app) {
   return {
     update,
     show() {
-      if (!view) { view = createMap(el.map, app.model); view.onClick((lat, lon) => { if (st.addMode) addPoint(lat, lon); }); }
+      if (!view) { view = createMap(el.map, app.model); view.onClick((lat, lon) => { if (st.addMode) addPoint(lat, lon); }); loadComfort(); }
       view.invalidate(); update();
     },
     theme() { view?.restyle(); if (view) update(); },

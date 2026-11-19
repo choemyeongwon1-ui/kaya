@@ -188,3 +188,22 @@ span.nd-mk{width:26px;height:26px;flex:none}
 .nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:span 2}
 @media(max-width:760px){.nd-newsform{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.nd-newsform .nd-field:nth-child(2),.nd-newsform .nd-field:nth-child(7){grid-column:1/-1}}
 .nd-tour-btn{display:inline-flex;align-items:center;gap:6px;margin-top:12px;text-decoration:none}
+/* 방문자 쾌적함(도착 표정 합계) */
+.cf-kpi{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.cf-kpi>div>small{display:block;color:var(--muted);font-size:12px}
+.cf-kpi>div>b{font-size:24px}
+.cf-kpi-bar{flex:1;min-width:200px}.cf-kpi-bar small{color:var(--muted);font-size:12px}
+.cf-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--surface-3);min-width:80px}
+.cf-bar i{display:block}.cf-bar .g{background:var(--good)}.cf-bar .m{background:var(--muted);opacity:.45}.cf-bar .b{background:var(--serious)}
+.cf-bar.few{opacity:.4}
+.cf-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.cf-table th,.cf-table td{padding:6px 8px;border-bottom:1px solid var(--hair);text-align:left;white-space:nowrap}
+.cf-table th{color:var(--muted);font-weight:600;font-size:12px}
+.cf-table td.w{width:30%}.cf-table tr.few td{opacity:.5}
+.cf-heat td:not(:first-child),.cf-heat th:not(:first-child){text-align:center}
+.cf-heat td.hi{background:var(--good-wash)}.cf-heat td.md{background:var(--surface-2)}.cf-heat td.lo{background:var(--serious-wash);font-weight:700}
+.cf-heat td.few{opacity:.5}
+.cf-pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+.cf-pair{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--hair);border-radius:var(--radius-sm);font-size:13px}
+.cf-pair small{color:var(--muted)}.cf-pair em{font-style:normal;font-weight:700;color:var(--muted)}.cf-pair em.down{color:var(--serious)}
+@media(max-width:760px){.cf-pairs{grid-template-columns:1fr}.cf-table{display:block;overflow-x:auto}}

@@ -167,7 +167,9 @@ export const KMA_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/km
 export const AIR_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/air-quality';
 // 서울시 공공서비스예약에서 '서울숲' 프로그램만 추린 중계 서버(proxy/seoul-programs). 키는 Vault 'seoul_api_key'
 export const PROGRAMS_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-programs';
-export const PREF_DETOUR = 1.2;           // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
+// 도착 평가(표정 3개) 익명 저장·집계 서버(proxy/comfort). 이름·기기·좌표·IP 없이 장소·표정·까닭·당시 날씨/붐빔만 저장
+export const COMFORT_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/comfort';
+export const PREF_DETOUR = 1.2;          // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
 export const REST_DETOUR = 1.35;          // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
 export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈
 export const COURSE_MIN = [20, 40, 60];
