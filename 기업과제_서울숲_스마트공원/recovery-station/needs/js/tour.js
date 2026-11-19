@@ -391,7 +391,7 @@ const hubName = id => app.model.hubById[id]?.name ?? id;
  *  - 더운 낮: 성수 거리보다 시원한 숲(조현민·권태경 2022 실측)
  *  - 평일 17~21시: 일터에서 걸어 닿는 숲 → 혼자 쉬는 30분 코스 바로 출발
  *  - 붐빌 때(실시간 '약간 붐빔' 이상 또는 주말 12~17시): 한산한 길·때 안내(조현민·권태경 2025)
- *  - 그 밖: 돈 들지 않고 머무는 곳 + 물·숲·습지·실내 정원 선택지
+ *  - 그 밖: 성수 한가운데 쉬어 가는 숲 + 물·숲·습지·실내 정원 선택지(무료라는 말은 노골적이라 쓰지 않음)
  */
 function helloCard() {
   const w = app.wx, h0 = w?.hourly?.[0] ?? {}, n = app.now, weekday = n.dow >= 1 && n.dow <= 5;
@@ -413,7 +413,7 @@ function helloCard() {
   if (busy) return card('busy', 'users', weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요',
     '붐비는 곳은 피해서, 한산한 길과 덜 붐비는 때를 함께 알려 드려요.',
     '서울숲 보행 계수: 토요일 오후 2시가 한 주 중 가장 붐빔(조현민·권태경 2025)');
-  return card('free', 'bench', '돈 들지 않고 머무는 성수의 숲',
+  return card('free', 'bench', '성수 한가운데, 잠깐 쉬어 가는 숲',
     '물가·숲·습지·실내 정원 가운데, 오늘 날씨와 붐빔에 맞는 곳을 골라 드려요.', null);
 }
 
@@ -759,7 +759,7 @@ function drawStart() {
 function pinIcon(s, i, extra = '') {
   const state = i < trip.idx ? (s.rating != null ? 'done' : 'passed') : i === trip.idx ? 'next' : 'up';
   const low = s.rating != null && s.rating <= 2 ? ' low' : '';
-  const tag = s.rating != null ? `<u>★ ${s.rating}</u>` : '';
+  const tag = s.rating != null ? `<u>${s.rating >= 4 ? '좋아요' : s.rating === 3 ? '보통' : '별로'}</u>` : '';
   return L.divIcon({ className: '', html: `<div class="tr-pin ${state}${low} ${extra}" style="--d:${i * 110}ms"><span>${i + 1}</span><em>${esc(s.r.place.name)}${tag}</em></div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
 }
 function drawCourse({ reveal = false, changed = new Set() } = {}) {
@@ -769,12 +769,12 @@ function drawCourse({ reveal = false, changed = new Set() } = {}) {
     if (i >= trip.idx && !s.walking && !s.walked) {
       const glow = L.polyline(s.coords, { interactive: false, className: 'tr-plan-glow', color: MINT, weight: 10, opacity: i === trip.idx ? .2 : .1, lineCap: 'round', lineJoin: 'round' }).addTo(layers.plan);
       const dash = L.polyline(s.coords, { interactive: false, className: `tr-plan${i === trip.idx ? ' next' : ''}`, color: '#d8ffea', weight: i === trip.idx ? 2.6 : 2, opacity: i === trip.idx ? .95 : .55, dashArray: '1 9', lineCap: 'round' }).addTo(layers.plan);
-      if (reveal) { drawIn(glow, i * 380, 750); dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, delay: i * 380 + 450, fill: 'backwards' }); }
+      if (reveal) { drawIn(glow, i * 200, 500); dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: i * 200 + 300, fill: 'backwards' }); }
     }
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
-      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 380 + 650 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 600 })
+      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 600 })
         .addTo(layers.garden).on('click', () => gardenShot(g));
     }
   });
@@ -866,6 +866,8 @@ function tlItem(s, i, opt = {}) {
 const meterParts = m => m >= 1000 ? [(m / 1000).toFixed(1), h('small', null, 'km')] : [Math.round(m), h('small', null, 'm')];
 
 // ── 4. 내비게이션: 내 위치 점이 길을 따라가고, 지나온 길은 연해집니다 ──
+let earlyFinish = false;
+const finishLeg = () => { if (nav) nav.finish(); else earlyFinish = true; };
 async function startLeg() {
   const s = trip.stops[trip.idx];
   if (!s) return renderEnd();
@@ -874,10 +876,12 @@ async function startLeg() {
   for (const v of visited()) v.layer?.eachLayer(l => l.setStyle?.({ opacity: l.options.className === 'tr-passed' ? .22 : .12 }));
   drawCourse();
   const live = !!me.pos && Date.now() - me.pos.at < 90000 && L.latLng(me.pos.lat, me.pos.lon).distanceTo(s.coords[0]) < NEAR_START + 30;
+  earlyFinish = false;
   renderGoing(s, live);
   await flyBounds(L.latLngBounds(s.coords), { ...padding(), maxZoom: 17.4 }, .8);
   s.layer = L.layerGroup().addTo(layers.route);
   nav = makeNav(s, live);
+  if (earlyFinish) nav.finish();   // 지도가 움직이는 사이에 '도착' 단추를 눌렀으면 바로 도착
   await nav.done;
   nav = null;
   s.walking = false; s.walked = true;
@@ -934,14 +938,10 @@ function makeNav(s, live) {
     };
     api.onPos();
   } else {
-    // 미리보기 속도: 100m에 약 0.9초, 한 구간 5~14초. 처음·끝만 살짝 부드럽게(가운데 급가속 없음)
-    const dur = reduce ? 1 : Math.max(5000, Math.min(14000, total * 9)), t0 = performance.now() + 600;
-    const frame = t => {
-      const k = Math.max(0, Math.min(1, (t - t0) / dur)), e = (1 - Math.cos(Math.PI * k)) / 2;
-      set(e * total);
-      if (!finished) raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
+    // 미리보기(공원 밖·위치 없음): 점이 길을 따라 걷는 재생은 느리고 쓸모가 없어서 뺌.
+    // 길만 그려 두고, 이용자가 '도착 화면 보기'를 누르면 바로 도착으로 넘어감(지나는 정원 알림은 생략)
+    dot?.remove();
+    api.finish = () => { pending.length = 0; set(total); };
   }
   return api;
 }
@@ -995,8 +995,10 @@ function renderGoing(s, live) {
       h('div', { class: 'tr-nav-main' }, dist, h('div', null, h('strong', null, p.place.name), min)),
       h('div', { class: 'tr-nav-bar' }, bar)),
     s.why ? h('div', { class: 'tr-why-next' }, icon('spark', 13), s.why) : null,
-    h('div', { class: 'tr-actions' },
-      h('button', { type: 'button', class: 'tr-ghost', onclick: () => nav?.finish() }, live ? '도착했어요' : '바로 도착')),
+    live ? null : h('small', { class: 'tr-rate-why' }, '지도의 이 길로 가요. 공원에서 걸으면 내 위치를 따라 저절로 도착 화면이 떠요'),
+    h('div', { class: 'tr-actions' }, live
+      ? h('button', { type: 'button', class: 'tr-ghost', onclick: finishLeg }, '도착했어요')
+      : h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: finishLeg }, '도착 화면 보기', h('span', { class: 'tr-cta-arrow' }, '→'))),
   ]);
 }
 
@@ -1120,7 +1122,7 @@ async function advance(s, v, tags, comment, skipped = false) {
   trip.stops = [...trip.stops.slice(0, trip.idx), ...next];
   if (!next.length) return renderEnd();
   if (changed.length) toast({ cls: 'fb', ico: 'route', small: '의견 반영 · 남은 코스를 바꿨어요', title: changed.map(c => `${c.n}번 ${c.from ?? ''} → ${c.to}`).join(', '), text: fit.cut ? `시간이 빠듯해서 마지막 ${fit.cut}곳은 뺐어요.` : why }, 4600);
-  else if (v) toast({ cls: 'fb ok', ico: 'check', small: `★ ${v} 고마워요`, title: replan ? '다시 따져 봤는데 지금 코스가 가장 잘 맞아요' : v >= 4 ? '좋았다니 다행이에요! 그대로 이어 가요' : '의견 고마워요. 그대로 이어 가요', text: fit.cut ? `시간이 빠듯해서 마지막 ${fit.cut}곳은 뺐어요.` : null }, 3000);
+  else if (v) toast({ cls: 'fb ok', ico: 'check', small: `${FACE_WORD[v] ?? ''} · 고마워요`, title: replan ? '다시 따져 봤는데 지금 코스가 가장 잘 맞아요' : v >= 4 ? '좋았다니 다행이에요! 그대로 이어 가요' : '의견 고마워요. 그대로 이어 가요', text: fit.cut ? `시간이 빠듯해서 마지막 ${fit.cut}곳은 뺐어요.` : null }, 3000);
   drawCourse({ changed: new Set(changed.map(c => c.id)) });
   startLeg();
 }
@@ -1153,8 +1155,6 @@ function renderEnd() {
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
       h('div', null, h('b', null, done.length ? countUp(done.filter(s => s.rating >= 4).length) : '–', h('small', null, done.length ? `/${done.length}곳` : '')), h('span', null, '좋았던 곳'))) : null,
-    // 무료로 머무는 공간(왜 서울숲인가 2): 주변이 돈 내고 머무는 곳으로 바뀌는 성수에서, 돈 들지 않은 쉼을 숫자로 돌려줌
-    trip.stops.length ? h('div', { class: 'tr-quiet good tr-free' }, icon('bench', 15), h('span', null, `돈 들이지 않고 숲에서 약 ${usedMin()}분 머물렀어요`)) : null,
     done.length ? h('ol', { class: 'tr-journey' }, done.map((s, i) => h('li', { class: s.rating <= 2 ? 'low' : '', style: `--i:${i}` },
       h('span', { class: 'tr-num' }, trip.stops.indexOf(s) + 1),
       h('div', null,
@@ -1167,7 +1167,7 @@ function renderEnd() {
     h('div', { class: 'tr-actions' },
       h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: restart }, '새 코스 찾기', h('span', { class: 'tr-cta-arrow' }, '→')),
       h('a', { class: 'tr-ghost', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
-    h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 별점에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
+    h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ]);
 }
 function countUp(v, digits = 0) {
