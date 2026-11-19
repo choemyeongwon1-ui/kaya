@@ -635,4 +635,17 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
 .tr-wx-air .g2 b,.tr-wx-d>span.dust.g2{color:#5ef2a6}
 .tr-wx-air .g3 b,.tr-wx-d>span.dust.g3{color:#ffc164}
 .tr-wx-air .g4 b,.tr-wx-d>span.dust.g4{color:#ff7a7a}
-.tr-wx-d>span.dust.g3,.tr-wx-d>span.dust.g4{background:rgba(255,160,90,.12);font-weight:600}
+.tr-wx-d>span.dust.g3,.tr-wx-d>span.dust.g4{background:rgba(255,160,90,.12);font-weight:600}/* 첫 화면 한 줄: 왜 서울숲인가(상황별 이유 하나) */
+.tr-hello{display:flex;gap:11px;align-items:flex-start;margin:-8px 0 12px;padding:12px 13px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--glass-2)}
+.tr-hello-ico{flex:0 0 auto;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(94,242,166,.12);color:var(--mint)}
+.tr-hello b{display:block;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.tr-hello p{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink-2)}
+.tr-hello small{display:block;margin-top:4px;font-size:10.5px;color:var(--mute)}
+.tr-hello.hot .tr-hello-ico{background:rgba(255,193,100,.14);color:var(--gold)}
+.tr-hello.busy .tr-hello-ico{background:rgba(159,216,255,.12);color:#9fd8ff}
+.tr-hello-go{margin-top:9px;display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;border:1px solid rgba(94,242,166,.35);background:rgba(94,242,166,.1);color:var(--mint);font:inherit;font-size:12.5px;font-weight:650;cursor:pointer}
+.tr-hello-go:hover{background:rgba(94,242,166,.18)}
+.tr-hello+.tr-livecard,.tr-hello-slot+.tr-livecard-slot .tr-livecard{margin-top:0}
+.tr-rate-why{display:block;margin:8px 0 0;font-size:11.5px;color:var(--mute);text-align:center}
+.tr-free{margin-top:10px}
+.tr-hello-go .tr-cta-arrow{width:auto;height:auto;background:none;border:0;box-shadow:none;font-size:13px;color:inherit;margin:0}

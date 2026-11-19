@@ -103,7 +103,9 @@ function paintLive() {
     live.min != null ? h('small', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}명 · ${String(live.time).slice(-5)}`) : null);
   if (!livePop.hidden) livePop.replaceChildren(liveCard());
   document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard() ?? ''));
+  paintHello();
 }
+function paintHello() { if (app) document.querySelectorAll('.tr-hello-slot').forEach(s => s.replaceChildren(helloCard())); }
 async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
 function toggleLivePop(force) {
   const open = force ?? livePop.hidden;
@@ -150,7 +152,7 @@ function weatherCard() {
     h('p', { class: 'tr-lc-src' }, `기상청 단기예보 · ${String(w.kma.base).slice(11, 13)}시 발표${days.some(d => d.coarse) ? ' · 글피는 3시간 간격' : ''}`
       + (an ? ` · 미세먼지 에어코리아 ${air.station} 측정소 ${String(an.time).slice(11, 13)}시` : '')));
 }
-function paintWeather() { document.querySelectorAll('.tr-wxcard-slot').forEach(s => s.replaceChildren(weatherCard() ?? '')); }
+function paintWeather() { document.querySelectorAll('.tr-wxcard-slot').forEach(s => s.replaceChildren(weatherCard() ?? '')); paintHello(); }
 
 // 붐빔 4단계와 '가늠' 기준
 const LIVE_STEPS = ['여유', '보통', '약간 붐빔', '붐빔'];
@@ -382,6 +384,38 @@ const STEPS = [
   { key: 'stay', q: '얼마나 머물까요?', opts: () => STAYS.map(s => ({ key: s.key, label: s.label, icon: 'clock', desc: `${STOPS_BY_STAY[s.key] ?? 3}곳` })) },
 ];
 const hubName = id => app.model.hubById[id]?.name ?? id;
+
+/**
+ * 첫 화면 한 줄: '왜 서울숲인가'(팀 논리)를 지금 상황에 맞는 이유 하나로 보여 줌
+ *  - 더운 낮: 성수 거리보다 시원한 숲(조현민·권태경 2022 실측)
+ *  - 평일 17~21시: 일터에서 걸어 닿는 숲 → 혼자 쉬는 30분 코스 바로 출발
+ *  - 붐빌 때(실시간 '약간 붐빔' 이상 또는 주말 12~17시): 한산한 길·때 안내(조현민·권태경 2025)
+ *  - 그 밖: 돈 들지 않고 머무는 곳 + 물·숲·습지·실내 정원 선택지
+ */
+function helloCard() {
+  const w = app.wx, h0 = w?.hourly?.[0] ?? {}, n = app.now, weekday = n.dow >= 1 && n.dow <= 5;
+  const hot = (h0.feels ?? h0.temp ?? 0) >= 31 && h0.day !== false;
+  const busy = (live?.rank ?? 0) >= 2 || (!weekday && n.hour >= 12 && n.hour < 17);
+  const card = (cls, ico, title, text, src, action) => h('section', { class: `tr-hello ${cls}` },
+    h('span', { class: 'tr-hello-ico' }, icon(ico, 16)),
+    h('div', null, h('b', null, title), h('p', null, text), src ? h('small', null, src) : null, action ?? null));
+  if (hot) return card('hot', 'leaf', '더운 날, 성수 거리보다 시원한 숲',
+    '기온이 33℃를 넘던 때 서울숲 안은 공원 밖 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.',
+    '2022년 7월 서울숲 실측(조현민·권태경 2022)');
+  // 퇴근길 30분: 지금 갈 곳이 있는 활동(쉬기 → 걷기 → 그 밖 순)을 골라 바로 출발. 추운 저녁처럼 쉴 곳이 없으면 걷기로
+  const g0 = app.model.gates?.[0];
+  const workNeed = weekday && n.hour >= 17 && n.hour < 21 && g0
+    ? ['rest', 'walk', ...NEEDS.map(x => x.key)].find(k => recommend(app.model, w, n, { need: k, stay: 30, company: 'alone', startNode: g0.node, startOff: g0.off ?? 0 }).fit !== 'none') : null;
+  if (workNeed) return card('work', 'walk', '퇴근길, 숲으로 30분',
+    `성수에서 걸어서 닿는 숲이에요. 혼자 ${workNeed === 'rest' ? '조용히 쉬는' : workNeed === 'walk' ? '가볍게 걷는' : '머무는'} 30분 코스를 바로 짜 드려요.`, null,
+    h('button', { type: 'button', class: 'tr-hello-go tr-glow-on', onclick: () => { watchMe(); Object.assign(st, { need: workNeed, company: 'alone', stay: 30 }); begin(); } }, '30분 코스로 바로 출발', h('span', { class: 'tr-cta-arrow' }, '→')));
+  if (busy) return card('busy', 'users', weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요',
+    '붐비는 곳은 피해서, 한산한 길과 덜 붐비는 때를 함께 알려 드려요.',
+    '서울숲 보행 계수: 토요일 오후 2시가 한 주 중 가장 붐빔(조현민·권태경 2025)');
+  return card('free', 'bench', '돈 들지 않고 머무는 성수의 숲',
+    '물가·숲·습지·실내 정원 가운데, 오늘 날씨와 붐빔에 맞는 곳을 골라 드려요.', null);
+}
+
 function go(step) {
   st.step = step;
   const s = STEPS[step];
@@ -392,6 +426,7 @@ function go(step) {
       h('div', { class: 'tr-stepno' }, h('b', null, `0${step}`), h('span', null, '/ 03')),
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
+    step === 1 ? h('div', { class: 'tr-hello-slot' }, helloCard()) : null,
     step === 1 ? h('div', { class: 'tr-livecard-slot' }, liveCard() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-wxcard-slot' }, weatherCard() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
@@ -960,7 +995,8 @@ function renderArrived(s) {
   mount('tr-s-result tr-s-ask', [
     tripHead(), progress(),
     h('h2', { class: 'tr-q' }, p.name, rt && rt.count >= 2 ? h('small', { class: 'tr-q-sub' }, `★ ${rt.avg.toFixed(1)}`) : null),
-    h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '여기 어땠어요?'), word), pick, form),
+    h('div', { class: 'tr-rate' }, h('div', { class: 'tr-rate-h' }, h('b', null, '여기 어땠어요?'), word), pick,
+      h('small', { class: 'tr-rate-why' }, '남겨 주신 의견으로 남은 코스를 바로 고쳐요'), form),
     h('div', { class: 'tr-actions' }, next, h('button', { type: 'button', class: 'tr-ghost small', onclick: () => { stop(); advance(s, 0, [], '', true); } }, '건너뛰기')),
     h('button', { type: 'button', class: 'tr-endlink', onclick: () => {
       stop();
@@ -1054,6 +1090,8 @@ function renderEnd() {
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
       h('div', null, h('b', null, countUp(avg, 1), h('small', null, '★')), h('span', null, '평균 만족도'))) : null,
+    // 무료로 머무는 공간(왜 서울숲인가 2): 주변이 돈 내고 머무는 곳으로 바뀌는 성수에서, 돈 들지 않은 쉼을 숫자로 돌려줌
+    trip.stops.length ? h('div', { class: 'tr-quiet good tr-free' }, icon('bench', 15), h('span', null, `돈 들이지 않고 숲에서 약 ${usedMin()}분 머물렀어요`)) : null,
     done.length ? h('ol', { class: 'tr-journey' }, done.map((s, i) => h('li', { class: s.rating <= 2 ? 'low' : '', style: `--i:${i}` },
       h('span', { class: 'tr-num' }, trip.stops.indexOf(s) + 1),
       h('div', null,
