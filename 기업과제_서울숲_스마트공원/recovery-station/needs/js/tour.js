@@ -17,6 +17,7 @@ import { loadNews, todayIso } from './news.js';
 import { h, icon, fmtM, esc } from './ui.js';
 import { stars, staticStars, upsertJourney, loadReviews } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
+import { fetchPrograms, upcomingPrograms, pickPrograms } from './programs.js';
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -434,6 +435,7 @@ function go(step) {
     h('div', { class: 'tr-opts' }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
       h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
     step === 1 ? popularBlock() : null,
+    step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,
   ]);
 }
 async function choose(key, value, btn) {
@@ -488,6 +490,35 @@ function popularBlock() {
           h('b', null, c.name),
           h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분`)));
     })));
+}
+
+// ── 서울숲 프로그램(공공서비스예약) ──
+const progPlace = s => String(s ?? '').replace(/^서울숲\s*>\s*/, '').replace(/^서울숲\s+/, '') || '서울숲';
+function progRow(x, i = 0) {
+  const p = x.p, tag = x.who === 'group' ? '단체' : x.open ? '예약' : x.soon ? '곧 접수' : x.full ? '마감' : p.status;
+  const tgt = p.target?.match(/\(([^)]*)\)?/)?.[1] ?? p.target;      // '가족(7세 이상 어린이와 보호자)' → 괄호 안
+  const meta = [progPlace(p.place), tgt, p.fee].filter(Boolean).join(' · ');
+  const body = [h('span', { class: 'tr-prog-when' }, x.nextLabel), h('div', { class: 'tr-prog-body' }, h('b', null, x.title), h('small', null, meta)), h('span', { class: `tr-prog-tag ${x.open && x.who !== 'group' ? 'open' : ''}` }, tag)];
+  return p.url ? h('a', { class: 'tr-prog', style: `--i:${i}`, href: p.url, target: '_blank', rel: 'noopener', title: '서울시 공공서비스예약에서 보기' }, ...body)
+    : h('div', { class: 'tr-prog', style: `--i:${i}` }, ...body);
+}
+/** 첫 화면: 앞으로 2주 안의 서울숲 프로그램(날짜 순, 최대 4개) */
+function programBlock() {
+  const list = app.programs ? upcomingPrograms(app.programs, app.now.date) : [];
+  if (!list.length) return null;
+  return h('section', { class: 'tr-pop tr-progs' },
+    h('div', { class: 'tr-sec-head' }, h('b', null, '이번 주 서울숲 프로그램'), h('span', null, '공공서비스예약')),
+    h('div', { class: 'tr-prog-list' }, list.slice(0, 4).map(progRow)),
+    h('p', { class: 'tr-pop-note' }, `서울시 공공서비스예약 · ${String(app.programs.checked ?? '').slice(5, 16) || '저장본'} 기준. 누르면 예약 화면으로 가요.`));
+}
+function paintPrograms() { document.querySelectorAll('.tr-prog-slot').forEach(s => s.replaceChildren(programBlock() ?? '')); }
+/** 코스 화면 한 줄: 같이 온 사람에게 맞는 가까운 프로그램 하나 */
+function programTip() {
+  if (!app.programs) return null;
+  const x = pickPrograms(upcomingPrograms(app.programs, app.now.date, 7), st.company, st.need, 1)[0];
+  if (!x || x.full) return null;
+  const who = st.company === 'kids' ? '아이와 함께라면' : st.company === 'elders' ? '어르신과 함께라면' : '함께 해 볼 만한';
+  return h('div', { class: 'tr-prog-tip' }, h('small', null, `${who} · 서울숲 프로그램`), progRow(x));
 }
 
 // ── 3. 코스 짜기 ──
@@ -762,6 +793,7 @@ function renderPlan() {
     h('div', { class: 'tr-actions' },
       h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: startLeg }, '출발', h('span', { class: 'tr-cta-arrow' }, '→')),
       h('button', { type: 'button', class: 'tr-ghost', onclick: () => begin(null, legs.map(s => s.r.place.id).filter(id => !st.must.has(id))) }, '다른 코스')),
+    programTip(),
   ]);
 }
 /** 이 코스를 왜 이렇게 짰는지 — 많아야 두 줄. 근거 논문은 README '근거 논문' */
@@ -1145,6 +1177,8 @@ async function boot() {
     const wxOf = w => annotate(demo ? applyScenario(w, demo) : w, now);
     app = { data, model, now, wx: wxOf(raw ?? sampleWeather()), photos, gardens, seed, news: loadNews(store) };
     if (!raw) wxLive.then(w => { if (w) { app.wx = wxOf(w); paintWeather(); } });
+    // 서울숲 프로그램: 실시간(중계 서버) → 못 받으면 저장본(data/programs.json)
+    fetchPrograms().then(d => d ?? loadJson('./data/programs.json').catch(() => null)).then(d => { if (d?.items?.length) { app.programs = d; paintPrograms(); } });
   } catch (err) {
     renderIntro(err.message);
     return;

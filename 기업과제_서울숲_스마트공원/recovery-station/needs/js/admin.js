@@ -202,7 +202,7 @@ export function createAdmin(root, app) {
             h('div', { class: 'row-sub' }, [app.model.hubById[n.place]?.name ?? '공원 전체', `${n.from ?? ''} ~ ${n.to ?? ''}`, NEWS_FOR.find(f => f.key === n.for)?.label, state(n)].filter(Boolean).join(' · '))),
           h('button', { type: 'button', class: 'btn', 'aria-label': '지우기', onclick: () => app.setNews(list.filter(x => x.id !== n.id)) }, icon('trash', 15)))))
           : h('div', { class: 'assume' }, '아직 올린 소식이 없습니다.'),
-        h('div', { class: 'assume' }, `시연 단계라 올린 소식은 이 브라우저에만 저장됩니다(같은 브라우저의 다른 창에도 바로 반영). 실제 운영에서는 서버 한 곳에 저장해 모든 시민 화면에 같이 보이게 합니다. 서울시 공공서비스예약의 서울숲 프로그램은 ${app.data.programs?.items?.length ? `${app.data.programs.items.length}건을 함께 보여 줍니다(${app.data.programs.checked} 기준)` : '서울 열린데이터광장 인증키를 받으면 analysis/08_programs.py로 가져옵니다'}.`)));
+        h('div', { class: 'assume' }, `시연 단계라 올린 소식은 이 브라우저에만 저장됩니다(같은 브라우저의 다른 창에도 바로 반영). 실제 운영에서는 서버 한 곳에 저장해 모든 시민 화면에 같이 보이게 합니다. 서울시 공공서비스예약의 서울숲 프로그램은 ${app.data.programs?.items?.length ? `${app.data.programs.items.length}건을 함께 보여 줍니다(${app.data.programs.checked} 기준)` : '중계 서버(proxy/seoul-programs)로 받아 data/programs.json에 저장합니다'}.`)));
   }
 
   // ── 현장 조사로 시설 추가 ──

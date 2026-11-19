@@ -29,7 +29,7 @@ export function loadNews(store) {
 
 /** 공공서비스예약 프로그램을 소식 모양으로 바꿈. 접수 중이거나 오늘이 이용 기간 안인 것만 */
 function fromPrograms(programs, today) {
-  return (programs?.items ?? []).filter(p => (p.status === '접수중' || p.status === '안내중') || (p.useFrom && p.useTo && p.useFrom <= today && today <= p.useTo))
+  return (programs?.items ?? []).filter(p => !/^(공간시설|체육시설)/.test(p.kind ?? '')).filter(p => (p.status === '접수중' || p.status === '안내중') || (p.useFrom && p.useTo && p.useFrom <= today && today <= p.useTo))
     .map(p => ({ id: `yeyak-${p.id}`, kind: 'program', title: p.title, place: p.place, from: p.useFrom, to: p.useTo, text: [p.target, p.fee, p.status].filter(Boolean).join(' · '),
       url: p.url, for: /가족|어린이|유아|초등|아동/.test(`${p.target} ${p.title}`) ? 'kids' : 'all', source: 'yeyak' }));
 }

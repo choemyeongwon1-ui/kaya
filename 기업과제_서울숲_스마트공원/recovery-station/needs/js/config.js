@@ -86,7 +86,7 @@ export const WATER_ON = { temp: 33, from: 10, to: 16 };
 // lake는 '수변휴게실(⑦)'로 본 추정, butterfly는 대응 영역 없음(빠짐). 2011년 자료라 지금 구성과 다를 수 있음(검증 필요)
 export const PLACE_IDENTITY = {
   deer: 7.27, insect: 6.93, lake: 6.93, 'horse-plaza': 6.90, 'forest-play': 6.90,
-  stage: 6.83, 'family-lawn': 6.70, 'mirror-pond': 6.67, wetland: 6.20, 'culture-ctr': 5.80,
+  stage: 6.83, 'family-lawn': 6.70, 'mirror-pond': 6.67, wetland: 6.20, visitor: 5.80,   // ①방문자센터. 복합문화센터(culture-ctr)는 대응 영역 없음
 };
 export const IDENTITY_MEAN = 6.73;
 
@@ -165,6 +165,8 @@ export const KMA_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/km
 // 에어코리아 대기오염정보(성동구 측정소 실측 + 서울 미세먼지 예보 오늘~모레) 중계 서버(proxy/air-quality).
 // 인증키는 Vault의 'airkorea_api_key'에만 있음. 못 받으면 Open-Meteo 대기질 모델값만 씀
 export const AIR_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/air-quality';
+// 서울시 공공서비스예약에서 '서울숲' 프로그램만 추린 중계 서버(proxy/seoul-programs). 키는 Vault 'seoul_api_key'
+export const PROGRAMS_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-programs';
 export const PREF_DETOUR = 1.2;           // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
 export const REST_DETOUR = 1.35;          // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
 export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈
