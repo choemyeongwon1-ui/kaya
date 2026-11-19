@@ -80,6 +80,16 @@ export const WATERSIDE = new Set(['lake', 'wetland']);
 export const WATER_BONUS = .2;
 export const WATER_ON = { temp: 33, from: 10, to: 16 };
 
+// 장소정체성(이 자리가 서울숲다운가, 10점). 근거: 임승빈 외(2012) 국토계획 47(7) pp.77–90, Table 9 —
+// 2011.5.28(토) 서울숲 18개 영역 × 30명 = 540명 설문, 전체 평균 6.73. 숲·잔디·물가·체험 프로그램 공간이 높고 방문자센터·습지가 낮음.
+// '볼 게 별로였어요'를 고른 뒤에만 남은 코스에서 (값 − 평균) × 10점을 더함(−9~+7). 영역 안 표준편차(1.2~2.1)가 커서 작게만 씀.
+// lake는 '수변휴게실(⑦)'로 본 추정, butterfly는 대응 영역 없음(빠짐). 2011년 자료라 지금 구성과 다를 수 있음(검증 필요)
+export const PLACE_IDENTITY = {
+  deer: 7.27, insect: 6.93, lake: 6.93, 'horse-plaza': 6.90, 'forest-play': 6.90,
+  stage: 6.83, 'family-lawn': 6.70, 'mirror-pond': 6.67, wetland: 6.20, 'culture-ctr': 5.80,
+};
+export const IDENTITY_MEAN = 6.73;
+
 // 구역별 붐빔 민감도(붐빔 점수에 곱함, 1 = 보통). 근거: 주연이·정진우(2026) 서울숲 블로그 990건 LDA —
 // 생태숲·습지생태원은 '분위기·산책·자연' 경험이 중심이라 붐비면 경험 자체가 깨지고,
 // 문화예술공원은 '웨이팅·주말·팝업'이 경험의 일부로 함께 나옴. 배수 값 자체는 팀 가정

@@ -8,7 +8,7 @@
 // 장소 점수는 맞춤형 추천 화면과 같은 recommend()를 매 구간 출발점에서 다시 계산해 쓰고, 이용자 별점을 얹습니다.
 import { loadData, buildModel } from './model.js';
 import { seoulNow, fetchWeather, sampleWeather, annotate, applyScenario, kmaDays } from './weather.js';
-import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD } from './config.js';
+import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN } from './config.js';
 import { recommend, quietHours, josa, speedFor } from './recommend.js';
 import { planRoute } from './route.js';
 import { dijkstra } from './graph.js';
@@ -481,6 +481,7 @@ function ranked(rec, seen, prev, must) {
     if (fb.liked.length) s += 18 * Math.max(...fb.liked.map(p => sim(p, r.place)));
     if (fb.disliked.length) s -= Math.max(...fb.disliked.map(d => d.k * sim(d.place, r.place)));
     if (prev) s -= 8 * sim(prev, r.place);
+    if (fb.identity && PLACE_IDENTITY[r.place.id] != null) s += (PLACE_IDENTITY[r.place.id] - IDENTITY_MEAN) * 10;   // −9~+7점
     const rt = rtOf(r.place.id);
     if (rt && rt.count >= 3) s += (rt.avg - 3.6) * 10;
     if (must?.has(r.place.id)) s += 45;
@@ -994,6 +995,7 @@ async function advance(s, v, tags, comment, skipped = false) {
   if (v >= 4) fb.liked.push(p);
   for (const b of bad) for (const [k, n] of Object.entries(b.bump ?? {})) fb.bump[k] = (fb.bump[k] ?? 0) + n;
   for (const c of cues) fb.bump[c.bump] = (fb.bump[c.bump] ?? 0) + 20;
+  if (bad.some(b => b.key === 'boring')) fb.identity = true;   // '볼 게 별로' → 서울숲다운 곳(장소정체성 높은 곳)을 조금 앞으로
   if (v && (v <= 2 || bad.some(b => b.away))) fb.disliked.push({ place: p, k: bad.find(b => b.away)?.away ?? 22 });
   else if (v === 3) fb.disliked.push({ place: p, k: 12 });   // 3점은 약하게 멀리
   trip.from = asFrom(p); trip.idx++;
