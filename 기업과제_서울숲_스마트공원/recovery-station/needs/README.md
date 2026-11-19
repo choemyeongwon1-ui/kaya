@@ -171,6 +171,29 @@ echo "import Anthropic from '@anthropic-ai/sdk'; export default Anthropic;" > en
 npx esbuild entry.mjs --bundle --format=esm --platform=browser --target=es2022 --minify --legal-comments=none --outfile=vendor/anthropic-sdk.mjs
 ```
 
+## 서울숲 실시간 인구 (목표 1 화면 위쪽 띠, `live.js`)
+
+목표 1 「실시간 탐색」의 이용자 화면·관리자 관제 제목 아래에 「지금 서울숲공원에 있는 사람」 띠를 붙입니다.
+
+- 자료: 서울시 실시간 도시데이터 `citydata_ppltn`, 장소 「서울숲공원」(POI101). 혼잡도 4단계, 인구 범위, 성별·연령 비율, 상주·비상주 비율, 앞으로 12시간 AI 예측.
+- 흐름: `.github/workflows/seoul-forest-live.yml` 가 15분마다 `analysis/09_live.py` 를 돌려 **`live-data` 가지**에 `latest.json`(지금 값)과 `history.csv`(시계열)를 저장 → `live.js` 가 `raw.githubusercontent.com/choemyeongwon1-ui/kaya/live-data/` 에서 읽음. main 커밋 기록은 늘지 않습니다.
+- 화면에서 서울시 API를 직접 부르지 않는 이유: 서울시 API는 http 전용이고 다른 사이트에서 읽기(CORS)를 막아, https인 GitHub Pages에서 부를 수 없습니다. 또 인증키를 화면 코드에 넣으면 공개됩니다.
+- **처음 한 번 할 일:** 저장소 Settings → Secrets and variables → Actions → New repository secret 에 이름 `SEOUL_KEY`, 값은 서울 열린데이터광장 인증키. 그다음 Actions 탭 → 「서울숲 실시간 인구 수집」 → Run workflow 로 한 번 돌리면 `live-data` 가지가 생깁니다.
+- 예비 값: `live-data` 를 못 읽으면 `../data/live/` 의 값(손으로 받은 마지막 값)을 보이고, 90분보다 오래된 값이면 「예전 값입니다」라고 밝힙니다.
+- 손으로 받기: `SEOUL_KEY=키 python analysis/09_live.py` (키는 출력·저장하지 않음).
+- 한계: 공원 전체가 한 단위라 구역별 붐빔은 없습니다. 인구는 통신 신호로 추정한 값이며 약 15분 늦습니다. GitHub 정기 실행은 늦어질 수 있고, 저장소에 60일간 활동이 없으면 멈춥니다.
+- 다시 빌드할 때: `index.html` 의 `<script src="./needs/live.js?v=…" defer>` 줄이 지워지므로 다시 넣거나 React 소스로 옮깁니다. `live.js` 를 고치면 이 `?v=` 값을 올립니다.
+
+## 메인 대시보드에서 코스 찾기 열기 (`tour-open.js`)
+
+메인 대시보드 위쪽 줄 오른쪽에 「이용자 화면 · 코스 찾기」 단추를 붙입니다. 누르면 `tour.html`을 대시보드 위에 창(iframe)으로 띄웁니다.
+
+- 두 화면은 합치지 않았습니다. `tour.html`·`tour.js`·`tour.css`는 그대로이고, 메인 대시보드는 그 주소를 띄워 보여 주기만 합니다.
+- 창 위쪽 단추: 「휴대폰 크기」(폭 430px로 보기), 「새 탭으로 ↗」, 닫기(✕ · Esc · 바깥 누르기). 닫았다 다시 열면 보던 곳 그대로입니다.
+- 코스 찾기 안에서 다른 화면(맞춤형 추천 등)으로 가는 링크를 누르면 창을 닫고 그 화면으로 옮겨 갑니다. 대시보드 안에 대시보드가 겹치지 않게 하려는 것입니다.
+- 폭이 1100px 이하면 단추가 둥근 아이콘으로 바뀝니다. 861~929px에서는 위쪽 줄이 두 줄이 되지 않게 화면 오른쪽 아래에 떠 있습니다.
+- 되돌리기: `index.html`의 `tour-open.js` 줄을 빼면 됩니다. 다시 빌드할 때는 이 줄을 다시 넣습니다.
+
 ## 확인한 것
 
 Edge(헤드리스)로 화면을 띄워 자동 점검했습니다. 2026-11-16 기준 모두 통과했습니다.
