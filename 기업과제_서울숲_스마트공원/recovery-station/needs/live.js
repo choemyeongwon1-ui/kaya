@@ -4,12 +4,16 @@
 //   그래서 GitHub Actions(.github/workflows/seoul-forest-live.yml)가 15분마다 받아 live-data 가지에 저장하고,
 //   이 파일은 그 값을 읽기만 합니다. 인증키는 화면 코드에 없습니다.
 // - live-data 값을 못 읽으면 ./data/live/ 의 예비 값(마지막으로 손으로 받은 값)을 보이고 '예전 값'이라고 밝힙니다.
+// - (2026-11-20) 지금 혼잡도·인구·12시간 예측은 팀 중계 서버(Supabase seoul-crowd, needs/js/config.js의 LIVE_CROWD_URL)에서
+//   실시간으로 받습니다. GitHub 정기 실행은 몇 시간씩 밀리기 때문입니다. 중계 서버가 주지 않는 거주·연령·성별 비율만
+//   저장된 값(live-data 또는 예비 값)을 쓰고, 그 값의 시각을 함께 표시합니다.
 // 대시보드를 다시 빌드할 때는 index.html의 live.js 줄을 다시 넣거나 React 소스로 옮기면 됩니다(needs/README.md).
 (function () {
   'use strict';
   var ID = 'nd-live';
   var REMOTE = 'https://raw.githubusercontent.com/choemyeongwon1-ui/kaya/live-data/';
   var LOCAL = './data/live/';
+  var PROXY = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-crowd';   // config.js LIVE_CROWD_URL과 같은 주소
   var STALE_MIN = 90;          // 이보다 오래된 값이면 '수집이 늦어지고 있음'
   var REFRESH_MS = 5 * 60e3;   // 화면을 켜 둔 동안 5분마다 다시 읽기
   var LEVELS = {
@@ -86,10 +90,25 @@
         .then(function (h) { return { d: d, hist: h, from: base }; });
     });
   }
+  function live() {
+    return fetch(PROXY + '?t=' + Math.floor(Date.now() / 60e3), { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (p) { if (!p || !p.time || p.error) throw new Error('no data'); return p; });
+  }
   function refresh() {
-    return load(REMOTE).catch(function () { return load(LOCAL); }).then(function (s) {
-      state = s; render();
-    }).catch(function () { state = { d: null, hist: [], from: null }; render(); });
+    var stored = load(REMOTE).catch(function () { return load(LOCAL); }).catch(function () { return null; });
+    var now = live().catch(function () { return null; });
+    return Promise.all([stored, now]).then(function (r) {
+      var s = r[0], p = r[1];
+      if (p) {
+        var base = (s && s.d) || {};
+        var d = Object.assign({}, base, { level: p.level, message: p.msg, min: p.min, max: p.max, time: p.time, forecast: p.forecast || [] });
+        d.whoTime = base.time || null;     // 거주·연령·성별 값의 시각 (저장된 값)
+        state = { d: d, hist: (s && s.hist) || [], from: PROXY };
+      } else if (s) state = s;
+      else state = { d: null, hist: [], from: null };
+      render();
+    });
   }
 
   // ---- 그리기 ----
@@ -140,9 +159,12 @@
     ]);
 
     // 3) 누가 와 있나
-    var ages = ['0', '10', '20', '30', '40', '50', '60', '70'], amax = Math.max.apply(null, ages.map(function (a) { return d.age[a] || 0; })) || 1;
-    var who = el('div', 'nd-who', [
-      el('h4', null, ['누가 와 있나']),
+    var ages = ['0', '10', '20', '30', '40', '50', '60', '70'];
+    var whoOld = d.whoTime && d.whoTime !== d.time;
+    var who = !d.age ? el('div', 'nd-who', [el('h4', null, ['누가 와 있나']), el('p', 'msg', ['거주·연령·성별 비율은 아직 모은 값이 없습니다.'])]) : null;
+    var amax = d.age ? (Math.max.apply(null, ages.map(function (a) { return d.age[a] || 0; })) || 1) : 1;
+    if (!who) who = el('div', 'nd-who', [
+      el('h4', null, ['누가 와 있나', whoOld ? el('span', 'nd-src', [' · ' + Number(d.whoTime.slice(5, 7)) + '월 ' + Number(d.whoTime.slice(8, 10)) + '일 ' + d.whoTime.slice(11) + ' 값']) : null]),
       el('div', 'split', [
         el('b', null, [], { style: 'width:' + d.non_resident + '%;background:var(--brand-2)' }),
         el('b', null, [], { style: 'width:' + d.resident + '%;background:var(--axis)' }),
@@ -162,7 +184,8 @@
       '혼잡도는 서울숲공원의 평소 인구와 비교한 값입니다(서울시 기준: 여유 50% 이하 · 보통 75% 이하 · 약간 붐빔 100% 이하 · 붐빔 100% 초과). ',
       '공원 전체를 한 덩어리로 센 값이라 잔디광장 같은 구역별 붐빔은 이 값으로 알 수 없습니다. ',
       '‘사는 사람’은 통신사가 밤 시간 머문 곳으로 추정한 상주 인구 비율입니다. ',
-      s.from === LOCAL ? '지금은 저장소의 예비 값을 보여 주고 있습니다.' : '15분마다 자동으로 모아 쌓고 있습니다.',
+      s.from === PROXY ? '혼잡도·인구·예측은 5분마다 새로 받습니다' + (whoOld ? '. 거주·연령·성별 비율은 실시간 중계 서버가 주지 않아 마지막으로 모은 값입니다.' : '.')
+        : s.from === LOCAL ? '지금은 저장소의 예비 값을 보여 주고 있습니다.' : '15분마다 자동으로 모아 쌓고 있습니다.',
     ]);
     return el('section', 'card nd-live', [now, timeline, who, note], { id: ID, 'aria-live': 'polite', 'aria-label': '지금 서울숲 사람' });
   }
