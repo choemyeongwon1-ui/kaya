@@ -670,9 +670,10 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 .rv-faces{display:flex;justify-content:center;gap:clamp(14px,5vw,26px);margin:14px 0 4px}
 .rv-face{--c:var(--mute);--t:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px 4px;border:0;background:none;color:var(--ink-2);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;
   opacity:0;transform:translateY(8px);animation:fcIn .45s var(--ease-out,cubic-bezier(.2,.8,.2,1)) forwards;animation-delay:calc(var(--i) * 70ms)}
-.rv-face.good{--c:#5ef2a6;--t:rgba(94,242,166,.16)}
-.rv-face.mid{--c:#ffc164;--t:rgba(255,193,100,.16)}
-.rv-face.bad{--c:#ff9b8a;--t:rgba(255,155,138,.16)}
+/* --c: 글자·테두리 / --c1→--c2: 공 그러데이션(밝은 쪽→진한 쪽) / --glow: 주변 빛 */
+.rv-face.good{--c:#5ef2a6;--t:rgba(94,242,166,.16);--c1:#d4ffe6;--c2:#0fae68;--glow:rgba(52,232,150,.55)}
+.rv-face.mid{--c:#ffc964;--t:rgba(255,193,100,.16);--c1:#fff6c2;--c2:#f08c00;--glow:rgba(255,190,60,.5)}
+.rv-face.bad{--c:#ff9b8a;--t:rgba(255,155,138,.16);--c1:#ffe0d8;--c2:#e8435a;--glow:rgba(255,110,120,.5)}
 .rv-face small{font-size:12px;font-weight:600;color:var(--mute);transition:color .2s}
 .fc{display:block;transition:transform .25s cubic-bezier(.3,1.6,.5,1),filter .25s}
 .fc svg{display:block;width:100%;height:100%;overflow:visible}
@@ -683,23 +684,44 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 .rv-face:hover .fc,.rv-face:focus-visible .fc{transform:translateY(-3px) scale(1.06)}
 .rv-face:hover .fc-bg,.rv-face:focus-visible .fc-bg{stroke:var(--c)}
 .rv-face:hover small{color:var(--ink-2)}
-.rv-face.on .fc{transform:scale(1.14);filter:drop-shadow(0 6px 16px var(--t))}
-.rv-face.on .fc-bg{fill:var(--t);stroke:var(--c);stroke-width:2}
-.rv-face.on .fc-line{stroke:var(--c)}
-.rv-face.on .fc-eye{fill:var(--c)}
-.rv-face.on .fc-cheek{opacity:.55}
+/* 고른 표정: 광택 있는 공처럼 입체적으로. 위로 살짝 떠오르고 아래에 그림자 */
+.rv-face{perspective:420px}
+.fc{position:relative;isolation:isolate}
+.fc svg{position:relative;z-index:1}
+.fc::before{content:'';position:absolute;inset:4.5%;border-radius:50%;z-index:0;opacity:0;transform:scale(.6);transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1);
+  background:radial-gradient(ellipse 30% 22% at 35% 24%,rgba(255,255,255,.95),rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 40% 30%,var(--c1) 0,var(--c) 42%,var(--c2) 100%);
+  box-shadow:inset 0 -6px 10px color-mix(in srgb,var(--c2) 70%,#000 30%),inset 0 4px 6px rgba(255,255,255,.45)}
+.rv-face.on .fc{transform:translateY(-6px) scale(1.16);filter:drop-shadow(0 12px 9px rgba(0,0,0,.55)) drop-shadow(0 0 16px var(--glow))}
+.rv-face.on .fc::before{opacity:1;transform:none}
+.rv-face.on .fc-bg{fill:transparent;stroke:rgba(255,255,255,.55);stroke-width:1}
+.rv-face.on .fc-line{stroke:#10221a}
+.rv-face.on .fc-eye{fill:#10221a}
+.rv-face.on .fc-cheek{opacity:.7}
 .rv-face.on small{color:var(--c)}
 .rv-faces.picked .rv-face:not(.on){opacity:.4}
 .rv-faces.picked .rv-face:not(.on) .fc{transform:scale(.92)}
-.rv-face.pop .fc{animation:fcPop .5s cubic-bezier(.3,1.6,.5,1)}
+.rv-face.pop .fc{animation:fc3d .7s cubic-bezier(.25,1.3,.5,1)}
 @keyframes fcIn{to{opacity:1;transform:none}}
-@keyframes fcPop{0%{transform:scale(1)}40%{transform:scale(1.28) rotate(-6deg)}70%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1.14)}}
+/* 표정 고를 때 튀어나오는 하트·반짝이·눈물 */
+.rv-face{position:relative}
+.rv-pt{position:absolute;z-index:3;pointer-events:none;margin:0;transform:translate(-50%,-50%) scale(0);opacity:0}
+.rv-pt svg{display:block;width:100%;height:100%;overflow:visible}
+.rv-pt.heart svg{fill:#ff5c8a;filter:drop-shadow(0 0 4px rgba(255,92,138,.7))}
+.rv-pt.heart:nth-of-type(3n) svg{fill:#ff8fb3}.rv-pt.heart:nth-of-type(3n+1) svg{fill:#ff3d6e}
+.rv-pt.spark svg{fill:#ffe066;filter:drop-shadow(0 0 4px rgba(255,214,70,.8))}
+.rv-pt.drop svg{fill:#8fd8ff;filter:drop-shadow(0 0 3px rgba(120,200,255,.7))}
+.rv-pt.heart,.rv-pt.spark{animation:ptBurst .9s cubic-bezier(.2,.8,.3,1) forwards}
+.rv-pt.drop{animation:ptDrop 1s cubic-bezier(.5,0,.8,.6) forwards}
+@keyframes ptBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}20%{opacity:1}55%{opacity:1;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1) rotate(var(--rot))}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy) - 12px)) scale(.7) rotate(var(--rot))}}
+@keyframes ptDrop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.8)}}
+@keyframes fc3d{0%{transform:translateY(0) scale(1) rotateY(0)}45%{transform:translateY(-16px) scale(1.28) rotateY(200deg)}75%{transform:translateY(-3px) scale(1.1) rotateY(375deg)}100%{transform:translateY(-6px) scale(1.16) rotateY(360deg)}}
 .rv-face-s{display:inline-flex}
 .rv-face-s .fc-bg{stroke-width:2}
 .rv-face-s.good .fc-bg{fill:rgba(94,242,166,.16);stroke:#5ef2a6}.rv-face-s.good .fc-line{stroke:#5ef2a6}.rv-face-s.good .fc-cheek{opacity:.5}
 .rv-face-s.mid .fc-bg{fill:rgba(255,193,100,.16);stroke:#ffc164}.rv-face-s.mid .fc-line{stroke:#ffc164}.rv-face-s.mid .fc-eye{fill:#ffc164}
 .rv-face-s.bad .fc-bg{fill:rgba(255,155,138,.16);stroke:#ff9b8a}.rv-face-s.bad .fc-line{stroke:#ff9b8a}.rv-face-s.bad .fc-eye{fill:#ff9b8a}
-@media (prefers-reduced-motion:reduce){.rv-face{animation:none;opacity:1;transform:none}.rv-face.pop .fc{animation:none}}
+@media (prefers-reduced-motion:reduce){.rv-face{animation:none;opacity:1;transform:none}.rv-face.pop .fc{animation:none}.fc::before{transition:none}}
 .rv-word[data-f=good]{color:#5ef2a6}.rv-word[data-f=mid]{color:#ffc164}.rv-word[data-f=bad]{color:#ff9b8a}
 .tr-rate-why.anon{opacity:.75;font-size:11px;margin-top:-2px}
 /* 출발 전 컨셉 안내: 좋으면 그대로 · 별로면 다른 곳 */
@@ -789,3 +811,54 @@ div.tr-status-line{cursor:default}
 .tr-quick-now{border-color:rgba(94,242,166,.25)}
 .tr-more{display:block;width:100%;margin-top:6px;padding:9px;border:1px dashed var(--line);border-radius:12px;background:none;color:var(--ink-2);font:inherit;font-size:12.5px;cursor:pointer}
 .tr-more:hover{color:var(--mint);border-color:rgba(94,242,166,.35)}
+
+/* ── 마무리: 나가는 길 안내(주) → 작별 화면 / 다음에 올 때(보조) ── */
+.tr-textbtn{display:inline-block;background:none;border:0;padding:6px 2px;color:var(--ink-2);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none}
+.tr-textbtn:hover{color:var(--mint)}
+.tr-exit.main{display:block;margin-top:14px;padding:14px;border-color:rgba(255,210,122,.35);background:linear-gradient(160deg,rgba(255,210,122,.08),rgba(255,255,255,.02))}
+.tr-exit-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tr-exit-row>div{flex:1;min-width:0}
+.tr-exit.main .tr-cta{width:100%;justify-content:space-between}
+.tr-exit.main .tr-textbtn{display:block;margin:6px auto 0}
+.tr-next.sub{border-color:var(--line);background:var(--glass-2)}
+.tr-next.sub>b{font-size:13px;color:var(--ink-2)}
+.tr-next.sub small{margin-bottom:4px}
+.tr-next.sub .tr-textbtn{color:var(--mint);padding-bottom:0}
+.tr-end-links{display:flex;justify-content:center;gap:18px;margin-top:14px}
+.tr-exit-lead{margin:0 0 8px;font-size:14px;line-height:1.55;color:var(--ink-2)}
+.tr-exit-wc{display:flex;align-items:center;gap:6px;margin:0 0 14px;font-size:12.5px;color:var(--mute)}
+.tr-exit-wc svg{color:#ffd27a}
+.tr-s-exit .tr-cta{width:100%;justify-content:space-between;margin-top:6px}
+.tr-bye{text-align:center;padding:18px 6px 6px}
+.tr-bye-ico{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--mint-soft);color:var(--mint);margin-bottom:12px;animation:trByeIn .7s var(--ease) both}
+.tr-bye h2{font-size:23px;font-weight:700;letter-spacing:-.04em;margin:0 0 8px}
+.tr-bye p{margin:0 0 6px;font-size:14px;color:var(--ink-2)}
+.tr-bye-later{display:inline-flex;align-items:center;gap:6px;margin-top:6px!important;padding:6px 12px;border-radius:999px;background:var(--glass-2);font-size:12.5px!important}
+.tr-bye small{display:block;margin-top:14px;font-size:11px;color:var(--mute);line-height:1.5}
+.tr-bye-home{display:flex;margin:18px auto 4px}
+@keyframes trByeIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+
+/* ── 오는 길·나가는 길 실시간 ── */
+.tr-acc-more[hidden]{display:none!important}
+.tr-status+.tr-access,.tr-status-slot+.tr-access-slot .tr-access{margin-top:6px}
+.tr-acc-chips span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.tr-acc-chips svg{color:var(--mint)}
+.tr-acc-more{padding:0 12px 10px}
+.tr-acc-sec{padding:10px 0;border-top:1px solid var(--line)}
+.tr-acc-h{display:flex;align-items:center;gap:6px;margin-bottom:6px;color:var(--mint)}
+.tr-acc-h b{font-size:12.5px;color:var(--ink)}
+.tr-acc-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tr-acc-list li{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tr-acc-list li>div{min-width:0}
+.tr-acc-list b{display:block;font-size:12.5px;font-weight:650}
+.tr-acc-list small{display:block;font-size:11px;color:var(--mute);line-height:1.4}
+.tr-acc-list.slim li{font-size:12px}
+.tr-acc-list.slim b{display:inline;font-weight:600}
+.tr-acc-list.slim span{color:var(--ink-2);white-space:nowrap}
+.tr-acc-free{text-align:right;flex:0 0 auto}
+.tr-acc-free b{font-size:14px;color:var(--mint)}
+.tr-acc-free small{font-size:10.5px}
+.tr-acc-none{flex:0 0 auto;font-size:11px;color:var(--mute);padding:3px 8px;border-radius:999px;background:var(--glass-3)}
+.tr-acc-note{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--mute)}
+.tr-acc-note.warn{color:var(--gold)}
+.tr-acc-line{margin:0;font-size:12px;color:var(--ink-2)}

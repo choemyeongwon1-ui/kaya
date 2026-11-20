@@ -169,6 +169,9 @@ export const AIR_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/ai
 export const PROGRAMS_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-programs';
 // 도착 평가(표정 3개) 익명 저장·집계 서버(proxy/comfort). 이름·기기·좌표·IP 없이 장소·표정·까닭·당시 날씨/붐빔만 저장
 export const COMFORT_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/comfort';
+// 오는 길·나가는 길 실시간(proxy/seoul-parking): 서울시 실시간 도시데이터(서울숲공원)의 주차장·도로·지하철·따릉이·전기차 충전기·재난문자
+// + 한국교통안전공단 주차정보 API의 성동구 실시간 주차장(비밀값 DATA_GO_KR_KEY가 있을 때만)
+export const ACCESS_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-parking';
 export const PREF_DETOUR = 1.2;          // 그늘·한산함 조건: 가장 짧은 길의 이 배수(+20m)까지만 돌아가는 것을 허용
 export const REST_DETOUR = 1.35;          // '쉼터' 조건: 가장 짧은 길의 이 배수까지 돌아가는 것을 허용
 export const REST_NEAR = 30;               // 길에서 이 거리(m) 안에 있는 쉼터를 '지나는 쉼터'로 셈

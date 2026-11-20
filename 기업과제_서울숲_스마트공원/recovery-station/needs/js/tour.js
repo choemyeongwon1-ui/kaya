@@ -8,7 +8,7 @@
 // 장소 점수는 맞춤형 추천 화면과 같은 recommend()를 매 구간 출발점에서 다시 계산해 쓰고, 이용자 별점을 얹습니다.
 import { loadData, buildModel } from './model.js';
 import { seoulNow, fetchWeather, sampleWeather, annotate, applyScenario, kmaDays } from './weather.js';
-import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN } from './config.js';
+import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN, ACCESS_URL } from './config.js';
 import { recommend, quietHours, josa, speedFor } from './recommend.js';
 import { planRoute } from './route.js';
 import { dijkstra } from './graph.js';
@@ -109,6 +109,7 @@ function paintLive() {
 function paintHello() {
   if (!app) return;
   document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
+  document.querySelectorAll('.tr-access-slot').forEach(s => s.replaceChildren(accessBar() ?? ''));
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
 }
 async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
@@ -417,7 +418,9 @@ function statusBar() {
   const w = app?.wx, h0 = w?.hourly?.[0], an = w?.air?.now;
   const dust = an ? [an.pm10Label, an.pm25Label].filter(g => DUST_G.includes(g)).sort((a, b) => DUST_G.indexOf(b) - DUST_G.indexOf(a))[0] ?? null : null;
   const sit = situation();
-  const warn = sit.hot ? { cls: 'hot', text: '더운 날이에요. 서울숲 안은 바깥 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.', src: '2022년 7월 서울숲 실측(조현민·권태경 2022)' }
+  const alert0 = access?.alerts?.[0];
+  const warn = alert0 ? { cls: 'hot', text: `재난문자 · ${alert0.text}`, src: '서울시 실시간 도시데이터(서울숲공원)' }
+    : sit.hot ? { cls: 'hot', text: '더운 날이에요. 서울숲 안은 바깥 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.', src: '2022년 7월 서울숲 실측(조현민·권태경 2022)' }
     : DUST_G.indexOf(dust) >= 2 ? { cls: 'dust', text: `미세먼지 ${dust}이에요. 곤충식물원·나비정원 같은 실내도 생각해 보세요.`, src: `에어코리아 ${w.air.station} 측정소` }
     : sit.busy ? { cls: 'busy', text: `${sit.weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요'}. 붐비는 곳은 피해서 골라 드려요.`, src: '서울숲 보행 계수: 토요일 오후 2시가 가장 붐빔(조현민·권태경 2025)' }
     : null;
@@ -436,6 +439,72 @@ function statusBar() {
     warn ? h('p', { class: 'tr-status-warn' }, warn.text, h('small', null, warn.src)) : null, more);
 }
 
+// ── 오는 길·나가는 길 실시간: 주차장 · 지하철 · 따릉이 · 도로 · 전기차 충전 (proxy/seoul-parking) ──
+let access = null, accessOpen = false;
+async function refreshAccess() {
+  try { const d = await (await fetch(ACCESS_URL, { cache: 'no-cache' })).json(); access = d?.error ? null : d; } catch { access = null; }
+  if (app) paintHello();
+}
+const kst = s => s ? new Date(String(s).replace(' ', 'T') + '+09:00') : null;
+// 서울시 열차 도착 문구를 쉬운 말로(진입 → 들어오는 중 등)
+const TRAIN_WORD = { '진입': '들어오는 중', '도착': '도착', '출발': '막 출발', '전역도착': '앞 역 도착', '전역출발': '앞 역 출발', '전역진입': '앞 역 들어오는 중', '운행중': '오는 중' };
+const trainMsg = t => t.sec > 0 ? `약 ${Math.max(1, Math.round(t.sec / 60))}분 후` : TRAIN_WORD[String(t.msg ?? '').replace(/\s/g, '')] ?? (t.msg ?? '');
+const hm = s => String(s ?? '').slice(11, 16);
+/** 공원 출입구 중 가장 가까운 곳까지 직선거리(m) */
+function gateDist(lat, lon) {
+  const gs = app?.model?.gates ?? [];
+  if (lat == null || lon == null || !gs.length) return null;
+  return Math.min(...gs.map(g => Math.hypot((lat - g.lat) * 110900, (lon - g.lon) * 88200)));
+}
+function accessBar() {
+  const a = access;
+  if (!a) return null;
+  const P = a.parking ?? {}, near = P.near ?? [], liveLots = P.live ?? [];
+  const st0 = (a.subway ?? []).find(s => /서울숲/.test(s.name)) ?? a.subway?.[0];
+  const t0 = st0?.trains?.[0];
+  const bikes = (a.bike ?? []).reduce((s, b) => s + (b.bikes ?? 0), 0);
+  const chips = [
+    near.length || liveLots.length ? h('span', null, icon('parking', 13), `주차 ${near.length + liveLots.length}곳`) : null,
+    t0 ? h('span', null, icon('train', 13), `${st0.name}역 ${t0.to}행 ${trainMsg(t0)}`) : null,
+    a.bike?.length ? h('span', null, icon('bike', 13), `따릉이 ${bikes}대`) : null,
+  ].filter(Boolean);
+  if (!chips.length) return null;
+  const sit = situation();
+  const now = Date.now(), fresh = s => { const d = kst(s); return d && now - d.getTime() < 6 * 3600e3; };
+  const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
+  const lotRow = l => {
+    const d = gateDist(l.lat, l.lon);
+    return h('li', { class: l.live ? 'live' : '' },
+      h('div', null, h('b', null, l.name),
+        h('small', null, [l.capacity != null ? `총 ${l.capacity.toLocaleString()}면` : null, rate(l), d != null ? `공원 입구까지 약 ${fmtM(Math.round(d / 10) * 10)}` : null].filter(Boolean).join(' · '))),
+      l.live && l.free != null ? h('span', { class: 'tr-acc-free' }, h('b', null, `${l.free}면`), h('small', null, `남음${l.time ? ` · ${hm(l.time)}` : ''}`))
+        : h('span', { class: 'tr-acc-none' }, '실시간 정보 없음'));
+  };
+  const sec = (ico, title, ...kids) => h('div', { class: 'tr-acc-sec' }, h('div', { class: 'tr-acc-h' }, icon(ico, 14), h('b', null, title)), ...kids);
+  const more = h('div', { class: 'tr-acc-more', hidden: !accessOpen },
+    sec('parking', '주차장',
+      h('ul', { class: 'tr-acc-list' }, [...near, ...liveLots].map(lotRow)),
+      h('p', { class: 'tr-acc-note' }, '서울숲 바로 옆 주차장은 남은 자리를 실시간으로 알려 주지 않아요.',
+        liveLots.length ? ' 남은 자리가 보이는 곳은 조금 떨어진 공영주차장이에요.' : ''),
+      sit.busy ? h('p', { class: 'tr-acc-note warn' }, '지금 공원이 붐벼서 주차장도 찼을 수 있어요(붐빔 정도로 짐작한 것). 수인분당선 서울숲역이 가까워요.') : null),
+    st0?.trains?.length ? sec('train', `지하철 ${st0.name}역 (${st0.line})`,
+      h('ul', { class: 'tr-acc-list slim' }, st0.trains.slice(0, 4).map(t => h('li', null, h('b', null, `${t.to}행`), h('span', null, trainMsg(t)))))) : null,
+    a.bike?.length ? sec('bike', '따릉이 대여소',
+      h('ul', { class: 'tr-acc-list slim' }, a.bike.map(b => h('li', null, h('b', null, b.name), h('span', null, `자전거 ${b.bikes ?? '–'}대`))))) : null,
+    a.road ? sec('car', '주변 도로',
+      h('p', { class: 'tr-acc-line' }, `${a.road.idx} · 평균 ${a.road.speed}km/h · ${hm(a.road.time)} 기준`),
+      ...(a.accidents ?? []).map(x => h('p', { class: 'tr-acc-note warn' }, `${x.type ?? '통제'} · ${x.info ?? ''}`))) : null,
+    a.charger?.length ? sec('bolt', '전기차 충전',
+      h('ul', { class: 'tr-acc-list slim' }, a.charger.map(c => h('li', null, h('b', null, c.name),
+        h('span', null, fresh(c.time) ? `사용 가능 ${c.free}/${c.total}` : `${c.total}대 · 상태 정보 오래됨`))))) : null,
+    h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터(서울숲공원)${liveLots.length ? ' · 한국교통안전공단 주차정보' : ''} · 5분마다 갱신`));
+  const label = () => accessOpen ? '접기' : '자세히';
+  const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(accessOpen),
+    onclick: e => { accessOpen = !accessOpen; more.hidden = !accessOpen; e.currentTarget.setAttribute('aria-expanded', String(accessOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } },
+    h('small', null, '오는 길'), h('div', { class: 'tr-status-chips tr-acc-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
+  return h('section', { class: 'tr-status tr-access' }, line, more);
+}
+
 function go(step) {
   st.step = step;
   const s = STEPS[step];
@@ -447,6 +516,7 @@ function go(step) {
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
     step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
+    step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
     picked.length ? h('div', { class: 'tr-picked' }, picked.map(p => h('span', null, p))) : null,
     h('div', { class: `tr-opts${step === 1 ? ' c3' : ''}` }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
@@ -1112,8 +1182,9 @@ function renderArrived(s) {
   const cue = h('div', { class: 'tr-cue' });
   const noteWrap = h('label', { class: 'tr-textwrap' }, note, h('div', { class: 'tr-textfoot' }, cue, count));
   const noteBox = h('div', { class: 'tr-notebox' }, noteWrap);
-  const label = h('span', null, last ? '평가 없이 마치기' : '평가 없이 다음 곳');
-  const next = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => advance(s, val, [...tags], note.value.trim()) }, label, h('span', { class: 'tr-cta-arrow' }, '→'));
+  // 표정을 골라야 다음으로 넘어갈 수 있음(평가 데이터 확보). 고르기 전에는 버튼을 잠가 둠
+  const label = h('span', null, '표정을 골라 주세요');
+  const next = h('button', { type: 'button', class: 'tr-cta', disabled: true, onclick: () => { if (val) advance(s, val, [...tags], note.value.trim()); } }, label, h('span', { class: 'tr-cta-arrow' }, '→'));
   const stop = () => { clearTimeout(timer); next.classList.remove('counting'); };
   const countdown = ms => {
     stop();
@@ -1146,6 +1217,7 @@ function renderArrived(s) {
     if (flip) paintTags(v);
     form.classList.add('open');
     label.textContent = last ? '보내고 마치기' : '보내고 다음 곳으로';
+    next.disabled = false; next.classList.add('tr-glow-on');
     if (v >= 4) countdown(2200); else if (v === 3) countdown(3500); else stop();
   }, `${p.name} 쾌적함`);
   const form = h('div', { class: 'tr-form' }, h('div', { class: 'tr-form-in' }, tagBox, h('div', { class: 'tr-form-row' }, more), noteBox));
@@ -1236,23 +1308,23 @@ function renderEnd() {
   for (const s of trip.stops) s.layer?.eachLayer(l => l.setStyle?.({ opacity: l.options.className === 'tr-glow' ? .18 : 1 }));
   const done = rated();
   if (done.length) save();
+  // 지도: 걸은 길 전체를 조용히 보여 줌(예전엔 점선이 길을 따라 흘러 '다시 재생'처럼 보여서 뺌)
   const all = trip.stops.flatMap(s => s.coords);
-  if (all.length) {
-    flyBounds(L.latLngBounds(all), { ...padding(), maxZoom: 17 }, 1);
-    L.polyline(all, { interactive: false, className: 'tr-ants', color: '#c8ffe0', weight: 2.4, opacity: .8, dashArray: '1 9', lineCap: 'round' }).addTo(layers.route);
-  }
+  if (all.length) flyBounds(L.latLngBounds(all), { ...padding(), maxZoom: 16.6 }, .6);
   const walkMin = sum(trip.stops, s => s.walkMin), meters = sum(trip.stops, s => s.meters);
   const q = quietHours(app.wx, app.now), best = q.best[0];
   const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
+  const later = q.now?.good ? 'now' : best ? span(best) : null;
+  endInfo = { walkMin, meters, places: done.length || trip.stops.length, later: best ? span(best) : null };
   setFocus(trip.stops.length > 0);
-  // 마무리 흐름: 오늘 걸은 길(지도+목록) → 코스 전체 한 번 묻기 → 다음엔 이런 코스 → 나가는 길
+  // 마무리 흐름: 오늘 걸은 곳 → 코스 전체 한 번 묻기 → 나가는 길 안내(주 버튼) → 작별 화면. '다음에 올 때' 코스는 보조
   const flow = trip.stops.length ? courseAsk(walkMin, meters) : null;
   const next = h('div'), exit = trip.stops.length ? exitBox() : null;
-  const paintNext = () => next.replaceChildren(nextBox(q.now?.good ? 'now' : best ? span(best) : null) ?? '');
+  const paintNext = () => next.replaceChildren(nextBox(later) ?? '');
   if (flow) flow.onChange = paintNext;
-  mount('tr-s-result', [
-    tripHead(),
-    h('h2', { class: 'tr-q' }, done.length ? `${done.length}곳을 걸었어요` : '산책을 마쳤어요'),
+  endNodes = [
+    h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-picked' }, labels().map(p => h('span', null, p)))),
+    h('h2', { class: 'tr-q' }, '오늘 산책, 여기까지예요'),
     trip.stops.length ? h('div', { class: 'tr-stats' },
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
@@ -1266,14 +1338,51 @@ function renderEnd() {
         s.why ? h('small', null, s.why) : null),
       h('div', { class: 'tr-journey-r' }, staticFace(s.rating, 22))))) : null,
     flow?.el,
+    exit ?? h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '산책 마치기', h('span', { class: 'tr-cta-arrow' }, '→')),
     next,
-    exit,
-    h('div', { class: 'tr-actions' },
-      h('button', { type: 'button', class: 'tr-ghost', onclick: restart }, '처음부터 다시 고르기'),
-      h('a', { class: 'tr-ghost', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
+    h('div', { class: 'tr-end-links' },
+      h('button', { type: 'button', class: 'tr-textbtn', onclick: restart }, '다른 코스 고르기'),
+      h('a', { class: 'tr-textbtn', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
     h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
-  ]);
+  ];
+  mount('tr-s-result', endNodes);
   setTimeout(paintNext, 60);   // 다음 코스 계산은 화면이 뜬 뒤에
+}
+let endNodes = null, endInfo = null;
+
+// ── 마무리 4. 나가는 길 안내: 노란 길을 그리고 '다 나왔어요'를 누르면 작별 화면 ──
+function exitWalk(ex) {
+  ex.show();
+  const { last, gate, meters, min, wc } = ex;
+  mount('tr-s-exit', [
+    h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '나가는 길')),
+      h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '돌아가기')),
+    h('h2', { class: 'tr-q' }, gate.name),
+    h('p', { class: 'tr-exit-lead' }, `${last.name}에서 지도의 노란 길을 따라 약 ${fmtM(meters)}, ${min}분이에요.`),
+    Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `나가기 전에 · 가까운 화장실 약 ${fmtM(Math.round(wc))}`) : null,
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '다 나왔어요', h('span', { class: 'tr-cta-arrow' }, '→')),
+  ]);
+}
+
+// ── 마무리 5. 작별 화면: 코스 평가를 보내고, 다음에 오기 좋은 때를 알려 주고 끝 ──
+function goodbye() {
+  flushCourse();
+  const info = endInfo ?? { walkMin: 0, places: 0, later: null };
+  layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers();
+  setFocus(false);
+  flyBounds(app.model.parkBounds, padding(), 1.2);
+  trip = null; hud = null;
+  Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
+  st.must.clear();
+  mount('tr-s-bye', [
+    h('div', { class: 'tr-bye' },
+      h('span', { class: 'tr-bye-ico' }, icon('tree', 26)),
+      h('h2', null, '오늘도 잘 쉬다 가요'),
+      info.places ? h('p', null, `서울숲에서 ${info.places}곳, ${Math.round(info.walkMin)}분을 걸었어요.`) : null,
+      info.later ? h('p', { class: 'tr-bye-later' }, icon('clock', 13), `다음에 오기 좋은 때 · ${info.later}`) : null,
+      h('small', null, '남겨 주신 표정은 이름·위치 없이 공원 길과 쉼터를 고치는 데 써요.')),
+    h('button', { type: 'button', class: 'tr-ghost tr-bye-home', onclick: restart }, '처음 화면으로'),
+  ]);
 }
 
 // ── 마무리 1. 코스 전체 한 번 묻기(이어지는 흐름) ──
@@ -1331,6 +1440,7 @@ function nextBox(later) {
   if (legs.length < 2) return h('div', { class: 'tr-next' }, h('b', null, '다음엔'), h('p', null, '오늘 거의 다 둘러보셨어요. 다른 날 다른 시간에 오면 또 달라요.'),
     later && later !== 'now' ? h('small', null, icon('clock', 12), `오기 좋은 때 · ${later}`) : null);
   const liked = trip.stops.filter(s => s.rating >= 4).map(s => s.r.place.name);
+  // 보조 상자: 오늘 끝난 뒤 '다음에 올 때' 참고용. 바로 걷고 싶은 사람만 작은 버튼으로
   const why = tags.has('backtrack') ? '가장 덜 걷는 순서로 이었어요'
     : tags.has('norest') ? '쉼터·화장실이 가까운 길로 골랐어요'
     : tags.has('samey') ? '오늘과 다른 분위기의 서울숲다운 곳으로 골랐어요'
@@ -1338,12 +1448,13 @@ function nextBox(later) {
     : liked.length ? `${liked[0]}${josa(liked[0], '이', '가')} 좋았다면, 비슷한 결의 안 가 본 곳이에요` : '오늘 안 가 본 곳으로 골랐어요';
   const minutes = sum(legs, s => s.walkMin) + dwell() * legs.length;
   const ids = legs.map(s => s.r.place.id);
-  return h('div', { class: 'tr-next' },
-    h('b', null, '다음엔 이런 코스'),
+  return h('div', { class: 'tr-next sub' },
+    h('b', null, '다음에 올 때는'),
     h('div', { class: 'tr-next-path' }, legs.map((s, i) => [i ? h('i', null, '→') : null, h('span', null, s.r.place.name)]).flat().filter(Boolean)),
     h('p', null, `${why} · 약 ${minutes}분`),
-    later === 'now' ? h('small', { class: 'good' }, icon('clock', 12), '지금이 한산하고 날씨 좋은 때예요') : later ? h('small', null, icon('clock', 12), `오기 좋은 때 · ${later}`) : null,
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => { flushCourse(); st.must.clear(); st.startPick = 'auto'; begin({ id: null, name: '오늘에 이어 걷는 코스', stops: ids }); } }, '이 코스로 바로 걷기', h('span', { class: 'tr-cta-arrow' }, '→')));
+    later && later !== 'now' ? h('small', null, icon('clock', 12), `오기 좋은 때 · ${later}`) : null,
+    h('button', { type: 'button', class: 'tr-textbtn', onclick: () => { flushCourse(); st.must.clear(); st.startPick = 'auto'; begin({ id: null, name: '오늘에 이어 걷는 코스', stops: ids }); } },
+      later === 'now' ? '지금 한산하고 날씨도 좋아요 · 이어서 더 걷기 ›' : '아직 더 걷고 싶다면 · 이어서 걷기 ›'));
 }
 
 // ── 마무리 3. 나가는 길: 마지막 곳에서 가까운 출입구와 화장실 ──
@@ -1364,10 +1475,13 @@ function exitBox() {
     L.polyline(coords, { interactive: false, className: 'tr-exit-line', color: '#ffd27a', weight: 4, opacity: .9, dashArray: '2 8', lineCap: 'round' }).addTo(layers.route);
     flyBounds(L.latLngBounds(coords), { ...padding(), maxZoom: 17.4 }, .8);
   };
-  return h('div', { class: 'tr-exit' },
-    h('span', { class: 'tr-exit-ico' }, icon('pin', 15)),
-    h('div', null, h('b', null, `나가는 길 · ${best.g.name}`), h('p', null, `${last.name}에서 약 ${fmtM(meters)} · ${min}분${Number.isFinite(wc) && wc < 2000 ? ` · 가까운 화장실 약 ${fmtM(Math.round(wc))}` : ''}`)),
-    h('button', { type: 'button', class: 'tr-mini', onclick: show }, '길 보기'));
+  const ex = { show, last, gate: best.g, meters, min, wc };
+  return h('div', { class: 'tr-exit main' },
+    h('div', { class: 'tr-exit-row' },
+      h('span', { class: 'tr-exit-ico' }, icon('pin', 15)),
+      h('div', null, h('b', null, `가장 가까운 출구 · ${best.g.name}`), h('p', null, `${last.name}에서 약 ${fmtM(meters)} · ${min}분`))),
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => exitWalk(ex) }, '나가는 길 안내받기', h('span', { class: 'tr-cta-arrow' }, '→')),
+    h('button', { type: 'button', class: 'tr-textbtn', onclick: goodbye }, '안내 없이 산책 마치기'));
 }
 function countUp(v, digits = 0) {
   const n = h('span', { class: 'tr-countup' }, (0).toFixed(digits));
@@ -1401,6 +1515,7 @@ async function boot() {
   renderTop(); makeMap(); renderIntro();
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
+  refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
   try {
