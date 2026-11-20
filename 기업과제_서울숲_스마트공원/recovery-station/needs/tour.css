@@ -889,3 +889,7 @@ div.tr-status-line{cursor:default}
 .tr-apop-in .r{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.07)}
 .tr-apop-in .r span{color:rgba(241,247,243,.6)}
 .tr-apop-in .r b{font-weight:650;text-align:right}
+/* 머무는 숲으로 돌아가기: 휴대폰에서도 보이게 */
+.tr-back{display:inline-flex!important;font-weight:700;color:var(--ink)}
+.tr-brand b{white-space:nowrap}
+@media(max-width:420px){.tr-back{padding:8px 11px}}

@@ -200,7 +200,7 @@ function renderTop() {
       h('div', { class: 'tr-seg', role: 'group', 'aria-label': '지도 바탕' },
         h('button', { type: 'button', 'data-mode': 'sat', 'aria-pressed': 'true', onclick: () => setBase('sat') }, '위성'),
         h('button', { type: 'button', 'data-mode': 'map', 'aria-pressed': 'false', onclick: () => setBase('map') }, '지도')),
-      h('a', { class: 'tr-link', href: './#citizen' }, '맞춤형 추천 화면', icon('route', 13))));
+      h('a', { class: 'tr-link tr-back', href: '../index.html#home', 'aria-label': '서울숲, 머무는 숲으로 돌아가기' }, h('span', { 'aria-hidden': 'true' }, '←'), '돌아가기')));
 }
 
 // ── 지도 ──
