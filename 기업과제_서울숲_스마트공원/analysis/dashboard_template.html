@@ -120,6 +120,8 @@ ul.tight{margin:0;padding-left:18px;display:grid;gap:3px}
 .zb{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:12.5px;margin-right:6px}
 .banner{background:var(--warn-bg);color:#6F3F06;border-left:4px solid var(--warn);border-radius:4px;padding:9px 12px;font-size:14px}
 .chart svg{display:block;width:100%;height:auto}
+/* ?embed=1: 「머무는 숲」 목표 2의 '근거 보기' 창 안에서 열 때 머리글·탭 줄·바닥글을 숨김 */
+body.embed>header,body.embed>nav{display:none}body.embed main{padding-top:14px}
 footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font-size:12.5px}
 @media(prefers-reduced-motion:no-preference){.bar .t i{transition:width .2s}}
 </style>
@@ -361,6 +363,46 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
   </div>
 </section>
 
+<section class="view" id="v-evidence">
+  <div class="lead">
+    <b>근거 보강: 대리지표 세 가지를 실측 자료와 문헌으로 점검했습니다</b>
+    <span>대기 지표는 에어코리아 도로변·도시대기 측정소로, 혼잡 지표는 지하철 역별 하차 인원으로, 혼잡·접근성 지표를 둔 이유는 서울숲 이용자 평가 문헌으로 확인합니다. 아직 취약도 점수 자체는 바꾸지 않았습니다.</span>
+  </div>
+  <div class="card">
+    <div class="row"><h2>① 대기 지표: 도로 가까운 곳이 실제로 더 나쁜가</h2><span class="pill p-done">실측 비교</span></div>
+    <div class="grid g4" id="evAirTiles"></div>
+    <div class="grid g2">
+      <div><h3 style="margin-bottom:6px">시간대별 PM2.5 평균 (㎍/㎥)</h3><div class="chart" id="evAirChart"></div><div class="legend" id="evAirLegend"></div></div>
+      <div style="display:grid;gap:8px;align-content:start">
+        <h3>해석</h3>
+        <ul class="tight" id="evAirNote"></ul>
+      </div>
+    </div>
+    <p class="note" id="evAirSrc"></p>
+  </div>
+  <div class="card">
+    <div class="row"><h2>② 혼잡 지표: 어느 출입구로 사람이 많이 들어오나</h2><span class="pill p-wip">검토안 · 점수 미반영</span></div>
+    <div class="grid g4" id="evSubTiles"></div>
+    <div class="grid split">
+      <div style="display:grid;gap:8px">
+        <h3>출입구별 낮 시간 유입 추정 (역 하차 배분, 명/일)</h3>
+        <div class="mapbox" id="evSubMap"></div>
+        <div class="legend" id="evSubLegend"></div>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <div><h3 style="margin-bottom:6px">시간대별 하차 비율 (%)</h3><div class="chart" id="evSubChart"></div><div class="legend" id="evSubChartLegend"></div></div>
+        <ul class="tight" id="evSubNote"></ul>
+      </div>
+    </div>
+    <p class="note" id="evSubSrc"></p>
+  </div>
+  <div class="card">
+    <div class="row"><h2>③ 문헌: 서울숲 이용자는 무엇에 불만이었나</h2><span class="pill p-first">선행연구</span></div>
+    <div class="tablewrap"><table id="evLitTable"></table></div>
+    <p class="note">주신하(2008) 「현대 대표 도시공원에 대한 평가: 만족도 및 경관이미지 특성을 중심으로」 한국조경학회지 36(4):36-47. 2007년 9~10월 12개 공원 현장 설문 636명(서울숲 48명). 요인값은 12개 공원 사이의 상대값이고, 서울숲역 개통(2012)과 성수동 변화 이전 조사라 현재와 다를 수 있습니다.</p>
+  </div>
+</section>
+
 <section class="view" id="v-data">
   <div class="card">
     <h2>지표 산출 방식과 불확실성</h2>
@@ -376,17 +418,18 @@ footer{max-width:1400px;margin:0 auto;padding:0 20px 28px;color:var(--mute);font
   </div>
 </section>
 </main>
-<footer>공간정보 © OpenStreetMap contributors (ODbL) · Landsat C2 L2 USGS · Sentinel-2·Copernicus 수정 데이터 · ESA WorldCover 2021 · 기상·대기 Open-Meteo(ERA5, CAMS)</footer>
+<footer>공간정보 © OpenStreetMap contributors (ODbL) · Landsat C2 L2 USGS · Sentinel-2·Copernicus 수정 데이터 · ESA WorldCover 2021 · 기상·대기 Open-Meteo(ERA5, CAMS) · 대기 실측 출처: 환경부/한국환경공단(에어코리아) · 지하철 승하차: 서울특별시 열린데이터광장</footer>
 
 <script>
 const V = /*__VULN__*/null;
 const C = /*__CLIMATE__*/null;
 const K = /*__CONCEPT__*/null;
-const ASOF = "2026-11-14";
+const E = /*__EVIDENCE__*/null;   // 10_evidence.py 결과(에어코리아 도로변·도시대기 비교, 지하철 하차)
+const ASOF = "2026-11-19";
 
 /* 진행상태는 여기만 고치면 표와 막대가 함께 바뀝니다: done 완료 / first 1차 완료 / wip 진행 중 / todo 미착수 */
 const PROGRESS = [
- ["취약지역 도출 (열·혼잡·접근성·대기)","p.10","필수","first","20m 격자 1,097칸에 4개 지표 표준화·가중 중첩, 가중치 민감도 2,000회","혼잡·접근성 대리지표를 현장 계수로 보정"],
+ ["취약지역 도출 (열·혼잡·접근성·대기)","p.10","필수","first","20m 격자 1,097칸에 4개 지표 표준화·가중 중첩, 가중치 민감도 2,000회. 대기 지표는 도로변·도시대기 실측으로, 혼잡 지표는 지하철 하차로 근거 보강","출입구 유입 가중치 검토안 적용, 혼잡·접근성 대리지표를 현장 계수로 보정"],
  ["모듈 1 위험 판정·알림·대체 추천","p.7","필수","first","5개 지표 임계치 판정, 대체 추천 규칙, 2년 반 재분석 통계","기상청·에어코리아 API 키 발급 후 실측 연동"],
  ["공간 개선방안 제시","p.10","필수","first","우선 구역별 처방, 후보 격자, 물량과 시나리오 효과","현장 확인 후 구역 확정"],
  ["취약지역 분석도 (GIS)","산출물 02","필수","first","GeoPackage·CSV 출력 완료","지도 양식 정리"],
@@ -448,7 +491,7 @@ const $ = id => document.getElementById(id);
 const pct = (a,b) => Math.round(a/b*100);
 
 /* ---------- 탭 ---------- */
-const TABS = [["progress","진행현황"],["vuln","취약지역 진단"],["comfort","쾌적 시간"],["gap","만족도 격차"],["plan","개선안"],["risk","위험 판정 (모듈 1)"],["strategy","특화전략"],["data","데이터·한계"]];
+const TABS = [["progress","진행현황"],["vuln","취약지역 진단"],["comfort","쾌적 시간"],["gap","만족도 격차"],["plan","개선안"],["risk","위험 판정 (모듈 1)"],["strategy","특화전략"],["evidence","근거 보강"],["data","데이터·한계"]];
 function go(id){ if(!TABS.some(t=>t[0]===id)) id="progress";
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+id));
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===id)); }
@@ -793,18 +836,18 @@ fillGapInputs();renderImp();onScore.push(renderGap);computeCf();
 /* ---------- 데이터·한계 ---------- */
 $("methodTable").innerHTML=`<thead><tr><th>지표</th><th>산출 방식</th><th>근거 수준</th><th>화소·해상도</th><th>취득일·기간</th><th>주요 가정과 한계</th></tr></thead><tbody>`+[
  ["열","지표면온도 편차 60% + 수관 비피복 40%",'<span class="pill p-done">실측 위성</span>',"Landsat 열적외 100m(30m 재배열), WorldCover 10m",M.lst.scenes.map(s=>s.date.slice(2)).join(", "),`장면 평균 차이 제거 후 평균. 격자 편차 표준편차 ±${(()=>{const a=X.lst_anom,m=a.reduce((p,c)=>p+c,0)/N;return Math.sqrt(a.reduce((p,c)=>p+(c-m)**2,0)/N).toFixed(1)})()}℃. 20m 격자보다 센서 해상도가 거칠어 작은 그늘은 구분 불가. 수관 자료는 2021년`],
- ["대기","간선도로 등급별 거리감쇠 합(감쇠거리 120m)",'<span class="pill p-wip">대리지표</span>',"OSM 도로 벡터","2026-11-09 수집","교통량·풍향 미반영. 공원 내 PM 실측 없음"],
+ ["대기","간선도로 등급별 거리감쇠 합(감쇠거리 120m)",'<span class="pill p-wip">대리지표</span>',"OSM 도로 벡터","2026-11-09 수집",`교통량·풍향 미반영. 공원 내 PM 실측 없음. ${E&&E.air&&E.air.pol.pm25?`강변북로 도로변 측정소가 성동구 도시대기보다 PM2.5 +${Math.round((E.air.pol.pm25.ratio-1)*100)}%, NO₂ +${Math.round((E.air.pol.no2.ratio-1)*100)}%로 방향은 실측과 일치 (근거 보강 탭)`:""}`],
  ["접근성*","편의시설까지 보행망 거리 65% + 출입구 거리 35%",'<span class="pill p-wip">대리지표</span>',`보행망 ${M.osm_counts.path_km}km, 편의거점 ${M.osm_counts.rest}개`,"2026-11-09 수집",`경사·단차 미반영. OSM 벤치는 ${M.osm_counts.bench}개, 계단은 ${M.osm_counts.steps}곳만 입력되어 현장 조사 필요`],
- ["혼잡*","출입구→유인거점 최단경로 누적 60% + 거점 밀도 40%",'<span class="pill p-crit">미검증</span>',`출입구 ${M.osm_counts.entr}곳, 거점 ${M.osm_counts.attr}개`,"2026-11-09 수집","실제 인원이 아닌 구조적 잠재치. 가중치 15%로 제한. 현장 계수로 보정 예정"],
+ ["혼잡*","출입구→유인거점 최단경로 누적 60% + 거점 밀도 40%",'<span class="pill p-crit">미검증</span>',`출입구 ${M.osm_counts.entr}곳, 거점 ${M.osm_counts.attr}개`,"2026-11-09 수집","실제 인원이 아닌 구조적 잠재치. 가중치 15%로 제한. 지하철 역별 하차로 출입구 유입 가중치 검토안을 만들었고(근거 보강 탭), 현장 계수와 비교 후 적용 예정"],
  ["쾌적 시간","06~21시 중 비·추위·미세먼지·더위·자외선 기준을 모두 통과한 시간 수. 격자별로 햇볕 노출(1-그늘 비율)과 도로 노출을 반영",'<span class="pill p-wip">가정 포함</span>',"기상 ERA5 약 11km, 대기 CAMS 약 40km. 격자 차이는 수관 10m와 도로 거리에서만 발생",`${CF.period[0]}~${CF.period[1]} 시간별`,`햇볕 가산 ${CF.S}℃와 도로 가산 ${Math.round(CF.A*100)}%는 근거 측정이 없는 가정. 추위 기준(0℃)은 과제에 없어 팀이 추가. 공원 안 기온·미세먼지 실측 없음`],
  ["만족도","구역별 5점 척도 설문 평균(종합과 4개 항목). 공원 평균 취약도와 구역 평균 만족도로 4분면 판정",'<span class="pill p-crit">설문 전</span>',`설문 구역 ${ZS.length}곳`,"11~12월 조사 예정","현재 값은 팀 가설이며 조사 결과가 아님. 겨울 조사라 더위 항목은 회상 응답. 구역당 응답 수가 적으면 판정이 불안정"],
 ].map(r=>`<tr>${r.map((c,i)=>`<td>${i==0?`<b style="font-weight:700">${c}</b>`:c}</td>`).join("")}</tr>`).join("")+"</tbody>";
 $("dataTable").innerHTML=`<thead><tr><th>자료 (슬라이드 p.6)</th><th>현재 사용</th><th>상태</th><th>필요 조치</th></tr></thead><tbody>`+[
  ["기상 (기상청 API허브)","ERA5 재분석 + 예보 (Open-Meteo)","wip","API 키 발급 후 초단기실황 연동"],
- ["대기질 (에어코리아)","CAMS 모델 (Open-Meteo)","wip","성동구 측정소 실측으로 교체"],
+ ["대기질 (에어코리아)","CAMS 모델 (Open-Meteo) + 도로변·도시대기 측정소 3개월 실측 비교","wip","모듈 1 실측 교체 (팀 중계 서버 활용 협의), 측정소정보 API 신청"],
  ["위성·지표 (Landsat, Sentinel-2)",`Landsat ${M.lst.scenes.length}장면, Sentinel-2 ${M.ndvi_scenes.length}장면`,"done","완료"],
  ["공원 공간 (표준데이터, V-World)","OSM 경계·시설·보행망","wip","공식 경계와 시설물로 검증"],
- ["유동인구 (서울 생활인구, 현장 계수)","없음","todo","생활인구 키 신청, 거점 계수"],
+ ["유동인구 (서울 생활인구, 현장 계수)","지하철 역별 시간대별 하차 (서울숲역·뚝섬역 12개월, 열린데이터광장)","wip","생활인구·현장 계수로 공원 방문 비율 보정"],
  ["이용자 (설문, 페르소나)","설문 구역·문항 설계, 구역별 가설값","todo","현장 설문 120명, 페르소나 작성"],
  ["일사량 (팀 추가, 쾌적 시간용)","ERA5 시간별 지표 일사량 (Open-Meteo)","wip","현장 흑구온도 측정으로 햇볕 가산값 확인"],
 ].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td><span class="pill ${ST[r[2]][1]}">${{done:"확보",wip:"대체 자료",todo:"미확보"}[r[2]]}</span></td><td>${r[3]}</td></tr>`).join("")+"</tbody>";
@@ -817,6 +860,61 @@ $("findings").innerHTML=[
  `쾌적하지 못한 시간의 대부분은 미세먼지(연 ${H(sum12(CF.uni.pm))}시간)와 추위(${H(sum12(CF.uni.cold))}시간)처럼 공간 개선으로 바꿀 수 없는 요인입니다. 위치에 따라 달라지는 손실은 공원 평균 연 ${H(cfNow.sun+cfNow.road)}시간이고, 개선안으로 되찾는 시간은 후보 격자 평균 연 ${H(avg(cfAft.Y,candK)-avg(cfNow.Y,candK))}시간입니다. 나머지는 시간대 안내(모듈 1)가 맡아야 합니다.`,
  `설문 구역 가운데 북측 연결로변은 이용강도가 낮아 현장에서 응답자를 만나기 어렵습니다. 다른 구역 응답자에게 다녀온 구역을 함께 묻는 방식으로 보완합니다.`,
 ].map(x=>`<li>${x}</li>`).join("");
+
+/* ---------- 근거 보강 ---------- */
+function hourChart(series,{ymax,label,hl}){ // series: [{c,l,v:[24]}]
+ const w=560,h=220,L=38,R=10,T=10,B=26,iw=w-L-R,ih=h-T-B,X_=i=>L+i/23*iw,Y_=v=>T+ih-v/ymax*ih;let g="";
+ if(hl)g+=`<rect x="${X_(hl[0])}" y="${T}" width="${X_(hl[1])-X_(hl[0])}" height="${ih}" fill="#EEF2F7"/>`;
+ for(let t=0;t<=4;t++){const v=ymax*t/4,y=Y_(v);g+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="#DCE3EB"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#5C6B7E">${+v.toFixed(1)}</text>`}
+ for(let i=0;i<24;i+=3)g+=`<text x="${X_(i)}" y="${h-7}" text-anchor="middle" font-size="11" fill="#5C6B7E">${i}시</text>`;
+ series.forEach(s=>{g+=`<polyline points="${s.v.map((v,i)=>v==null?"":`${X_(i).toFixed(1)},${Y_(v).toFixed(1)}`).filter(Boolean).join(" ")}" fill="none" stroke="${s.c}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  s.v.forEach((v,i)=>{if(v!=null)g+=`<circle cx="${X_(i).toFixed(1)}" cy="${Y_(v).toFixed(1)}" r="6" fill="transparent"><title>${s.l} ${i}시: ${+v.toFixed(2)}</title></circle>`})});
+ return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`}
+const evTile=(k,v,s)=>`<div class="tile"><span class="k">${k}</span><span class="v num">${v}</span><span class="s">${s}</span></div>`;
+const evLeg=items=>items.map(([c,l])=>`<span><i style="background:${c}"></i>${l}</span>`).join("");
+const EV_ROAD="#C8501E", EV_URB="#3B6FB6", EV_ST=["#7A5AA6","#2E8B57"];
+if(E&&E.air&&E.air.pol.pm25){const A=E.air,P_=A.pol,fv=(v,u)=>u==="ppm"?v.toFixed(3):v.toFixed(1),up=p=>`+${Math.round((P_[p].ratio-1)*100)}%`;
+ $("evAirTiles").innerHTML=[["pm25","PM2.5"],["no2","NO₂ (자동차 배출)"],["pm10","PM10"]].filter(([p])=>P_[p]).map(([p,l])=>evTile(`${l}: 도로변이 도시대기보다`,up(p),`평균 ${fv(P_[p].road,P_[p].unit)} vs ${fv(P_[p].urban,P_[p].unit)} ${P_[p].unit} · ${fmt(P_[p].n)}시간`)).join("")
+  +evTile("PM2.5가 도로변에서 더 높았던 시간",`${Math.round(P_.pm25.higher*100)}%`,`두 곳 모두 정상 측정된 ${fmt(P_.pm25.n)}시간 중`);
+ const hv=P_.pm25.hourly,mx=Math.max(...hv.flatMap(r=>[r[1]||0,r[2]||0]));
+ $("evAirChart").innerHTML=hourChart([{c:EV_ROAD,l:"강변북로(도로변)",v:hv.map(r=>r[1])},{c:EV_URB,l:"성동구(도시대기)",v:hv.map(r=>r[2])}],{ymax:Math.ceil(mx*1.15/5)*5,label:"시간대별 PM2.5 평균"});
+ $("evAirLegend").innerHTML=evLeg([[EV_ROAD,"강변북로 도로변대기"],[EV_URB,"성동구 도시대기"]]);
+ const sug=Math.round((P_.pm25.ratio-1)*100/5)*5;
+ $("evAirNote").innerHTML=[
+  `도로변 측정소가 PM2.5 <b>${up("pm25")}</b>, NO₂ <b>${P_.no2?up("no2"):"-"}</b> 높습니다. 자동차 배출 영향이 큰 NO₂의 차이가 가장 커서, "간선도로에 가까울수록 나쁘다"고 본 대기 지표의 <b>방향은 실측과 맞습니다</b>.`,
+  `PM10 차이(${P_.pm10?up("pm10"):"-"})는 작습니다. 굵은 먼지는 황사·비산먼지처럼 도로 밖 요인이 커서 지역 전체가 함께 오르내리기 때문으로 보입니다.`,
+  `쾌적 시간의 '도로변 미세먼지 가산' 가정 ${Math.round(CF.A*100)}%는 실측 차이 범위(PM10 ${P_.pm10?up("pm10"):"-"} ~ PM2.5 ${up("pm25")}) 안에 있습니다. PM2.5 기준으로 맞추면 <b>${sug}%</b>로 올리는 안을 검토합니다.`,
+  `두 지점 비교라 공원 안 농도는 아닙니다. 강변북로 측정소의 정확한 위치와 도로까지 거리는 측정소정보 API를 신청한 뒤 확인해, 대기 지표의 감쇠거리(120m)를 맞출 예정입니다.`].map(x=>`<li>${x}</li>`).join("");
+ $("evAirSrc").innerHTML=`출처: 환경부/한국환경공단 에어코리아 「대기오염정보」 측정소별 실시간 측정정보, 강변북로(${A.stations[0].code})·성동구(${A.stations[1].code}) ${A.period[0]} ~ ${A.period[1]} (${A.fetched} 수집). <b>인증을 받지 않은 실시간 자료라 오류가 있을 수 있습니다.</b> 측정 이상 표시(Flag)가 붙은 시간은 뺐습니다.`;
+} else { $("evAirTiles").innerHTML=evTile("대기 실측 비교","-","에어코리아 인증키가 없어 수집하지 않았습니다"); }
+if(E&&E.subway&&E.subway.stations.length){const SB=E.subway,SS=SB.stations,ym=m=>`${m.slice(0,4)}.${m.slice(4)}`;
+ $("evSubTiles").innerHTML=SS.map(s=>evTile(`${s.name} 연간 하차`,`${fmt(Math.round(s.off_year/1e4))}<small>만 명</small>`,`낮 10~18시 ${Math.round(s.day_year/s.off_year*100)}% · 가장 붐비는 때 ${s.peak}시`)).join("")
+  +(()=>{const t=[...SB.entr].sort((a,b)=>b.daily-a.daily).slice(0,3);return evTile("유입 상위 출입구 3곳 비중",`${Math.round(t.reduce((p,c)=>p+c.share,0))}%`,`${SB.entr.filter(e=>e.daily>0).length}곳에 배분, 하루 낮 ${fmt(Math.round(SB.entr.reduce((p,c)=>p+c.daily,0)))}명 기준`)})();
+ const dm=Math.max(...SB.entr.map(e=>e.daily)),rr=d=>4+Math.sqrt(d/dm)*16;
+  $("evSubMap").innerHTML=svg(baseUnder()+baseOver()
+  +SB.entr.filter(e=>e.daily>0).map(e=>`<circle cx="${px(e.x)}" cy="${py(e.y)}" r="${rr(e.daily).toFixed(1)}" fill="${EV_URB}" fill-opacity=".72" stroke="#fff" stroke-width="2"><title>출입구 ${e.i+1}: 하루 낮 약 ${fmt(e.daily)}명 (${e.share}%)</title></circle>`).join("")
+  +SB.entr.filter(e=>!e.daily).map(e=>`<circle cx="${px(e.x)}" cy="${py(e.y)}" r="4" fill="#fff" stroke="#5C6B7E" stroke-width="1.5"><title>출입구 ${e.i+1}: 역에서 ${SB.cut}m 밖</title></circle>`).join("")
+  +SS.map((s,i)=>{if(!s.x)return "";const a=px(s.x),b=py(s.y),m=26,cx=Math.min(W_-m,Math.max(m,a)),cy=Math.min(H_-m,Math.max(m,b)),out=cx!==a||cy!==b;
+   return `<g transform="translate(${cx} ${cy})"><circle r="20" fill="${EV_ST[i]}" stroke="#fff" stroke-width="3"${out?' stroke-dasharray="5 4"':""}/><text text-anchor="middle" y="8" font-size="22" font-weight="700" fill="#fff">${s.name.includes("서울숲")?"숲":"뚝"}</text><title>${s.name}${out?" (지도 밖, 가장자리에 표시)":""}</title></g>`}).join("")+scaleBar());
+ $("evSubLegend").innerHTML=evLeg([[EV_URB,"원 크기 = 역 하차 배분 인원"],["#fff;border:1.5px solid #5C6B7E","역에서 800m 밖 출입구 (배분 없음)"]])+SS.map((s,i)=>`<span><i style="background:${EV_ST[i]};border-radius:50%"></i>${s.name} (가장 가까운 출입구까지 ${s.near_d}m)</span>`).join("")+`<span>점선 테두리 = 지도 밖에 있는 역을 가장자리에 표시</span>`;
+ const pm=Math.max(...SS.flatMap(s=>s.prof));
+ $("evSubChart").innerHTML=hourChart(SS.map((s,i)=>({c:EV_ST[i],l:s.name,v:s.prof})),{ymax:Math.ceil(pm*1.1/4)*4,label:"역별 시간대별 하차 비율",hl:[10,18]});
+ $("evSubChartLegend").innerHTML=evLeg(SS.map((s,i)=>[EV_ST[i],s.name]))+`<span><i style="background:#EEF2F7"></i>낮 10~18시 (여가 방문 대리값)</span>`;
+ const [a,b]=SS,sh=s=>Math.round(s.day_year/s.off_year*100);
+ $("evSubNote").innerHTML=[
+  b?`${b.name}은 ${b.peak}시 하차가 ${b.prof[b.peak].toFixed(1)}%로 출근 수요가 큽니다. ${a.name}은 낮 시간 비중이 ${sh(a)}%로 ${b.name}(${sh(b)}%)보다 높아 공원·성수동 방문 성격이 더 강합니다.`:"",
+  `지금 혼잡 지표는 역·정류장에 가까운 출입구를 모두 같은 가중치(최대 4배)로 봅니다. 이 검토안은 <b>역마다 다른 실제 하차 인원</b>을 출입구에 나눠 줍니다(거리감쇠 ${SB.decay}m, ${SB.cut}m 밖 제외).`,
+  `하차객 전부가 공원 방문객은 아니고, 월 합계라 주말·평일을 나눌 수 없습니다. 버스·자전거·도보 유입도 빠져 있습니다. 현장 출입구 계수와 비교한 뒤 혼잡 지표에 넣겠습니다.`].filter(Boolean).map(x=>`<li>${x}</li>`).join("");
+ $("evSubSrc").innerHTML=`출처: 서울특별시 열린데이터광장 OA-12252 「서울시 지하철 호선별 역별 시간대별 승하차 인원 정보」(교통카드, 환승 포함) ${ym(SB.months[0])}~${ym(SB.months[SB.months.length-1])} 12개월, ${SB.fetched} 수집. 역 위치는 OSM. 서울숲역은 자료에서 '분당선'으로 표기됩니다.`;
+}
+$("evLitTable").innerHTML=`<thead><tr><th>주신하(2008) 결과</th><th>서울숲 값</th><th>이 대시보드에서 쓰는 곳</th></tr></thead><tbody>`+[
+ ["시설 요인 '동선·밀도' (대중교통 연결, 내부 동선, 적당한 이용자 수)","<b>−0.614</b>, 12개 공원 중 최저","혼잡·접근성을 취약도 지표로 둔 근거. ②의 출입구 유입 분석으로 이어집니다"],
+ ["공원 유형 (군집분석)","유형 IV <b>'상대적 개선필요'</b> (파리공원과 함께)","개선안이 필요하다는 출발점"],
+ ["종합 선호도 (10점)","<b>6.36</b> (12곳 평균 7.01, 10위)","만족도 격차 지도의 비교 기준선. 설문에 같은 문항을 넣어 2007년과 비교"],
+ ["경관 이미지 요인","독특성 −0.557, 자연·조화 −0.362","개선안에서 경관 처방(식재·수변) 우선순위 검토"],
+ ["이용 행태","첫 방문 35.4%, 차량 30분 이상 33.3%","광역 이용형이라 대중교통 유입(②)을 따로 봐야 하는 이유"],
+ ["설문 구성","시설 만족 23문항, 형용사 10쌍(7점), 재방문·추천 의사(5점)","팀 만족도 설문 문항의 틀로 사용"],
+].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")+"</tbody>";
 
 /* ---------- 특화전략 ---------- */
 const GROUPS = [
@@ -882,6 +980,7 @@ $("mocks").innerHTML = mockExpert+mockAdmin+mockCitizen;
 $("csvBtn").addEventListener("click",()=>{const ks=Object.keys(X),rows=[ks.join(",")];for(let k=0;k<N;k++)rows.push(ks.map(c=>X[c][k]).join(","));
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+rows.join("\n")],{type:"text/csv"}));a.download="seoulforest_grid.csv";a.click()});
 
+if(new URLSearchParams(location.search).has("embed"))document.body.classList.add("embed");
 go(location.hash.slice(1)||"progress");
 </script>
 </body>

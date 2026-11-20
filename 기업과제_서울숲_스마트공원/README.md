@@ -29,6 +29,7 @@
 | `analysis/03_climate.py` | 모듈 1 임계치 발생 통계와 현재 스냅샷 |
 | `analysis/05_concept.py` | 팀 컨셉 산출: 쾌적 시간 판정 자료와 설문 구역. 일사량 자료(`sw.json`)가 없으면 내려받습니다 |
 | `analysis/04_build.py` | `dashboard_template.html`에 결과를 넣어 대시보드 생성 |
+| `analysis/10_evidence.py` | 근거 보강 탭 자료: 에어코리아 강변북로(도로변)·성동구(도시대기) 3개월 실측 비교, 서울숲역·뚝섬역 시간대별 하차(열린데이터광장 OA-12252)와 출입구 유입 가중치 검토안. 에어코리아 인증키는 `.env`의 `AIRKOREA_SERVICE_KEY`(깃허브에 올리지 않음), 키가 없으면 대기 비교만 건너뜁니다. 「머무는 숲」 목표 2의 '근거 보기' 단추(`recovery-station/needs/evidence-open.js`)가 이 탭을 창으로 띄웁니다 |
 | `analysis/06_needs.py` | 맞춤 추천 화면용 자료(공원 안 화장실·벤치·쉼터, 공원 밖 무료 장소, 지도 배경). `python -I analysis/06_needs.py .` |
 | `analysis/08_programs.py` | 맞춤 추천 화면용 서울숲 프로그램(서울시 공공서비스예약). 환경변수 `SEOUL_KEY`(서울 열린데이터광장 인증키) 필요. `python -I analysis/08_programs.py` |
 | `analysis/07_legal.py` | 맞춤 추천 화면용 법적 구역(공원·하천구역·유수지·정수장 부지). 브이월드 연속지적도 + 토지이음 조회. 환경변수 `VWORLD_KEY`(브이월드 인증키) 필요. `python -I analysis/07_legal.py .` |
@@ -44,6 +45,7 @@ python analysis/01_fetch.py .
 python analysis/02_vulnerability.py .
 python analysis/03_climate.py .
 python analysis/05_concept.py .
+python analysis/10_evidence.py .
 python analysis/04_build.py .
 ```
 
