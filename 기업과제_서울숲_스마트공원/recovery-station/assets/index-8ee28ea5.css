@@ -44,3 +44,5 @@
 html.sf-full,html.sf-full body{overflow:hidden}html.sf-full .footer{display:none}
 .sf-wrap{position:fixed;left:0;right:0;bottom:0;top:var(--sf-top,64px);z-index:40;background:#0d1210}.sf-frame{display:block;width:100%;height:100%;border:0}
 @media(max-width:760px){.goals-nav{scrollbar-width:none}.goals-nav::-webkit-scrollbar{display:none}.goals-nav .tab{flex:0 0 auto}}
+
+.intro-title{text-wrap:balance}
