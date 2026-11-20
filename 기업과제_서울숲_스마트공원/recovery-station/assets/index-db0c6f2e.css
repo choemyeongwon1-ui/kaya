@@ -104,3 +104,59 @@ html.sf-full,html.sf-full body{overflow:hidden}html.sf-full .footer{display:none
 @media(max-width:900px){.hm-about{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.hm-stats4,.hm-whys{grid-template-columns:minmax(0,1fr)}.hm-card,.hm-goal{padding:20px 18px}.hm-tl li{grid-template-columns:minmax(0,1fr);gap:0}.hm-area-r{grid-template-columns:5.6em minmax(0,1fr);row-gap:2px}.hm-area-r b{grid-column:2;text-align:left}.hm-green-r{grid-template-columns:6em minmax(0,1fr) 3.2em}}
 .hm-needs li{grid-template-columns:10.5em minmax(0,1fr)}@media(max-width:600px){.hm-needs li{grid-template-columns:minmax(0,1fr)}}
+.hm-but{position:static;top:auto}
+
+/* 소개 애니메이션 (움직임 줄이기 설정이면 모두 끔) */
+@media (prefers-reduced-motion:no-preference){
+@keyframes hmUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes hmFade{from{opacity:0;transform:scale(1.035)}to{opacity:1;transform:none}}
+@keyframes hmShine{0%{background-position:120% 0}100%{background-position:-20% 0}}
+@keyframes hmDot{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--brand) 45%,transparent)}50%{box-shadow:0 0 0 6px transparent}}
+@keyframes hmNudge{0%,100%{transform:none}50%{transform:translateX(4px)}}
+@keyframes hmGlow{0%,100%{opacity:.55;transform:translate(0,0) scale(1)}50%{opacity:.9;transform:translate(6%,-5%) scale(1.12)}}
+/* 첫 화면 */
+.hm .intro-title{animation:hmUp .9s cubic-bezier(.2,.7,.2,1) both}
+.hm .intro-title em{display:inline-block;animation:hmUp .9s .22s cubic-bezier(.2,.7,.2,1) both;background:linear-gradient(100deg,var(--accent) 0 40%,#f4ffd6 50%,var(--accent) 60% 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hm .intro-title em{animation:hmUp .9s .22s cubic-bezier(.2,.7,.2,1) both,hmShine 2.4s 1.2s ease-in-out both}
+.hm .intro-map{animation:hmFade 1.2s .1s cubic-bezier(.2,.7,.2,1) both}
+.hm .intro-text{position:relative;overflow:hidden}
+.hm .intro-text::after{content:"";position:absolute;width:60%;aspect-ratio:1;left:-12%;bottom:-30%;border-radius:50%;background:radial-gradient(closest-side,rgba(127,224,168,.22),transparent);pointer-events:none;animation:hmGlow 9s ease-in-out infinite}
+/* 머리말 */
+.hm-eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand);animation:hmDot 2.2s ease-in-out infinite}
+/* 막대: 보이면 왼쪽부터 채움 */
+.rv-on [data-rv] .hm-area-r em,.rv-on [data-rv] .hm-green-r em{transform:scaleX(0);transform-origin:left;transition:transform 1.1s cubic-bezier(.2,.7,.2,1)}
+.rv-on [data-rv].in .hm-area-r em,.rv-on [data-rv].in .hm-green-r em{transform:none}
+.rv-on [data-rv].in .hm-area-r:nth-child(2) em{transition-delay:.12s}
+.rv-on [data-rv].in .hm-area-r:nth-child(3) em{transition-delay:.24s}
+.rv-on [data-rv].in .hm-area-r:nth-child(4) em{transition-delay:.36s}
+.rv-on [data-rv].in .hm-green-r:nth-child(2) em{transition-delay:.5s}.rv-on [data-rv].in .hm-green-r:nth-child(3) em{transition-delay:.62s}.rv-on [data-rv].in .hm-green-r:nth-child(4) em{transition-delay:.74s}
+/* 부지 변천: 차례로 */
+.rv-on [data-rv] .hm-tl li{opacity:0;transform:translateX(-12px);transition:opacity .6s,transform .6s cubic-bezier(.2,.7,.2,1)}
+.rv-on [data-rv].in .hm-tl li{opacity:1;transform:none}
+.rv-on [data-rv].in .hm-tl li:nth-child(2){transition-delay:.12s}.rv-on [data-rv].in .hm-tl li:nth-child(3){transition-delay:.24s}.rv-on [data-rv].in .hm-tl li:nth-child(4){transition-delay:.36s}.rv-on [data-rv].in .hm-tl li:nth-child(5){transition-delay:.48s}
+.rv-on [data-rv].in .hm-tl li:last-child::before{animation:hmDot 2.2s 1s ease-in-out infinite}
+/* 강조 띠: 왼쪽부터 칠함 */
+.rv-on .hm-turn[data-rv],.rv-on .hm-law[data-rv]{background:linear-gradient(var(--brand-wash),var(--brand-wash)) no-repeat 0 0/0% 100%;transition:opacity .7s,transform .7s cubic-bezier(.2,.7,.2,1),background-size 1.1s .25s cubic-bezier(.2,.7,.2,1)}
+.rv-on .hm-turn[data-rv].in,.rv-on .hm-law[data-rv].in{background-size:100% 100%}
+/* 문제: 현황은 왼쪽, 문제는 오른쪽에서 */
+.rv-on .hm-scene[data-rv] .hm-is{opacity:0;transform:translateX(-22px);transition:opacity .7s .1s,transform .7s .1s cubic-bezier(.2,.7,.2,1)}
+.rv-on .hm-scene[data-rv] .hm-but{opacity:0;transform:translateX(22px);transition:opacity .7s .3s,transform .7s .3s cubic-bezier(.2,.7,.2,1)}
+.rv-on .hm-scene[data-rv].in .hm-is,.rv-on .hm-scene[data-rv].in .hm-but{opacity:1;transform:none}
+.rv-on .hm-scene[data-rv] .hm-needs li,.rv-on .hm-scene[data-rv] .hm-group{opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s cubic-bezier(.2,.7,.2,1)}
+.rv-on .hm-scene[data-rv].in .hm-needs li,.rv-on .hm-scene[data-rv].in .hm-group{opacity:1;transform:none}
+.rv-on .hm-scene[data-rv].in .hm-needs li:nth-child(1),.rv-on .hm-scene[data-rv].in .hm-group:nth-child(1){transition-delay:.45s}
+.rv-on .hm-scene[data-rv].in .hm-needs li:nth-child(2),.rv-on .hm-scene[data-rv].in .hm-group:nth-child(2){transition-delay:.55s}
+.rv-on .hm-scene[data-rv].in .hm-needs li:nth-child(3),.rv-on .hm-scene[data-rv].in .hm-group:nth-child(3){transition-delay:.65s}
+.rv-on .hm-scene[data-rv].in .hm-needs li:nth-child(4),.rv-on .hm-scene[data-rv].in .hm-group:nth-child(4){transition-delay:.75s}
+/* 목표 카드 */
+.rv-on .hm-goal[data-rv] .hm-ico{transform:scale(.5) rotate(-20deg);opacity:0;transition:transform .6s .25s cubic-bezier(.3,1.6,.5,1),opacity .4s .25s}
+.rv-on .hm-goal[data-rv].in .hm-ico{transform:none;opacity:1}
+.rv-on .hm-goal[data-rv] .hm-chips span{opacity:0;transform:scale(.8);transition:opacity .4s,transform .4s cubic-bezier(.3,1.6,.5,1)}
+.rv-on .hm-goal[data-rv].in .hm-chips span{opacity:1;transform:none}
+.rv-on .hm-goal[data-rv].in .hm-chips span:nth-child(1){transition-delay:.5s}.rv-on .hm-goal[data-rv].in .hm-chips span:nth-child(2){transition-delay:.6s}.rv-on .hm-goal[data-rv].in .hm-chips span:nth-child(3){transition-delay:.7s}
+.hm-goal-nums b i{display:inline-block;animation:hmNudge 1.6s ease-in-out infinite}
+/* 마우스를 올리면 테두리 강조 */
+.hm-stat,.hm-goal,.hm-whyc,.hm-card,.hm-group{transition:border-color .25s,box-shadow .25s,background-color .25s}
+.hm-stat:hover,.hm-goal:hover,.hm-whyc:hover,.hm-card:hover,.hm-group:hover{border-color:color-mix(in srgb,var(--brand) 55%,transparent);box-shadow:0 10px 28px -12px color-mix(in srgb,var(--brand) 45%,transparent)}
+.hm-group:hover .hm-ico{transform:scale(1.08)}.hm-ico{transition:transform .25s}
+}
