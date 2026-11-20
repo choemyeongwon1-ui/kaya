@@ -88,6 +88,49 @@ export const FACES = [
   { v: 1, label: '별로', cls: 'bad' },
 ];
 export const faceOf = v => v == null ? null : v >= 4 ? FACES[0] : v >= 3 ? FACES[1] : FACES[2];
+// 표정을 고를 때 튀어나오는 작은 효과: 좋아요 = 하트, 보통 = 반짝이, 별로 = 눈물방울
+const PT_SVG = {
+  heart: '<path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.2 0 3.6 1.2 5.4 3.3 1.8-2.1 3.2-3.3 5.4-3.3 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/>',
+  spark: '<path d="M12 1.5l2.4 7.1 7.1 2.4-7.1 2.4L12 20.5l-2.4-7.1L2.5 11l7.1-2.4z"/>',
+  drop: '<path d="M12 2.5S5.5 10.2 5.5 14.6a6.5 6.5 0 0013 0C18.5 10.2 12 2.5 12 2.5z"/>',
+};
+const BURST = {
+  good: { kind: 'heart', n: 8, spread: 200, dist: [36, 60] },
+  mid:  { kind: 'spark', n: 6, spread: 360, dist: [28, 46] },
+  bad:  { kind: 'drop',  n: 2, spread: 0,   dist: [0, 0] },
+};
+function burst(btn, cls) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cfg = BURST[cls], fc = btn.querySelector('.fc');
+  if (!cfg || !fc) return;
+  btn.querySelectorAll('.rv-pt').forEach(p => p.remove());
+  const cx = fc.offsetLeft + fc.offsetWidth / 2, cy = fc.offsetTop + fc.offsetHeight / 2, r = fc.offsetWidth / 2;
+  for (let i = 0; i < cfg.n; i++) {
+    const p = document.createElement('span');
+    p.className = `rv-pt ${cfg.kind}`;
+    let x = cx, y = cy, dx, dy, size, delay;
+    if (cfg.kind === 'drop') {
+      // 눈 아래에서 또르르 떨어지는 눈물
+      x = cx + (i ? r * .42 : -r * .42); y = cy - r * .05;
+      dx = i ? 6 : -6; dy = r * 1.3; size = 11; delay = 120 + i * 180;
+    } else {
+      // 하트는 위쪽 부채꼴(왼쪽 아래 −10°~오른쪽 아래 190°)로만 퍼져서 아래 글자를 가리지 않음
+      const a = cfg.spread < 360
+        ? Math.PI + (i / (cfg.n - 1)) * Math.PI * (cfg.spread / 180) - Math.PI * ((cfg.spread - 180) / 360) + (Math.random() - .5) * .25
+        : (i / cfg.n) * Math.PI * 2 + (Math.random() - .5) * .5 - Math.PI / 2;
+      const d = cfg.dist[0] + Math.random() * (cfg.dist[1] - cfg.dist[0]);
+      dx = Math.cos(a) * d; dy = Math.sin(a) * d - (cfg.kind === 'heart' ? 14 : 0);
+      size = (cfg.kind === 'heart' ? 13 : 10) + Math.random() * 6; delay = Math.random() * 90;
+    }
+    Object.assign(p.style, { left: `${x}px`, top: `${y}px`, width: `${size}px`, height: `${size}px` });
+    p.style.setProperty('--dx', `${dx.toFixed(1)}px`); p.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+    p.style.setProperty('--rot', `${Math.round((Math.random() - .5) * 50)}deg`); p.style.animationDelay = `${Math.round(delay)}ms`;
+    p.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${PT_SVG[cfg.kind]}</svg>`;
+    p.addEventListener('animationend', () => p.remove(), { once: true });
+    btn.append(p);
+  }
+}
+
 export function faces(onPick, label = '이 자리 쾌적함') {
   const wrap = h('div', { class: 'rv-faces', role: 'radiogroup', 'aria-label': label });
   const btns = FACES.map((f, i) => h('button', { type: 'button', role: 'radio', class: `rv-face ${f.cls}`, style: `--i:${i}`, 'aria-checked': 'false', 'aria-label': f.label,
@@ -96,6 +139,7 @@ export function faces(onPick, label = '이 자리 쾌적함') {
       const me = e.currentTarget;
       btns.forEach(b => { const on = b === me; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
       me.classList.remove('pop'); void me.offsetWidth; me.classList.add('pop');
+      burst(me, f.cls);
       wrap.classList.add('picked'); onPick(f.v);
     } },
     faceIcon(f.cls, 52), h('small', null, f.label)));
