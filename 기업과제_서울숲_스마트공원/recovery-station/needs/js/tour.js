@@ -15,7 +15,7 @@ import { dijkstra } from './graph.js';
 import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, fmtM, esc } from './ui.js';
-import { faces, staticFace, upsertJourney, loadReviews, sendComfort } from './review.js';
+import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 
@@ -672,12 +672,13 @@ function gardensNear(coords, destId) {
 const gardenImg = g => (g.photo ? app.photos?.files?.[g.photo] : null);
 
 async function begin(course = null, avoid = []) {
+  flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers();
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
     h('div', { class: 'tr-pulse' }, h('i'), h('i'), h('i')),
     h('b', null, course ? `‘${course.name}’ 코스를 준비하고 있어요` : '지금 내 위치에서 코스를 짜고 있어요'),
-    h('ul', { class: 'tr-ticks' }, ['내 위치', '실시간 날씨·붐빔', '이용자 별점', '가는 길의 정원'].map((t, i) => h('li', { style: `--i:${i}` }, h('span', null, icon('check', 11)), t))),
+    h('ul', { class: 'tr-ticks' }, ['내 위치', '실시간 날씨·붐빔', '이용자 평가', '가는 길의 정원'].map((t, i) => h('li', { style: `--i:${i}` }, h('span', null, icon('check', 11)), t))),
     h('div', { class: 'tr-skel' }, h('i'), h('i'), h('i')))]);
   const t0 = performance.now();
   if (st.startPick === 'auto' || st.startPick === 'me') await waitMe(2500);
@@ -759,7 +760,7 @@ function drawStart() {
 function pinIcon(s, i, extra = '') {
   const state = i < trip.idx ? (s.rating != null ? 'done' : 'passed') : i === trip.idx ? 'next' : 'up';
   const low = s.rating != null && s.rating <= 2 ? ' low' : '';
-  const tag = s.rating != null ? `<u>${s.rating >= 4 ? '좋아요' : s.rating === 3 ? '보통' : '별로'}</u>` : '';
+  const tag = s.rating != null ? `<u class="tr-pin-face">${faceHtml(s.rating, 15)}</u>` : '';
   return L.divIcon({ className: '', html: `<div class="tr-pin ${state}${low} ${extra}" style="--d:${i * 110}ms"><span>${i + 1}</span><em>${esc(s.r.place.name)}${tag}</em></div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
 }
 function drawCourse({ reveal = false, changed = new Set() } = {}) {
@@ -1148,6 +1149,11 @@ function renderEnd() {
   const q = quietHours(app.wx, app.now), best = q.best[0];
   const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
   setFocus(trip.stops.length > 0);
+  // 마무리 흐름: 오늘 걸은 길(지도+목록) → 코스 전체 한 번 묻기 → 다음엔 이런 코스 → 나가는 길
+  const flow = trip.stops.length ? courseAsk(walkMin, meters) : null;
+  const next = h('div'), exit = trip.stops.length ? exitBox() : null;
+  const paintNext = () => next.replaceChildren(nextBox(q.now?.good ? 'now' : best ? span(best) : null) ?? '');
+  if (flow) flow.onChange = paintNext;
   mount('tr-s-result', [
     tripHead(),
     h('h2', { class: 'tr-q' }, done.length ? `${done.length}곳을 걸었어요` : '산책을 마쳤어요'),
@@ -1163,12 +1169,109 @@ function renderEnd() {
         s.comment ? h('q', null, s.comment) : null,
         s.why ? h('small', null, s.why) : null),
       h('div', { class: 'tr-journey-r' }, staticFace(s.rating, 22))))) : null,
-    q.now?.good || best ? h('div', { class: `tr-quiet${q.now?.good ? ' good' : ''}` }, icon('clock', 15), h('span', null, q.now?.good ? '지금이 한산하고 날씨 좋은 때예요' : `다음에 오기 좋은 때 · ${span(best)}`)) : null,
+    flow?.el,
+    next,
+    exit,
     h('div', { class: 'tr-actions' },
-      h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: restart }, '새 코스 찾기', h('span', { class: 'tr-cta-arrow' }, '→')),
+      h('button', { type: 'button', class: 'tr-ghost', onclick: restart }, '처음부터 다시 고르기'),
       h('a', { class: 'tr-ghost', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
     h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ]);
+  setTimeout(paintNext, 60);   // 다음 코스 계산은 화면이 뜬 뒤에
+}
+
+// ── 마무리 1. 코스 전체 한 번 묻기(이어지는 흐름) ──
+const FLOW_GOOD = [{ key: 'smooth', label: '동선이 자연스러웠어요' }, { key: 'varied', label: '볼거리가 다양했어요' }, { key: 'rested', label: '쉬며 걷기 좋았어요' }];
+const FLOW_BAD = [{ key: 'backtrack', label: '되돌아가는 길이 많았어요' }, { key: 'norest', label: '중간에 쉴 곳이 없었어요' }, { key: 'samey', label: '비슷한 곳만 이어졌어요' }, { key: 'long', label: '너무 길었어요' }, { key: 'short', label: '너무 짧았어요' }];
+let pendingCourse = null;   // 표정을 누른 뒤 까닭을 고를 시간을 주고 보냄. 화면을 떠나면 바로 보냄
+function flushCourse() { if (!pendingCourse) return; clearTimeout(pendingCourse.timer); pendingCourse.send(); pendingCourse = null; }
+function courseAsk(walkMin, meters) {
+  const api = { face: null, tags: new Set(), onChange: null };
+  const id = trip.id, stops = trip.stops.map(s => s.r.place.id), h0 = app.wx.hourly[0];
+  const data = () => ({ face: api.face, reasons: [...api.tags], stops, course: trip?.courseObj?.id ?? null, need: st.need, company: st.company, stay: st.stay,
+    minutes: Math.round(walkMin), meters: Math.round(meters), feels: h0?.feels, pm25: h0?.pm25, crowd: live?.rank });
+  const arm = () => {
+    if (app.wx.scenario || !api.face) return;   // 시연 날씨면 보내지 않음
+    clearTimeout(pendingCourse?.timer);
+    pendingCourse = { send: () => sendCourse(data(), id), timer: setTimeout(flushCourse, 6000) };
+  };
+  const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
+  const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
+    const b = e.currentTarget, on = !api.tags.has(x.key);
+    on ? api.tags.add(x.key) : api.tags.delete(x.key);
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+    arm(); api.onChange?.();
+  } }, x.label))));
+  const pick = faces(v => {
+    const flip = !api.face || (api.face >= 4) !== (v >= 4);
+    api.face = v;
+    word.textContent = { 5: '좋았어요', 3: '그저 그랬어요', 1: '별로였어요' }[v]; word.classList.add('on'); word.dataset.f = v >= 4 ? 'good' : v === 3 ? 'mid' : 'bad';
+    if (flip) { api.tags.clear(); paintChips(v >= 4); }
+    arm(); api.onChange?.();
+  }, '오늘 코스 흐름');
+  api.el = h('section', { class: 'tr-rate tr-flow' },
+    h('div', { class: 'tr-rate-h' }, h('b', null, stops.length > 1 ? '오늘 코스, 이어지는 흐름은 어땠어요?' : '오늘 산책, 어땠어요?'), word), pick, chips,
+    h('small', { class: 'tr-rate-why' }, '알려 주시면 다음 코스에 바로 반영하고, 공원 길·쉼터를 고치는 데 써요'));
+  courseFb = api;
+  return api;
+}
+let courseFb = null;
+
+// ── 마무리 2. 다음엔 이런 코스(좋았던 곳과 코스 평가를 반영) ──
+function nextBox(later) {
+  if (!trip || !st.need || !st.company || !st.stay) return null;
+  const fb = courseFb, tags = fb?.tags ?? new Set();
+  const seen = trip.stops.map(s => s.r.place.id);
+  let n = STOPS_BY_STAY[st.stay] ?? 3;
+  if (tags.has('long')) n = Math.max(2, n - 1);
+  if (tags.has('short')) n += 1;
+  // 코스 평가를 다음 계산에 얹음: 쉴 곳 없음 → 쉼터·화장실 가까운 길, 비슷한 곳만 → 서울숲다운 곳(장소정체성)을 앞으로
+  const keep = { ...trip.fb.bump }, keepId = trip.fb.identity;
+  if (tags.has('norest')) trip.fb.bump.toilet = (trip.fb.bump.toilet ?? 0) + 40;
+  if (tags.has('samey')) trip.fb.identity = true;
+  let legs = [];
+  try { legs = planFrom(trip.start, n, seen, [], []); } catch { legs = []; }
+  trip.fb.bump = keep; trip.fb.identity = keepId;
+  if (legs.length < 2) return h('div', { class: 'tr-next' }, h('b', null, '다음엔'), h('p', null, '오늘 거의 다 둘러보셨어요. 다른 날 다른 시간에 오면 또 달라요.'),
+    later && later !== 'now' ? h('small', null, icon('clock', 12), `오기 좋은 때 · ${later}`) : null);
+  const liked = trip.stops.filter(s => s.rating >= 4).map(s => s.r.place.name);
+  const why = tags.has('backtrack') ? '가장 덜 걷는 순서로 이었어요'
+    : tags.has('norest') ? '쉼터·화장실이 가까운 길로 골랐어요'
+    : tags.has('samey') ? '오늘과 다른 분위기의 서울숲다운 곳으로 골랐어요'
+    : tags.has('long') ? '오늘보다 짧게 골랐어요' : tags.has('short') ? '오늘보다 한 곳 더 넣었어요'
+    : liked.length ? `${liked[0]}${josa(liked[0], '이', '가')} 좋았다면, 비슷한 결의 안 가 본 곳이에요` : '오늘 안 가 본 곳으로 골랐어요';
+  const minutes = sum(legs, s => s.walkMin) + dwell() * legs.length;
+  const ids = legs.map(s => s.r.place.id);
+  return h('div', { class: 'tr-next' },
+    h('b', null, '다음엔 이런 코스'),
+    h('div', { class: 'tr-next-path' }, legs.map((s, i) => [i ? h('i', null, '→') : null, h('span', null, s.r.place.name)]).flat().filter(Boolean)),
+    h('p', null, `${why} · 약 ${minutes}분`),
+    later === 'now' ? h('small', { class: 'good' }, icon('clock', 12), '지금이 한산하고 날씨 좋은 때예요') : later ? h('small', null, icon('clock', 12), `오기 좋은 때 · ${later}`) : null,
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => { flushCourse(); st.must.clear(); st.startPick = 'auto'; begin({ id: null, name: '오늘에 이어 걷는 코스', stops: ids }); } }, '이 코스로 바로 걷기', h('span', { class: 'tr-cta-arrow' }, '→')));
+}
+
+// ── 마무리 3. 나가는 길: 마지막 곳에서 가까운 출입구와 화장실 ──
+function exitBox() {
+  const m = app.model, last = trip.stops[trip.stops.length - 1]?.r.place;
+  if (!last || !m.gates?.length) return null;
+  const speed = trip.stops[trip.stops.length - 1].rec?.speed ?? speedFor(st.company);
+  const env = { scale: crowdScale(app.now.dow, app.now.hour), sunMode: 'none', floodPenalty: null };
+  const opts = m.gates.map(g => ({ g, route: planRoute(m, last.node, g.node, { nostairs: st.company === 'kids' || st.company === 'elders' }, env, speed) }))
+    .filter(x => x.route?.main).sort((a, b) => a.route.main.meters - b.route.main.meters);
+  const best = opts[0];
+  if (!best) return null;
+  const meters = Math.round(best.route.main.meters + (last.off ?? 0)), min = Math.max(1, Math.round(meters / speed));
+  const wc = m.dToilet?.[last.node];
+  const show = () => {
+    layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); });
+    const coords = [[last.lat, last.lon], ...best.route.main.coords, [best.g.lat, best.g.lon]];
+    L.polyline(coords, { interactive: false, className: 'tr-exit-line', color: '#ffd27a', weight: 4, opacity: .9, dashArray: '2 8', lineCap: 'round' }).addTo(layers.route);
+    flyBounds(L.latLngBounds(coords), { ...padding(), maxZoom: 17.4 }, .8);
+  };
+  return h('div', { class: 'tr-exit' },
+    h('span', { class: 'tr-exit-ico' }, icon('pin', 15)),
+    h('div', null, h('b', null, `나가는 길 · ${best.g.name}`), h('p', null, `${last.name}에서 약 ${fmtM(meters)} · ${min}분${Number.isFinite(wc) && wc < 2000 ? ` · 가까운 화장실 약 ${fmtM(Math.round(wc))}` : ''}`)),
+    h('button', { type: 'button', class: 'tr-mini', onclick: show }, '길 보기'));
 }
 function countUp(v, digits = 0) {
   const n = h('span', { class: 'tr-countup' }, (0).toFixed(digits));
@@ -1180,8 +1283,16 @@ function countUp(v, digits = 0) {
   return n;
 }
 
+/** 마친 뒤 '다른 곳으로 한 바퀴 더': 고른 조건(활동·동행·시간)은 그대로, 방금 들른 곳은 빼고 새 코스를 바로 짬. 조건이 없으면 처음부터 */
+function newCourse() {
+  if (!st.need || !st.company || !st.stay) return restart();
+  const seen = (trip?.stops ?? []).map(s => s.r.place.id);
+  st.must.clear(); st.startPick = 'auto';
+  begin(null, seen);
+}
 function restart() {
-  layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers();
+  flushCourse();
+  layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers();
   trip = null; hud = null;
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
@@ -1192,6 +1303,7 @@ function restart() {
 // ── 시작 ──
 async function boot() {
   renderTop(); makeMap(); renderIntro();
+  addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });

@@ -19,6 +19,15 @@ export function sendComfort(vote) {
   const ctl = new AbortController(); setTimeout(() => ctl.abort(), 6000);
   fetch(COMFORT_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(vote), signal: ctl.signal, keepalive: true }).catch(() => {});
 }
+/** 코스 전체 평가 한 건(마침 화면). 같은 산책(id)은 한 번만 */
+export function sendCourse(vote, tripId) {
+  if (!COMFORT_URL || !vote?.stops?.length || !tripId) return;
+  const sent = read(SENT_KEY + '-course', []);
+  if (sent.includes(tripId)) return;
+  write(SENT_KEY + '-course', [...sent, tripId].slice(-50));
+  const ctl = new AbortController(); setTimeout(() => ctl.abort(), 6000);
+  fetch(COMFORT_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'course', ...vote }), signal: ctl.signal, keepalive: true }).catch(() => {});
+}
 /** 관리자용 합계(개별 응답 없음) */
 export async function fetchComfort(days = 90) {
   if (!COMFORT_URL) return null;
@@ -93,6 +102,8 @@ export function faces(onPick, label = '이 자리 쾌적함') {
   wrap.append(...btns);
   return wrap;
 }
+/** 지도 핀 안에 넣을 작은 표정(HTML 문자열) */
+export const faceHtml = (v, size = 16) => { const f = faceOf(v); return f ? `<span class="rv-face-s ${f.cls}"><span class="fc" style="width:${size}px;height:${size}px"><svg viewBox="0 0 48 48" aria-hidden="true">${FACE_SVG[f.cls]}</svg></span></span>` : ''; };
 /** 보기만 하는 표정(지난 평가) */
 export function staticFace(v, size = 20) {
   const f = faceOf(v);

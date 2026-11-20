@@ -224,7 +224,7 @@ export function createAdmin(root, app) {
     const bar = c => h('div', { class: `cf-bar${c.n < COMFORT_MIN ? ' few' : ''}`, title: `좋아요 ${c.good} · 보통 ${c.mid} · 별로 ${c.bad}` },
       h('i', { class: 'g', style: `flex:${c.good}` }), h('i', { class: 'm', style: `flex:${c.mid}` }), h('i', { class: 'b', style: `flex:${c.bad}` }));
     const head = h('div', { class: 'part-head' }, h('span', { class: 'part-n' }, '4'), h('div', null, h('h2', null, '방문자 쾌적함'),
-      h('p', null, '코스 찾기에서 도착한 곳마다 누른 표정(좋아요·보통·별로)을 모았습니다. 거점·시간대·날씨별로 어디가 아쉬운지 보고, 그늘·쉴 곳·동선 보완 근거로 씁니다.')));
+      h('p', null, '코스 찾기에서 도착한 곳마다 누른 표정(좋아요·보통·별로)과, 산책을 마친 뒤 코스 전체 흐름을 물은 답을 모았습니다. 거점·시간대·날씨·구간별로 어디가 아쉬운지 보고, 그늘·쉴 곳·동선 보완 근거로 씁니다.')));
     const ctrl = h('div', { class: 'nd-row' },
       segGroup([{ key: 7, label: '최근 7일' }, { key: 30, label: '30일' }, { key: 90, label: '90일' }, { key: 365, label: '1년' }], comfort.days, v => { comfort.days = v; loadComfort(); }, '기간'),
       h('button', { type: 'button', class: 'btn', disabled: comfort.busy, onclick: loadComfort }, comfort.busy ? '불러오는 중…' : '새로고침'));
@@ -260,8 +260,35 @@ export function createAdmin(root, app) {
         h('div', { class: 'diag-title nd-mt' }, '시간대별 좋아요 비율 ', h('span', { class: 'muted' }, '낮을수록 진한 주황 — 그 시간 그 자리에 그늘·쉴 곳·분산 안내가 필요한지 볼 곳')), hourTable,
         h('div', { class: 'diag-title nd-mt' }, '상황별 비교 ', h('span', { class: 'muted' }, '도착 당시 날씨·붐빔에 따라 좋아요 비율이 얼마나 떨어지나')), cond);
     }
-    el.comfort.replaceChildren(head, h('section', { class: 'card card-pad' }, ctrl, body,
+    el.comfort.replaceChildren(head, h('section', { class: 'card card-pad' }, ctrl, body, d ? courseFlow(d.courses, pctTxt, bar, rate) : null,
       h('div', { class: 'assume' }, `응답 ${COMFORT_MIN}건 미만인 칸은 흐리게 보여 줍니다(우연일 수 있음). 이름·기기·위치·IP는 저장하지 않고 장소·표정·까닭·당시 체감온도·초미세먼지·붐빔·동행 유형만 모읍니다. 같은 기기에서 같은 곳은 30분에 한 번만 셉니다. 시연 날씨로 본 산책은 보내지 않습니다.`)));
+  }
+
+  // 코스 흐름: 마침 화면 '오늘 코스, 이어지는 흐름은 어땠어요?' 합계 → 어느 구간에서 흐름이 끊기는지(동선 보완 근거)
+  const FLOW_LABEL = { smooth: '동선 자연스러움', varied: '볼거리 다양', rested: '쉬며 걷기 좋음', backtrack: '되돌아가는 길', norest: '중간에 쉴 곳 없음', samey: '비슷한 곳만', long: '너무 김', short: '너무 짧음' };
+  const FLOW_BAD = ['backtrack', 'norest', 'samey', 'long', 'short'];
+  const COURSE_NAME = { eco: '호숫가 지나 사슴 보러', bug: '나비·곤충 체험', lawn: '잔디마당 피크닉', calm: '북쪽 습지 조용한 산책' };
+  const STAY_NAME = { 30: '30분', 60: '1시간', 120: '2시간', 180: '3시간 이상' };
+  function courseFlow(c, pctTxt, bar, rate) {
+    const title = h('div', { class: 'diag-title nd-mt' }, '코스 흐름 ', h('span', { class: 'muted' }, '산책을 마친 뒤 코스 전체를 한 번 물은 결과 — 장소 하나가 아니라 이어지는 동선을 봄'));
+    if (!c?.total?.n) return h('div', null, title, h('div', { class: 'assume' }, '아직 코스 전체 응답이 없습니다. 방문자가 산책을 마치고 「오늘 코스, 이어지는 흐름은 어땠어요?」에 답하면 쌓입니다.'));
+    const name = id => app.model.hubById[id]?.name ?? id;
+    const reasons = Object.entries(c.reasons).sort((a, b) => b[1] - a[1]);
+    const maxR = Math.max(1, ...reasons.map(r => r[1]));
+    const legs = Object.entries(c.legs).sort((a, b) => (rate(a[1]) ?? 1) - (rate(b[1]) ?? 1) || b[1].n - a[1].n).slice(0, 10);
+    const legBad = r => Object.entries(r.reasons).filter(([k]) => FLOW_BAD.includes(k)).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, n]) => `${FLOW_LABEL[k]} ${n}`).join(' · ');
+    const mini = (obj, label) => Object.entries(obj).map(([k, v]) => h('div', { class: `cf-pair${v.n < COMFORT_MIN ? ' few' : ''}` }, h('b', null, label(k)), h('span', null, `좋아요 ${pctTxt(v)}`, h('small', null, ` (${v.n}건)`)), bar(v)));
+    return h('div', null, title,
+      h('div', { class: 'cf-kpi' }, h('div', null, h('small', null, '코스 응답'), h('b', null, `${c.total.n}건`)), h('div', null, h('small', null, '좋아요'), h('b', null, pctTxt(c.total))), h('div', { class: 'cf-kpi-bar' }, bar(c.total))),
+      reasons.length ? h('div', { class: 'cf-reasons nd-mt' }, reasons.map(([k, n]) => h('div', { class: `cf-reason${FLOW_BAD.includes(k) ? ' bad' : ''}` },
+        h('span', null, FLOW_LABEL[k] ?? k), h('i', { style: `width:${Math.round(n / maxR * 100)}%` }), h('b', null, String(n))))) : null,
+      h('div', { class: 'diag-title nd-mt' }, '구간별 ', h('span', { class: 'muted' }, '이어서 걸은 두 곳 — 좋아요 비율이 낮은 구간부터. 아쉬움이 몰린 구간이 동선·쉼터 보완 후보')),
+      h('table', { class: 'cf-table' },
+        h('thead', null, h('tr', null, h('th', null, '구간'), h('th', null, '응답'), h('th', null, '좋아요'), h('th', { class: 'w' }, '좋아요 · 보통 · 별로'), h('th', null, '많이 꼽힌 아쉬움'))),
+        h('tbody', null, legs.map(([k, v]) => { const [a, b] = k.split('>'); return h('tr', { class: v.n < COMFORT_MIN ? 'few' : '' },
+          h('td', null, `${name(a)} → ${name(b)}`), h('td', null, String(v.n)), h('td', null, h('b', null, pctTxt(v))), h('td', { class: 'w' }, bar(v)), h('td', { class: 'muted' }, legBad(v) || '–')); }))),
+      h('div', { class: 'diag-title nd-mt' }, '머문 시간별 · 추천 코스별'),
+      h('div', { class: 'cf-pairs' }, ...mini(c.byStay, k => STAY_NAME[k] ?? `${k}분`), ...mini(c.byCourse, k => COURSE_NAME[k] ?? k)));
   }
 
   // ── 현장 조사로 시설 추가 ──
