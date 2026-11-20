@@ -73,12 +73,18 @@ export function nearestNode(g, lon, lat, filter = null) {
   return r ? { node: g.itemNode[r.i], off: r.d } : null;
 }
 
-/** 길 비용 함수. shade·quiet: 가중치(0이면 반영 안 함), sunMode: 'shade'(그늘 선호)·'sun'(볕 선호) */
-export function makeCost({ shade = 0, quiet = 0, out = 0, scale = 1, sunMode = 'shade', penalty = null } = {}) {
+/**
+ * 길 비용 함수. shade·quiet: 가중치(0이면 반영 안 함), sunMode: 'shade'(그늘 선호)·'sun'(볕 선호)
+ * rough: 비포장 구간 가중(유모차·휠체어·어르신) / biz: 상권 인접 구간 가중(조용히 걷고 싶을 때, 성수동 상권 경계의 번잡함 회피)
+ */
+export const BIZ_FULL = 8;   // 60m 안 상점·음식점·카페가 이 수 이상이면 '상권 맞닿음' 최대치
+export function makeCost({ shade = 0, quiet = 0, out = 0, scale = 1, sunMode = 'shade', penalty = null, rough = 0, biz = 0 } = {}) {
   return e => {
     let c = 1;
     if (shade) { const s = e.sun ?? .5; c += shade * (sunMode === 'sun' ? 1 - s : s); }
     if (quiet) c += quiet * e.crowd * scale;
+    if (rough && e.surface === 2) c += rough;
+    if (biz && e.biz) c += biz * Math.min(1, e.biz / BIZ_FULL);
     if (out && !e.inPark) c += out;
     c = e.len * c + (e.steps ? STEP_PENALTY : 0);
     if (penalty) { const p = penalty.get(e.id); if (p) c *= p; }
@@ -133,10 +139,11 @@ export function summarize(g, legs) {
     leg.nodes.forEach((u, i) => { if (i > 0 || nodes.length === 0) { nodes.push(u); coords.push([g.nodes[u][1], g.nodes[u][0]]); } });
     edges.push(...leg.edges);
   }
-  let meters = 0, sunKnown = 0, sunLen = 0, crowd = 0, stairs = 0, outLen = 0, repeat = 0;
+  let meters = 0, sunKnown = 0, sunLen = 0, crowd = 0, stairs = 0, outLen = 0, repeat = 0, unpaved = 0, bizLen = 0;
   const seen = new Set();
   for (const e of edges) {
     meters += e.len; crowd += e.crowd * e.len; if (e.steps) stairs++; if (!e.inPark) outLen += e.len;
+    if (e.surface === 2) unpaved += e.len; if (e.biz >= 3) bizLen += e.len;
     if (e.sun != null) { sunKnown += e.len; sunLen += e.sun * e.len; }
     if (seen.has(e.id)) repeat += e.len; else seen.add(e.id);
   }
@@ -144,5 +151,5 @@ export function summarize(g, legs) {
   const cum = [0];
   for (let i = 1; i < nodes.length; i++) cum.push(cum[i - 1] + haversine(g.nodes[nodes[i - 1]], g.nodes[nodes[i]]));
   return { coords, nodes, cum, edges, meters: Math.round(meters), shade: sunKnown ? 1 - sunLen / sunKnown : null, sunKnown: Math.round(sunKnown),
-    crowd: meters ? crowd / meters : 0, stairs, outLen: Math.round(outLen), repeat: Math.round(repeat) };
+    crowd: meters ? crowd / meters : 0, stairs, outLen: Math.round(outLen), repeat: Math.round(repeat), unpaved: Math.round(unpaved), bizLen: Math.round(bizLen) };
 }

@@ -5,8 +5,8 @@ import { toXY, inPolygon, PointIndex } from './geo.js';
 import { buildGraph, nearestNode, dijkstra } from './graph.js';
 
 export const APP_FILES = ['park.geojson', 'grid.geojson', 'network.json', 'features.geojson', 'context.geojson', 'hubs.json', 'team.json', 'meta.json'];
-export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json', 'programs.json'];
-const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json', 'programs.json'];      // 없어도 화면은 열림
+export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json', 'programs.json', 'edges_extra.json'];
+const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json', 'programs.json', 'edges_extra.json'];      // 없어도 화면은 열림
 
 /** loadJson(경로) → 자료 묶음. appBase: 기존 대시보드 data 폴더, ownBase: 이 화면 data 폴더 */
 export async function loadData(loadJson, appBase = '../data/', ownBase = './data/') {
@@ -43,6 +43,9 @@ export function buildModel(data, extra = []) {
   // ── 보행망 ──
   const grid30 = data.grid.features.map(f => f.properties);
   const g = buildGraph(data.network, grid30, sunAt, inPark);
+  // 구간 속성 더하기(needs/tools/edge_extras.py): 포장 상태(0 모름·1 포장·2 비포장, OSM surface)와 상권 인접(60m 안 상점·음식점·카페 수)
+  const ex = data.edges_extra;
+  if (ex?.surface?.length === g.edges.length) g.edges.forEach((e, i) => { e.surface = ex.surface[i]; e.biz = ex.biz[i]; });
   const len = e => e.len;
   // 공원 안 길까지의 보행 거리. 공원 밖 막다른 길에 붙어 멀리 돌아가게 되는 지점은 공원 안 길에 붙입니다.
   // (예: 서울숲역 방면 입구는 가장 가까운 길이 광장과 이어지지 않은 골목 끝이라, 그대로 두면 1.7km를 돌아갑니다)

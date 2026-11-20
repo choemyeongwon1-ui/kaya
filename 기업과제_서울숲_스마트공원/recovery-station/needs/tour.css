@@ -727,3 +727,31 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 .tr-exit b{display:block;font-size:13px}
 .tr-exit p{margin:2px 0 0;font-size:12px;opacity:.75}
 .tr-pin em u.tr-pin-face{display:inline-flex;vertical-align:-3px}
+/* 이 코스를 고른 기준 */
+.tr-crit{margin:10px 0 4px;border:1px solid var(--line);border-radius:14px;background:var(--glass-2)}
+.tr-crit>summary{display:flex;align-items:center;gap:7px;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:700;list-style:none}
+.tr-crit>summary::-webkit-details-marker{display:none}
+.tr-crit>summary svg{color:var(--mint)}
+.tr-crit>summary small{margin-left:auto;font-weight:500;opacity:.6;font-size:11.5px}
+.tr-crit>summary::after{content:'▾';opacity:.6;font-size:11px;transition:transform .2s}
+.tr-crit[open]>summary::after{transform:rotate(180deg)}
+.tr-crit-in{padding:2px 14px 14px;font-size:12.5px}
+.tr-crit h4{margin:12px 0 6px;font-size:12.5px;color:var(--mint)}
+.tr-crit-w{display:grid;gap:5px}
+.tr-crit-w>div{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:8px}
+.tr-crit-w i{display:block;height:6px;border-radius:3px;background:var(--mint);opacity:.75;max-width:100%}
+.tr-crit-w b{text-align:right;font-size:12px}
+.tr-crit-w span{opacity:.85}
+.tr-crit-note{margin:8px 0 0;opacity:.7;font-size:11.5px;line-height:1.5}
+.tr-crit-stops{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.tr-crit-stops li{display:flex;flex-direction:column;gap:1px}
+.tr-crit-stops span{opacity:.75;font-size:11.5px}
+.tr-crit-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+.tr-crit-row span{opacity:.7}.tr-crit-row b{text-align:right;font-weight:600}
+.tr-crit-ev{width:100%;border-collapse:collapse}
+.tr-crit-ev th,.tr-crit-ev td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.tr-crit-ev th{width:64px;font-weight:700;font-size:12px}
+.tr-crit-ev td small{display:block;opacity:.65;font-size:11px;margin-top:2px;line-height:1.45}
+.tr-crit-ev em{font-style:normal;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.tr-crit-ev em.ok{background:rgba(94,242,166,.14);color:var(--mint)}
+.tr-crit-ev em.mid{background:rgba(255,210,122,.14);color:#ffd27a}

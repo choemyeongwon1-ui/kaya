@@ -375,6 +375,7 @@ function ratings() {
   return (RT = agg);
 }
 const rtOf = id => ratings()[id] ?? null;
+const ratingsCount = () => Object.values(ratings()).reduce((a, r) => a + (r.count ?? 0), 0);
 const hasSeed = () => (app.seed?.journeys ?? []).length > 0;
 
 // ── 2. 단계별 고르기 ──
@@ -630,7 +631,9 @@ function makeLeg(from, r, rec) {
   const meters = (route?.main?.meters ?? 0) + Math.round((from.off ?? 0) + r.place.off);
   // 가장 짧은 길과 견줄 값(햇볕 정보가 있는 구간 기준, 그늘 m)
   const sh = x => x && x.shade != null ? { m: x.shade * x.sunKnown, k: x.sunKnown, len: x.meters } : null;
-  const cmp = { main: sh(route?.main), base: sh(route?.base), sunMode, prefs };
+  const cmp = { main: sh(route?.main), base: sh(route?.base), sunMode, prefs,
+    unpaved: [route?.main?.unpaved ?? 0, route?.base?.unpaved ?? 0], biz: [route?.main?.bizLen ?? 0, route?.base?.bizLen ?? 0],   // [고른 길, 가장 짧은 길] m
+    dist: [route?.main?.meters ?? 0, route?.base?.meters ?? 0], stairs: [route?.main?.stairs ?? 0, route?.base?.stairs ?? 0] };
   return { r, rec, coords, meters, cmp, walkMin: Math.max(1, Math.round(meters / rec.speed)), gardens: gardensNear(coords, r.place.id), rating: null };
 }
 /** 머물 시간을 넘지 않게 뒤에서부터 덜어 냅니다(담은 곳은 남기고, 빠진 자리 다음 구간은 다시 이어 그림) */
@@ -809,6 +812,7 @@ function renderPlan() {
       h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
       h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
     planNotes(legs),
+    criteriaBox(legs),
     startRow(),
     h('ol', { class: 'tr-tl' }, legs.map((s, i) => tlItem(s, i))),
     // 컨셉: 한 곳씩 들러 보고 → 좋으면 그대로, 별로면 바로 다른 곳으로
@@ -821,6 +825,62 @@ function renderPlan() {
       h('button', { type: 'button', class: 'tr-ghost', onclick: () => begin(null, legs.map(s => s.r.place.id).filter(id => !st.must.has(id))) }, '다른 코스')),
     programTip(),
   ]);
+}
+/**
+ * '이 코스를 고른 기준' — 추천의 기준·이 코스의 실제 수치·쓴 자료(기준 시각)·근거를 펼쳐 보는 상자.
+ * 객관성: 측정·공식 기준·연구에서 온 값과 팀이 정한 값(가정)을 나눠 적고, 숨기지 않음
+ */
+const CRIT_LABEL = { need: '하고 싶은 일과 맞는지', company: '같이 온 사람에게 맞는지', stay: '머물 수 있는 시간', crowd: '붐비지 않는지', thermal: '덥거나 춥지 않은지', toilet: '화장실까지 거리', walk: '걷는 거리', thermalBump: '', crowdBump: '' };
+const EVIDENCE = [
+  ['더위', '체감 31℃ 주의 · 33℃ 경고', '33℃는 기상청 폭염주의보 기준(일 최고 체감온도 33℃ 이상이 2일 이상 예상). 31℃는 주제서 예시값', 'offmix'],
+  ['미세먼지', '초미세 36·76㎍/㎥, 미세 81·151㎍/㎥', '환경부 대기질 예보 등급 「나쁨」·「매우 나쁨」 경계', 'official'],
+  ['붐빔', '서울숲 실시간 인구 · 요일·시간대 추정', '서울시 실시간 도시데이터(서울숲공원). 못 받으면 서울숲 보행 계수(조현민·권태경 2025)로 추정', 'measured'],
+  ['그늘 길', '나무 그늘 비율이 높은 길을 먼저', '녹지 그늘이 걷는 길 온도를 낮춤(Lee & Park 2020, Patel 2026). 그늘 비율은 팀 20m 격자', 'study'],
+  ['물가', '33℃ 이상인 10~16시에만 물가 가점', '서울숲 실측: 33℃ 넘는 날 물가가 공원 밖보다 시원(조현민·권태경 2022)', 'measured'],
+  ['서울숲다움', '「볼 게 별로」면 서울숲다운 곳을 앞으로', '서울숲 18개 공간 540명 설문(임승빈 외 2012)', 'study'],
+  ['붐빔에 예민한 곳', '사슴우리·습지는 붐빌 때 더 감점', '서울숲 블로그 990건 분석(주연이·정진우 2026). 감점 크기는 팀이 정한 값', 'mixed'],
+  ['쉴 곳 간격', '어르신과 함께면 100m마다', '고령자는 좌석 밀도가 가장 시급(Lin 외 2024). 100m는 팀이 정한 값', 'mixed'],
+  ['아쉬움 판단', '보통·별로면 남은 코스를 다시 짬', '서울숲 리뷰에서 3점 이하는 대부분 부정 내용(이주경·손용훈 2021)', 'study'],
+  ['길과 포장·상가', '보행망·흙길 여부·상가 위치', 'OpenStreetMap(포장 정보는 공원 안 길의 약 26%만 있음)', 'measured'],
+  ['점수 비중', '하고 싶은 일 35 · 머물 시간 20 · 같이 온 사람 15 · 붐빔 12 · 더위추위 10 · 걷는 거리 8 · 화장실 5', '팀이 정한 값. 현장 설문이 끝나면 바꿈', 'team'],
+];
+const EV_TAG = { official: ['공식 기준', 'ok'], measured: ['측정 자료', 'ok'], study: ['연구 근거', 'ok'], mixed: ['연구 + 팀 값', 'mid'], offmix: ['공식 기준 + 예시값', 'mid'], team: ['팀이 정한 값', 'mid'] };
+function criteriaBox(legs) {
+  if (!legs.length) return null;
+  const rec = legs[0].rec, w = { ...(rec?.weights ?? {}) };
+  for (const [k, v] of Object.entries(trip.fb.bump)) if (w[k] != null) w[k] += v;
+  const wsum = Object.values(w).reduce((a, b) => a + b, 0) || 1;
+  const weights = Object.entries(w).filter(([k, v]) => CRIT_LABEL[k] && v > 0).sort((a, b) => b[1] - a[1]);
+  const tot = k => legs.reduce((a, s) => [a[0] + (s.cmp?.[k]?.[0] ?? 0), a[1] + (s.cmp?.[k]?.[1] ?? 0)], [0, 0]);
+  const [dm, db] = tot('dist'), [sm, sb] = tot('stairs'), [um] = tot('unpaved'), [bm] = tot('biz');
+  const agg = legs.reduce((a, s) => { const c = s.cmp?.main; if (c) { a.m += c.m; a.k += c.k; } return a; }, { m: 0, k: 0 });
+  const shade = agg.k > 50 ? Math.round(100 * agg.m / agg.k) : null;
+  const ratings = ratingsCount();
+  const row = (k, v) => h('div', { class: 'tr-crit-row' }, h('span', null, k), h('b', null, v));
+  return h('details', { class: 'tr-crit' },
+    h('summary', null, icon('info', 13), '이 코스를 고른 기준', h('small', null, '수치·자료·근거')),
+    h('div', { class: 'tr-crit-in' },
+      h('h4', null, '1. 장소: 7가지를 점수로 따져 높은 곳부터'),
+      h('div', { class: 'tr-crit-w' }, weights.map(([k, v]) => h('div', null, h('span', null, CRIT_LABEL[k]), h('i', { style: `width:${Math.round(v / wsum * 100 * 2.2)}%` }), h('b', null, `${Math.round(v / wsum * 100)}%`)))),
+      h('p', { class: 'tr-crit-note' }, `같이 온 사람에 따라 비중이 달라져요(예: 아이와 → 화장실·걷는 거리 ↑). 남겨 주신 의견도 바로 더해요.${ratings ? ` 이용자 평가 ${ratings}건도 반영해요${hasSeed() ? '(시연용 가상 평가 포함)' : ''}.` : ''}`),
+      h('ul', { class: 'tr-crit-stops' }, legs.map((s, i) => { const r = s.r.reasons;
+        return h('li', null, h('b', null, `${i + 1}. ${s.r.place.name}`),
+          h('span', null, [s.r.match[0], `붐빔 ${r.crowd.value}(${r.crowd.note.split(' · ')[0]})`, `화장실 ${r.toilet.value}`, `머물기 ${r.stay.value}`].filter(Boolean).join(' · '))); })),
+      h('h4', null, '2. 길: 가장 짧은 길에서 출발해 조건만큼만 돌아가기'),
+      row('걷는 거리', `${fmtM(dm)} (가장 짧은 길 ${fmtM(db)}${dm - db >= 20 ? `, +${Math.round((dm / Math.max(1, db) - 1) * 100)}%` : ''})`),
+      shade != null ? row('그늘진 길', `${shade}%`) : null,
+      row('계단', sm ? `${sm}곳${sb > sm ? ` (가장 짧은 길 ${sb}곳)` : ''}` : sb ? `없음 (가장 짧은 길엔 ${sb}곳)` : '없음'),
+      um ? row('흙길·자갈길', fmtM(um)) : null,
+      bm ? row('상가 맞닿은 길', fmtM(bm)) : null,
+      h('p', { class: 'tr-crit-note' }, '그늘·한산함 때문에 돌아가는 건 가장 짧은 길의 1.2배까지, 쉴 곳을 들르는 건 1.35배까지만 허용해요. 들르는 순서는 가능한 순서를 모두 비교해 가장 덜 걷는 순서예요.'),
+      h('h4', null, '3. 쓴 자료'),
+      row('붐빔', live?.time ? `서울시 실시간 도시데이터 · ${live.time} 기준` : '요일·시간대 추정(서울숲 보행 계수)'),
+      row('날씨', app.wx?.source ?? '–'),
+      row('길·상가', 'OpenStreetMap · 팀 20m 격자(그늘)'),
+      h('h4', null, '4. 기준값과 근거'),
+      h('table', { class: 'tr-crit-ev' }, h('tbody', null, EVIDENCE.map(([k, v, src, kind]) => h('tr', null,
+        h('th', null, k), h('td', null, h('div', null, v), h('small', null, src)), h('td', null, h('em', { class: EV_TAG[kind][1] }, EV_TAG[kind][0])))))),
+      h('p', { class: 'tr-crit-note' }, '「팀이 정한 값」은 아직 측정 근거가 없는 값이라, 현장 설문과 이용자 평가가 쌓이면 바꿔요. 논문 목록은 README에 있어요.')));
 }
 /** 이 코스를 왜 이렇게 짰는지 — 많아야 두 줄. 근거 논문은 README '근거 논문' */
 function planNotes(legs) {
@@ -844,6 +904,11 @@ function planNotes(legs) {
     notes.push(['users', `${live?.level ? `지금 ${live.level} · ` : ''}한산한 길로 골랐어요${best ? ` · 덜 붐비는 때 ${best.tomorrow ? '내일 ' : ''}${best.from}~${best.to === 0 ? 24 : best.to}시` : ''}`]);
   }
   if (legs.some(s => s.cmp?.prefs?.restGap)) notes.push(['bench', '어르신과 함께 · 100m마다 쉴 곳이 있게 이었어요']);
+  // 포장 상태·상권 인접(OSM surface · 상점 밀도, needs/tools/edge_extras.py): 가장 짧은 길보다 실제로 덜 지날 때만 알림
+  const tot = k => legs.reduce((a, s) => [a[0] + (s.cmp?.[k]?.[0] ?? 0), a[1] + (s.cmp?.[k]?.[1] ?? 0)], [0, 0]);
+  const [un, unB] = tot('unpaved'), [bz, bzB] = tot('biz');
+  if (legs.some(s => s.cmp?.prefs?.nostairs) && unB - un >= 30) notes.push(['walk', `흙길·자갈길을 피해 포장길로 · 비포장 ${unB}m → ${un}m`]);
+  if (legs.some(s => s.cmp?.prefs?.quiet) && bzB - bz >= 30) notes.push(['users', `성수동 상가 쪽 번잡한 길을 피했어요 · ${bzB}m → ${bz}m`]);
   // 자전거와 길을 같이 씀: 서울숲엔 자전거 전용길이 없고 자전거를 포장길로 안내하지만 실제론 섞여 다님(송민아·윤희재 2023)
   // 공원 산책로도 「보행안전 및 편의증진에 관한 법률」의 '보행자길'(§2 1호 마목)이고, 그 길에서 차마는 보행자를 방해하면 안 되며 걸음 속도로 다녀야 함(§22①③),
   // 노인·어린이가 차별 없이 안전하게 다니도록 할 의무(§4②) → 아이·어르신 동행 때 안내

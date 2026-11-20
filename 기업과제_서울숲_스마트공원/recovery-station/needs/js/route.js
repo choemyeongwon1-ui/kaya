@@ -3,8 +3,10 @@ import { ROUTE_W, OUT_PENALTY, REST_DETOUR, PREF_DETOUR } from './config.js';
 import { dijkstra, pathTo, makeCost, summarize } from './graph.js';
 
 /** prefs: {shade, rest, nostairs, quiet} / env: {scale(시각별 혼잡 배수), sunMode('shade'|'sun'|'none'), floodPenalty(큰비 때 물이 차는 구역 구간 벌점 Map | null)} */
+// 계단 없는 길을 고른 경우(아이·어르신·휠체어)엔 비포장(흙·자갈·잔디) 구간도 피하고, 한산한 길을 고른 경우엔 성수동 상권과 맞닿은 구간을 피함
 function costOf(prefs, env, extra = {}, w = ROUTE_W) {
-  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? w : 0, quiet: prefs.quiet ? w : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', penalty: env.floodPenalty ?? null, ...extra });
+  return makeCost({ shade: prefs.shade && env.sunMode !== 'none' ? w : 0, quiet: prefs.quiet ? w : 0, scale: env.scale ?? 1, sunMode: env.sunMode === 'sun' ? 'sun' : 'shade', penalty: env.floodPenalty ?? null,
+    rough: prefs.nostairs ? w * .8 : 0, biz: prefs.quiet ? w * .8 : 0, ...extra });
 }
 
 /** 길이 물이 차는 구역(유수지·하천구역)을 지나는 길이 m */
