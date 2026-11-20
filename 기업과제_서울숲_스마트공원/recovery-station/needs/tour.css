@@ -844,41 +844,12 @@ div.tr-status-line{cursor:default}
 .tr-status+.tr-access,.tr-status-slot+.tr-access-slot .tr-access{margin-top:6px}
 .tr-acc-chips span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .tr-acc-chips svg{color:var(--mint)}
-.tr-acc-more{padding:2px 12px 10px;border-top:1px solid var(--line)}
-.tr-acc-legend{display:flex;flex-wrap:wrap;gap:6px;padding-top:10px}
-.tr-acc-tg{display:inline-flex;align-items:center;gap:5px;padding:5px 10px 5px 6px;border-radius:999px;border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink-2);font:inherit;font-size:12px;cursor:pointer;transition:opacity .15s,background .15s}
-.tr-acc-tg i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#06120c}
-.tr-acc-tg b{font-weight:700;color:var(--ink)}
-.tr-acc-tg[aria-pressed="false"]{opacity:.45;background:transparent}
-.tr-acc-tg[aria-pressed="false"] i{filter:grayscale(1)}
-.tr-acc-tg.park i{background:#9fb4c8}.tr-acc-tg.sub i{background:#f5d58a}.tr-acc-tg.bike i{background:#7fe0a8}.tr-acc-tg.ev i{background:#8fd0ff}
-.tr-acc-hint{margin:8px 0 0;font-size:11.5px;color:var(--ink-2)}
-.tr-acc-p{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:4px;background:#5d6b78;color:#fff;font-size:10px;font-weight:800;vertical-align:-2px}
 .tr-acc-note{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--mute)}
 .tr-acc-note.warn{color:var(--gold)}
 .tr-acc-line{display:flex;align-items:center;gap:5px;margin:6px 0 0;font-size:11.5px;color:var(--ink-2)}
 .tr-acc-line svg{color:var(--mute)}
 
 /* 지도 핀 */
-.tr-apin-wrap{background:none;border:0}
-.tr-apin{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 2px;border-radius:999px;background:rgba(8,14,11,.88);border:1px solid rgba(255,255,255,.22);box-shadow:0 2px 8px rgba(0,0,0,.45);color:#f1f7f3;font:600 11px/1 Pretendard,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:transform .15s}
-.tr-apin:hover{transform:translate(-50%,-50%) scale(1.08)}
-.tr-apin i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font-style:normal;color:#06120c}
-.tr-apin span{letter-spacing:-.01em}
-.tr-apin.p i{border-radius:6px;font-weight:800;font-size:12px}
-.tr-apin.p.off i{background:#5d6b78;color:#fff}
-.tr-apin.p.off{color:rgba(241,247,243,.8)}
-.tr-apin.p.on i{background:#4fd18b}
-.tr-apin.p.on{border-color:#4fd18b}
-.tr-apin.p.on span{color:#7fe0a8;font-weight:700}
-.tr-apin.sub i{background:#f5d58a}
-.tr-apin.sub{border-color:rgba(245,213,138,.6);font-size:11.5px}
-.tr-apin.bike i{background:#7fe0a8}
-.tr-apin.bike.zero i{background:#5d6b78;color:#fff}
-.tr-apin.bike.zero span{color:var(--mute)}
-.tr-apin.ev i{background:#8fd0ff}
-.tr-apin.ev.old i{background:#5d6b78;color:#fff}
-.tr-apin.ev.old span{color:var(--mute)}
 .tr-apop .leaflet-popup-content-wrapper{background:rgba(10,18,14,.96);color:#f1f7f3;border:1px solid rgba(255,255,255,.15);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .tr-apop .leaflet-popup-tip{background:rgba(10,18,14,.96);border:1px solid rgba(255,255,255,.15)}
 .tr-apop .leaflet-popup-content{margin:10px 12px;font:12px/1.45 Pretendard,system-ui,sans-serif;min-width:180px}
@@ -889,3 +860,64 @@ div.tr-status-line{cursor:default}
 .tr-apop-in .r{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.07)}
 .tr-apop-in .r span{color:rgba(241,247,243,.6)}
 .tr-apop-in .r b{font-weight:650;text-align:right}
+.tr-apop-in small.warn{color:#f5d58a;margin-top:6px}
+.tr-acc-line.warn{color:var(--gold)}.tr-acc-line.warn svg{color:var(--gold)}
+
+/* 지금 자세히: 연령대 · 비 · 중랑천 · 성수동 센서 */
+.tr-env{margin-top:10px;padding:12px;border-radius:16px;background:var(--glass-2);border:1px solid var(--line);display:grid;gap:10px}
+.tr-env-row{display:flex;gap:9px;align-items:flex-start}
+.tr-env-row>svg{flex:0 0 auto;margin-top:2px;color:var(--mint)}
+.tr-env-row>div{min-width:0;flex:1}
+.tr-env-row b{display:block;font-size:12.5px;font-weight:650}
+.tr-env-row small{display:block;font-size:11.5px;color:var(--ink-2);line-height:1.45}
+.tr-env-row small.dim{color:var(--mute);font-size:10.5px}
+.tr-env-bars{display:flex;align-items:flex-end;gap:4px;height:44px;margin:6px 0 4px}
+.tr-env-bars i{position:relative;flex:1;height:var(--h);min-height:3px;border-radius:4px 4px 1px 1px;background:linear-gradient(to top,rgba(127,224,168,.35),rgba(127,224,168,.8));margin-bottom:13px}
+.tr-env-bars span{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-size:9.5px;font-style:normal;color:var(--mute)}
+.tr-env .tr-lc-src{margin:0}
+
+/* ── 오는 길 지도 핀 v2: 어두운 유리 한 가지 + 아이콘 색만 (교통=금색, 따릉이=민트, 충전=하늘, 주차=흰색) ── */
+.tr-acc-more{padding:10px 12px 12px;border-top:1px solid var(--line)}
+.tr-acc-legend{display:flex;flex-wrap:wrap;gap:5px}
+.tr-acc-legend::-webkit-scrollbar{display:none}
+.tr-acc-tg{--c:var(--ink);flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);font:inherit;font-size:11.5px;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
+.tr-acc-tg i{display:grid;place-items:center;color:var(--c)}
+.tr-acc-tg b{font-weight:650;color:var(--mute);font-size:10.5px}
+.tr-acc-tg[aria-pressed="true"]{background:var(--glass-3);border-color:rgba(255,255,255,.2);color:var(--ink)}
+.tr-acc-tg[aria-pressed="false"]{opacity:.5}
+.tr-acc-tg.sub,.tr-acc-tg.bus{--c:#f5d58a}.tr-acc-tg.bike{--c:#7fe0a8}.tr-acc-tg.ev{--c:#9fd8ff}.tr-acc-tg.event{--c:#ffc4d6}
+.tr-acc-key{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 2px 0;font-size:11px;color:var(--mute)}
+.tr-acc-key span{display:inline-flex;align-items:center;gap:5px}
+.tr-acc-key i{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:4px;font-style:normal;font-weight:800;font-size:9px}
+.tr-acc-key i.off{background:rgba(255,255,255,.18);color:#fff}.tr-acc-key i.on{background:#4fd18b;color:#06120c}
+.tr-acc-far{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.tr-acc-far>small{display:block;font-size:11px;color:var(--mute);margin:0 2px 2px}
+.tr-acc-far>div{display:grid}
+.tr-acc-far button{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px;padding:6px 2px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.tr-acc-far button:last-child{border-bottom:0}
+.tr-acc-far button:hover{background:var(--glass-2)}
+.tr-acc-far button i{display:grid;place-items:center;width:16px;height:16px;border-radius:4px;background:#4fd18b;color:#06120c;font-style:normal;font-weight:800;font-size:10px}
+.tr-acc-far button b{color:#7fe0a8;font-weight:700}
+.tr-acc-far button span{color:var(--mute);font-size:10.5px;min-width:42px;text-align:right}
+
+.tr-apin-wrap{background:none;border:0}
+.tr-apin{--c:#f1f7f3;position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:4px;height:22px;box-sizing:border-box;padding:0 8px 0 3px;border-radius:999px;background:rgba(9,15,12,.84);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);box-shadow:0 1px 6px rgba(0,0,0,.35);color:#f1f7f3;font:650 11px/1 Pretendard,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:transform .15s,border-color .15s}
+.tr-apin:hover{transform:translate(-50%,-50%) scale(1.06);border-color:rgba(255,255,255,.35)}
+.tr-apin i{display:grid;place-items:center;width:16px;height:16px;font-style:normal;color:var(--c)}
+.tr-apin span{letter-spacing:-.01em}
+.tr-apin.mini,.tr-apin.bus:not(:has(span)){padding:0 3px}
+.tr-apin.mini span{display:none}
+.tr-apin.p i{border-radius:4px;background:rgba(255,255,255,.88);color:#0b1410;font-weight:800;font-size:10.5px}
+.tr-apin.p.off span{color:rgba(241,247,243,.75)}
+.tr-apin.p.on{border-color:rgba(79,209,139,.7)}
+.tr-apin.p.on i{background:#4fd18b;color:#06120c}
+.tr-apin.p.on span{color:#8ff0b8}
+.tr-apin.sub{--c:#06120c;height:24px;padding-right:10px;border-color:rgba(245,213,138,.55);font-size:11.5px}
+.tr-apin.sub i{width:18px;height:18px;border-radius:50%;background:#f5d58a}
+.tr-apin.bus{--c:#f5d58a}
+.tr-apin.bike{--c:#7fe0a8}
+.tr-apin.bike.zero span{color:var(--mute)}
+.tr-apin.ev{--c:#9fd8ff}
+.tr-apin.event{--c:#ffc4d6;border-color:rgba(255,196,214,.45)}/* 붐빔 카드: 첫 화면 맨 위에 늘(단계·인원·막대), 나머지는 「자세히」 안 */
+.tr-livecard.top{margin:4px 0 8px;padding:12px 14px 10px}
+.tr-livecard.rest>:first-child{margin-top:0}

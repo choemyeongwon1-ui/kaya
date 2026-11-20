@@ -103,7 +103,8 @@ function paintLive() {
   liveEl.replaceChildren(h('i'), h('span', null, '서울숲 지금'), h('b', null, live.level),
     live.min != null ? h('small', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}명 · ${String(live.time).slice(-5)}`) : null);
   if (!livePop.hidden) livePop.replaceChildren(liveCard());
-  document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard() ?? ''));
+  document.querySelectorAll('.tr-livetop-slot').forEach(s => s.replaceChildren(liveCard('top') ?? ''));
+  document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard('rest') ?? ''));
   paintHello();
 }
 function paintHello() {
@@ -166,8 +167,9 @@ const LIVE_STEPS = ['여유', '보통', '약간 붐빔', '붐빔'];
 const PARK_M2 = 490000;      // 서울숲 면적(주제서 기준 약 49만㎡). 서울시 '서울숲공원' 집계 구역과 꼭 같지는 않음(검증 필요)
 const PITCH_M2 = 7140;       // 축구장 한 면(105×68m)
 const hh = t => String(t ?? '').slice(11, 13);
-/** 지금 서울숲: 붐빔 단계 · 인원 · 축구장 한 면당 몇 명 · 앞으로 몇 시간 */
-function liveCard() {
+/** 지금 서울숲: 붐빔 단계 · 인원 · 축구장 한 면당 몇 명 · 앞으로 몇 시간
+ *  part: 'top' = 첫 화면 맨 위에 늘 보이는 부분(단계·인원·막대) / 'rest' = 「자세히」 안 나머지 / 없으면 전부 */
+function liveCard(part) {
   if (!live) return null;
   const fc = (live.forecast ?? []).filter(f => f.max != null).slice(0, 8);
   const top = Math.max(live.max ?? 0, ...fc.map(f => f.max)) || 1;
@@ -175,20 +177,21 @@ function liveCard() {
   const day = fc.filter(f => +hh(f.time) >= 6 && +hh(f.time) < 22);      // 밤(22~6시)은 '한산한 때'로 권하지 않음
   const calm = day.length ? day.reduce((a, f) => (f.max < a.max ? f : a)) : null;
   const rankOf = lv => Math.max(0, LIVE_STEPS.indexOf(lv));
-  return h('section', { class: `tr-livecard r${live.rank}`, 'aria-label': '서울숲 실시간 붐빔' },
-    h('div', { class: 'tr-lc-head' },
+  const top_ = part !== 'rest', rest = part !== 'top';
+  return h('section', { class: `tr-livecard r${live.rank}${part ? ` ${part}` : ''}`, 'aria-label': '서울숲 실시간 붐빔' },
+    top_ && h('div', { class: 'tr-lc-head' },
       h('span', { class: 'tr-lc-dot' }), h('small', null, '지금 서울숲'), h('b', null, live.level),
       live.min != null ? h('strong', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}`, h('small', null, '명')) : null),
-    h('div', { class: 'tr-lc-gauge', role: 'img', 'aria-label': `4단계 중 ${live.rank + 1}단계 ${live.level}` },
+    top_ && h('div', { class: 'tr-lc-gauge', role: 'img', 'aria-label': `4단계 중 ${live.rank + 1}단계 ${live.level}` },
       LIVE_STEPS.map((s, i) => h('div', { class: i <= live.rank ? `on s${i}` : '' }, h('i'), h('span', null, s)))),
-    live.min != null ? h('p', { class: 'tr-lc-feel' }, icon('users', 13), `축구장 한 면 넓이에 약 ${perPitch(live.min)}~${perPitch(live.max)}명꼴`) : null,
-    fc.length ? h('div', { class: 'tr-lc-fc' },
+    rest && live.min != null ? h('p', { class: 'tr-lc-feel' }, icon('users', 13), `축구장 한 면 넓이에 약 ${perPitch(live.min)}~${perPitch(live.max)}명꼴`) : null,
+    rest && fc.length ? h('div', { class: 'tr-lc-fc' },
       h('div', { class: 'tr-lc-bars' },
         h('div', { class: `now s${live.rank}`, style: `--h:${Math.max(8, 100 * (live.max ?? 0) / top)}%` }, h('i'), h('span', null, '지금')),
         fc.map(f => h('div', { class: `s${rankOf(f.level)}${f === calm ? ' calm' : ''}`, style: `--h:${Math.max(8, 100 * f.max / top)}%`, title: `${hh(f.time)}시 ${f.level} · ${fmtPeople(f.min)}~${fmtPeople(f.max)}명` }, h('i'), h('span', null, hh(f.time))))),
       calm && calm.max < (live.max ?? 0) ? h('small', null, `${hh(calm.time)}시쯤 가장 한산 · ${fmtPeople(calm.min)}~${fmtPeople(calm.max)}명`)
         : day.length ? h('small', null, '밤 10시 전엔 지금보다 한산한 때가 없어요') : h('small', null, '앞으로 몇 시간 예보예요')) : null,
-    h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터 · 휴대폰 신호로 어림한 값 · ${String(live.time).slice(-5)} 기준`));
+    rest && h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터 · 휴대폰 신호로 어림한 값 · ${String(live.time).slice(-5)} 기준`));
 }
 
 function renderTop() {
@@ -421,18 +424,20 @@ function statusBar() {
   const dust = an ? [an.pm10Label, an.pm25Label].filter(g => DUST_G.includes(g)).sort((a, b) => DUST_G.indexOf(b) - DUST_G.indexOf(a))[0] ?? null : null;
   const sit = situation();
   const alert0 = access?.alerts?.[0];
+  const rn = rainNow(), surge = subSurge();
   const warn = alert0 ? { cls: 'hot', text: `재난문자 · ${alert0.text}`, src: '서울시 실시간 도시데이터(서울숲공원)' }
+    : rn ? { cls: rn.heavy ? 'hot' : 'dust', text: `비가 오고 있어요(최근 1시간 ${rn.mm60}mm). ${rn.heavy ? '중랑천·한강 쪽 물가 산책로는 피하세요.' : '물가 산책로는 미끄러울 수 있어요.'} 곤충식물원·나비정원 같은 실내도 있어요.`, src: `서울시 강우량 정보(${access.rain.name}, ${hm(access.rain.time)})` }
     : sit.hot ? { cls: 'hot', text: '더운 날이에요. 서울숲 안은 바깥 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.', src: '2022년 7월 서울숲 실측(조현민·권태경 2022)' }
     : DUST_G.indexOf(dust) >= 2 ? { cls: 'dust', text: `미세먼지 ${dust}이에요. 곤충식물원·나비정원 같은 실내도 생각해 보세요.`, src: `에어코리아 ${w.air.station} 측정소` }
     : sit.busy ? { cls: 'busy', text: `${sit.weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요'}. 붐비는 곳은 피해서 골라 드려요.`, src: '서울숲 보행 계수: 토요일 오후 2시가 가장 붐빔(조현민·권태경 2025)' }
+    : surge ? { cls: 'busy', text: `서울숲역에서 사람이 많이 내리고 있어요(최근 10분 ${surge.text}명). 10~20분 뒤 붐빌 수 있어요(짐작).`, src: '서울시 실시간 도시데이터 · 지하철 승하차 인원' }
     : null;
   const chips = [];
   if (h0) chips.push(h('span', { class: 'tmp' }, h('b', null, `${Math.round(h0.temp)}°`), h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? ` 체감 ${Math.round(h0.feels)}°` : ''));
   if (dust) chips.push(h('span', { class: `g${DUST_G.indexOf(dust) + 1}` }, '미세먼지 ', h('b', null, dust)));
-  if (live) chips.push(h('span', { class: `crowd r${live.rank}` }, h('i'), h('b', null, live.level)));
   if (!chips.length && !warn) return null;
-  const lc = liveCard(), wc = weatherCard(), canOpen = !!(lc || wc);
-  const more = canOpen ? h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? '')) : null;
+  const lc = liveCard('rest'), wc = weatherCard(), ec = envCard(), canOpen = !!(lc || wc || ec);
+  const more = canOpen ? h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? ''), ec) : null;
   const label = () => statusOpen ? '접기' : '자세히';
   const line = h(canOpen ? 'button' : 'div', { type: canOpen ? 'button' : null, class: 'tr-status-line', 'aria-expanded': canOpen ? String(statusOpen) : null,
     onclick: canOpen ? e => { statusOpen = !statusOpen; more.hidden = !statusOpen; e.currentTarget.setAttribute('aria-expanded', String(statusOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } : null },
@@ -458,6 +463,56 @@ function gateDist(lat, lon) {
   if (lat == null || lon == null || !gs.length) return null;
   return Math.min(...gs.map(g => Math.hypot((lat - g.lat) * 110900, (lon - g.lon) * 88200)));
 }
+const mid = r => r ? (r[0] + r[1]) / 2 : null;
+/** 주소에서 '성수동2가'처럼 동·가 이름만 / 같은 주소가 두 번 붙어 오는 경우 하나만 */
+const lotDong = a => String(a ?? '').match(/(\S+(?:동|가))(?=\s|$)/)?.[1] ?? '성동구';
+const oneAddr = a => { const t = String(a ?? '').trim(), n = t.length / 2; return t && Number.isInteger(n) && t.slice(0, n) === t.slice(n) ? t.slice(0, n) : t; };
+/** 버스 도착 문구 → 분('곧 도착'=0, '3분12초후[2번째 전]'=3). 운행종료·출발대기 등은 null */
+const busMin = s => { s = String(s ?? ''); if (/곧 도착/.test(s)) return 0; const m = s.match(/(\d+)분/); return m ? +m[1] : /(\d+)초후/.test(s) ? 0 : null; };
+const rngTxt = r => r ? (r[0] === r[1] ? `${r[0]}` : `${r[0]}~${r[1]}`) : '';
+/** 비: 뚝섬 빗물펌프장 최근 1시간 강우(30분보다 오래된 값은 안 씀). 10mm/h 이상이면 '강한 비'(기상청 '강한 비' 표현 기준을 빌린 잠정값) */
+function rainNow() {
+  const r = access?.rain, d = kst(r?.time);
+  if (!r || !d || Date.now() - d.getTime() > 30 * 60e3) return null;
+  if (!((r.mm10 ?? 0) > 0 || (r.mm60 ?? 0) >= 1)) return null;
+  return { mm60: r.mm60 ?? 0, heavy: (r.mm60 ?? 0) >= 10 };
+}
+/** 곧 붐빔 신호: 최근 10분 하차가 그 앞 20분의 10분 평균보다 1.5배 넘고 80명 이상(잠정 규칙, 검증 필요) */
+function subSurge() {
+  const f = access?.subFlow;
+  if (!f?.off10 || !f?.off30) return null;
+  const now10 = mid(f.off10), before = (mid(f.off30) - now10) / 2;
+  return now10 >= 80 && now10 >= 1.5 * Math.max(before, 1) ? { text: rngTxt(f.off10) } : null;
+}
+/** 「지금」 자세히 안: 지금 공원에 있는 연령대 · 비 · 중랑천 물 · 성수동 거리 센서(하루 늦음) */
+function envCard() {
+  const a = access;
+  if (!a) return null;
+  const rows = [];
+  const ag = (a.ages?.rates ?? []).filter(x => x.pct != null);
+  if (ag.length) {
+    const top = [...ag].sort((x, y) => y.pct - x.pct).slice(0, 2).map(x => `${x.age ? `${x.age}대` : '10살 아래'} ${Math.round(x.pct)}%`);
+    const kid = ag.find(x => x.age === 0), old = ag.filter(x => x.age >= 60).reduce((s, x) => s + x.pct, 0);
+    rows.push(h('div', { class: 'tr-env-row' }, icon('users', 14), h('div', null,
+      h('b', null, '지금 공원에 있는 사람'),
+      h('div', { class: 'tr-env-bars', role: 'img', 'aria-label': ag.map(x => `${x.age}대 ${x.pct}%`).join(', ') },
+        ag.map(x => h('i', { style: `--h:${Math.max(4, x.pct * 3)}%`, title: `${x.age ? `${x.age}대` : '0~9세'} ${x.pct}%` }, h('span', null, x.age ? x.age : '0')))),
+      h('small', null, `${top.join(' · ')}${kid ? ` · 10살 아래 ${Math.round(kid.pct)}%` : ''} · 60세 이상 ${Math.round(old)}%`))));
+  }
+  if (a.rain) rows.push(h('div', { class: 'tr-env-row' }, icon('rain', 14), h('div', null, h('b', null, '비'),
+    h('small', null, (a.rain.mm60 ?? 0) > 0 ? `최근 1시간 ${a.rain.mm60}mm · ${hm(a.rain.time)} 기준` : `안 와요 · ${hm(a.rain.time)} 기준`))));
+  if (a.river?.level != null) {
+    const depth = a.river.bed != null ? Math.max(0, a.river.level - a.river.bed) : null;
+    rows.push(h('div', { class: 'tr-env-row' }, icon('water', 14), h('div', null, h('b', null, `중랑천 물 (${a.river.name})`),
+      h('small', null, `${depth != null ? `물 깊이 약 ${depth.toFixed(1)}m` : `수위 ${a.river.level}m`} · ${hm(a.river.time)} 기준${a.river.control && a.river.level >= a.river.control ? ' · 통제 수위 넘음' : ''}`))));
+  }
+  if (a.sdot?.temp != null) rows.push(h('div', { class: 'tr-env-row' }, icon('target', 14), h('div', null, h('b', null, '성수동 거리 센서'),
+    h('small', null, `${a.sdot.time.slice(5, 10).replace('-', '/')} ${a.sdot.time.slice(11)} 실측 · ${a.sdot.temp}℃ · 습도 ${Math.round(a.sdot.hum)}%${a.sdot.noise != null ? ` · 소음 ${Math.round(a.sdot.noise)}dB` : ''}`),
+    h('small', { class: 'dim' }, `센서 ${a.sdot.sensors}곳 평균 · 자료가 하루쯤 늦게 공개돼요`))));
+  if (!rows.length) return null;
+  return h('section', { class: 'tr-env', 'aria-label': '주변 환경' }, rows,
+    h('p', { class: 'tr-lc-src' }, '서울시 실시간 도시데이터 · 서울시 강우량·하천수위 정보 · S-DoT 도시데이터 센서'));
+}
 function accessBar() {
   const a = access;
   if (!a) return null;
@@ -475,15 +530,24 @@ function accessBar() {
   const groups = accessGroups(a);
   // 펼치면 글 목록 대신 지도에 아이콘을 띄우고, 여기엔 종류별 켜고 끄기 + 꼭 알아야 할 한두 줄만
   const legend = h('div', { class: 'tr-acc-legend', role: 'group', 'aria-label': '지도에 보일 것' },
-    groups.map(g => h('button', { type: 'button', class: `tr-acc-tg ${g.key}`, 'aria-pressed': String(accessShow[g.key]),
-      onclick: e => { accessShow[g.key] = !accessShow[g.key]; e.currentTarget.setAttribute('aria-pressed', String(accessShow[g.key])); accessPins(); } },
+    groups.map(g => h('button', { type: 'button', class: `tr-acc-tg ${g.key}`, 'aria-pressed': String(showing(g.key)),
+      onclick: e => { accessShow[g.key] = !showing(g.key); e.currentTarget.setAttribute('aria-pressed', String(accessShow[g.key])); accessPins(); } },
       h('i', null, icon(g.icon, 13)), g.label, h('b', null, g.count))));
   const more = h('div', { class: 'tr-acc-more', hidden: !accessOpen },
     legend,
-    h('p', { class: 'tr-acc-hint' }, '지도 위 아이콘을 누르면 자세히 보여요.'),
-    near.length ? h('p', { class: 'tr-acc-note' }, h('b', { class: 'tr-acc-p' }, 'P'), ' 회색은 남은 자리를 실시간으로 알려 주지 않는 곳이에요.',
-      liveLots.length ? ' 초록은 남은 자리가 보이는 공영주차장이에요.' : '') : null,
+    h('div', { class: 'tr-acc-key' },
+      near.length ? h('span', null, h('i', { class: 'off' }, 'P'), '남은 자리 모름') : null,
+      liveLots.length ? h('span', null, h('i', { class: 'on' }, 'P'), '남은 자리 실시간') : null,
+      h('span', null, '아이콘을 누르면 자세히')),
+    liveLots.length ? h('div', { class: 'tr-acc-far' }, h('small', null, '남은 자리가 보이는 주차장 (조금 멀어요)'),
+      h('div', null, liveLots.filter(l => l.lat != null).map(l => {
+        const odd = l.capacity != null && l.free >= l.capacity;
+        const nm = l.name === '이름 없는 주차장' ? `${lotDong(l.address)} 주차장` : l.name.replace(/\s*공영주차장$/, ' 공영');
+        return h('button', { type: 'button', onclick: () => focusAccess(l.lat, l.lon) },
+          h('i', null, 'P'), nm, h('b', null, `${l.free}면${odd ? '?' : ''}`), l.km != null ? h('span', null, `${l.km}km`) : null);
+      }))) : null,
     sit.busy ? h('p', { class: 'tr-acc-note warn' }, '지금 공원이 붐벼서 주차장도 찼을 수 있어요(붐빔 정도로 짐작). 서울숲역이 가까워요.') : null,
+    a.subFlow?.off10 ? h('p', { class: `tr-acc-line${subSurge() ? ' warn' : ''}` }, icon('train', 13), `서울숲역 최근 10분 ${rngTxt(a.subFlow.off10)}명 내림${subSurge() ? ' · 평소보다 많아요' : ''}`) : null,
     a.road ? h('p', { class: 'tr-acc-line' }, icon('car', 13), `주변 도로 ${a.road.idx} · 평균 ${a.road.speed}km/h`) : null,
     ...(a.accidents ?? []).map(x => h('p', { class: 'tr-acc-note warn' }, `${x.type ?? '통제'} · ${x.info ?? ''}`)),
     h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터(서울숲공원)${liveLots.length ? ' · 한국교통안전공단 주차정보' : ''} · 5분마다 갱신`));
@@ -495,7 +559,9 @@ function accessBar() {
 }
 
 // ── 오는 길 지도 핀 ──
-let accessShow = { park: true, sub: true, bike: true, ev: true };
+// 버스는 도착 시간이 있을 때만 처음부터 켬(정류장 위치만으론 지도를 어지럽힘). null = 아직 사용자가 안 건드림
+let accessShow = { park: true, sub: true, bus: null, event: true, bike: true, ev: true };
+const showing = k => accessShow[k] ?? (k === 'bus' ? !!access?.bus?.some(b => b.arrivals?.length) : true);
 const fresh6h = s => { const d = kst(s); return !!d && Date.now() - d.getTime() < 6 * 3600e3; };
 /** 같은 자리에 겹친 충전소(층별·업체별로 따로 오는 경우)를 하나로 */
 function mergeChargers(list) {
@@ -509,14 +575,29 @@ function mergeChargers(list) {
   }
   return [...m.values()];
 }
+/** 길 건너편처럼 90m 안에 붙은 정류장은 핀 하나로(도착 목록은 합치고 같은 노선·방면은 하나만) */
+function mergeStops(list) {
+  const out = [];
+  for (const b of list ?? []) {
+    if (b.lat == null || b.lon == null) continue;
+    const o = out.find(x => Math.hypot((x.lat - b.lat) * 110900, (x.lon - b.lon) * 88200) < 90);
+    if (!o) { out.push({ ...b, arrivals: b.arrivals ? [...b.arrivals] : null }); continue; }
+    if (o.name !== b.name) o.name = `${o.name} · ${b.name}`;
+    o.ars = `${o.ars}, ${b.ars}`;
+    if (b.arrivals) o.arrivals = [...(o.arrivals ?? []), ...b.arrivals.filter(x => !(o.arrivals ?? []).some(y => y.route === x.route && y.dir === x.dir))];
+  }
+  return out;
+}
 function accessGroups(a) {
   const P = a.parking ?? {};
   const subs = (a.subway ?? []).filter(s => s.lat != null);
   return [
     { key: 'park', icon: 'parking', label: '주차', count: (P.near?.length ?? 0) + (P.live?.length ?? 0) },
     { key: 'sub', icon: 'train', label: '지하철', count: subs.length },
+    { key: 'bus', icon: 'bus', label: '버스', count: mergeStops(a.bus).length },
+    { key: 'event', icon: 'spark', label: '행사', count: (a.events ?? []).filter(e => e.lat != null).length },
     { key: 'bike', icon: 'bike', label: '따릉이', count: (a.bike ?? []).reduce((s, b) => s + (b.bikes ?? 0), 0) },
-    { key: 'ev', icon: 'bolt', label: '충전', count: mergeChargers(a.charger).length },
+    { key: 'ev', icon: 'bolt', label: '충전', count: mergeChargers(a.charger).filter(c => c.fresh).length },
   ].filter(g => g.count);
 }
 function accessPins(fly = false) {
@@ -540,36 +621,67 @@ function accessPins(fly = false) {
   const row = (k, v) => v ? `<div class="r"><span>${esc(k)}</span><b>${esc(v)}</b></div>` : '';
   const head = (ico, t, sub) => `<div class="h">${iconSvg(ico, 14)}<b>${esc(t)}</b></div>${sub ? `<small>${esc(sub)}</small>` : ''}`;
   const P = a.parking ?? {};
-  if (accessShow.park) for (const l of [...(P.near ?? []), ...(P.live ?? [])]) {
+  if (showing('park')) for (const l of [...(P.near ?? []), ...(P.live ?? [])]) {
     const live = l.live && l.free != null, d = gateDist(l.lat, l.lon);
-    const tag = live ? `${l.free}면 남음` : l.capacity != null ? `${l.capacity.toLocaleString()}면` : '';
+    const odd = live && l.capacity != null && l.free >= l.capacity;   // 남은 자리 = 전체면 기계 값이 멈췄을 수 있음
+    const name = l.name === '이름 없는 주차장' ? `${l.agent ?? ''} 주차장 (${lotDong(l.address)})`.trim() : l.name;
+    const tag = live ? `${l.free}면 남음${odd ? '?' : ''}` : l.capacity != null ? `${l.capacity.toLocaleString()}면` : '';
     add(l.lat, l.lon, `p ${live ? 'on' : 'off'}`, `<i>P</i>${tag ? `<span>${esc(tag)}</span>` : ''}`,
-      head('parking', l.name, l.address) +
+      head('parking', name, oneAddr(l.address)) +
       row('남은 자리', live ? `${l.free}면${l.time ? ` (${hm(l.time)} 기준)` : ''}` : '실시간 정보 없음') +
+      (odd ? '<small class="warn">남은 자리가 전체와 같게 나와요. 실제와 다를 수 있으니 확인해 보세요</small>' : '') +
       row('전체', l.capacity != null ? `${l.capacity.toLocaleString()}면` : null) + row('요금', rate(l)) +
       row('공원 입구까지', d != null ? `약 ${fmtM(Math.round(d / 10) * 10)}` : null), live ? 30 : 20);
   }
-  if (accessShow.sub) for (const s of a.subway ?? []) {
+  if (showing('sub')) for (const s of a.subway ?? []) {
     const ts = (s.trains ?? []).slice(0, 4);
-    add(s.lat, s.lon, 'sub', `<i>${iconSvg('train', 13)}</i><span>${esc(s.name)}역</span>`,
-      head('train', `${s.name}역`, s.line) + (ts.length ? ts.map(t => row(`${t.to}행`, trainMsg(t))).join('') : '<small>도착 정보가 아직 없어요</small>'), 40);
+    const f = /서울숲/.test(s.name) ? a.subFlow : null, sg = f ? subSurge() : null;
+    add(s.lat, s.lon, 'sub', `<i>${iconSvg('train', 12)}</i><span>${esc(s.name)}역</span>`,
+      head('train', `${s.name}역`, s.line) + (ts.length ? ts.map(t => row(`${t.to}행`, trainMsg(t))).join('') : '<small>도착 정보가 아직 없어요</small>') +
+      (f?.off10 ? row('최근 10분 내린 사람', `${rngTxt(f.off10)}명`) + row('최근 30분 내린 사람', f.off30 ? `${rngTxt(f.off30)}명` : null) +
+        (sg ? '<small class="warn">평소보다 많이 내리고 있어요. 10~20분 뒤 공원이 붐빌 수 있어요(짐작)</small>' : '') : ''), 40);
   }
-  if (accessShow.bike) for (const b of a.bike ?? []) {
+  if (showing('bus')) for (const b of mergeStops(a.bus)) {
+    const arr = (b.arrivals ?? []).map(x => ({ ...x, m1: busMin(x.msg1), m2: busMin(x.msg2) })).sort((x, y) => (x.m1 ?? 999) - (y.m1 ?? 999));
+    const soon = arr.find(x => x.m1 != null);
+    add(b.lat, b.lon, 'bus', `<i>${iconSvg('bus', 12)}</i>${soon ? `<span>${soon.m1 === 0 ? '곧' : `${soon.m1}분`}</span>` : ''}`,
+      head('bus', b.name, `정류장 번호 ${b.ars}`) +
+      (arr.length ? arr.slice(0, 6).map(x => row(`${x.route}번${x.dir ? ` (${x.dir} 방면)` : ''}`,
+        x.m1 == null ? (x.msg1 ?? '') : `${x.m1 === 0 ? '곧 도착' : `${x.m1}분 후`}${x.m2 != null ? ` · 다음 ${x.m2}분` : ''}`)).join('')
+        : b.arrivals ? '<small>지금 오는 버스가 없어요</small>' : '<small>버스 도착 시간은 준비 중이에요</small>'), 15);
+  }
+  if (showing('event')) for (const e of a.events ?? []) {
+    add(e.lat, e.lon, 'event', `<i>${iconSvg('spark', 12)}</i><span>행사</span>`,
+      head('spark', e.name, e.place) + row('기간', e.period) + row('요금', e.free == null ? null : e.free ? '무료' : '유료'), 35);
+  }
+  if (showing('bike')) for (const b of a.bike ?? []) {
     const n = b.bikes ?? null;
     add(b.lat, b.lon, `bike${n === 0 ? ' zero' : ''}`, `<i>${iconSvg('bike', 12)}</i><span>${n ?? '–'}</span>`,
       head('bike', b.name, '따릉이 대여소') + row('빌릴 수 있는 자전거', n != null ? `${n}대` : '정보 없음') + row('거치대', b.racks ? `${b.racks}개` : null), 10);
   }
-  if (accessShow.ev) for (const c of mergeChargers(a.charger)) {
+  // 상태가 6시간 넘게 멈춘 충전소는 지도에서 뺌(고장 난 핀처럼 보이고, 오래된 값은 길잡이가 못 됨)
+  if (showing('ev')) for (const c of mergeChargers(a.charger).filter(c => c.fresh)) {
     add(c.lat, c.lon, `ev${c.fresh ? '' : ' old'}`, `<i>${iconSvg('bolt', 12)}</i><span>${c.fresh ? `${c.free}/${c.total}` : '–'}</span>`,
       head('bolt', c.names[0] + (c.names.length > 1 ? ` 외 ${c.names.length - 1}곳` : ''), c.address) +
       row('지금 쓸 수 있는 충전기', c.fresh ? `${c.free}대 / 전체 ${c.total}대` : '상태 정보가 오래돼 알 수 없어요') +
       row('급속', c.fast ? `${c.fast}대` : null) + row('이용 시간', c.hours), 0);
   }
   const pad = desk() ? padding() : { paddingTopLeft: [36, 96], paddingBottomRight: [36, Math.round(innerHeight * .38) + 90] };
-  map.off('zoomend', declutterAccess); map.on('zoomend', declutterAccess);
-  if (fly && pts.length) flyBounds(L.latLngBounds(pts), { ...pad, maxZoom: 16 }, .8).then(declutterAccess);
-  else declutterAccess();
+  map.off('zoomend moveend', declutterSoon); map.on('zoomend moveend', declutterSoon);
+  // 1km 넘게 떨어진 곳(멀리 있는 실시간 공영주차장 등)까지 다 담으면 공원 둘레 핀이 뭉치므로, 화면은 가까운 핀에 맞춤
+  const nearPts = pts.filter(([la, lo]) => Math.hypot((la - PARK_CENTER[0]) * 110900, (lo - PARK_CENTER[1]) * 88200) < 1000);
+  if (fly && pts.length) flyBounds(L.latLngBounds(nearPts.length ? nearPts : pts), { ...pad, maxZoom: 16 }, .8).then(declutterSoon);
+  else declutterSoon();
 }
+/** 패널에서 고른 핀으로 지도를 옮기고 말풍선 열기 */
+async function focusAccess(lat, lon) {
+  const m = layers.access.getLayers().find(x => { const ll = x.getLatLng(); return Math.abs(ll.lat - lat) < 1e-6 && Math.abs(ll.lng - lon) < 1e-6; });
+  await flyToVisible(L.latLng(lat, lon), Math.max(map.getZoom(), 15.5), .7);
+  m?.openPopup();
+}
+// 지도가 움직이는 중(확대 애니메이션)엔 위치가 틀리게 재지므로, 다 멈춘 뒤 한 번만
+let declutterT = 0;
+function declutterSoon() { clearTimeout(declutterT); declutterT = setTimeout(() => requestAnimationFrame(declutterAccess), 120); }
 /** 붙어 있는 핀끼리 글자가 겹치지 않게 위아래로 살짝 비켜 놓기(중요한 것 먼저: 지하철 > 주차 > 따릉이 > 충전) */
 function declutterAccess() {
   const ms = layers?.access?.getLayers() ?? [];
@@ -578,12 +690,25 @@ function declutterAccess() {
   ms.sort((a, b) => (b.options.zIndexOffset ?? 0) - (a.options.zIndexOffset ?? 0)).forEach(m => {
     const pin = m.getElement()?.firstElementChild;
     if (!pin) return;
-    pin.style.marginTop = '0px';
-    const r = pin.getBoundingClientRect(), step = r.height + 3;
-    for (const dy of [0, step, -step, 2 * step, -2 * step, 3 * step]) {
-      const box = { left: r.left, right: r.right, top: r.top + dy, bottom: r.bottom + dy };
-      if (!placed.some(p => hit(p, box)) || dy === 3 * step) { pin.style.marginTop = `${dy}px`; const pp = m.getPopup(); if (pp) pp.options.offset = L.point(0, dy - 12); placed.push(box); break; }
-    }
+    pin.style.marginTop = '0px'; pin.style.marginLeft = '0px'; pin.classList.remove('mini');
+    // 화면 좌표는 지도 계산으로(애니메이션 중 CSS 변형에 흔들리지 않게)
+    const c = map.latLngToContainerPoint(m.getLatLng());
+    const fit = () => {
+      const w = pin.offsetWidth, ht = pin.offsetHeight, sy = ht + 3, sx = w / 2 + 4;
+      const r = { left: c.x - w / 2, right: c.x + w / 2, top: c.y - ht / 2, bottom: c.y + ht / 2 };
+      for (const [dx, dy] of [[0, 0], [0, sy], [0, -sy], [sx, 0], [-sx, 0], [sx, sy], [-sx, sy], [sx, -sy], [-sx, -sy], [0, 2 * sy], [0, -2 * sy], [2 * sx, 0], [-2 * sx, 0]]) {
+        const box = { left: r.left + dx, right: r.right + dx, top: r.top + dy, bottom: r.bottom + dy };
+        if (!placed.some(p => hit(p, box))) return { dx, dy, box };
+      }
+      return null;
+    };
+    // 자리가 없으면 숫자를 숨기고 아이콘만(눌러서 자세히 보기는 그대로), 그래도 없으면 제자리에 겹쳐 둠
+    let f = fit();
+    if (!f) { pin.classList.add('mini'); f = fit(); }
+    if (!f) { const w = pin.offsetWidth, ht = pin.offsetHeight; f = { dx: 0, dy: 0, box: { left: c.x - w / 2, right: c.x + w / 2, top: c.y - ht / 2, bottom: c.y + ht / 2 } }; }
+    pin.style.marginTop = `${f.dy}px`; pin.style.marginLeft = `${f.dx}px`;
+    const pp = m.getPopup(); if (pp) pp.options.offset = L.point(f.dx, f.dy - 12);
+    placed.push(f.box);
   });
 }
 
@@ -597,6 +722,7 @@ function go(step) {
       h('div', { class: 'tr-stepno' }, h('b', null, `0${step}`), h('span', null, '/ 03')),
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
+    step === 1 ? h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? '') : null,
     step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),

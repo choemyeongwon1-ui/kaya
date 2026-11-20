@@ -65,6 +65,7 @@ const ICONS = {
   train: '<rect x="6" y="3" width="12" height="13" rx="3"/><path d="M6 10h12M9 20l1.5-4M15 20l-1.5-4M9.5 13h.01M14.5 13h.01"/>',
   bike: '<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l2 7h-6M14 6h2"/>',
   bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  bus: '<path d="M3 16V7a2 2 0 0 1 2-2h11l5 5v6z"/><path d="M3 10.5h18M8.5 5v5.5M13.5 5v5.5"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/>',
 };
 export function icon(name, size = 18) {
   const span = document.createElement('span');
