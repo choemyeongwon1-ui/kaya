@@ -98,6 +98,10 @@ button{font:inherit;color:inherit}
 .tl input{position:absolute;left:0;right:0;bottom:0;width:100%;margin:0;accent-color:var(--brand)}
 .play{width:40px;height:40px;border-radius:50%;border:0;background:var(--brand);color:var(--brand-ink);font-weight:900;cursor:pointer;font-size:14px}
 .foot{font-size:10.5px;color:var(--muted);line-height:1.5}
+/* 대시보드 「만족도」 탭 안에 들어갈 때(?embed=1): 돌아가기 단추를 숨기고 창을 꽉 채웁니다 */
+.embed .back{display:none}.embed .app{min-height:0}
+.embed .app{height:100vh}
+@media(max-width:960px){.embed .stage{height:62vh;min-height:320px}.embed .app{height:auto}}
 @media(max-width:1180px){.main{grid-template-columns:260px minmax(0,1fr) 320px}}
 @media(max-width:960px){.app{height:auto}.main{grid-template-columns:minmax(0,1fr)}.stage{height:62vh;min-height:380px;order:-1}.side.l,.side.r{border:0;overflow:visible}.time{grid-template-columns:auto minmax(0,1fr)}.time .play{display:none}.help{display:none}}
 </style>
@@ -109,7 +113,7 @@ button{font:inherit;color:inherit}
     <div><h1>서울숲 운영 관제 <span class="draft">3D 시안</span></h1><div class="sub">지금 어디가 붐비고, 무엇을 바꿔야 하나</div></div>
     <div class="sp"></div>
     <div class="clock"><i></i><span id="clock">—</span></div>
-    <a class="back" href="../index.html#admin">기존 관리자 관제로 ←</a>
+    <a class="back" href="../index.html#satisfaction">대시보드로 ←</a>
   </header>
 
   <div class="main">
@@ -170,6 +174,8 @@ button{font:inherit;color:inherit}
   var LON0 = 127.0430, LAT0 = 37.5440, KY = 111320, KX = 111320 * Math.cos(LAT0 * Math.PI / 180);
   function xy(lon, lat) { return [(lon - LON0) * KX, (lat - LAT0) * KY]; }
   var $ = function (id) { return document.getElementById(id); };
+  var EMBED = new URLSearchParams(location.search).has('embed') && window.parent !== window;
+  if (EMBED) document.documentElement.classList.add('embed');   // 대시보드 「만족도」 탭 안: 화면을 꽉 채우고, 넘치면 이 안에서 스크롤
   function hex(h, a) { h = h.replace('#', ''); return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255, a == null ? 1 : a]; }
   var TONE = { good: '#4cc36a', warning: '#f2b632', serious: '#ec835a', critical: '#e0504a' };
 

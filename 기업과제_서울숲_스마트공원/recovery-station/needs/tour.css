@@ -921,3 +921,8 @@ div.tr-status-line{cursor:default}
 .tr-apin.event{--c:#ffc4d6;border-color:rgba(255,196,214,.45)}/* 붐빔 카드: 첫 화면 맨 위에 늘(단계·인원·막대), 나머지는 「자세히」 안 */
 .tr-livecard.top{margin:4px 0 8px;padding:12px 14px 10px}
 .tr-livecard.rest>:first-child{margin-top:0}
+
+/* 머무는 숲으로 돌아가기(오른쪽 위 링크): 휴대폰에서도 보이게 */
+.tr-link.tr-back{display:inline-flex!important;font-weight:700;color:var(--ink)}
+.tr-brand b{white-space:nowrap}
+@media(max-width:420px){.tr-link.tr-back{padding:8px 11px}}
