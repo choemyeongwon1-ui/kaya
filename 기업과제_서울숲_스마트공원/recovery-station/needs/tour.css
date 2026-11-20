@@ -755,3 +755,37 @@ a.tr-prog-main:hover{background:rgba(94,242,166,.06)}
 .tr-crit-ev em{font-style:normal;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap}
 .tr-crit-ev em.ok{background:rgba(94,242,166,.14);color:var(--mint)}
 .tr-crit-ev em.mid{background:rgba(255,210,122,.14);color:#ffd27a}
+
+/* ── 첫 화면 가볍게: 지금 상태 한 줄 · 3열 고르기 · 바로 출발 2개 ── */
+.tr-course[hidden],.tr-pgm[hidden],.tr-pop-note[hidden],.tr-status-more[hidden]{display:none!important}
+.tr-status{margin:4px 0 4px;border:1px solid var(--line);background:var(--glass-2);border-radius:var(--r-md);overflow:hidden}
+.tr-status-line{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;background:none;border:0;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+div.tr-status-line{cursor:default}
+.tr-status-line>small{flex:0 0 auto;font-size:11px;color:var(--mute)}
+.tr-status-chips{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;font-size:12.5px;color:var(--ink-2)}
+.tr-status-chips b{font-weight:700;color:var(--ink)}
+.tr-status-chips .tmp b{font-size:14px}
+.tr-status-chips .g1 b{color:#7cc7ff}.tr-status-chips .g2 b{color:var(--mint)}.tr-status-chips .g3 b{color:var(--gold)}.tr-status-chips .g4 b{color:#ff8a7a}
+.tr-status-chips .crowd{display:inline-flex;align-items:center;gap:5px}
+.tr-status-chips .crowd i{width:7px;height:7px;border-radius:50%;background:var(--mint)}
+.tr-status-chips .crowd.r1 i{background:#cfe86a}.tr-status-chips .crowd.r2 i{background:var(--gold)}.tr-status-chips .crowd.r3 i{background:#ff8a7a}
+.tr-status-tog{flex:0 0 auto;font-size:11.5px;color:var(--mint);font-weight:600}
+.tr-status-tog::after{content:' ›'}
+.tr-status-line[aria-expanded="true"] .tr-status-tog::after{content:' ‹'}
+.tr-status-warn{margin:0;padding:0 12px 10px;font-size:12.5px;line-height:1.5;color:var(--ink)}
+.tr-status-warn small{display:block;margin-top:2px;font-size:10.5px;color:var(--mute)}
+.tr-status.warn.hot,.tr-status.warn.dust{border-color:rgba(255,193,100,.45);background:rgba(255,193,100,.08)}
+.tr-status.warn.busy{border-color:rgba(159,216,255,.4);background:rgba(159,216,255,.07)}
+.tr-status-more{padding:0 8px 8px}
+.tr-status-more .tr-livecard,.tr-status-more .tr-wxcard{margin:0 0 8px}
+.tr-status+.tr-q,.tr-status-slot+.tr-q{margin-top:16px}
+.tr-opts.c3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tr-opts.c3 .tr-opt{justify-items:center;text-align:center;padding:11px 6px 10px;gap:0}
+.tr-opts.c3 .tr-opt-ico{margin-bottom:6px;width:30px;height:30px}
+.tr-opts.c3 .tr-opt b{font-size:13px;white-space:nowrap}
+.tr-opts.c3 .tr-opt::after{display:none}
+.tr-quick{margin-top:18px;padding-top:14px}
+.tr-quick-now .tr-course-img{color:var(--mint);background:rgba(94,242,166,.1)}
+.tr-quick-now{border-color:rgba(94,242,166,.25)}
+.tr-more{display:block;width:100%;margin-top:6px;padding:9px;border:1px dashed var(--line);border-radius:12px;background:none;color:var(--ink-2);font:inherit;font-size:12.5px;cursor:pointer}
+.tr-more:hover{color:var(--mint);border-color:rgba(94,242,166,.35)}

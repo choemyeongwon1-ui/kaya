@@ -106,7 +106,11 @@ function paintLive() {
   document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard() ?? ''));
   paintHello();
 }
-function paintHello() { if (app) document.querySelectorAll('.tr-hello-slot').forEach(s => s.replaceChildren(helloCard())); }
+function paintHello() {
+  if (!app) return;
+  document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
+  document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
+}
 async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
 function toggleLivePop(force) {
   const open = force ?? livePop.hidden;
@@ -388,34 +392,48 @@ const STEPS = [
 const hubName = id => app.model.hubById[id]?.name ?? id;
 
 /**
- * 첫 화면 한 줄: '왜 서울숲인가'(팀 논리)를 지금 상황에 맞는 이유 하나로 보여 줌
- *  - 더운 낮: 성수 거리보다 시원한 숲(조현민·권태경 2022 실측)
- *  - 평일 17~21시: 일터에서 걸어 닿는 숲 → 혼자 쉬는 30분 코스 바로 출발
- *  - 붐빌 때(실시간 '약간 붐빔' 이상 또는 주말 12~17시): 한산한 길·때 안내(조현민·권태경 2025)
- *  - 그 밖: 성수 한가운데 쉬어 가는 숲 + 물·숲·습지·실내 정원 선택지(무료라는 말은 노골적이라 쓰지 않음)
+ * 지금 상황(첫 화면에서 씀)
+ *  - hot: 체감 31℃ 이상 낮 → 성수 거리보다 시원한 숲(조현민·권태경 2022 실측)
+ *  - busy: 실시간 '약간 붐빔' 이상 또는 주말 12~17시(조현민·권태경 2025)
+ *  - workNeed: 평일 17~21시, 지금 갈 곳이 있는 활동(쉬기 → 걷기 → 그 밖 순) → 퇴근길 30분 코스
  */
-function helloCard() {
+function situation() {
   const w = app.wx, h0 = w?.hourly?.[0] ?? {}, n = app.now, weekday = n.dow >= 1 && n.dow <= 5;
   const hot = (h0.feels ?? h0.temp ?? 0) >= 31 && h0.day !== false;
   const busy = (live?.rank ?? 0) >= 2 || (!weekday && n.hour >= 12 && n.hour < 17);
-  const card = (cls, ico, title, text, src, action) => h('section', { class: `tr-hello ${cls}` },
-    h('span', { class: 'tr-hello-ico' }, icon(ico, 16)),
-    h('div', null, h('b', null, title), h('p', null, text), src ? h('small', null, src) : null, action ?? null));
-  if (hot) return card('hot', 'leaf', '더운 날, 성수 거리보다 시원한 숲',
-    '기온이 33℃를 넘던 때 서울숲 안은 공원 밖 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.',
-    '2022년 7월 서울숲 실측(조현민·권태경 2022)');
-  // 퇴근길 30분: 지금 갈 곳이 있는 활동(쉬기 → 걷기 → 그 밖 순)을 골라 바로 출발. 추운 저녁처럼 쉴 곳이 없으면 걷기로
   const g0 = app.model.gates?.[0];
   const workNeed = weekday && n.hour >= 17 && n.hour < 21 && g0
     ? ['rest', 'walk', ...NEEDS.map(x => x.key)].find(k => recommend(app.model, w, n, { need: k, stay: 30, company: 'alone', startNode: g0.node, startOff: g0.off ?? 0 }).fit !== 'none') : null;
-  if (workNeed) return card('work', 'walk', '퇴근길, 숲으로 30분',
-    `성수에서 걸어서 닿는 숲이에요. 혼자 ${workNeed === 'rest' ? '조용히 쉬는' : workNeed === 'walk' ? '가볍게 걷는' : '머무는'} 30분 코스를 바로 짜 드려요.`, null,
-    h('button', { type: 'button', class: 'tr-hello-go tr-glow-on', onclick: () => { watchMe(); Object.assign(st, { need: workNeed, company: 'alone', stay: 30 }); begin(); } }, '30분 코스로 바로 출발', h('span', { class: 'tr-cta-arrow' }, '→')));
-  if (busy) return card('busy', 'users', weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요',
-    '붐비는 곳은 피해서, 한산한 길과 덜 붐비는 때를 함께 알려 드려요.',
-    '서울숲 보행 계수: 토요일 오후 2시가 한 주 중 가장 붐빔(조현민·권태경 2025)');
-  return card('free', 'bench', '성수 한가운데, 잠깐 쉬어 가는 숲',
-    '물가·숲·습지·실내 정원 가운데, 오늘 날씨와 붐빔에 맞는 곳을 골라 드려요.', null);
+  return { hot, busy, weekday, workNeed };
+}
+
+/**
+ * 첫 화면 맨 위 한 줄: 기온 · 미세먼지 · 붐빔. 누르면 자세한 붐빔·날씨 카드가 펼쳐짐
+ * 평소엔 한 줄만, 더위·미세먼지 나쁨·붐빔일 때만 색 띠와 한 문장으로 커짐(위험할 때만 눈에 띄게)
+ */
+let statusOpen = false;
+const DUST_G = ['좋음', '보통', '나쁨', '매우나쁨'];
+function statusBar() {
+  const w = app?.wx, h0 = w?.hourly?.[0], an = w?.air?.now;
+  const dust = an ? [an.pm10Label, an.pm25Label].filter(g => DUST_G.includes(g)).sort((a, b) => DUST_G.indexOf(b) - DUST_G.indexOf(a))[0] ?? null : null;
+  const sit = situation();
+  const warn = sit.hot ? { cls: 'hot', text: '더운 날이에요. 서울숲 안은 바깥 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.', src: '2022년 7월 서울숲 실측(조현민·권태경 2022)' }
+    : DUST_G.indexOf(dust) >= 2 ? { cls: 'dust', text: `미세먼지 ${dust}이에요. 곤충식물원·나비정원 같은 실내도 생각해 보세요.`, src: `에어코리아 ${w.air.station} 측정소` }
+    : sit.busy ? { cls: 'busy', text: `${sit.weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요'}. 붐비는 곳은 피해서 골라 드려요.`, src: '서울숲 보행 계수: 토요일 오후 2시가 가장 붐빔(조현민·권태경 2025)' }
+    : null;
+  const chips = [];
+  if (h0) chips.push(h('span', { class: 'tmp' }, h('b', null, `${Math.round(h0.temp)}°`), h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? ` 체감 ${Math.round(h0.feels)}°` : ''));
+  if (dust) chips.push(h('span', { class: `g${DUST_G.indexOf(dust) + 1}` }, '미세먼지 ', h('b', null, dust)));
+  if (live) chips.push(h('span', { class: `crowd r${live.rank}` }, h('i'), h('b', null, live.level)));
+  if (!chips.length && !warn) return null;
+  const lc = liveCard(), wc = weatherCard(), canOpen = !!(lc || wc);
+  const more = canOpen ? h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? '')) : null;
+  const label = () => statusOpen ? '접기' : '자세히';
+  const line = h(canOpen ? 'button' : 'div', { type: canOpen ? 'button' : null, class: 'tr-status-line', 'aria-expanded': canOpen ? String(statusOpen) : null,
+    onclick: canOpen ? e => { statusOpen = !statusOpen; more.hidden = !statusOpen; e.currentTarget.setAttribute('aria-expanded', String(statusOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } : null },
+    h('small', null, '지금'), h('div', { class: 'tr-status-chips' }, chips), canOpen ? h('span', { class: 'tr-status-tog' }, label()) : null);
+  return h('section', { class: `tr-status${warn ? ` warn ${warn.cls}` : ''}` }, line,
+    warn ? h('p', { class: 'tr-status-warn' }, warn.text, h('small', null, warn.src)) : null, more);
 }
 
 function go(step) {
@@ -428,14 +446,12 @@ function go(step) {
       h('div', { class: 'tr-stepno' }, h('b', null, `0${step}`), h('span', null, '/ 03')),
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
-    step === 1 ? h('div', { class: 'tr-hello-slot' }, helloCard()) : null,
-    step === 1 ? h('div', { class: 'tr-livecard-slot' }, liveCard() ?? '') : null,
-    step === 1 ? h('div', { class: 'tr-wxcard-slot' }, weatherCard() ?? '') : null,
+    step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
     picked.length ? h('div', { class: 'tr-picked' }, picked.map(p => h('span', null, p))) : null,
-    h('div', { class: 'tr-opts' }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
+    h('div', { class: `tr-opts${step === 1 ? ' c3' : ''}` }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
       h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
-    step === 1 ? popularBlock() : null,
+    step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,
   ]);
 }
@@ -479,18 +495,29 @@ function courseStats(c) {
   courseLen.set(c.id, r);
   return r;
 }
-function popularBlock() {
-  const list = popularCourses();
-  return h('section', { class: 'tr-pop' },
-    h('div', { class: 'tr-sec-head' }, h('b', null, '또는, 추천 코스로 바로 출발')),
-    h('div', { class: 'tr-pop-list' }, list.map((c, i) => {
-      const s = courseStats(c), ph = c.stops.map(id => photoOf(id)).find(Boolean);
-      return h('button', { type: 'button', class: 'tr-course tr-glow-on', style: `--i:${i}`, onclick: () => { watchMe(); Object.assign(st, { need: c.need, company: c.company, stay: c.stay }); begin(c); } },
-        h('div', { class: 'tr-course-img' }, ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : icon('route', 20)),
-        h('div', { class: 'tr-course-body' },
-          h('b', null, c.name),
-          h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분`)));
-    })));
+/** 고르기 어렵다면: 지금 상황 맞춤 코스(퇴근길 30분) + 추천 코스. 처음엔 2개만, 나머지는 '더 보기' */
+let quickMore = false;
+function quickBlock() {
+  const sit = situation(), list = popularCourses();
+  const rows = [];
+  if (sit.workNeed) rows.push(h('button', { type: 'button', class: 'tr-course tr-quick-now tr-glow-on', onclick: () => { watchMe(); Object.assign(st, { need: sit.workNeed, company: 'alone', stay: 30 }); begin(); } },
+    h('div', { class: 'tr-course-img' }, icon('walk', 20)),
+    h('div', { class: 'tr-course-body' }, h('b', null, '퇴근길, 숲으로 30분'),
+      h('small', { class: 'tr-course-chain' }, `혼자 ${sit.workNeed === 'rest' ? '조용히 쉬는' : sit.workNeed === 'walk' ? '가볍게 걷는' : '머무는'} 코스 · 지금 맞춤`))));
+  const shown = quickMore ? Infinity : Math.max(1, 2 - rows.length);
+  list.forEach((c, i) => {
+    const s = courseStats(c), ph = c.stops.map(id => photoOf(id)).find(Boolean);
+    rows.push(h('button', { type: 'button', class: 'tr-course tr-glow-on', hidden: i >= shown, style: `--i:${i}`, onclick: () => { watchMe(); Object.assign(st, { need: c.need, company: c.company, stay: c.stay }); begin(c); } },
+      h('div', { class: 'tr-course-img' }, ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : icon('route', 20)),
+      h('div', { class: 'tr-course-body' },
+        h('b', null, c.name),
+        h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분`))));
+  });
+  const rest = list.length - shown;
+  return h('section', { class: 'tr-pop tr-quick' },
+    h('div', { class: 'tr-sec-head' }, h('b', null, '고르기 어렵다면, 바로 출발')),
+    h('div', { class: 'tr-pop-list' }, rows),
+    rest > 0 ? h('button', { type: 'button', class: 'tr-more', onclick: e => { quickMore = true; e.currentTarget.closest('.tr-quick').querySelectorAll('.tr-course[hidden]').forEach(b => { b.hidden = false; }); e.currentTarget.remove(); } }, `추천 코스 ${rest}개 더 보기`) : null);
 }
 
 // ── 서울숲 프로그램(공공서비스예약) ──
@@ -515,10 +542,14 @@ function programBlock() {
   const list = progList().slice(0, 4);
   paintProgramPins(list);
   if (!list.length) return null;
+  // 첫 화면을 가볍게: 가장 가까운 1개만 보이고 나머지·설명은 '더 보기'
+  const note = h('p', { class: 'tr-pop-note', hidden: true }, `서울시 공공서비스예약 · ${String(app.programs.checked ?? '').slice(5, 16) || '저장본'} 기준. 누르면 예약 화면으로 가요. 지도의 노란 점이 열리는 곳이에요.`);
+  const rows = list.map((x, i) => { const r = progRow(x, i, { canAdd: true }); if (i > 0) r.hidden = true; return r; });
   return h('section', { class: 'tr-pop tr-progs' },
     h('div', { class: 'tr-sec-head' }, h('b', null, '이번 주 서울숲 프로그램'), h('span', null, '공공서비스예약')),
-    h('div', { class: 'tr-prog-list' }, list.map((x, i) => progRow(x, i, { canAdd: true }))),
-    h('p', { class: 'tr-pop-note' }, `서울시 공공서비스예약 · ${String(app.programs.checked ?? '').slice(5, 16) || '저장본'} 기준. 누르면 예약 화면으로 가요. 지도의 노란 점이 열리는 곳이에요.`));
+    h('div', { class: 'tr-prog-list' }, rows), note,
+    h('button', { type: 'button', class: 'tr-more', onclick: e => { rows.forEach(r => { r.hidden = false; }); note.hidden = false; e.currentTarget.remove(); } },
+      list.length > 1 ? `프로그램 ${list.length - 1}개 더 보기` : '자세히'));
 }
 /** 지도에 프로그램 장소 점(같은 자리는 하나로). 코스를 짜면 지움 */
 function paintProgramPins(list) {
