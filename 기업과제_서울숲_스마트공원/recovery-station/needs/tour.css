@@ -527,6 +527,7 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
   .tr-panel{left:8px;right:8px;width:auto;top:auto;bottom:8px;max-height:56vh;border-radius:26px;padding:18px 16px;transform:translateY(40px)}
   .tr-panel::before{content:'';display:block;width:36px;height:4px;border-radius:2px;background:var(--line-2);margin:-8px auto 10px}
   .tr-panel.tr-s-step,.tr-panel.tr-s-ask{max-height:66vh}
+  .tr-panel.tr-s-step.accmap{max-height:38vh}
   .tr-q{font-size:20px;margin:14px 0 12px}
   .tr-opt{padding:12px}.tr-opt-ico{width:28px;height:28px;margin-bottom:8px}
   .tr-stats b{font-size:24px}
@@ -843,22 +844,48 @@ div.tr-status-line{cursor:default}
 .tr-status+.tr-access,.tr-status-slot+.tr-access-slot .tr-access{margin-top:6px}
 .tr-acc-chips span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .tr-acc-chips svg{color:var(--mint)}
-.tr-acc-more{padding:0 12px 10px}
-.tr-acc-sec{padding:10px 0;border-top:1px solid var(--line)}
-.tr-acc-h{display:flex;align-items:center;gap:6px;margin-bottom:6px;color:var(--mint)}
-.tr-acc-h b{font-size:12.5px;color:var(--ink)}
-.tr-acc-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.tr-acc-list li{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.tr-acc-list li>div{min-width:0}
-.tr-acc-list b{display:block;font-size:12.5px;font-weight:650}
-.tr-acc-list small{display:block;font-size:11px;color:var(--mute);line-height:1.4}
-.tr-acc-list.slim li{font-size:12px}
-.tr-acc-list.slim b{display:inline;font-weight:600}
-.tr-acc-list.slim span{color:var(--ink-2);white-space:nowrap}
-.tr-acc-free{text-align:right;flex:0 0 auto}
-.tr-acc-free b{font-size:14px;color:var(--mint)}
-.tr-acc-free small{font-size:10.5px}
-.tr-acc-none{flex:0 0 auto;font-size:11px;color:var(--mute);padding:3px 8px;border-radius:999px;background:var(--glass-3)}
+.tr-acc-more{padding:2px 12px 10px;border-top:1px solid var(--line)}
+.tr-acc-legend{display:flex;flex-wrap:wrap;gap:6px;padding-top:10px}
+.tr-acc-tg{display:inline-flex;align-items:center;gap:5px;padding:5px 10px 5px 6px;border-radius:999px;border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink-2);font:inherit;font-size:12px;cursor:pointer;transition:opacity .15s,background .15s}
+.tr-acc-tg i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#06120c}
+.tr-acc-tg b{font-weight:700;color:var(--ink)}
+.tr-acc-tg[aria-pressed="false"]{opacity:.45;background:transparent}
+.tr-acc-tg[aria-pressed="false"] i{filter:grayscale(1)}
+.tr-acc-tg.park i{background:#9fb4c8}.tr-acc-tg.sub i{background:#f5d58a}.tr-acc-tg.bike i{background:#7fe0a8}.tr-acc-tg.ev i{background:#8fd0ff}
+.tr-acc-hint{margin:8px 0 0;font-size:11.5px;color:var(--ink-2)}
+.tr-acc-p{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:4px;background:#5d6b78;color:#fff;font-size:10px;font-weight:800;vertical-align:-2px}
 .tr-acc-note{margin:6px 0 0;font-size:11.5px;line-height:1.5;color:var(--mute)}
 .tr-acc-note.warn{color:var(--gold)}
-.tr-acc-line{margin:0;font-size:12px;color:var(--ink-2)}
+.tr-acc-line{display:flex;align-items:center;gap:5px;margin:6px 0 0;font-size:11.5px;color:var(--ink-2)}
+.tr-acc-line svg{color:var(--mute)}
+
+/* 지도 핀 */
+.tr-apin-wrap{background:none;border:0}
+.tr-apin{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 2px;border-radius:999px;background:rgba(8,14,11,.88);border:1px solid rgba(255,255,255,.22);box-shadow:0 2px 8px rgba(0,0,0,.45);color:#f1f7f3;font:600 11px/1 Pretendard,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:transform .15s}
+.tr-apin:hover{transform:translate(-50%,-50%) scale(1.08)}
+.tr-apin i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font-style:normal;color:#06120c}
+.tr-apin span{letter-spacing:-.01em}
+.tr-apin.p i{border-radius:6px;font-weight:800;font-size:12px}
+.tr-apin.p.off i{background:#5d6b78;color:#fff}
+.tr-apin.p.off{color:rgba(241,247,243,.8)}
+.tr-apin.p.on i{background:#4fd18b}
+.tr-apin.p.on{border-color:#4fd18b}
+.tr-apin.p.on span{color:#7fe0a8;font-weight:700}
+.tr-apin.sub i{background:#f5d58a}
+.tr-apin.sub{border-color:rgba(245,213,138,.6);font-size:11.5px}
+.tr-apin.bike i{background:#7fe0a8}
+.tr-apin.bike.zero i{background:#5d6b78;color:#fff}
+.tr-apin.bike.zero span{color:var(--mute)}
+.tr-apin.ev i{background:#8fd0ff}
+.tr-apin.ev.old i{background:#5d6b78;color:#fff}
+.tr-apin.ev.old span{color:var(--mute)}
+.tr-apop .leaflet-popup-content-wrapper{background:rgba(10,18,14,.96);color:#f1f7f3;border:1px solid rgba(255,255,255,.15);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.tr-apop .leaflet-popup-tip{background:rgba(10,18,14,.96);border:1px solid rgba(255,255,255,.15)}
+.tr-apop .leaflet-popup-content{margin:10px 12px;font:12px/1.45 Pretendard,system-ui,sans-serif;min-width:180px}
+.tr-apop-in .h{display:flex;align-items:center;gap:6px}
+.tr-apop-in .h svg{color:#7fe0a8;flex:0 0 auto}
+.tr-apop-in .h b{font-size:13px;font-weight:700}
+.tr-apop-in small{display:block;margin:2px 0 4px;color:rgba(241,247,243,.5);font-size:11px}
+.tr-apop-in .r{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.07)}
+.tr-apop-in .r span{color:rgba(241,247,243,.6)}
+.tr-apop-in .r b{font-weight:650;text-align:right}

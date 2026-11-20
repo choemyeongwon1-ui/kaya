@@ -14,7 +14,7 @@ import { planRoute } from './route.js';
 import { dijkstra } from './graph.js';
 import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
-import { h, icon, fmtM, esc } from './ui.js';
+import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
@@ -110,6 +110,7 @@ function paintHello() {
   if (!app) return;
   document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
   document.querySelectorAll('.tr-access-slot').forEach(s => s.replaceChildren(accessBar() ?? ''));
+  accessPins();
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
 }
 async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
@@ -213,6 +214,7 @@ function makeMap() {
     park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
     gshot: L.layerGroup().addTo(map), shot: L.layerGroup().addTo(map), prog: L.layerGroup().addTo(map),
+    access: L.layerGroup().addTo(map),
   };
 }
 let baseMode = store.get('sf-tour-base', 'sat') === 'map' ? 'map' : 'sat';
@@ -470,39 +472,119 @@ function accessBar() {
   ].filter(Boolean);
   if (!chips.length) return null;
   const sit = situation();
-  const now = Date.now(), fresh = s => { const d = kst(s); return d && now - d.getTime() < 6 * 3600e3; };
-  const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
-  const lotRow = l => {
-    const d = gateDist(l.lat, l.lon);
-    return h('li', { class: l.live ? 'live' : '' },
-      h('div', null, h('b', null, l.name),
-        h('small', null, [l.capacity != null ? `총 ${l.capacity.toLocaleString()}면` : null, rate(l), d != null ? `공원 입구까지 약 ${fmtM(Math.round(d / 10) * 10)}` : null].filter(Boolean).join(' · '))),
-      l.live && l.free != null ? h('span', { class: 'tr-acc-free' }, h('b', null, `${l.free}면`), h('small', null, `남음${l.time ? ` · ${hm(l.time)}` : ''}`))
-        : h('span', { class: 'tr-acc-none' }, '실시간 정보 없음'));
-  };
-  const sec = (ico, title, ...kids) => h('div', { class: 'tr-acc-sec' }, h('div', { class: 'tr-acc-h' }, icon(ico, 14), h('b', null, title)), ...kids);
+  const groups = accessGroups(a);
+  // 펼치면 글 목록 대신 지도에 아이콘을 띄우고, 여기엔 종류별 켜고 끄기 + 꼭 알아야 할 한두 줄만
+  const legend = h('div', { class: 'tr-acc-legend', role: 'group', 'aria-label': '지도에 보일 것' },
+    groups.map(g => h('button', { type: 'button', class: `tr-acc-tg ${g.key}`, 'aria-pressed': String(accessShow[g.key]),
+      onclick: e => { accessShow[g.key] = !accessShow[g.key]; e.currentTarget.setAttribute('aria-pressed', String(accessShow[g.key])); accessPins(); } },
+      h('i', null, icon(g.icon, 13)), g.label, h('b', null, g.count))));
   const more = h('div', { class: 'tr-acc-more', hidden: !accessOpen },
-    sec('parking', '주차장',
-      h('ul', { class: 'tr-acc-list' }, [...near, ...liveLots].map(lotRow)),
-      h('p', { class: 'tr-acc-note' }, '서울숲 바로 옆 주차장은 남은 자리를 실시간으로 알려 주지 않아요.',
-        liveLots.length ? ' 남은 자리가 보이는 곳은 조금 떨어진 공영주차장이에요.' : ''),
-      sit.busy ? h('p', { class: 'tr-acc-note warn' }, '지금 공원이 붐벼서 주차장도 찼을 수 있어요(붐빔 정도로 짐작한 것). 수인분당선 서울숲역이 가까워요.') : null),
-    st0?.trains?.length ? sec('train', `지하철 ${st0.name}역 (${st0.line})`,
-      h('ul', { class: 'tr-acc-list slim' }, st0.trains.slice(0, 4).map(t => h('li', null, h('b', null, `${t.to}행`), h('span', null, trainMsg(t)))))) : null,
-    a.bike?.length ? sec('bike', '따릉이 대여소',
-      h('ul', { class: 'tr-acc-list slim' }, a.bike.map(b => h('li', null, h('b', null, b.name), h('span', null, `자전거 ${b.bikes ?? '–'}대`))))) : null,
-    a.road ? sec('car', '주변 도로',
-      h('p', { class: 'tr-acc-line' }, `${a.road.idx} · 평균 ${a.road.speed}km/h · ${hm(a.road.time)} 기준`),
-      ...(a.accidents ?? []).map(x => h('p', { class: 'tr-acc-note warn' }, `${x.type ?? '통제'} · ${x.info ?? ''}`))) : null,
-    a.charger?.length ? sec('bolt', '전기차 충전',
-      h('ul', { class: 'tr-acc-list slim' }, a.charger.map(c => h('li', null, h('b', null, c.name),
-        h('span', null, fresh(c.time) ? `사용 가능 ${c.free}/${c.total}` : `${c.total}대 · 상태 정보 오래됨`))))) : null,
+    legend,
+    h('p', { class: 'tr-acc-hint' }, '지도 위 아이콘을 누르면 자세히 보여요.'),
+    near.length ? h('p', { class: 'tr-acc-note' }, h('b', { class: 'tr-acc-p' }, 'P'), ' 회색은 남은 자리를 실시간으로 알려 주지 않는 곳이에요.',
+      liveLots.length ? ' 초록은 남은 자리가 보이는 공영주차장이에요.' : '') : null,
+    sit.busy ? h('p', { class: 'tr-acc-note warn' }, '지금 공원이 붐벼서 주차장도 찼을 수 있어요(붐빔 정도로 짐작). 서울숲역이 가까워요.') : null,
+    a.road ? h('p', { class: 'tr-acc-line' }, icon('car', 13), `주변 도로 ${a.road.idx} · 평균 ${a.road.speed}km/h`) : null,
+    ...(a.accidents ?? []).map(x => h('p', { class: 'tr-acc-note warn' }, `${x.type ?? '통제'} · ${x.info ?? ''}`)),
     h('p', { class: 'tr-lc-src' }, `서울시 실시간 도시데이터(서울숲공원)${liveLots.length ? ' · 한국교통안전공단 주차정보' : ''} · 5분마다 갱신`));
-  const label = () => accessOpen ? '접기' : '자세히';
+  const label = () => accessOpen ? '지도 닫기' : '지도로 보기';
   const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(accessOpen),
-    onclick: e => { accessOpen = !accessOpen; more.hidden = !accessOpen; e.currentTarget.setAttribute('aria-expanded', String(accessOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } },
+    onclick: e => { accessOpen = !accessOpen; more.hidden = !accessOpen; e.currentTarget.setAttribute('aria-expanded', String(accessOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); accessPins(true); } },
     h('small', null, '오는 길'), h('div', { class: 'tr-status-chips tr-acc-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
   return h('section', { class: 'tr-status tr-access' }, line, more);
+}
+
+// ── 오는 길 지도 핀 ──
+let accessShow = { park: true, sub: true, bike: true, ev: true };
+const fresh6h = s => { const d = kst(s); return !!d && Date.now() - d.getTime() < 6 * 3600e3; };
+/** 같은 자리에 겹친 충전소(층별·업체별로 따로 오는 경우)를 하나로 */
+function mergeChargers(list) {
+  const m = new Map();
+  for (const c of list ?? []) {
+    if (c.lat == null || c.lon == null) continue;
+    const k = `${c.lat.toFixed(4)},${c.lon.toFixed(4)}`, o = m.get(k);
+    if (!o) { m.set(k, { ...c, names: [c.name], fresh: fresh6h(c.time) }); continue; }
+    o.total += c.total; o.names.push(c.name);
+    if (fresh6h(c.time)) { o.free = (o.fresh ? o.free : 0) + c.free; o.fresh = true; }
+  }
+  return [...m.values()];
+}
+function accessGroups(a) {
+  const P = a.parking ?? {};
+  const subs = (a.subway ?? []).filter(s => s.lat != null);
+  return [
+    { key: 'park', icon: 'parking', label: '주차', count: (P.near?.length ?? 0) + (P.live?.length ?? 0) },
+    { key: 'sub', icon: 'train', label: '지하철', count: subs.length },
+    { key: 'bike', icon: 'bike', label: '따릉이', count: (a.bike ?? []).reduce((s, b) => s + (b.bikes ?? 0), 0) },
+    { key: 'ev', icon: 'bolt', label: '충전', count: mergeChargers(a.charger).length },
+  ].filter(g => g.count);
+}
+function accessPins(fly = false) {
+  if (!layers?.access) return;
+  layers.access.clearLayers();
+  const a = access, on = !!a && accessOpen && st.step === 1 && !trip;
+  // 휴대폰에선 지도를 보도록 아래 시트를 낮추고, 오는 길 칸이 시트 맨 위에 오게
+  const wasMap = el.panel.classList.contains('accmap');
+  el.panel.classList.toggle('accmap', on);
+  if (on && !wasMap && !desk()) { const sec = el.panel.querySelector('.tr-access'); if (sec) el.panel.scrollTop = sec.offsetTop - 12; }
+  if (!on) { if (fly && app?.model?.parkBounds) flyBounds(app.model.parkBounds, padding(), .8); return; }
+  const pts = [];
+  const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
+  const add = (lat, lon, cls, inner, pop, z = 0) => {
+    if (lat == null || lon == null) return;
+    L.marker([lat, lon], { icon: L.divIcon({ className: 'tr-apin-wrap', html: `<div class="tr-apin ${cls}">${inner}</div>`, iconSize: [0, 0] }), zIndexOffset: z, riseOnHover: true })
+      .bindPopup(`<div class="tr-apop-in">${pop}</div>`, { className: 'tr-apop', closeButton: false, offset: [0, -12], maxWidth: 240, autoPanPaddingTopLeft: [20, 90], autoPanPaddingBottomRight: [20, desk() ? 40 : Math.round(innerHeight * .5)] })
+      .addTo(layers.access);
+    pts.push([lat, lon]);
+  };
+  const row = (k, v) => v ? `<div class="r"><span>${esc(k)}</span><b>${esc(v)}</b></div>` : '';
+  const head = (ico, t, sub) => `<div class="h">${iconSvg(ico, 14)}<b>${esc(t)}</b></div>${sub ? `<small>${esc(sub)}</small>` : ''}`;
+  const P = a.parking ?? {};
+  if (accessShow.park) for (const l of [...(P.near ?? []), ...(P.live ?? [])]) {
+    const live = l.live && l.free != null, d = gateDist(l.lat, l.lon);
+    const tag = live ? `${l.free}면 남음` : l.capacity != null ? `${l.capacity.toLocaleString()}면` : '';
+    add(l.lat, l.lon, `p ${live ? 'on' : 'off'}`, `<i>P</i>${tag ? `<span>${esc(tag)}</span>` : ''}`,
+      head('parking', l.name, l.address) +
+      row('남은 자리', live ? `${l.free}면${l.time ? ` (${hm(l.time)} 기준)` : ''}` : '실시간 정보 없음') +
+      row('전체', l.capacity != null ? `${l.capacity.toLocaleString()}면` : null) + row('요금', rate(l)) +
+      row('공원 입구까지', d != null ? `약 ${fmtM(Math.round(d / 10) * 10)}` : null), live ? 30 : 20);
+  }
+  if (accessShow.sub) for (const s of a.subway ?? []) {
+    const ts = (s.trains ?? []).slice(0, 4);
+    add(s.lat, s.lon, 'sub', `<i>${iconSvg('train', 13)}</i><span>${esc(s.name)}역</span>`,
+      head('train', `${s.name}역`, s.line) + (ts.length ? ts.map(t => row(`${t.to}행`, trainMsg(t))).join('') : '<small>도착 정보가 아직 없어요</small>'), 40);
+  }
+  if (accessShow.bike) for (const b of a.bike ?? []) {
+    const n = b.bikes ?? null;
+    add(b.lat, b.lon, `bike${n === 0 ? ' zero' : ''}`, `<i>${iconSvg('bike', 12)}</i><span>${n ?? '–'}</span>`,
+      head('bike', b.name, '따릉이 대여소') + row('빌릴 수 있는 자전거', n != null ? `${n}대` : '정보 없음') + row('거치대', b.racks ? `${b.racks}개` : null), 10);
+  }
+  if (accessShow.ev) for (const c of mergeChargers(a.charger)) {
+    add(c.lat, c.lon, `ev${c.fresh ? '' : ' old'}`, `<i>${iconSvg('bolt', 12)}</i><span>${c.fresh ? `${c.free}/${c.total}` : '–'}</span>`,
+      head('bolt', c.names[0] + (c.names.length > 1 ? ` 외 ${c.names.length - 1}곳` : ''), c.address) +
+      row('지금 쓸 수 있는 충전기', c.fresh ? `${c.free}대 / 전체 ${c.total}대` : '상태 정보가 오래돼 알 수 없어요') +
+      row('급속', c.fast ? `${c.fast}대` : null) + row('이용 시간', c.hours), 0);
+  }
+  const pad = desk() ? padding() : { paddingTopLeft: [36, 96], paddingBottomRight: [36, Math.round(innerHeight * .38) + 90] };
+  map.off('zoomend', declutterAccess); map.on('zoomend', declutterAccess);
+  if (fly && pts.length) flyBounds(L.latLngBounds(pts), { ...pad, maxZoom: 16 }, .8).then(declutterAccess);
+  else declutterAccess();
+}
+/** 붙어 있는 핀끼리 글자가 겹치지 않게 위아래로 살짝 비켜 놓기(중요한 것 먼저: 지하철 > 주차 > 따릉이 > 충전) */
+function declutterAccess() {
+  const ms = layers?.access?.getLayers() ?? [];
+  if (!ms.length) return;
+  const placed = [], hit = (a, b) => a.left < b.right + 3 && b.left < a.right + 3 && a.top < b.bottom + 3 && b.top < a.bottom + 3;
+  ms.sort((a, b) => (b.options.zIndexOffset ?? 0) - (a.options.zIndexOffset ?? 0)).forEach(m => {
+    const pin = m.getElement()?.firstElementChild;
+    if (!pin) return;
+    pin.style.marginTop = '0px';
+    const r = pin.getBoundingClientRect(), step = r.height + 3;
+    for (const dy of [0, step, -step, 2 * step, -2 * step, 3 * step]) {
+      const box = { left: r.left, right: r.right, top: r.top + dy, bottom: r.bottom + dy };
+      if (!placed.some(p => hit(p, box)) || dy === 3 * step) { pin.style.marginTop = `${dy}px`; const pp = m.getPopup(); if (pp) pp.options.offset = L.point(0, dy - 12); placed.push(box); break; }
+    }
+  });
 }
 
 function go(step) {
@@ -524,6 +606,7 @@ function go(step) {
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,
   ]);
+  if (step !== 1 && accessOpen) { accessOpen = false; accessPins(); }
 }
 async function choose(key, value, btn) {
   watchMe();          // 첫 선택 때 위치를 물어봅니다(코스를 짤 때쯤 준비되도록)
@@ -777,7 +860,8 @@ const gardenImg = g => (g.photo ? app.photos?.files?.[g.photo] : null);
 
 async function begin(course = null, avoid = []) {
   flushCourse();
-  layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers();
+  layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers(); layers.access.clearLayers();
+  accessOpen = false;
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
     h('div', { class: 'tr-pulse' }, h('i'), h('i'), h('i')),
