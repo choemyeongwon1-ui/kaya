@@ -1,5 +1,5 @@
-// 소개 첫 화면 오른쪽 지도에 '실시간' 표시를 붙입니다.
-// - 왼쪽 위 LIVE 카드: 서울시 실시간 도시데이터(서울숲공원) 혼잡도·인구를 팀 중계 서버(Supabase seoul-crowd)에서 5분마다 받습니다.
+// 소개 첫 화면에 '실시간' 표시를 붙입니다.
+// - LIVE 카드(왼쪽 제목 아래): 서울시 실시간 도시데이터(서울숲공원) 혼잡도·인구를 팀 중계 서버(Supabase seoul-crowd)에서 5분마다 받습니다.
 //   못 받으면 data/live/latest.json(예비 값)을 쓰고 '예전 값'이라고 밝힙니다. 인증키는 이 파일에 없습니다.
 // - 거점 점: 숨 쉬듯 퍼지는 고리를 덧그립니다. 점 색은 요일·시간·날씨로 계산한 '예상'이라 범례에 그렇게 적습니다.
 (function () {
@@ -45,7 +45,9 @@
     card.innerHTML = '<div class="hl-top"><span class="hl-live"><i></i>LIVE</span><span class="hl-clock"></span></div>' +
       '<div class="hl-main">서울숲 지금 <b>…</b><span class="hl-n"></span></div>' +
       '<div class="hl-sub">서울시 실시간 도시데이터 불러오는 중</div><div class="hl-bar"><i></i></div>';
-    host.appendChild(card);
+    // 카드는 왼쪽 제목 아래(.intro-text)에, 스캔 빛은 지도에
+    var txt = host.parentNode && host.parentNode.querySelector('.intro-text');
+    (txt || host).appendChild(card);
     var scan = document.createElement('div'); scan.className = 'hl-scan'; host.appendChild(scan);
     paint(); tick();
   }
@@ -109,7 +111,7 @@
   function apply() {
     var host = document.querySelector('.intro .intro-map');
     if (!host) { card = null; return; }
-    if (!card || !host.contains(card)) build(host);
+    if (!card || !card.isConnected || !host.parentNode.contains(card)) build(host);
     rings(host);
   }
 
