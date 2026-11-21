@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 :root{color-scheme:light;--page:#f3f1ea;--surface:#fff;--surface-2:#f6f4ee;--surface-3:#e9e6dc;--ink:#14201a;--ink-2:#4b554e;--muted:#8b918a;--hair:rgba(20,32,26,.09);
 --brand:#1d4d3a;--brand-2:#2a6a50;--brand-ink:#fff;--brand-wash:#e4eee5;--lime:#cfe887;--warm:#e2703e;--deep:#0f2a1f;
@@ -23,7 +24,7 @@ button{font-family:inherit}
 /* ---------- 첫 화면 ---------- */
 .hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(1200px 500px at 80% -10%,#2f7a59 0%,transparent 60%),linear-gradient(160deg,#1a4a36 0%,#0f2a1f 70%)}
 .hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.18;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
-.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:center;min-height:560px;padding-top:56px;padding-bottom:40px}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:center;min-height:460px;padding-top:44px;padding-bottom:28px}
 .tag{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 14px;border-radius:999px;background:rgba(207,232,135,.14);color:var(--lime);font-size:13px;font-weight:800;letter-spacing:.02em}
 .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(207,232,135,.18)}
 .hero h1{margin:18px 0 16px;font-size:clamp(38px,6vw,68px);font-weight:800;letter-spacing:-.045em;line-height:1.08}
@@ -38,13 +39,13 @@ button{font-family:inherit}
 .btn-l.s{background:rgba(255,255,255,.1);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
 .btn-l.s:hover{background:rgba(255,255,255,.16)}
 .hero .fine{margin-top:22px;font-size:12.5px;color:rgba(255,255,255,.5)}
-.hero-art{position:relative;height:520px;display:flex;justify-content:center;-webkit-mask-image:linear-gradient(#000 55%,transparent 96%);mask-image:linear-gradient(#000 55%,transparent 96%)}
+.hero-art{position:relative;height:430px;display:flex;justify-content:center;-webkit-mask-image:linear-gradient(#000 55%,transparent 96%);mask-image:linear-gradient(#000 55%,transparent 96%)}
 .hero-art .float{position:absolute;top:10px;transform-origin:top center;animation:drop 1.2s .2s cubic-bezier(.2,.8,.2,1) both,float 6s 1.4s ease-in-out infinite}
 .hero-art .fade{position:absolute;left:-20%;right:-20%;bottom:0;height:170px;background:linear-gradient(transparent,#0f2a1f);z-index:2}
 .leaf{position:absolute;top:-30px;width:18px;height:18px;color:var(--lime);opacity:0;animation:fall linear infinite;z-index:1}
 
 /* ---------- 구역 공통 ---------- */
-section.part{padding:88px 0 0}
+section.part{padding:64px 0 0}
 .kick{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:var(--brand);letter-spacing:.04em}
 .kick b{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;padding:0 8px;border-radius:999px;background:var(--brand);color:var(--brand-ink);font-size:12px}
 h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-.04em;line-height:1.15}
@@ -89,7 +90,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .cam .frame i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 14px}
 .cam .frame i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 14px 0}
 .cam.reading .frame i{border-color:#fff;animation:blink .35s 4 alternate}
-.cam .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#dfe6de;font-size:12px;font-weight:600}
+.cam .hint{position:absolute;top:14px;left:0;right:0;text-align:center;color:#dfe6de;font-size:12px;font-weight:600}
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:50px;margin-top:12px;border:0;border-radius:15px;background:#1d4d3a;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:filter .2s,transform .1s,opacity .2s}
 .btn:hover{filter:brightness(1.12)}.btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.35;cursor:not-allowed;filter:none;transform:none}
@@ -102,6 +103,13 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .rec-item i{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:#e6efe7;color:#1d4d3a;font-style:normal}
 .rec-item span{flex:1;color:#5b645d}.rec-item b{font-weight:800}
 .lock-note{margin-top:auto;display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:#eef2ec;font-size:11.5px;line-height:1.5;color:#4b554e}
+.places{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:2px 0 6px}
+.place{display:flex;align-items:center;gap:7px;padding:10px 10px;border:1.5px solid #dcdcd4;border-radius:14px;background:#fff;font-size:12.5px;font-weight:800;color:#14201a;cursor:pointer;text-align:left;transition:transform .15s,border-color .2s,background .2s}
+.place em{font-style:normal;font-size:18px;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.place:hover{transform:translateY(-2px)}
+.place[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
+.place[aria-pressed="true"] em{transform:scale(1.25)}
+.place:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .faces{display:flex;justify-content:space-between;gap:8px;margin:4px 0 10px}
 .face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1.5px solid #dcdcd4;border-radius:16px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
 .face em{font-style:normal;font-size:26px;line-height:1;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
@@ -112,7 +120,8 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{padding:6px 10px;border:1px solid #d6d6ce;border-radius:999px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
 .chip[aria-pressed="true"]{border-color:#1d4d3a;background:#1d4d3a;color:#fff}
-.memo{width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid #dcdcd4;border-radius:12px;background:#fff;font:600 13px/1.4 var(--font);color:#14201a}
+.memo{width:100%;margin-top:4px;padding:9px 12px;border:1.5px solid #dcdcd4;border-radius:12px;background:#fff;font:600 13px/1.45 var(--font);color:#14201a;resize:none}
+.view[data-v="rate"]{overflow-y:auto}
 .memo:focus{outline:none;border-color:#1d4d3a}
 .memo-n{text-align:right;font-size:10.5px;color:#8b918a;margin-top:3px}
 .ph-choice{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px}
@@ -130,6 +139,17 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .view.on .wallet+.wallet{animation-delay:.55s}
 .wallet b{display:block;font-size:14px;color:#14201a}
 .wallet .tg{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:999px;background:#e6efe7;color:#1d4d3a;font-weight:800;font-size:10.5px}
+.start-wrap{position:relative}
+.tip{position:absolute;left:50%;bottom:calc(100% - 2px);transform:translateX(-50%);white-space:nowrap;padding:7px 12px;border-radius:999px;background:#e2703e;color:#fff;font-size:12.5px;font-weight:800;box-shadow:0 8px 18px -8px rgba(226,112,62,.8);animation:tipb 1.2s ease-in-out infinite;z-index:3}
+.tip::after{content:"";position:absolute;left:50%;top:100%;border:6px solid transparent;border-top-color:#e2703e;transform:translateX(-50%)}
+.tip.gone{display:none}
+.btn.start{animation:ring 1.6s ease-out infinite}
+.btn.start:disabled{animation:none}
+.cam{cursor:pointer}
+.phone.call{animation:callout 1.4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tipb{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(29,77,58,.55)}100%{box-shadow:0 0 0 16px rgba(29,77,58,0)}}
+@keyframes callout{0%{transform:scale(1)}30%{transform:scale(1.05)}60%{transform:scale(.99)}100%{transform:scale(1)}}
 .ph-link{border:0;background:none;color:#1d4d3a;font-size:13px;font-weight:800;cursor:pointer;padding:8px}
 
 /* 기계 */
@@ -144,8 +164,8 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .ks.on{opacity:1;transform:none}
 .ks p{margin:0;font-size:13px;font-weight:700;line-height:1.45}
 .ks small{font-size:11px;color:#6b736c}
-.qr{position:relative;width:122px;height:122px;padding:6px;background:#fff;border-radius:8px;box-shadow:0 0 0 1px #e3e6e1}
-.qr .scan{position:absolute;left:6px;right:6px;top:6px;height:3px;border-radius:3px;background:var(--warm);box-shadow:0 0 12px var(--warm);opacity:0}
+.qr{position:relative;width:150px;height:150px;padding:4px;background:#fff;border-radius:8px;box-shadow:0 0 0 1px #e3e6e1}
+.qr .scan{position:absolute;left:4px;right:4px;top:4px;height:3px;border-radius:3px;background:var(--warm);box-shadow:0 0 12px var(--warm);opacity:0}
 .qr.scanning .scan{opacity:1;animation:scan 1s ease-in-out 2}
 .qr .okb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(29,77,58,.93);color:#fff;font-weight:800;font-size:14px;opacity:0;transition:opacity .3s}
 .qr.ok .okb{opacity:1}
@@ -209,7 +229,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .photo{position:relative;margin:4px 0 2px;padding:6px;border:1px solid #4a4843}
 .photo canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .photo .pcap{display:flex;justify-content:space-between;margin-top:4px;font-size:9.5px}
-.quote{margin:6px 0 2px;padding:6px 4px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;word-break:keep-all}
+.quote{margin:6px 0 2px;padding:6px 4px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line}
 .tags{text-align:center;font-size:10.5px}
 .pmbox{position:relative;height:104px;margin:2px -4px 0}
 .pmbox .pm{position:absolute;left:0;top:0;width:236px;height:104px;color:#17553a;opacity:0;mix-blend-mode:multiply;transform:rotate(-6deg)}
@@ -224,7 +244,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .bnum{text-align:center;font-size:9.5px;letter-spacing:.2em}
 .foot{text-align:center;font-size:10.5px;margin-top:10px;line-height:1.6}
 .foot b{font-size:12px}
-.mini-qr{width:58px;height:58px;margin:8px auto 0}
+.mini-qr{width:70px;height:70px;margin:8px auto 0}
 /* 영수증 부분 강조(읽는 법) */
 .receipt [data-part]{position:relative;border-radius:4px;transition:opacity .4s,background-color .4s,box-shadow .4s}
 .anat .receipt.focus [data-part]{opacity:.25}
@@ -243,11 +263,11 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .anat{display:grid;grid-template-columns:350px minmax(0,1fr);gap:48px;margin-top:36px;align-items:start}
 .anat-paper{position:sticky;top:24px;display:flex;justify-content:center;padding:28px 0 28px 30px;border-radius:28px;background:linear-gradient(180deg,var(--scene-a),var(--scene-b))}
 .anat-paper .receipt{transform:rotate(-1.5deg)}
-.an-list{display:flex;flex-direction:column;gap:14px;padding-bottom:30vh}
-.an-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 16px;padding:22px 24px;border-radius:22px;background:var(--surface);border:1px solid var(--hair);cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .35s,box-shadow .35s,transform .35s,opacity .8s cubic-bezier(.2,.7,.2,1)}
+.an-list{display:flex;flex-direction:column;gap:10px;padding-bottom:30vh}
+.an-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 16px;align-items:center;padding:16px 20px;border-radius:22px;background:var(--surface);border:1px solid var(--hair);cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .35s,box-shadow .35s,transform .35s,opacity .8s cubic-bezier(.2,.7,.2,1)}
 .an-item:hover{transform:translateX(4px)}
 .an-item.on{border-color:var(--brand);box-shadow:0 18px 40px -24px color-mix(in srgb,var(--brand) 70%,transparent)}
-.an-n{grid-row:span 3;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;background:var(--brand-wash);color:var(--brand);font-size:17px;font-weight:800;transition:background .35s,color .35s}
+.an-n{grid-row:span 2;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;background:var(--brand-wash);color:var(--brand);font-size:17px;font-weight:800;transition:background .35s,color .35s}
 .an-item.on .an-n{background:#e2703e;color:#fff}
 .an-item h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em}
 .an-item p{margin:0;font-size:14.5px;line-height:1.65;color:var(--ink-2)}
@@ -317,8 +337,8 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     <div>
       <span class="tag">시안 · 숲 영수증</span>
       <h1><span>오늘의 서울숲을</span><br><span><em>한 장</em>에 담아 가세요</span></h1>
-      <p class="lead">출구 기계에 휴대폰을 대고 쉴 곳을 평가하면, 오늘 머문 곳과 걸은 길, 사진과 한마디가 찍힌 영수증이 나옵니다. 이용자에게는 기념품이, 공원에는 만족도 자료가 됩니다.</p>
-      <div class="cta"><a class="btn-l p" href="#try">직접 받아 보기 ↓</a><a class="btn-l s" href="#read">영수증 읽는 법</a></div>
+      <p class="lead">출구 기계에 휴대폰을 대고 오늘 제일 좋았던 곳을 고르면, 오늘 머문 곳과 걸은 길, 사진과 한마디가 찍힌 영수증이 나옵니다. 이용자에게는 기념품이, 공원에는 만족도 자료가 됩니다.</p>
+      <div class="cta"><a class="btn-l p" href="#try" id="goTry">QR 찍고 영수증 받아 보기 ↓</a><a class="btn-l s" href="#read">영수증 읽는 법</a></div>
       <div class="fine">화면 속 기록·번호·제휴 카페는 가상 예시입니다.</div>
     </div>
     <div class="hero-art" aria-hidden="true"><div class="float" id="heroRc"></div></div>
@@ -329,14 +349,14 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   <section class="part" id="try">
     <div class="kick rv"><b>01</b>받아 보기</div>
     <h2 class="rv">출구에서 30초면 충분해요</h2>
-    <p class="sub rv">휴대폰으로 QR을 찍고 → 쉴 곳을 평가하면 → 영수증이 나옵니다. 사진은 원할 때만 함께 찍혀요. 왼쪽 휴대폰 화면을 직접 눌러 보세요.</p>
+    <p class="sub rv"><b>휴대폰 화면의 「QR 찍기」 버튼</b>을 눌러 시작하세요. QR 찍기 → 제일 좋았던 곳 고르기 → 영수증 출력 순서예요.</p>
 
     <div class="stage rv" aria-label="영수증 받기 시연">
       <div class="scene" aria-hidden="true"><svg viewBox="0 0 1200 260" preserveAspectRatio="none"><path fill="currentColor" d="M0 200 Q40 120 80 190 Q110 90 150 180 Q190 110 230 190 Q270 70 320 180 Q360 120 400 195 Q450 100 500 185 Q540 130 580 195 Q620 80 680 185 Q720 120 760 195 Q800 90 860 185 Q900 130 940 195 Q990 70 1040 185 Q1080 120 1120 195 Q1160 100 1200 180 V260 H0Z"/><path fill="var(--tree-2)" d="M0 230 Q60 170 120 225 Q180 160 240 228 Q300 175 360 230 Q430 165 500 228 Q560 180 620 232 Q690 160 760 228 Q820 178 880 232 Q950 165 1020 228 Q1080 180 1140 230 Q1170 200 1200 220 V260 H0Z"/></svg></div>
       <div class="progress" aria-hidden="true">
         <div class="p on"><span>1</span><em>QR 찍기</em></div>
         <div class="p"><span>2</span><em>오늘 기록</em></div>
-        <div class="p"><span>3</span><em>쉴 곳 평가</em></div>
+        <div class="p"><span>3</span><em>제일 좋았던 곳</em></div>
         <div class="p"><span>4</span><em>사진(선택)</em></div>
         <div class="p"><span>5</span><em>영수증 출력</em></div>
       </div>
@@ -350,7 +370,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <h4>숲 영수증 받기</h4>
               <p class="ph-sub">출구 기계 화면의 QR을 비춰 주세요.</p>
               <div class="cam" id="cam"><div class="mini" id="qrMini"></div><div class="frame"><i></i><i></i><i></i><i></i></div><div class="hint">QR을 네모 안에 맞춰 주세요</div></div>
-              <button class="btn" id="bScan" type="button">QR 찍기</button>
+              <div class="start-wrap"><span class="tip" id="tip">👆 여기를 눌러 시작</span><button class="btn start" id="bScan" type="button">QR 찍기</button></div>
             </div>
 
             <div class="view" data-v="rec">
@@ -363,26 +383,27 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
                 <div class="rec-item"><i>📍</i><span>들른 곳</span><b>4곳</b></div>
                 <div class="rec-item"><i>👨‍👩‍👧</i><span>함께 온 사람</span><b>가족</b></div>
               </div>
-              <div class="lock-note">🔒 <span>영수증은 <b>쉴 곳 평가</b>를 마치면 나와요. 30초면 돼요.</span></div>
-              <button class="btn" id="bRec" type="button">평가하러 가기</button>
+              <div class="lock-note">🔒 <span>영수증은 <b>제일 좋았던 곳</b>을 고르면 나와요. 10초면 돼요.</span></div>
+              <button class="btn" id="bRec" type="button">제일 좋았던 곳 고르기</button>
             </div>
 
             <div class="view" data-v="rate">
-              <h4>오늘 쉴 곳은 어땠나요?</h4>
-              <p class="ph-sub">벤치·그늘·화장실처럼 쉬는 데 필요한 것들이요.</p>
-              <div class="faces" id="faces">
-                <button class="face" type="button" data-v="좋았어요"><em>😊</em>좋았어요</button>
-                <button class="face" type="button" data-v="보통이에요"><em>😐</em>보통</button>
-                <button class="face" type="button" data-v="아쉬웠어요"><em>😞</em>아쉬웠어요</button>
+              <h4>오늘 어디가 제일 좋았나요?</h4>
+              <p class="ph-sub">오늘 들른 곳 중 하나를 골라 주세요.</p>
+              <div class="places" id="places">
+                <button class="place" type="button" data-v="가족마당"><em>🌿</em>가족마당</button>
+                <button class="place" type="button" data-v="서울숲호수"><em>💧</em>서울숲호수</button>
+                <button class="place" type="button" data-v="사슴우리"><em>🦌</em>사슴우리</button>
+                <button class="place" type="button" data-v="곤충식물원"><em>🦋</em>곤충식물원</button>
               </div>
-              <div class="q">이유를 골라 주세요 (여러 개)</div>
+              <div class="q">좋았던 이유 (선택)</div>
               <div class="chips" id="chips">
-                <button class="chip" type="button">그늘 충분</button><button class="chip" type="button">조용함</button><button class="chip" type="button">그늘 부족</button><button class="chip" type="button">벤치 부족</button><button class="chip" type="button">화장실 멀어요</button><button class="chip" type="button">너무 붐벼요</button>
+                <button class="chip" type="button">그늘이 시원해서</button><button class="chip" type="button">조용해서</button><button class="chip" type="button">경치가 좋아서</button><button class="chip" type="button">아이가 좋아해서</button><button class="chip" type="button">쉴 곳이 있어서</button>
               </div>
               <div class="q">영수증에 남길 한마디 (선택)</div>
-              <input class="memo" id="memo" maxlength="24" placeholder="예) 사슴이 가까이 왔다" />
-              <div class="memo-n"><span id="memoN">0</span>/24</div>
-              <button class="btn" id="bRate" type="button" disabled>평가 보내기</button>
+              <textarea class="memo" id="memo" maxlength="80" rows="3" placeholder="예) 사슴이 가까이 왔다. 다음엔 할머니도 모시고 오자"></textarea>
+              <div class="memo-n"><span id="memoN">0</span>/80</div>
+              <button class="btn" id="bRate" type="button" disabled>골랐어요</button>
             </div>
 
             <div class="view" data-v="photo">
@@ -413,7 +434,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <div class="done-box">
                 <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
                 <p>기계에서 영수증을 뜯어 가세요.<br>휴대폰에도 같은 영수증이 저장돼요.</p>
-                <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">평가 고마워요 · 쿠폰 열림</span></div>
+                <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
                 <div class="wallet"><b>오늘의 영수증 보관함</b>지금까지 받은 영수증을 날짜별로 다시 볼 수 있어요<br><span class="tg">3번째 서울숲 영수증</span></div>
               </div>
               <button class="ph-link" id="bAgain" type="button">↺ 처음부터 다시 보기</button>
@@ -427,10 +448,10 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       <div class="col-machine">
         <div class="post" aria-hidden="true"></div>
         <div class="kiosk" id="kiosk">
-          <div class="k-top"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l6 8h-3l4 6H5l4-6H6zM12 17v4"/></svg>숲 영수증</span><i class="k-cam" id="kcam" title="카메라"></i><span style="font-weight:600;opacity:.75">성수 방면 출구</span></div>
+          <div class="k-top"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l6 8h-3l4 6H5l4-6H6zM12 17v4"/></svg>숲 영수증</span><i class="k-cam" id="kcam" title="카메라"></i><span style="font-weight:600;opacity:.75">서울숲역 방면 출구</span></div>
           <div class="k-screen">
-            <div class="ks on" data-k="qr"><p>오늘 머문 시간을<br>영수증으로 받아 가세요</p><div class="qr" id="qrBox"><div id="qrBig"></div><div class="scan"></div><div class="okb">연결됨</div></div><small>휴대폰 카메라로 찍기</small></div>
-            <div class="ks" data-k="wait"><div class="k-phone"></div><p id="waitMsg">휴대폰에서 쉴 곳 평가를<br>마치면 영수증이 나와요</p><small>평가는 30초면 끝나요</small></div>
+            <div class="ks on" data-k="qr"><p>오늘 서울숲을 영수증으로</p><div class="qr" id="qrBox"><div id="qrBig"></div><div class="scan"></div><div class="okb">연결됨</div></div><small>휴대폰 카메라로 QR을 찍어 주세요</small></div>
+            <div class="ks" data-k="wait"><div class="k-phone"></div><p id="waitMsg">휴대폰에서 제일 좋았던 곳을<br>고르면 영수증이 나와요</p><small>10초면 끝나요</small></div>
             <div class="ks ks-cam" data-k="cam"><video id="video" playsinline muted></video><canvas id="fakeCam" width="320" height="240" hidden></canvas><div class="ov">서울숲 · <span id="ovDate"></span></div><div class="cnt" id="kCount"></div><div class="flash" id="flash"></div></div>
             <div class="ks" data-k="print"><div class="dots"><i></i><i></i><i></i></div><p>영수증을 출력하고 있어요</p><small>아래에서 받아 주세요</small></div>
             <div class="ks" data-k="bye"><p style="font-size:15px">오늘도 숲에서<br>쉬어 가셨네요</p><small>다음에 또 만나요 🍂</small></div>
@@ -447,36 +468,14 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   <section class="part" id="read">
     <div class="kick rv"><b>02</b>영수증 읽는 법</div>
     <h2 class="rv">한 장에 담긴 일곱 가지</h2>
-    <p class="sub rv">항목마다 <b>어디서 온 정보인지</b>, <b>무엇에 쓰이는지</b>를 적었습니다. 설명을 내리거나 누르면 영수증의 해당 부분이 표시됩니다.</p>
+    <p class="sub rv">항목을 누르면 영수증의 해당 부분이 표시됩니다.</p>
     <div class="anat">
       <div class="anat-paper rv"><div id="anatRc"></div></div>
       <div class="an-list" id="anList"></div>
     </div>
   </section>
 
-  <section class="part" id="loop">
-    <div class="kick rv"><b>03</b>영수증이 만드는 순환</div>
-    <h2 class="rv">받을수록 좋아지는 공원</h2>
-    <p class="sub rv">영수증 한 장은 기념품으로 끝나지 않습니다. 평가가 모여 쉴 곳을 고치고, 나아진 숲이 다시 사람을 부릅니다.</p>
-    <div class="loop">
-      <div class="loop-step rv"><div class="dot">🧾</div><div class="txt"><span class="who">이용자</span><h3>평가하고 영수증 받기</h3><p>쉴 곳 평가가 영수증을 받는 조건이라, 설문 없이도 응답이 모입니다.</p></div></div>
-      <div class="loop-step rv" style="--rd:.12s"><div class="dot">📊</div><div class="txt"><span class="who">대시보드</span><h3>장소별 불만이 쌓임</h3><p>'그늘 부족', '벤치 부족' 같은 이유가 들른 장소와 함께 모여 만족도 화면에 나타납니다.</p></div></div>
-      <div class="loop-step rv" style="--rd:.24s"><div class="dot">🌳</div><div class="txt"><span class="who">관리·설계</span><h3>먼저 고칠 곳을 정함</h3><p>불만이 몰린 곳부터 나무·그늘막·벤치를 보완합니다.</p></div></div>
-      <div class="loop-step rv" style="--rd:.36s"><div class="dot">🦌</div><div class="txt"><span class="who">다시 이용자</span><h3>더 머물고 다시 옴</h3><p>나아진 숲이 다음 방문을 부르고, 동네 카페 쿠폰은 성수 상권으로 이어집니다.</p></div></div>
-    </div>
-    <div class="loop-back rv"><span>↻</span>다시 평가 → 영수증 → 개선으로 이어집니다</div>
-  </section>
-
-  <section class="part">
-    <div class="kick rv"><b>04</b>인증과 정보 보호</div>
-    <h2 class="rv">앱 없이, 이름 없이</h2>
-    <div class="auth">
-      <div class="rv"><b>입구·출구 QR</b><p>들어올 때 입구 QR, 나갈 때 출구 기계 QR을 찍으면 머문 시간이 계산됩니다. 휴대폰 카메라만 있으면 됩니다.</p><small>→ 머문 시간</small></div>
-      <div class="rv" style="--rd:.08s"><b>휴대폰 경로 기록</b><p>코스 찾기 화면을 켜 두면 걸은 길이 휴대폰 안에만 기록되고, 영수증을 뽑을 때 한 번 쓰입니다.</p><small>→ 걸은 길 · 머문 곳</small></div>
-      <div class="rv" style="--rd:.16s"><b>모이는 것은 집계뿐</b><p>서버에는 이름 없이 머문 시간·평가·장소만 남습니다. 사진은 기계에서 인쇄만 하고 지웁니다.</p><small>→ 개인정보 최소 수집</small></div>
-    </div>
-    <p class="note rv"><b>정할 것</b> · 출구 기계 위치와 대수, 제휴 카페와 할인 폭, 인쇄기 사양(일반적인 58mm 영수증 인쇄기는 한 줄 384점)은 예시이며, 실제 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다. 장소 이름과 구역 위치는 확인 전 예시입니다.</p>
-  </section>
+  <p class="note rv">기록·번호·제휴 카페·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
 </main>
 <footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드</footer>
 
@@ -501,7 +500,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   var LINE = m >= 3 && m <= 5 ? '새잎이 돋는 숲에서' : m >= 6 && m <= 8 ? '그늘이 깊은 숲에서' : m >= 9 && m <= 11 ? '낙엽이 깊어지는 숲에서' : '조용히 쉬는 숲에서';
   var DATA = {
     no: '0384', term: '#03', stay: '1시간 42분', steps: '4,280', shade: '1.1km', with: '가족 3명', weather: '맑음 12℃',
-    stops: [['가족마당', '18분'], ['사슴 방사장', '26분'], ['습지 데크길', '22분'], ['곤충식물원', '20분']],
+    stops: [['가족마당', '18분'], ['서울숲호수', '15분'], ['사슴우리', '26분'], ['곤충식물원', '20분']],
     today: ['문화예술공원', '생태숲', '습지생태원'],
   };
   $('#ovDate').textContent = dateStr;
@@ -518,8 +517,22 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     }
     return '<svg viewBox="0 0 ' + N + ' ' + N + '" width="100%" height="100%" shape-rendering="crispEdges" fill="' + col + '">' + s + f(0, 0) + f(N - 7, 0) + f(0, N - 7) + '</svg>';
   }
-  $('#qrBig').innerHTML = qrSvg(7);
-  $('#qrMini').innerHTML = qrSvg(7);
+  // 진짜 QR: 찍으면 이 영수증 페이지가 열리고 2단계(오늘 기록)부터 시작
+  // 한글 주소를 %로 바꾸지 않고 그대로(UTF-8) 넣어야 QR 칸 수가 줄어 잘 찍힌다
+  var PAGE = /^https?:/.test(location.protocol) ? location.origin + decodeURI(location.pathname) : 'https://choemyeongwon1-ui.github.io/kaya/기업과제_서울숲_스마트공원/영수증.html';
+  function realQr(text, color) {
+    if (typeof qrcode !== 'function') return null;
+    try {
+      qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+      var q = qrcode(0, 'L'); q.addData(text, 'Byte'); q.make();
+      var n = q.getModuleCount(), s = '';
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) s += 'M' + c + ' ' + r + 'h1v1h-1z';
+      return '<svg viewBox="-2 -2 ' + (n + 4) + ' ' + (n + 4) + '" width="100%" height="100%" shape-rendering="crispEdges"><rect x="-2" y="-2" width="' + (n + 4) + '" height="' + (n + 4) + '" fill="#fff"/><path d="' + s + '" fill="' + (color || '#14201a') + '"/></svg>';
+    } catch (e) { return null; }
+  }
+  var QR_START = realQr(PAGE + '?qr') || qrSvg(7);
+  $('#qrBig').innerHTML = QR_START;
+  $('#qrMini').innerHTML = QR_START;
   function barcode(seed) {
     var r = rng(seed), s = '', x = 0;
     while (x < 236) { var w = 1 + Math.floor(r() * 3); if (r() > 0.42) s += '<rect x="' + x + '" y="0" width="' + w + '" height="34"/>'; x += w + 1; }
@@ -542,32 +555,39 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       '<g stroke-width="2.2" stroke-linecap="round">' + waves + '</g>' +
       '</g></svg>';
   }
-  // 서울숲 구역 모식도(위치는 대략, 축척 아님)
-  function zoneMap() {
-    var id = 'h' + (uid++);
-    var Z = [
-      { n: '문화예술공원', d: 'M14 20Q40 6 78 14L84 52Q50 60 18 54Z', lx: 46, ly: 34 },
-      { n: '체험학습원', d: 'M84 14Q120 8 150 20L146 52Q114 58 88 52Z', lx: 117, ly: 34 },
-      { n: '생태숲', d: 'M150 20Q196 18 222 36L214 70Q176 70 148 54Z', lx: 188, ly: 40 },
-      { n: '습지생태원', d: 'M146 56Q180 74 214 72L206 98Q160 104 128 90Z', lx: 166, ly: 94 },
-    ];
-    var s = '<svg class="rc-map" viewBox="0 0 236 112" aria-label="서울숲 구역 모식도">' +
-      '<defs><pattern id="' + id + '" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.4" height="4" fill="#2b2a27"/></pattern></defs>' +
-      '<path d="M4 106Q90 92 232 104" fill="none" stroke="#2b2a27" stroke-width="1" stroke-dasharray="2 2"/><text x="6" y="102" font-size="7" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27">한강 쪽</text>';
-    Z.forEach(function (z) {
-      var got = DATA.today.indexOf(z.n) >= 0;
-      s += '<path d="' + z.d + '" fill="' + (got ? 'url(#' + id + ')' : 'none') + '" fill-opacity=".32" stroke="#2b2a27" stroke-width="1.2"/>';
+  // 실제 서울숲 지도: 공원 경계·숲·물(recovery-station/data) 위에 산책로를 따라 걸은 길(가상 코스)
+  var MAP = {"w": 236, "h": 291, "park": "M227.2 207.4L230.0 212.9L221.3 278.6L219.3 285.4L202.5 280.8L183.0 269.9L150.3 256.4L120.4 239.7L49.9 208.0L14.6 191.1L6.2 182.8L6.0 174.9L40.8 138.7L86.8 161.2L88.7 168.1L82.3 189.2L85.1 191.4L91.9 171.9L93.0 173.0L89.4 191.1L96.8 193.3L98.9 165.1L108.8 167.2L136.5 178.6L137.3 172.0L107.0 160.6L103.4 155.8L111.8 94.6L118.1 67.5L121.7 60.7L130.0 63.8L120.9 86.1L122.4 88.8L149.6 96.2L151.5 92.6L190.1 105.4L183.7 125.2L215.8 136.0L195.6 192.7L181.2 187.9L180.7 192.6L227.2 207.4ZM128.2 57.3L128.5 54.6L132.7 48.7L160.8 23.3L193.5 6.0L195.4 6.0L201.3 41.1L202.6 55.6L158.2 62.8L153.9 61.8L149.6 66.8L129.3 59.6L128.2 57.3Z", "forest": "M208.7 208.8L208.7 208.4L208.7 208.8ZM209.2 208.9L209.2 208.5L209.2 208.9ZM209.6 209.1L209.7 208.7L209.6 209.1ZM212.4 210.1L212.4 209.8L212.4 210.1ZM212.9 210.0L212.9 209.6L212.9 210.0ZM213.0 210.5L213.1 210.2L213.0 210.5ZM213.7 210.5L213.7 210.1L213.7 210.5ZM216.1 210.9L216.2 210.5L216.1 210.9ZM210.3 218.8L210.3 218.5L210.3 218.8ZM210.8 219.3L210.9 218.9L210.8 219.3ZM211.3 219.4L211.4 219.1L211.3 219.4ZM206.8 216.4L206.8 216.0L206.8 216.4ZM207.3 216.6L207.3 216.2L207.3 216.6ZM207.9 217.0L208.0 216.6L207.9 217.0ZM213.0 221.5L213.0 221.1L213.0 221.5ZM213.4 221.9L213.4 221.5L213.4 221.9ZM170.1 262.5L159.6 245.5L144.6 236.8L126.7 235.2L118.5 230.0L79.6 216.9L74.1 213.8L72.1 210.7L65.7 209.2L55.3 210.3L49.9 208.0L14.6 191.1L6.2 182.8L6.0 174.9L40.8 138.7L86.8 161.2L88.7 168.1L82.3 189.2L85.1 191.4L91.6 172.7L88.9 192.6L97.2 193.3L100.5 166.5L105.0 166.8L136.9 179.6L137.3 172.0L107.0 160.6L103.4 155.8L111.8 94.6L118.1 67.5L121.7 61.7L130.0 63.8L120.9 86.1L123.5 91.7L119.4 95.9L115.7 104.4L116.9 116.8L123.6 118.1L132.0 105.1L148.9 107.2L152.2 109.3L176.2 117.0L180.5 104.3L188.5 106.6L182.2 124.9L196.7 130.1L194.0 138.5L207.1 143.3L203.0 156.0L189.3 151.7L189.9 149.1L187.5 147.7L186.5 151.1L182.5 151.2L173.8 148.4L178.3 135.9L170.1 134.7L168.5 137.8L173.5 140.0L171.5 144.4L164.7 141.7L167.4 134.0L157.9 127.8L144.5 126.6L141.7 129.1L141.2 132.1L144.1 133.8L149.8 149.0L172.7 149.2L172.7 153.9L171.2 154.2L170.8 168.2L180.0 172.1L176.7 179.2L193.6 185.2L195.6 188.5L194.6 191.7L180.8 187.5L179.2 192.8L202.7 201.2L202.6 203.7L199.5 204.0L198.1 205.7L196.8 211.0L201.4 216.4L208.4 220.4L217.1 232.1L216.6 233.7L205.0 227.8L205.1 221.0L196.7 214.9L192.6 206.6L161.8 193.6L162.3 192.1L109.3 169.6L105.1 173.6L102.2 187.7L103.7 191.0L101.7 195.8L102.8 198.8L114.1 204.0L112.5 207.9L140.9 219.9L143.8 219.0L150.3 220.2L152.1 218.5L156.8 218.6L159.2 214.0L167.4 217.5L171.1 208.5L174.0 208.8L166.6 226.0L155.4 220.9L151.8 228.2L153.6 233.5L173.5 246.2L180.2 262.8L180.5 267.3L179.8 268.5L175.0 266.6L170.1 262.5Z", "water": "M127.8 127.2L136.7 134.2L138.8 142.3L143.1 149.5L142.3 153.8L144.5 156.1L148.0 155.7L147.4 156.8L144.8 157.6L134.9 154.2L133.7 147.4L130.8 141.9L122.0 134.2L123.5 128.8L125.3 126.7L127.8 127.2ZM153.9 46.0L157.8 44.5L161.7 38.5L166.1 39.7L168.2 39.0L169.1 36.9L168.5 29.7L173.0 26.6L175.2 39.1L172.8 42.2L171.7 43.0L168.0 41.7L164.5 43.9L165.2 47.2L163.1 52.9L154.8 53.1L152.8 50.8L152.5 48.3L153.9 46.0ZM47.1 179.4L48.6 182.8L55.0 179.0L57.7 181.9L59.9 181.9L65.7 186.4L66.4 189.0L57.5 187.0L52.5 183.3L47.3 186.2L46.1 185.2L45.3 179.7L36.6 177.9L35.3 173.4L30.1 171.3L30.0 168.2L32.6 165.3L37.2 164.6L41.8 171.2L43.9 178.0L47.1 179.4ZM185.5 154.7L185.0 156.1L175.4 152.9L175.9 151.4L185.5 154.7ZM106.7 198.7L105.4 197.3L105.6 194.5L108.0 193.2L109.7 193.8L110.9 196.3L110.2 198.0L106.7 198.7ZM112.8 201.6L111.2 199.3L111.7 197.4L114.0 196.1L115.8 196.7L116.9 199.2L116.3 200.9L112.8 201.6ZM109.1 179.7L107.4 177.2L107.8 175.1L110.5 173.4L112.7 174.1L113.8 178.2L112.2 179.8L109.1 179.7ZM115.9 183.0L114.1 180.5L114.6 178.4L117.2 176.7L119.4 177.3L120.5 181.5L118.9 183.1L115.9 183.0Z", "lawn": "M202.3 206.6L203.5 207.5L202.3 207.4L200.9 212.3L202.1 212.9L200.3 213.2L199.3 211.8L200.6 211.9L202.0 207.2L200.8 206.8L202.3 206.6ZM205.9 207.6L207.1 208.5L205.9 208.3L204.2 214.5L205.3 215.0L203.7 215.2L202.5 214.4L203.8 214.4L205.6 208.2L204.4 207.8L205.9 207.6ZM209.6 208.5L210.8 209.4L209.6 209.2L207.5 216.2L208.7 216.7L206.8 216.6L206.1 215.6L207.1 216.0L209.3 209.1L208.1 208.7L209.6 208.5ZM213.3 209.4L214.2 211.1L213.1 210.6L210.8 218.6L212.0 219.1L211.4 220.1L210.0 219.1L209.4 218.0L210.4 218.4L212.7 210.5L211.5 210.1L213.3 209.4ZM215.5 210.5L217.0 211.1L214.3 221.3L212.9 221.8L216.6 211.3L215.5 210.5ZM151.6 146.4L146.7 138.6L145.5 134.0L147.7 131.9L149.2 127.5L157.9 128.6L166.9 134.8L162.6 146.5L151.6 146.4ZM173.1 199.3L170.4 207.0L159.3 202.4L163.2 194.7L173.1 199.3Z", "route": "M183.6 95.6L190.5 98.0L181.5 123.7L184.0 124.6L183.2 128.6L171.1 124.6L161.7 151.1L155.2 152.7L148.2 156.0L149.4 153.0L146.9 149.4L145.4 145.0L143.0 143.3L141.9 141.4L132.2 146.3L131.2 145.1L108.5 156.3L105.6 156.7L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L82.7 191.9L88.2 197.1L107.0 211.2L121.2 217.5L136.4 221.4L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7", "stops": [{"id": "gate-north", "name": "성수동 방면 북측 입구", "x": 188.3, "y": 90.4}, {"id": "family-lawn", "name": "가족마당", "x": 155.9, "y": 137.1}, {"id": "lake", "name": "서울숲호수·수변휴게실", "x": 127.6, "y": 144.2}, {"id": "deer", "name": "사슴우리(생태숲)", "x": 74.2, "y": 184.0}, {"id": "insect", "name": "곤충식물원", "x": 149.3, "y": 214.3}, {"id": "gate-station", "name": "서울숲역 방면 입구", "x": 219.0, "y": 163.6}]};
+  var STOP_LABEL = [
+    { t: '입구', dx: 0, dy: -9, a: 'middle' }, { t: '가족마당', dx: 8, dy: -4, a: 'start' }, { t: '서울숲호수', dx: -2, dy: -9, a: 'end' },
+    { t: '사슴우리', dx: -8, dy: 4, a: 'end' }, { t: '곤충식물원', dx: 8, dy: 9, a: 'start' }, { t: '출구', dx: 0, dy: 15, a: 'middle' },
+  ];
+  function realMap(st) {
+    var id = 'm' + (uid++), s = '<svg class="rc-map" viewBox="0 0 ' + MAP.w + ' ' + MAP.h + '" aria-label="서울숲 지도 위 오늘 걸은 길">';
+    s += '<defs><pattern id="f' + id + '" width="3.4" height="3.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="3.4" fill="#2b2a27"/></pattern>' +
+      '<pattern id="w' + id + '" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".7" fill="#2b2a27"/></pattern></defs>';
+    s += '<path d="' + MAP.forest + '" fill="url(#f' + id + ')" opacity=".35"/>';
+    s += '<path d="' + MAP.lawn + '" fill="#2b2a27" opacity=".07"/>';
+    s += '<path d="' + MAP.water + '" fill="url(#w' + id + ')" opacity=".7"/>';
+    s += '<path d="' + MAP.park + '" fill="none" stroke="#2b2a27" stroke-width="1.5" stroke-linejoin="round"/>';
+    s += '<path d="' + MAP.route + '" fill="none" stroke="#faf8f1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+    s += '<path d="' + MAP.route + '" fill="none" stroke="#2b2a27" stroke-width="2.2" stroke-dasharray="4 2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+    var bestIdx = -1;
+    DATA.stops.forEach(function (x, i) { if (st && st.best === x[0]) bestIdx = i + 1; });
+    MAP.stops.forEach(function (p, i) {
+      var L = STOP_LABEL[i], last = i === MAP.stops.length - 1;
+      if (i === 0) s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#faf8f1" stroke="#2b2a27" stroke-width="1.8"/>';
+      else if (last) s += '<rect x="' + (p.x - 4) + '" y="' + (p.y - 4) + '" width="8" height="8" fill="#2b2a27"/>';
+      else s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6.5" fill="#2b2a27"/><text x="' + p.x + '" y="' + (p.y + 3) + '" text-anchor="middle" font-size="8" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">' + i + '</text>';
+      s += '<text x="' + (p.x + L.dx) + '" y="' + (p.y + L.dy) + '" text-anchor="' + L.a + '" font-size="8.5" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27" paint-order="stroke" stroke="#faf8f1" stroke-width="3">' + L.t + (i === bestIdx ? ' ★' : '') + '</text>';
     });
-    s += '<path d="M24 46C40 40 52 46 66 40S110 30 132 44 176 30 190 56 176 84 160 80" fill="none" stroke="#2b2a27" stroke-width="2" stroke-dasharray="4 2.5" stroke-linecap="round"/>' +
-      '<circle cx="24" cy="46" r="3.5" fill="#faf8f1" stroke="#2b2a27" stroke-width="1.6"/><circle cx="160" cy="80" r="3.5" fill="#2b2a27"/>';
-    Z.forEach(function (z) {
-      s += '<text x="' + z.lx + '" y="' + z.ly + '" text-anchor="middle" font-size="8.5" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27" paint-order="stroke" stroke="#faf8f1" stroke-width="3.5">' + z.n + '</text>';
-    });
+    s += '<text x="6" y="' + (MAP.h - 6) + '" font-size="7.5" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27">↓ 한강</text>';
+    s += '<text x="' + (MAP.w - 6) + '" y="12" text-anchor="end" font-size="7.5" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27">성수동 ↑</text>';
+    s += '<g transform="translate(14 14)" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27"><path d="M0 -8 L3 2 L0 0 L-3 2Z"/><text x="0" y="11" text-anchor="middle" font-size="7">N</text></g>';
     return s + '</svg>';
   }
 
   // ---------- 영수증 내용 ----------
-  var state = { face: '', tags: [], memo: '', photo: null };
+  var state = { best: '', tags: [], memo: '', photo: null };
   function ln(l, r, cls) { return '<div class="ln ' + (cls || '') + '"><span class="l">' + l + '</span><span class="d"></span><span class="r">' + r + '</span></div>'; }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function part(n, inner, pins) { return '<div data-part="' + n + '">' + (pins ? '<span class="pin">' + n + '</span>' : '') + inner + '</div>'; }
@@ -575,30 +595,30 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     opt = opt || {};
     var P = !!opt.pins, h = '';
     h += '<div class="brandline">SEOUL FOREST</div><div class="brandsub">서울숲 · 숲 영수증</div>';
-    h += '<div class="meta fade"><div><span>' + dateStr + ' (' + dow + ') 15:42</span><span>No.' + DATA.no + '</span></div><div><span>성수 방면 출구</span><span>단말기 ' + DATA.term + '</span></div></div>';
+    h += '<div class="meta fade"><div><span>' + dateStr + ' (' + dow + ') 15:42</span><span>No.' + DATA.no + '</span></div><div><span>서울숲역 방면 출구</span><span>단말기 ' + DATA.term + '</span></div></div>';
     h += '<hr class="hr dbl">';
     var a = '<div class="sec">오늘 머문 곳</div>';
-    DATA.stops.forEach(function (s) { a += ln(s[0], s[1]); });
+    DATA.stops.forEach(function (s) { a += ln(s[0] + (st.best === s[0] ? ' ★' : ''), s[1]); });
     a += '<hr class="hr">' + ln('머문 시간 합계', DATA.stay, 'big');
     h += part(1, a, P);
     h += '<hr class="hr">';
     h += part(2, ln('걸음', DATA.steps + '보', 'sm') + ln('그늘 길', DATA.shade, 'sm') + ln('함께', DATA.with, 'sm') + ln('날씨', DATA.weather, 'sm'), P);
     h += '<hr class="hr dbl">';
-    h += part(3, '<div class="sec">오늘 걸은 서울숲</div>' + zoneMap(), P);
+    h += part(3, '<div class="sec">오늘 걸은 서울숲 · 2.8km</div>' + realMap(st) + '<div class="fade" style="font-size:9.5px">○ 입구  ■ 출구  ★ 제일 좋았던 곳</div>', P);
     var ph = '';
     if (st.photo) ph += '<hr class="hr"><div class="sec">오늘의 한 장</div><div class="photo"><canvas class="rcPhoto"></canvas><div class="pcap"><span>서울숲 ' + dateStr + '</span><span>' + DATA.with + '</span></div></div>';
     ph += '<div class="quote">“' + esc(st.memo || LINE + ' 쉬어 간 날') + '”</div>';
     h += part(4, ph, P);
     h += '<hr class="hr">';
-    var rt = '<div class="sec">쉴 곳 평가</div>' + ln('오늘 쉴 곳', st.face || '-');
+    var rt = '<div class="sec">오늘의 베스트</div>' + ln('제일 좋았던 곳', st.best ? st.best + ' ★' : '-');
     if (st.tags.length) rt += '<div class="tags fade">' + st.tags.map(function (t) { return '#' + t.replace(/\s/g, ''); }).join(' ') + '</div>';
-    rt += '<div class="fade" style="font-size:10px;margin-top:4px">남긴 평가는 서울숲 쉴 곳을 고치는 데 쓰입니다.</div>';
+    rt += '<div class="fade" style="font-size:10px;margin-top:4px">고른 곳은 서울숲을 더 좋게 만드는 데 쓰입니다.</div>';
     h += part(5, rt, P);
     h += '<hr class="hr">';
     h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark() + '</div></div>', P);
     h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>성수 동네 카페 10% 할인</b><div class="cs">제휴 카페(예시) · 발급일부터 7일<br>숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
     h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(DATA.no) + '번째 사람</b><br>' + LINE + ', 고맙습니다</div>';
-    h += '<div class="mini-qr">' + qrSvg(21, '#2b2a27') + '</div><div class="c fade" style="font-size:9.5px">휴대폰에 저장된 영수증 보기</div>';
+    h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
   }
   function paintPhotos(root, photo) {
@@ -684,7 +704,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   var CAP = {
     scan: '① 출구에 선 영수증 기계의 QR을 휴대폰으로 찍습니다. 앱 설치는 필요 없습니다.',
     rec: '② 휴대폰에 남은 오늘 기록을 확인합니다. 이동 경로는 휴대폰 안에만 있습니다.',
-    rate: '③ 쉴 곳을 평가해야 영수증이 나옵니다. 고른 이유가 공원 개선 자료로 모입니다.',
+    rate: '③ 오늘 제일 좋았던 곳을 골라야 영수증이 나옵니다. 고른 곳과 이유가 장소별 만족도로 모입니다.',
     photo: '④ 원하면 기계 카메라로 사진을 찍어 영수증에 함께 인쇄합니다.',
     count: '④ 기계 카메라가 3초 뒤 사진을 찍습니다.',
     check: '④ 사진은 영수증 인쇄처럼 흑백 점으로 바뀌어 찍힙니다.',
@@ -701,17 +721,19 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   function kscreen(name) { $$('.ks').forEach(function (k) { k.classList.toggle('on', k.dataset.k === name); }); }
 
   $('#bScan').onclick = function () {
-    this.disabled = true;
+    this.disabled = true; $('#tip').classList.add('gone');
     $('#cam').classList.add('reading'); $('#qrBox').classList.add('scanning');
     later(function () { $('#qrBox').classList.remove('scanning'); $('#qrBox').classList.add('ok'); $('#cam').classList.remove('reading'); }, 2000);
     later(function () { view('rec'); kscreen('wait'); }, 2700);
   };
   $('#bRec').onclick = function () { view('rate'); };
-  $$('#faces .face').forEach(function (b) {
+  $('#cam').onclick = function () { if (!$('#bScan').disabled) $('#bScan').click(); };
+  $('#goTry').addEventListener('click', function () { setTimeout(function () { var ph = $('.phone'); ph.classList.remove('call'); void ph.offsetWidth; ph.classList.add('call'); }, 700); });
+  $$('#places .place').forEach(function (b) {
     b.setAttribute('aria-pressed', 'false');
     b.onclick = function () {
-      $$('#faces .face').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-      state.face = b.dataset.v; $('#bRate').disabled = false;
+      $$('#places .place').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      state.best = b.dataset.v; $('#bRate').disabled = false;
     };
   });
   $$('#chips .chip').forEach(function (b) {
@@ -797,11 +819,11 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
-    state = { face: '', tags: [], memo: '', photo: null };
-    $('#bScan').disabled = false; $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
-    $$('#faces .face,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    state = { best: '', tags: [], memo: '', photo: null };
+    $('#bScan').disabled = false; $('#tip').classList.remove('gone'); $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
+    $$('#places .place,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
     $('#qrBox').classList.remove('ok', 'scanning');
-    $('#waitMsg').innerHTML = '휴대폰에서 쉴 곳 평가를<br>마치면 영수증이 나와요';
+    $('#waitMsg').innerHTML = '휴대폰에서 제일 좋았던 곳을<br>고르면 영수증이 나와요';
     var mv = $('#move'); mv.className = 'rc-move torn';
     $('#bOpen').classList.remove('show');
     later(function () { $('#clip').classList.add('hidden'); mv.className = 'rc-move'; }, 700);
@@ -810,25 +832,25 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   // ---------- 예시 영수증(첫 화면 · 읽는 법) ----------
   var fakeCv = document.createElement('canvas'); fakeCv.width = 320; fakeCv.height = 240; drawFake(fakeCv);
-  var sample = { face: '좋았어요', tags: ['조용함', '벤치 부족'], memo: '사슴이 가까이 왔다', photo: ditherFrom(fakeCv, 320, 240, false) };
+  var sample = { best: '사슴우리', tags: ['그늘이 시원해서', '아이가 좋아해서'], memo: '사슴이 가까이 왔다', photo: ditherFrom(fakeCv, 320, 240, false) };
   $('#heroRc').appendChild(makeReceipt(sample, { inkStatic: true }));
   var anat = makeReceipt(sample, { inkStatic: true, pins: true });
   $('#anatRc').appendChild(anat);
 
   var AN = [
-    { t: '오늘 머문 곳과 시간', p: '들른 장소와 거기서 머문 시간이 영수증의 "구매 품목" 자리에 찍힙니다. 맨 아래는 오늘 머문 시간 합계입니다.', from: '입구·출구 QR, 휴대폰 경로 기록', use: '어디에 오래 머무는지 파악' },
+    { t: '오늘 머문 곳과 시간', p: '', from: '입구·출구 QR, 휴대폰 경로 기록', use: '어디에 오래 머무는지 파악' },
     { t: '걸음 · 그늘 길 · 함께 · 날씨', p: '걸음 수, 그늘로 걸은 거리, 함께 온 사람, 그날 날씨입니다. 그늘 길 거리로 더운 날 그늘 길 추천이 효과가 있었는지 봅니다.', from: '휴대폰 경로 기록, 기상청 날씨', use: '그늘 길 추천 효과 확인' },
-    { t: '오늘 걸은 서울숲', p: '서울숲 네 구역 위에 오늘 걸은 길이 점선으로 그려지고, 들른 구역은 빗금으로 칠해집니다. 안 가 본 구역이 한눈에 보입니다.', from: '휴대폰 경로 기록(휴대폰 안에서만 그림)', use: '다음에 가 볼 곳 보여 주기' },
+    { t: '오늘 걸은 서울숲', p: '', from: '휴대폰 경로 기록 + 서울숲 지도', use: '오늘 걸은 길 기념 · 안 가 본 곳 보여 주기' },
     { t: '오늘의 한 장과 한마디', p: '원하면 기계 카메라 사진이 흑백 점 사진으로 찍히고, 휴대폰에 쓴 한마디가 따옴표 안에 인쇄됩니다. 한마디를 안 쓰면 계절 문구가 들어갑니다.', from: '기계 카메라(선택), 이용자 입력', use: '추억 · SNS 공유(사진은 저장 안 함)' },
-    { t: '쉴 곳 평가', p: '영수증을 받으려면 꼭 해야 하는 평가입니다. 표정 하나와 고른 이유(그늘 부족, 벤치 부족 등)가 찍힙니다.', from: '휴대폰 평가(필수)', use: '대시보드 만족도 → 먼저 고칠 곳 결정' },
+    { t: '오늘의 베스트', p: '', from: '휴대폰에서 고르기(필수)', use: '장소별 만족도 → 좋은 곳은 지키고 나머지는 보완' },
     { t: '오늘의 기념 소인', p: '우체국 소인처럼 오늘 날짜와 시각이 찍힌 도장입니다. 영수증이 다 나오면 마지막에 찍혀, 언제 서울숲에 왔는지 남겨 줍니다.', from: '출력한 날짜·시각', use: '방문 기념' },
-    { t: '동네 카페 쿠폰', p: '자르는 선 아래 쿠폰은 평가를 마친 사람에게 주는 보상입니다. 숲에서는 돈 쓰지 않고 머물고, 쿠폰은 숲을 나선 뒤 동네에서 씁니다.', from: '성동구·제휴 카페(예시)', use: '평가 보상 · 성수 상권 연계' },
+    { t: '동네 카페 쿠폰', p: '자르는 선 아래 쿠폰은 평가를 마친 사람에게 주는 보상입니다. 숲에서는 돈 쓰지 않고 머물고, 쿠폰은 숲을 나선 뒤 동네에서 씁니다.', from: '성동구·제휴 카페(예시)', use: '참여 보상 · 성수 상권 연계' },
   ];
   var list = $('#anList');
   AN.forEach(function (a, i) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'an-item rv'; b.dataset.n = i + 1;
-    b.innerHTML = '<span class="an-n">' + (i + 1) + '</span><h3>' + a.t + '</h3><p>' + a.p + '</p><div class="an-meta"><span><b>어디서</b>' + a.from + '</span><span><b>무엇에</b>' + a.use + '</span></div>';
+    b.innerHTML = '<span class="an-n">' + (i + 1) + '</span><h3>' + a.t + '</h3><div class="an-meta"><span><b>어디서</b>' + a.from + '</span><span><b>무엇에</b>' + a.use + '</span></div>';
     b.onclick = function () { focusPart(i + 1, true); };
     list.appendChild(b);
   });
@@ -862,6 +884,15 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       lf.style.width = lf.style.height = (12 + Math.random() * 12) + 'px';
       art.appendChild(lf);
     }
+  }
+
+  if (/[?&]qr\b/.test(location.search)) {
+    setTimeout(function () {
+      document.getElementById('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+      $('#bScan').disabled = true; $('#tip').classList.add('gone'); $('#qrBox').classList.add('ok');
+      view('rec'); kscreen('wait');
+      $('#cap').textContent = 'QR로 연결됐어요! 오늘 기록을 확인하고 제일 좋았던 곳을 골라 보세요.';
+    }, 600);
   }
 
   // 스크롤하면 나타나기
