@@ -373,7 +373,7 @@ function renderIntro(err) {
     err ? h('button', { type: 'button', class: 'tr-cta', onclick: () => location.reload() }, '다시 시도') : null));
 }
 async function arrive() {
-  el.intro.classList.add('hide');
+  if (!backFromMobile) el.intro.classList.add('hide');
   const { center, zoom } = map._getBoundsCenterZoom(app.model.parkBounds, padding());
   await new Promise(res => {
     if (reduce || backFromMobile) { map.setView(center, zoom, { animate: false }); return res(); }
@@ -382,7 +382,8 @@ async function arrive() {
   });
   parkOutline();
   el.map.classList.add('tr-arrived'); el.top.classList.add('tr-arrived'); el.locate.classList.add('show'); setBase(baseMode);
-  setTimeout(() => el.intro.remove(), backFromMobile ? 0 : 600);
+  if (backFromMobile) setTimeout(() => el.intro.classList.add('hide'), 400);   // 공원 자리 지도가 깔린 뒤 걷어 냄
+  setTimeout(() => el.intro.remove(), backFromMobile ? 1200 : 600);
   go(1);
 }
 
@@ -1783,7 +1784,7 @@ function restart() {
 // ── 시작 ──
 async function boot() {
   renderTop(); makeMap(); renderIntro();
-  if (backFromMobile) el.intro.classList.add('hide');
+  if (backFromMobile) el.intro.classList.add('tr-quiet');   // 글자 없이 어두운 화면만 덮어 둠: 멀리 있는 처음 지도가 비치지 않게
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
   refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);

@@ -939,3 +939,7 @@ div.tr-status-line{cursor:default}
 
 /* 왼쪽 위 「머무는 숲」 옆 「코스 찾기」 글자 숨김 */
 .tr-brand-sub{display:none!important}
+
+/* 모바일 화면에서 돌아올 때: 도입 화면을 글자 없이 어두운 덮개로만 */
+.tr-intro.tr-quiet{background:#08110d;transition:opacity .5s ease}
+.tr-intro.tr-quiet .tr-intro-in{display:none}
