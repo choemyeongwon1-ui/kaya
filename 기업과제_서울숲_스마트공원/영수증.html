@@ -367,7 +367,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 </style>
 </head>
 <body>
-<a class="backpill" id="backPill" href="recovery-station/needs/tour.html" title="서울숲 코스 찾기(이용자 화면)로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>이용자 화면으로</a>
+<a class="backpill" id="backPill" href="recovery-station/index.html?cover=0#home" title="서울숲 대시보드로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>대시보드로</a>
 
 <header class="hero">
   <div class="wrap">
@@ -673,7 +673,6 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   // ---------- 이용자 화면(코스 찾기)에서 넘어온 오늘 산책 ----------
   // recovery-station/needs/js/tour.js 가 산책을 마칠 때 이 기기 localStorage('sf-receipt')에 남긴 기록. 서버로 보내지 않음.
   var FROM = (location.search.match(/[?&]from=(tour|mobile)\b/) || [])[1] || null;
-  if (FROM === 'mobile') $('#backPill').href = 'recovery-station/mobile.html';
   var TOUR = null;
   if (FROM) {
     try { TOUR = JSON.parse(localStorage.getItem('sf-receipt') || 'null'); } catch (e) { TOUR = null; }
