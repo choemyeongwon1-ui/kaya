@@ -80,7 +80,7 @@
 </style>
 </head>
 <body>
-  <a class="back" href="./index.html?cover=0#home" title="대시보드로 돌아가기">
+  <a class="back" id="back" href="./index.html?cover=0#home" title="보던 대시보드로 돌아가기">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>대시보드
   </a>
   <aside class="caption">
@@ -154,9 +154,17 @@
   function src(s){ return './needs/tour.html?'+(s?'wx='+s+'&':'')+'_='+Date.now(); }
   var cur='';
   frame.src=src('');
+
+  // Back to the dashboard we came from: needs/mobile-link.js saved its URL + scroll in sessionStorage
+  // when the 「모바일 화면」 button was pressed; go there and it scrolls itself back.
+  // (history.go is unreliable here because the iframe adds an unknown number of history entries.)
+  document.getElementById('back').addEventListener('click',function(e){
+    var s=null; try{ s=JSON.parse(sessionStorage.getItem('nd-mobile-return')||'null'); }catch(err){}
+    if(s&&s.url){ e.preventDefault(); location.href=s.url; }
+  });
   function go(s){
     cur=s;
-    frame.src=src(s);
+    try{ frame.contentWindow.location.replace(src(s)); }catch(e){ frame.src=src(s); }  // replace: no extra history entry
     document.querySelectorAll('.scn button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===s));});
   }
   document.querySelectorAll('.scn button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.s);});});
