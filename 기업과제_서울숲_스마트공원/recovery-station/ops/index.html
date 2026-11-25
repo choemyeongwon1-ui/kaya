@@ -118,6 +118,28 @@ button{font:inherit;color:inherit}
 .spark{width:100%;height:64px;display:block;margin-top:12px}
 .spark rect{cursor:pointer}
 .src{margin:20px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:10.5px;color:var(--mute);line-height:1.6}
+/* 거점 카드(사진·그림) · 법적 지정 */
+.hero{position:relative;margin:0 0 9px;border-radius:var(--r-md);overflow:hidden;aspect-ratio:16/10;background:#0b1410;border:1px solid var(--line-2);box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.hero img,.hero canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;animation:heroIn 1.2s var(--ease) both}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,10,7,.04) 34%,rgba(4,10,7,.9) 100%);pointer-events:none}
+.hero .tag{position:absolute;z-index:2;top:10px;right:10px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(7,13,10,.72);border:1px solid var(--line-2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hero figcaption{position:absolute;z-index:2;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:12px;animation:popIn .7s .3s var(--ease) both}
+.hero .pic{flex:none;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(140deg,var(--mint-2),var(--mint));color:var(--mint-ink);box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.hero .pic svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hero .tx{display:grid;gap:3px;min-width:0}
+.hero .tx b{font-size:20px;font-weight:700;letter-spacing:-.03em;line-height:1.2;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+.hero .tx small{font-size:12px;color:var(--ink-2);text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.credit{font-size:10px;color:var(--mute);margin:0 2px 14px;line-height:1.5}
+.credit a{color:inherit;text-underline-offset:2px}
+@keyframes heroIn{from{opacity:0;transform:scale(1.22)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+.hub .nm em.new{color:var(--mint);font-weight:700}
+.facts{display:grid;margin-top:14px;padding:3px 14px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
+.facts>div{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:12.5px}
+.facts>div:first-child{border-top:0}
+.facts span{color:var(--ink-2);font-weight:600}
+.facts p{margin:0}.facts b{font-weight:700}
+.facts small{display:block;margin-top:3px;font-size:11px;font-weight:500;color:var(--mute);line-height:1.5}
 /* 등장 애니메이션 */
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -171,7 +193,7 @@ body{overflow:auto}
   </header>
 
   <aside class="panel gl" id="side" aria-label="운영 관제 요약">
-    <section class="detail" id="detail" hidden aria-live="polite"></section>
+    <section class="detail" id="detail" hidden aria-live="polite"><div id="dHead"></div><div id="dBody"></div></section>
     <div id="ov">
       <div id="stat">불러오는 중…</div>
       <h2 class="q">무엇을 볼까요?</h2>
@@ -182,7 +204,7 @@ body{overflow:auto}
       <h3>거점별 만족도 <span class="n" id="listN">예상 점수 · 낮은 순</span></h3>
       <div class="hubs" id="hubs"></div>
     </section>
-    <p class="src">색 띠 = 2.5점 간격, 흰 선 = 등고선(5점마다 숫자), 흰 점선 = 관리 기준 60점 · ● = 거점(점수), 누르면 요인별 점수가 열립니다. 거점 점수를 거리 가중(가우스, 약 80m)으로 공원 전체에 펼친 추정 분포이며, 이용자 설문이 모이면 설문 지점 값으로 바꿔 그립니다. 만족도 = 밀도·날씨·주변 환경(팀 20m 격자) 가중 평균, 주신하(2008) 공원 평가 요인 기반 · 가중치와 등급 기준은 가정값. 배경: 위성 사진 © Esri, Maxar, Earthstar Geographics · 지도 © OpenStreetMap 기여자(ODbL).</p>
+    <p class="src">색 띠 = 2.5점 간격, 흰 선 = 등고선(5점마다 숫자), 흰 점선 = 관리 기준 60점 · ● = 거점(점수), 누르면 지도가 그 거점으로 당겨지고 사진과 요인별 점수가 열립니다. 거점 점수를 거리 가중(가우스, 약 80m)으로 공원 전체에 펼친 추정 분포이며, 이용자 설문이 모이면 설문 지점 값으로 바꿔 그립니다. 만족도 = 밀도·날씨·주변 환경(팀 20m 격자) 가중 평균, 주신하(2008) 공원 평가 요인 기반 · 가중치와 등급 기준은 가정값. 「추가」 거점 4곳은 위치만 OpenStreetMap에서 가져왔고 수용 인원·끌림은 가정값입니다. 법적 지정은 팀이 토지이음에서 조회한 자료로 법적 효력이 없으며, 설치 전 토지이용계획확인서로 확인해야 합니다. 거점 사진은 이용자 화면과 같은 위키미디어 공용의 자유 라이선스 사진이고, 사진이 없는 거점은 그 자리의 위성 사진을 가까이 당겨 보여 줍니다. 배경: 위성 사진 © Esri, Maxar, Earthstar Geographics · 지도 © OpenStreetMap 기여자(ODbL).</p>
   </aside>
 </div>
 
@@ -260,26 +282,122 @@ body{overflow:auto}
     wx: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/>',
     env: '<path d="M5 19c0-8 5-13 14-14 0 9-4.5 14-12 14"/><path d="M5 19c2.5-4.5 5.5-7.5 9.5-9.5"/>'
   };
+  // ---------- 운영 관제에서만 더하는 거점 ----------
+  // hubs.json은 이용자 화면과 같이 쓰므로 건드리지 않고 여기서 더한다. 거점이 없던 빈 구역(서쪽 생태숲·남서쪽·동쪽)에 실제로 있는 시설이다.
+  // 위치 = OpenStreetMap. 끌림(pull)·수용 인원(capacity)은 근거가 없는 「가정값」이라 현장 계수·설문 뒤 보정한다.
+  var EXTRA = [
+    { id: 'eco-pond', name: '생태숲 연못', zone: '자연생태숲', lon: 127.03331, lat: 37.54304, type: 'shade', pull: .4, capacity: 150, src: 'w668917855', what: '사슴우리 서쪽 숲속 연못' },
+    { id: 'han-bridge', name: '한강 방면 보행가교', zone: '자연생태숲', lon: 127.0324, lat: 37.54239, type: 'outdoor', pull: .4, capacity: 200, src: 'w64981217', what: '사슴우리 옆에서 한강 쪽으로 넘어가는 목재 보행교' },
+    { id: 'cherry-rest', name: '벚나무길 쉼터', zone: '공원 남서측', lon: 127.03696, lat: 37.54195, type: 'shade', pull: .4, capacity: 150, src: 'n13696948022 · w1503710873', what: '벚나무길 옆 정자 · 서쪽 약 90m에 성수대교 방면 보행·자전거 육교' },
+    { id: 'east-parking', name: '공영주차장·따릉이 입구', zone: '공원 동측', lon: 127.04267, lat: 37.54157, type: 'outdoor', pull: .5, capacity: 250, src: 'w583450856 · n12372984754', what: '주차장과 따릉이 대여소(서울숲 공영주차장앞)' }
+  ];
+  // 거점을 나타내는 한 줄 소개(t)와 선 그림(d, 24칸 SVG 경로). 거점을 누르면 패널과 지도 표지에 쓰인다
+  var INFO = {
+    'family-lawn': { t: '넓은 잔디마당', d: 'M14.4 7a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0-5.2 0M3 18.5h18M6.5 18.5c0-2.6-.6-4-1.8-5M6.5 18.5c0-2.2.8-3.6 2-4.4M13 18.5c0-3-.6-4.6-1.8-5.6M13 18.5c0-2.4.9-4 2.2-4.8' },
+    'mirror-pond': { t: '거울 같은 얕은 연못과 바닥분수', d: 'M12 16.5V7M12 9.5c-1.4-3-4.2-3-5.4.2M12 9.5c1.4-3 4.2-3 5.4.2M9.3 16.5v-3.2M14.7 16.5v-3.2M3.5 16.5h17M6.5 20h11' },
+    'horse-plaza': { t: '군마상이 서 있는 광장', d: 'M8 20h9c0-5-1.2-8.6-4.6-11.4L13 5.5l-2.6 1.6C8 8.4 6.4 10.6 6 13l2.2 1.2 2.3-1.6c.4 2.6-.6 5-2.5 7.4M11.3 9.8h.01' },
+    'stage': { t: '공연이 열리는 야외무대', d: 'M3 17h18v2.5H3zM5 17V10.5a7 7 0 0 1 14 0V17M10.6 14.2V9.6l3.6-.9v4.5M9 14.2a.8.8 0 1 0 1.6 0a.8.8 0 1 0-1.6 0M12.6 13.2a.8.8 0 1 0 1.6 0a.8.8 0 1 0-1.6 0' },
+    'courts': { t: '코트가 모여 있는 체육시설', d: 'M3.5 6.5h17v11h-17zM12 6.5v11M9.8 12a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0M3.5 9.5H6v5H3.5M20.5 9.5H18v5h2.5' },
+    'visitor': { t: '안내와 실내 쉼터', d: 'M3.5 12a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0-17 0M12 11v5.5M12 7.8h.01' },
+    'forest-play': { t: '숲 그늘 아래 놀이터', d: 'M4.5 5.5h15M6.5 5.5L4.5 20M17.5 5.5l2 14.5M10 5.5v8M14 5.5v8M9 13.5h6' },
+    'insect': { t: '실내 곤충·식물 전시', d: 'M6.5 13.2a5.5 5.8 0 1 0 11 0a5.5 5.8 0 1 0-11 0M12 7.4V19M9.6 7.8a2.6 2.6 0 0 1 4.8 0M10.5 5.6L9 3.8M13.5 5.6L15 3.8M6.7 11.4L4 10M6.5 14.6H3.8M17.3 11.4L20 10M17.5 14.6h2.7' },
+    'butterfly': { t: '나비를 만나는 정원', d: 'M12 7v11M12 9.5C9.5 5 4 4.5 4 8.5c0 3 3.5 4.5 8 3.5M12 12.5c-3 .2-5.5 1.6-5 4.4.4 2.4 3.6 2.4 5-1.4M12 9.5c2.5-4.5 8-5 8-1 0 3-3.5 4.5-8 3.5M12 12.5c3 .2 5.5 1.6 5 4.4-.4 2.4-3.6 2.4-5-1.4M12 7l-1.6-2.6M12 7l1.6-2.6' },
+    'deer': { t: '꽃사슴을 볼 수 있는 생태숲', d: 'M8.5 11.5h7c0 5-1.5 8-3.5 8s-3.5-3-3.5-8zM8.5 11.5l-3-1.5M15.5 11.5l3-1.5M9.6 11.4C9.4 8.6 8.4 6.6 6.6 5M8.7 8L6 8.4M14.4 11.4c.2-2.8 1.2-4.8 3-6.4M15.3 8l2.7.4M12 17h.01' },
+    'lake': { t: '호숫가 데크와 수변휴게실', d: 'M12 12V6.5M6.5 6.5a5.5 3.4 0 0 1 11 0zM3 15.5c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0M3 19.5c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0' },
+    'wetland': { t: '습지 식물을 관찰하는 생태원', d: 'M8 20V9.3M7.1 6a.9.9 0 0 1 1.8 0v2.4a.9.9 0 0 1-1.8 0zM12 20V6.9M11.1 3.6a.9.9 0 0 1 1.8 0V6a.9.9 0 0 1-1.8 0zM16 20v-8.7M15.1 8a.9.9 0 0 1 1.8 0v2.4a.9.9 0 0 1-1.8 0zM12 16c-2-.4-3.4-1.8-4-4M3.5 20.5h17' },
+    'culture-ctr': { t: '실내 복합문화 시설', d: 'M3.5 9.5L12 4.5l8.5 5zM6.5 12.5v5M10.2 12.5v5M13.8 12.5v5M17.5 12.5v5M4 20h16' },
+    'water-museum': { t: '옛 뚝도수원지의 수도 박물관', d: 'M12 3.8c-2.8 3.6-5 6.4-5 9.2a5 5 0 0 0 10 0c0-2.8-2.2-5.6-5-9.2zM9.6 13.4a2.5 2.5 0 0 0 2 2.4M5 20.5h14' },
+    'eco-pond': { t: '사슴우리 서쪽 숲속 연못', d: 'M4 16.5a8 3.5 0 1 0 16 0a8 3.5 0 1 0-16 0M9 16.4a1.6.8 0 1 0 3.2 0a1.6.8 0 1 0-3.2 0M16.5 13V9.6M13.7 6.9a2.8 2.8 0 1 0 5.6 0a2.8 2.8 0 1 0-5.6 0M7 13V9.5M5.2 13.2v-2.4' },
+    'han-bridge': { t: '한강으로 넘어가는 목재 보행교', d: 'M2.5 12.5h19M2.5 12.5c3-5 16-5 19 0M7.5 9.6v2.9M12 8.8v3.7M16.5 9.6v2.9M6.5 12.5V17M17.5 12.5V17M3 20.5c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0' },
+    'cherry-rest': { t: '벚나무길 옆 정자 쉼터', d: 'M3.5 10.5L12 4.5l8.5 6zM6.5 10.5v9M17.5 10.5v9M9 15.5h6M9.8 15.5v4M14.2 15.5v4M4 19.5h16' },
+    'east-parking': { t: '주차장과 따릉이 대여소', d: 'M3.1 15.5a3.4 3.4 0 1 0 6.8 0a3.4 3.4 0 1 0-6.8 0M14.1 15.5a3.4 3.4 0 1 0 6.8 0a3.4 3.4 0 1 0-6.8 0M6.5 15.5l3-7h5.5l2.5 7M6.5 15.5h5l3.5-7M11.5 15.5l-2-7M8.3 8.5h2.4M14.2 6.6H16' }
+  };
+  // 법적 지정(팀 토지이음 조회 자료 legal.json) · 팀 20m 격자 · 거점 사진 목록(이용자 화면과 같은 photos.json)
+  var LEGAL = null, ZONES = [], CELLS = [], PHOTOS = null;
   var RINGS = null, FEAT = null, NET = null, GRID = null, SIG = 80, CITY = null, BG = null, SAT = null, SAFE = null, TILES = {}, satWait = false;
   var cv = $('cv'), ctx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, view = null;
-  var LAY = document.createElement('canvas'), LC = LAY.getContext('2d'), PREV = document.createElement('canvas'), A = { intro: 0, fade: 1, sat: 0, raf: 0 };
+  var PREV = document.createElement('canvas'), A = { intro: 0, fade: 1, sat: 0, z: 0, zs: 0, raf: 0 }, GR = {};
   var REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // ---------- 장면과 카메라 ----------
+  // 장면 = 한 시점(view)에서 그려 둔 그림 묶음(바탕 BG·SAT, 분포 LAY, 글자·거점 TOP). HOME = 공원 전체, ZOOM = 고른 거점을 당겨 본 모습.
+  // 화면에는 카메라(CAM)가 보는 대로 장면을 늘이고 옮겨 그리므로, 당겨지는 동안 다시 계산하지 않아도 부드럽게 움직인다.
+  var HOME = null, ZOOM = null, CUR = null, ACT = null, CAM = null, FLY = null, lastHub = null;
+  function newScene(v) {
+    function mk() { var c = document.createElement('canvas'); c.width = cv.width; c.height = cv.height; return c; }
+    var sc = { v: v, LAY: mk(), TOP: mk(), BG: null, SAT: null, tiles: null, box: {}, ready: false };
+    sc.LC = sc.LAY.getContext('2d'); sc.TC = sc.TOP.getContext('2d'); return sc;
+  }
+  function use(sc) { CUR = sc; view = sc.v; }
+  function setAct(sc) { ACT = sc; use(sc); S.hubs.forEach(function (h) { h.box = sc.box[h.id] || null; }); }
+  function build(sc) { use(sc); loadTiles(); buildBG(); render(true); }
+  function hubSel() { if (!S.sel) return null; for (var i = 0; i < S.hubs.length; i++) if (S.hubs[i].id === S.sel) return S.hubs[i]; return null; }
+  // 거점을 당겨 볼 시점: 지도에서 패널·시간 막대를 뺀 자리의 가운데에 거점이 오도록
+  function zoomView(h) { var s = clamp(HOME.v.s * 3.4, 1.4, 2.1), fx = (SAFE.l + SAFE.r) / 2, fy = (SAFE.t + SAFE.b) / 2 + 8; return { s: s, ox: fx - h.x * s, oy: fy + h.y * s }; }
+  function fly(v, x, y, dur, done) { FLY = { a: { s: CAM.s, ox: CAM.ox, oy: CAM.oy }, b: { s: v.s, ox: v.ox, oy: v.oy }, x: x, y: y, t: 0, dur: dur, done: done }; $('tip').style.opacity = 0; kick(); }
+  // 거점을 고르면 그 자리로 당기고, 고른 것을 풀면 전체 보기로 돌아간다
+  function go() {
+    if (!HOME || !CAM) return; var h = hubSel(); A.fade = 1;
+    // 움직이는 동안에는 전체 장면이 바탕이 되므로, 그 사이 시각·보기가 바뀌었으면 먼저 새로 그림
+    if (ACT !== HOME || !h) { if (HOME.dirty || !h) { use(HOME); render(true); HOME.dirty = false; } setAct(HOME); }
+    if (h) {
+      var v = zoomView(h); lastHub = h; preload(v);
+      fly(v, h.x, h.y, 900, function () { ZOOM = newScene(v); A.z = 0; A.zs = 0; build(ZOOM); setAct(ZOOM); });
+    } else {
+      var bb = GRID.bb, q = lastHub || { x: (bb[0] + bb[1]) / 2, y: (bb[2] + bb[3]) / 2 };
+      fly(HOME.v, q.x, q.y, 850, function () { ZOOM = null; });
+    }
+  }
+  // 지금 보고 있는 장면을 다시 그림(시각·보기가 바뀔 때)
+  function paint() { if (!HOME || !ACT) return; use(ACT); render(); if (ACT !== HOME) HOME.dirty = true; }
+  // 강 이름 자리(전체 보기 기준으로 한 번 찾아 두고, 화면에는 카메라에 맞춰 그림)
+  function riverNames() {
+    var out = []; if (!CITY) return out;
+    CITY.rings.forEach(function (r) {
+      var best = null, wr = r.pts;
+      for (var py = SAFE.t + 70; py < SAFE.b - 50; py += 18) for (var px = 40; px < SAFE.r - 40; px += 18) {
+        var w = inv(px, py); if (!inside(w[0], w[1], wr) || inPark(w[0], w[1])) continue;
+        var sc = -Math.abs(px - SAFE.r * .5) - Math.abs(py - H * .74) * .6;
+        if (!best || sc > best[0]) best = [sc, px, py];
+      }
+      if (best) { var q = inv(best[1], best[2]); out.push([r.name, q[0], q[1]]); }
+    });
+    return out;
+  }
+  // 등장 애니메이션으로 밀려 있는 동안에도 제자리 기준으로 재도록, 요소의 transform 이동분을 뺀 자리
+  function still(el) { var r = el.getBoundingClientRect(), m = new DOMMatrixReadOnly(getComputedStyle(el).transform); return { left: r.left - m.m41, top: r.top - m.m42, width: r.width, height: r.height }; }
   function fit() {
     var b = $('map').getBoundingClientRect(); DPR = Math.min(2, devicePixelRatio || 1); W = b.width; H = b.height;
-    cv.width = W * DPR | 0; cv.height = H * DPR | 0; LAY.width = PREV.width = cv.width; LAY.height = PREV.height = cv.height;
+    cv.width = W * DPR | 0; cv.height = H * DPR | 0; PREV.width = cv.width; PREV.height = cv.height;
     // 지도 위에 떠 있는 패널·시간 막대를 피해 공원을 앉힌다
-    var pn = $('side').getBoundingClientRect(), tm = $('time').getBoundingClientRect(), sm = W < 760, docked = pn.left > b.left + W * .45 && pn.top < b.bottom - 40;
+    var pn = still($('side')), tm = still($('time')), sm = W < 760, docked = pn.left > b.left + W * .45 && pn.top < b.bottom - 40;
     SAFE = { l: 8, t: 56, r: docked ? pn.left - b.left - 10 : W - 8, b: tm.top - b.top - 8 };
     var bx = GRID.bb, padL = sm ? 12 : 30, padR = W - SAFE.r + (sm ? 4 : 26), padT = SAFE.t + (sm ? 8 : 18), padB = H - SAFE.b + (sm ? 10 : 34);
     var s = Math.min((W - padL - padR) / (bx[1] - bx[0]), (H - padT - padB) / (bx[3] - bx[2]));
-    view = { s: s, ox: padL + ((W - padL - padR) - (bx[1] - bx[0]) * s) / 2 - bx[0] * s, oy: padT + ((H - padT - padB) - (bx[3] - bx[2]) * s) / 2 + bx[3] * s };
-    loadTiles(); buildBG(); render();
+    var v = { s: s, ox: padL + ((W - padL - padR) - (bx[1] - bx[0]) * s) / 2 - bx[0] * s, oy: padT + ((H - padT - padB) - (bx[3] - bx[2]) * s) / 2 + bx[3] * s };
+    // 화면 가장자리를 어둡게 하는 그라데이션(화면에 붙어 있어 카메라와 함께 움직이지 않음)
+    var cx = SAFE.r * .5; GR.vig = ctx.createRadialGradient(cx, H * .5, Math.min(W, H) * .32, cx, H * .5, Math.max(W, H) * .8); GR.vig.addColorStop(0, 'rgba(2,6,4,0)'); GR.vig.addColorStop(1, 'rgba(2,6,4,.66)');
+    GR.top = ctx.createLinearGradient(0, 0, 0, 130); GR.top.addColorStop(0, 'rgba(2,6,4,.6)'); GR.top.addColorStop(1, 'rgba(2,6,4,0)');
+    HOME = newScene(v); ZOOM = null; FLY = null; ACT = HOME; A.fade = 1;
+    build(HOME); HOME.names = riverNames(); HOME.dirty = false;
+    var h = hubSel();
+    if (h && h.s) { var zv = zoomView(h); ZOOM = newScene(zv); build(ZOOM); setAct(ZOOM); CAM = { s: zv.s, ox: zv.ox, oy: zv.oy }; A.z = 1; }
+    else { setAct(HOME); CAM = { s: v.s, ox: v.ox, oy: v.oy }; A.z = 0; }
+    heroShot(); kick();
   }
   function P(x, y) { return [view.ox + x * view.s, view.oy - y * view.s]; }
   function inv(px, py) { return [(px - view.ox) / view.s, (view.oy - py) / view.s]; }
   function inPark(x, y) { return RINGS.some(function (r) { return inside(x, y, r); }); }
   function inside(x, y, r) { var c = false; for (var i = 0, j = r.length - 1; i < r.length; j = i++) { if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; } return c; }
+
+  // 법적 지정: 그 자리가 어느 지정에 드는지(도형 안에 없으면 가장 가까운 팀 격자 칸의 지정)
+  function inRings(x, y, pg) { if (!inside(x, y, pg[0])) return false; for (var i = 1; i < pg.length; i++) if (inside(x, y, pg[i])) return false; return true; }
+  function zoneAt(x, y) {
+    for (var i = 0; i < ZONES.length; i++) if (ZONES[i].polys.some(function (pg) { return inRings(x, y, pg); })) return ZONES[i].zone;
+    var best = null; CELLS.forEach(function (c) { var d = Math.hypot(c.x - x, c.y - y); if (!best || d < best[0]) best = [d, c]; });
+    return (best && best[0] < 30 && LEGAL.cells[best[1].id]) || 'other';
+  }
+  function legalOf(z) { return (LEGAL && z && LEGAL.zones[z]) || null; }
 
   // ---------- 공원 바깥 배경(주변 도시) ----------
   // 강 기슭 선분을 끝점끼리 이어 닫힌 고리로 만든다(한강은 여러 조각으로 옴)
@@ -318,60 +436,55 @@ body{overflow:auto}
     var p = xy(lon(t[1]), lat(t[2])), q = xy(lon(t[1] + 1), lat(t[2] + 1)), a = P(p[0], p[1]), b = P(q[0], q[1]);
     return [a[0], a[1], b[0] - a[0], b[1] - a[1]];
   }
+  function getTile(t) {
+    var k = t.join('/'), im = TILES[k]; if (im) return im;
+    im = new Image(); TILES[k] = im; im.decoding = 'async';
+    im.onload = function () { im.ok = true; if (!satWait) { satWait = true; setTimeout(function () { satWait = false; satAll(); heroShot(); }, 140); } };
+    im.src = TURL + t[0] + '/' + t[2] + '/' + t[1]; return im;
+  }
+  // 새 타일이 오면 그려 둔 장면들의 위성 사진을 다시 깐다
+  function satAll() { var keepCur = CUR; [HOME, ZOOM].forEach(function (sc) { if (sc && sc.tiles) { use(sc); buildSAT(); } }); if (keepCur) use(keepCur); kick(); }
+  // 당겨 갈 시점의 타일을 미리 받아 둔다(도착했을 때 바로 또렷하게 보이도록)
+  function preload(v) { if (S.base !== 'sat') return; var keepView = view; view = v; var list = tileList(); view = keepView; if (list.length <= 260) list.forEach(getTile); }
   function loadTiles() {
-    if (!view || S.base !== 'sat') return;
+    if (!view || !CUR || S.base !== 'sat') return;
     var list = tileList(); if (list.length > 260) return;
-    S.tiles = list;
-    list.forEach(function (t) {
-      var k = t.join('/'); if (TILES[k]) return;
-      var im = new Image(); TILES[k] = im; im.decoding = 'async';
-      im.onload = function () { im.ok = true; if (!satWait) { satWait = true; setTimeout(function () { satWait = false; buildSAT(); kick(); }, 140); } };
-      im.src = TURL + t[0] + '/' + t[2] + '/' + t[1];
-    });
+    CUR.tiles = list; list.forEach(getTile);
   }
   function buildSAT() {
-    if (!view || S.base !== 'sat' || !S.tiles) return;
-    if (!SAT) SAT = document.createElement('canvas');
-    if (SAT.width !== cv.width || SAT.height !== cv.height) { SAT.width = cv.width; SAT.height = cv.height; }
-    var c = SAT.getContext('2d'), n = 0; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H);
-    S.tiles.forEach(function (t) { var im = TILES[t.join('/')]; if (!im || !im.ok) return; var r = tileRect(t); c.drawImage(im, r[0], r[1], r[2] + .6, r[3] + .6); n++; });
-    SAT.cover = n / S.tiles.length;
+    var sc = CUR; if (!sc || S.base !== 'sat' || !sc.tiles) return;
+    if (!sc.SAT) { sc.SAT = document.createElement('canvas'); sc.SAT.width = cv.width; sc.SAT.height = cv.height; }
+    var c = sc.SAT.getContext('2d'), n = 0; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H);
+    sc.tiles.forEach(function (t) { var im = TILES[t.join('/')]; if (!im || !im.ok) return; var r = tileRect(t); c.drawImage(im, r[0], r[1], r[2] + .6, r[3] + .6); n++; });
+    sc.SAT.cover = n / sc.tiles.length;
     // 사진을 눌러 밤의 숲 톤으로
     c.fillStyle = 'rgba(3,10,7,.46)'; c.fillRect(0, 0, W, H);
     decor(c, true);
   }
-  // 배경 위에 얹는 것: 공원 밖 어둡게 · 가장자리 어둡게 · 강 이름 · 축척과 방위
+  // 배경 위에 얹는 것: 공원 밖 어둡게 (가장자리 어둡게·강 이름·축척은 화면에 붙여 따로 그림)
   function decor(c, sat) {
     c.beginPath(); c.rect(0, 0, W, H); RINGS.forEach(function (r) { r.forEach(function (q, i) { var p = P(q[0], q[1]); if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.closePath(); });
     c.fillStyle = 'rgba(2,8,5,' + (sat ? .36 : .2) + ')'; c.fill('evenodd');
-    var cx = SAFE.r * .5, g = c.createRadialGradient(cx, H * .5, Math.min(W, H) * .32, cx, H * .5, Math.max(W, H) * .8); g.addColorStop(0, 'rgba(2,6,4,0)'); g.addColorStop(1, 'rgba(2,6,4,.66)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    var gt = c.createLinearGradient(0, 0, 0, 130); gt.addColorStop(0, 'rgba(2,6,4,.6)'); gt.addColorStop(1, 'rgba(2,6,4,0)'); c.fillStyle = gt; c.fillRect(0, 0, W, 130);
-    if (CITY) {
-      c.font = '600 12px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle';
-      CITY.rings.forEach(function (r) {
-        var best = null, wr = r.pts;
-        for (var py = SAFE.t + 70; py < SAFE.b - 50; py += 18) for (var px = 40; px < SAFE.r - 40; px += 18) {
-          var w = inv(px, py); if (!inside(w[0], w[1], wr) || inPark(w[0], w[1])) continue;
-          var sc = -Math.abs(px - SAFE.r * .5) - Math.abs(py - H * .74) * .6;
-          if (!best || sc > best[0]) best = [sc, px, py];
-        }
-        if (best) { c.save(); c.letterSpacing = '7px'; c.fillStyle = 'rgba(241,247,243,.4)'; c.fillText(r.name, best[1], best[2]); c.restore(); }
-      });
+  }
+  // 거점 상세에 넣는 항공 근접 사진: 거점 자리의 위성 사진 타일을 가까이 당겨 그림(사진이 없는 거점용)
+  function heroShot() {
+    var el = $('shot'), h = hubSel(); if (!el || !h) return;
+    var w = el.clientWidth, hh = el.clientHeight; if (!w || !hh) return;
+    var d = Math.min(2, devicePixelRatio || 1); if (el.width !== Math.round(w * d) || el.height !== Math.round(hh * d)) { el.width = Math.round(w * d); el.height = Math.round(hh * d); }
+    var c = el.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.fillStyle = '#0b1410'; c.fillRect(0, 0, w, hh);
+    var z = d > 1.4 ? 19 : 18, n = Math.pow(2, z), ppm = 2.5, tp = 40075016.686 * Math.cos(h.lat * Math.PI / 180) / n * ppm;   // ppm = 1m 당 화면 px, tp = 타일 한 장의 화면 크기
+    var la = h.lat * Math.PI / 180, fx = (h.lon + 180) / 360 * n, fy = (1 - Math.log(Math.tan(la) + 1 / Math.cos(la)) / Math.PI) / 2 * n;
+    for (var y = Math.floor(fy - hh / 2 / tp); y <= Math.floor(fy + hh / 2 / tp); y++) for (var x = Math.floor(fx - w / 2 / tp); x <= Math.floor(fx + w / 2 / tp); x++) {
+      var im = getTile([z, x, y]); if (im.ok) c.drawImage(im, w / 2 + (x - fx) * tp, hh / 2 + (y - fy) * tp, tp + .6, tp + .6);
     }
-    // 축척 막대와 방위(왼쪽 아래) + 배경 출처
-    if (W >= 760) {
-      var m = 300 * view.s > 220 ? 200 : 500, len = m * view.s, x0 = 58, x1 = x0 + len, y0 = SAFE.b - 14;
-      c.strokeStyle = 'rgba(241,247,243,.72)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, y0 - 5); c.lineTo(x0, y0); c.lineTo(x1, y0); c.lineTo(x1, y0 - 5); c.stroke();
-      c.font = '600 10px ' + FONT; c.fillStyle = 'rgba(241,247,243,.72)'; c.textBaseline = 'bottom'; c.textAlign = 'center'; c.fillText('0', x0, y0 - 7); c.fillText(m + 'm', x1 - 4, y0 - 7);
-      var nx = 34, nc = y0 - 9; c.beginPath(); c.arc(nx, nc, 9, 0, Math.PI * 2); c.stroke(); c.beginPath(); c.moveTo(nx, nc + 1); c.lineTo(nx, nc - 9); c.lineWidth = 3; c.stroke();
-      c.font = '700 10px ' + FONT; c.fillText('N', nx, nc - 11);
-      c.font = '500 9.5px ' + FONT; c.textAlign = 'left'; c.fillStyle = 'rgba(241,247,243,.42)'; c.fillText(sat ? '위성 사진 © Esri, Maxar, Earthstar Geographics' : '지도 © OpenStreetMap 기여자', x1 + 16, y0 + 1);
-    }
+    c.fillStyle = 'rgba(3,10,7,.14)'; c.fillRect(0, 0, w, hh);
+    // 거점 자리
+    c.beginPath(); c.arc(w / 2, hh / 2, 17, 0, Math.PI * 2); c.strokeStyle = 'rgba(3,9,6,.55)'; c.lineWidth = 4.4; c.stroke();
+    c.setLineDash([5, 4]); c.strokeStyle = '#fff'; c.lineWidth = 1.6; c.stroke(); c.setLineDash([]);
   }
   // 지도 배경(위성 사진을 끄거나 아직 못 받았을 때 보이는 어두운 지도)
   function buildBG() {
-    BG = document.createElement('canvas'); BG.width = cv.width; BG.height = cv.height;
+    var BG = document.createElement('canvas'); BG.width = cv.width; BG.height = cv.height; CUR.BG = BG;
     var c = BG.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
     c.fillStyle = '#07100c'; c.fillRect(0, 0, W, H);
     var mpx = view.s;   // 1m 당 화면 px
@@ -459,48 +572,64 @@ body{overflow:auto}
   function ringPath(c, r) { c.beginPath(); r.forEach(function (q, i) { var p = P(q[0], q[1]); if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.closePath(); }
   function halo(c, txt, x, y, fill) { c.lineJoin = 'round'; c.lineWidth = 3.5; c.strokeStyle = 'rgba(3,9,6,.9)'; c.strokeText(txt, x, y); c.fillStyle = fill; c.fillText(txt, x, y); }
   function pill(c, x, y, w, h) { var r = h / 2; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
-  function render() {
-    if (!view || !S.hubs.length || !S.hubs[0].s) return;
-    // 바뀌기 전 그림을 남겨 두었다가 새 그림을 서서히 덮는다
-    if (A.ready) { var pc = PREV.getContext('2d'); pc.setTransform(1, 0, 0, 1, 0, 0); pc.clearRect(0, 0, PREV.width, PREV.height); pc.drawImage(LAY, 0, 0); A.fade = 0; }
-    var c = LC, sm = W < 760; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H);
-    // 1) 단계색 분포(공원 안만, 아래 위성 사진이 비치도록 반투명)
-    var bx = GRID.bb, a = P(bx[0], bx[3]), b = P(bx[1], bx[2]), px0 = Math.floor(a[0]), py0 = Math.floor(a[1]), R = 2;
-    var iw = Math.ceil((b[0] - a[0] + 2) / R), ih = Math.ceil((b[1] - a[1] + 2) / R), img = c.createImageData(iw, ih), dd = img.data;
-    for (var j = 0; j < ih; j++) for (var i = 0; i < iw; i++) {
-      var w = inv(px0 + i * R + R / 2, py0 + j * R + R / 2), col = rampRGB(band(fAt(w[0], w[1]))), o = (j * iw + i) * 4;
-      dd[o] = col[0]; dd[o + 1] = col[1]; dd[o + 2] = col[2]; dd[o + 3] = 255;
+  // 거점 그림(24칸 선 그림)을 캔버스에 그림
+  function pict(c, id, x, y, size, col) {
+    var inf = INFO[id]; if (!inf) return; if (!inf.p2d) inf.p2d = new Path2D(inf.d);
+    var k = size / 24; c.save(); c.translate(x - size / 2, y - size / 2); c.scale(k, k); c.lineWidth = 1.7 / k; c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = col; c.stroke(inf.p2d); c.restore();
+  }
+  // 지금 장면(CUR)을 그린다. 분포·등고선·경계는 LAY, 거점 점·이름표·등고선 숫자는 TOP에 나눠 그려서 당겨지는 동안 글자가 커 보이지 않게 한다
+  function render(noFade) {
+    var sc = CUR; if (!sc || !S.hubs.length || !S.hubs[0].s) return;
+    var zm = sc !== HOME;   // 거점을 당겨 본 장면
+    // 바뀌기 전 그림을 남겨 두었다가 새 그림을 서서히 덮는다(같은 시점에서 시각·보기만 바뀔 때)
+    if (sc === ACT) {
+      if (sc.ready && !noFade && !FLY) { var pc = PREV.getContext('2d'); pc.setTransform(1, 0, 0, 1, 0, 0); pc.clearRect(0, 0, PREV.width, PREV.height); pc.drawImage(sc.LAY, 0, 0); pc.drawImage(sc.TOP, 0, 0); A.fade = 0; }
+      else A.fade = 1;
     }
-    var off = document.createElement('canvas'); off.width = iw; off.height = ih; off.getContext('2d').putImageData(img, 0, 0);
+    var c = sc.LC, t = sc.TC, sm = W < 760; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H); t.setTransform(DPR, 0, 0, DPR, 0, 0); t.clearRect(0, 0, W, H);
+    // 1) 단계색 분포(공원 안만, 아래 위성 사진이 비치도록 반투명). 화면에 걸리는 부분만 계산
+    var bx = GRID.bb, a = P(bx[0], bx[3]), b = P(bx[1], bx[2]), px0 = Math.max(0, Math.floor(a[0])), py0 = Math.max(0, Math.floor(a[1])), px1 = Math.min(W, Math.ceil(b[0]) + 2), py1 = Math.min(H, Math.ceil(b[1]) + 2), R = 2;
     c.save(); parkPath(c); c.clip();
-    c.globalAlpha = .56; c.imageSmoothingEnabled = false; c.drawImage(off, px0, py0, iw * R, ih * R); c.globalAlpha = 1;
+    if (px1 > px0 && py1 > py0) {
+      var iw = Math.ceil((px1 - px0) / R), ih = Math.ceil((py1 - py0) / R), img = c.createImageData(iw, ih), dd = img.data;
+      for (var j = 0; j < ih; j++) for (var i = 0; i < iw; i++) {
+        var w = inv(px0 + i * R + R / 2, py0 + j * R + R / 2), col = rampRGB(band(fAt(w[0], w[1]))), o = (j * iw + i) * 4;
+        dd[o] = col[0]; dd[o + 1] = col[1]; dd[o + 2] = col[2]; dd[o + 3] = 255;
+      }
+      var off = document.createElement('canvas'); off.width = iw; off.height = ih; off.getContext('2d').putImageData(img, 0, 0);
+      c.globalAlpha = .56; c.imageSmoothingEnabled = false; c.drawImage(off, px0, py0, iw * R, ih * R); c.globalAlpha = 1; c.imageSmoothingEnabled = true;
+    }
     // 거점 이름표(알약 모양) 자리를 먼저 잡는다. 기본은 오른쪽, 겹칠 때만 다른 쪽. 등고선 숫자는 이 자리를 피함
-    var k = S.mode, pts = S.hubs.map(function (h) { return { h: h, p: P(h.x, h.y), v: h.s[k] }; }), boxes = [], fs = sm ? 10.5 : 11.5, ph = sm ? 20 : 22, pad = sm ? 7 : 9;
-    var lgb = $('legend').getBoundingClientRect(), mpb = $('map').getBoundingClientRect(), keep = [[lgb.left - mpb.left - 6, lgb.top - mpb.top - 6, lgb.width + 12, lgb.height + 12], [16, SAFE.b - 44, 330, 44]];
+    var k = S.mode, rad = zm ? 15 : 5.5, boxes = [], fs = zm ? 12 : sm ? 10.5 : 11.5, ph = zm ? 24 : sm ? 20 : 22, pad = sm && !zm ? 7 : 9;
+    var pts = S.hubs.map(function (h) { h.box = null; return { h: h, p: P(h.x, h.y), v: h.s[k] }; });
+    var lgb = still($('legend')), mpb = $('map').getBoundingClientRect(), keep = [[lgb.left - mpb.left - 6, lgb.top - mpb.top - 6, lgb.width + 12, lgb.height + 12], [16, SAFE.b - 44, 330, 44]];
+    // 당겨 본 장면: 패널·위 막대·시간 막대·범례·축척에 가려지는 거점은 그리지 않는다
+    if (zm) pts = pts.filter(function (q) { var x = q.p[0], y = q.p[1]; return x > 4 && x < SAFE.r - 4 && y > SAFE.t - 18 && y < SAFE.b + 14 && !keep.some(function (o) { return x > o[0] - rad && x < o[0] + o[2] + rad && y > o[1] - rad && y < o[1] + o[3] + rad; }); });
     function ov(r, o) { return Math.max(0, Math.min(r[0] + r[2], o[0] + o[2]) - Math.max(r[0], o[0])) * Math.max(0, Math.min(r[1] + r[3], o[1] + o[3]) - Math.max(r[1], o[1])); }
     function cost(r, self) {
       var out = Math.max(0, SAFE.l - r[0]) + Math.max(0, r[0] + r[2] - SAFE.r) + Math.max(0, SAFE.t - r[1]) + Math.max(0, r[1] + r[3] - SAFE.b);
-      var k2 = out * 400;
+      var k2 = out * 400, dz = rad + 5;
       boxes.forEach(function (o) { k2 += ov(r, o) * 4; }); keep.forEach(function (o) { k2 += ov(r, o) * 2; });
-      pts.forEach(function (q) { if (q !== self) k2 += ov(r, [q.p[0] - 10, q.p[1] - 10, 20, 20]) * 3; });
+      pts.forEach(function (q) { if (q !== self) k2 += ov(r, [q.p[0] - dz, q.p[1] - dz, dz * 2, dz * 2]) * 3; });
       return k2;
     }
-    // 좁은 화면에서는 이름이 다 들어가지 않으므로 가장 낮은 3곳과 고른 거점만 이름을 쓰고 나머지는 점수만
-    pts.slice().sort(function (a2, b2) { return a2.v - b2.v; }).forEach(function (q, n) { q.nm = !sm || n < 3 || S.sel === q.h.id; });
+    // 좁은 화면에서는 이름이 다 들어가지 않으므로 가장 낮은 3곳과 고른 거점만 이름을 쓰고 나머지는 점수만(당겨 본 장면은 모두 이름을 씀)
+    pts.slice().sort(function (a2, b2) { return a2.v - b2.v; }).forEach(function (q, n) { q.nm = zm || !sm || n < 3 || S.sel === q.h.id; });
     pts.slice().sort(function (a2, b2) { return (S.sel === b2.h.id) - (S.sel === a2.h.id) || a2.v - b2.v; }).forEach(function (q) {
-      var p = q.p; c.font = '600 ' + fs + 'px ' + FONT; q.wn = q.nm ? c.measureText(q.h.name).width + 6 : 0;
-      c.font = '800 ' + (fs + 1) + 'px ' + FONT; var tw = q.wn + c.measureText(String(q.v)).width + pad * 2, o2 = 12, up = ph / 2 + 12;
+      var p = q.p, sel = S.sel === q.h.id, rr = zm && sel ? 19 : rad; c.font = '600 ' + fs + 'px ' + FONT; q.wn = q.nm ? c.measureText(q.h.name).width + 6 : 0;
+      c.font = '800 ' + (fs + 1) + 'px ' + FONT; var tw = q.wn + c.measureText(String(q.v)).width + pad * 2, o2 = rr + 6.5, up = ph / 2 + rr + 6.5;
       // 후보 = [알약 왼쪽 x, 가운데 y]
       var cand = [[p[0] + o2, p[1]], [p[0] - o2 - tw, p[1]], [p[0] - tw / 2, p[1] - up], [p[0] - tw / 2, p[1] + up], [p[0] + o2 - 4, p[1] - up + 5], [p[0] - o2 - tw + 4, p[1] - up + 5], [p[0] + o2 - 4, p[1] + up - 5], [p[0] - o2 - tw + 4, p[1] + up - 5]];
       // 가까운 자리가 모두 막히면 위아래로 한 칸씩 더 떨어진 자리(지시선으로 이음)
-      [36, -36, 52, -52, 68, -68].forEach(function (dy) { cand.push([p[0] - tw / 2, p[1] + dy], [p[0] + o2 - 4, p[1] + dy], [p[0] - o2 - tw + 4, p[1] + dy]); });
+      [36, -36, 52, -52, 68, -68].forEach(function (dy) { dy += dy > 0 ? rr - 5.5 : 5.5 - rr; cand.push([p[0] - tw / 2, p[1] + dy], [p[0] + o2 - 4, p[1] + dy], [p[0] - o2 - tw + 4, p[1] + dy]); });
       var best = null;
       for (var n = 0; n < cand.length; n++) { var k3 = cost([cand[n][0], cand[n][1] - ph / 2, tw, ph], q) + n * .5; if (!best || k3 < best[0]) best = [k3, cand[n], n]; if (k3 < 1) break; }
-      q.pos = best[1]; q.far = best[2] >= 8;
+      q.pos = best[1]; q.far = best[2] >= 8; q.rr = rr;
       q.h.box = [q.pos[0], q.pos[1] - ph / 2, tw, ph]; boxes.push(q.h.box);
     });
+    sc.box = {}; pts.forEach(function (q) { sc.box[q.h.id] = q.h.box; });
     // 2) 등고선: 2.5점마다 가는 선, 5점마다 밝은 선과 숫자, 10점마다 굵은 선, 관리 기준 60은 흰 점선
-    var labels = [], placed = S.hubs.map(function (h) { return P(h.x, h.y).concat([30]); });
+    var labels = [], placed = pts.map(function (q) { return [q.p[0], q.p[1], zm ? 44 : 30]; });
     for (var L = Math.ceil(GRID.lo / STEP) * STEP; L <= GRID.hi; L += STEP) {
       var segs = isoSegs(L); if (!segs.length) continue;
       var cut = L === CUT, mid = L % 5 === 0, major = L % 10 === 0;
@@ -509,11 +638,12 @@ body{overflow:auto}
       if (cut) { c.strokeStyle = 'rgba(3,9,6,.8)'; c.lineWidth = 4.6; c.stroke(); c.strokeStyle = '#fff'; c.lineWidth = 2; c.setLineDash([8, 5]); c.stroke(); c.setLineDash([]); }
       else { c.strokeStyle = major ? 'rgba(255,255,255,.92)' : mid ? 'rgba(255,255,255,.66)' : 'rgba(255,255,255,.32)'; c.lineWidth = major ? 1.4 : mid ? 1 : .7; c.stroke(); }
       if (!mid) continue;
-      // 숫자: 긴 선부터, 거점·이름표·다른 숫자와 떨어진 자리
-      for (var t = 0, cnt = 0, mx = cut || major ? 3 : 2; t < lines.length && cnt < mx; t++) {
-        var pp = lines[t]; if (pp.len < 70) break;
-        for (var fr = 0; fr < 3; fr++) {
-          var n2 = clamp(Math.round(pp.length * [.5, .28, .72][fr]), 1, pp.length - 2), p = pp[n2], wm = inv(p[0], p[1]);
+      // 숫자: 긴 선부터, 화면 안이면서 거점·이름표·다른 숫자와 떨어진 자리
+      for (var t2 = 0, cnt = 0, mx = cut || major || zm ? 3 : 2; t2 < lines.length && cnt < mx; t2++) {
+        var pp = lines[t2]; if (pp.len < 70) break;
+        for (var fr = 0; fr < 7; fr++) {
+          var n2 = clamp(Math.round(pp.length * [.5, .28, .72, .4, .6, .16, .84][fr]), 1, pp.length - 2), p = pp[n2], wm = inv(p[0], p[1]);
+          if (p[0] < SAFE.l + 16 || p[0] > SAFE.r - 16 || p[1] < SAFE.t + 10 || p[1] > SAFE.b - 10) continue;
           if (!inPark(wm[0], wm[1]) || placed.some(function (o) { return Math.hypot(o[0] - p[0], o[1] - p[1]) < (o[2] || 110); }) || boxes.some(function (o) { return p[0] > o[0] - 26 && p[0] < o[0] + o[2] + 26 && p[1] > o[1] - 16 && p[1] < o[1] + o[3] + 16; })) continue;
           var q0 = pp[Math.max(0, n2 - 2)], q1 = pp[Math.min(pp.length - 1, n2 + 2)];
           placed.push(p); labels.push([p, L, cut, Math.atan2(q1[1] - q0[1], q1[0] - q0[0])]); cnt++; break;
@@ -521,69 +651,135 @@ body{overflow:auto}
       }
     }
     c.restore();
-    labels.forEach(function (l) {
-      var ang = l[3]; if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
-      c.save(); c.translate(l[0][0], l[0][1]); c.rotate(ang);
-      c.font = (l[2] ? '800 12px ' : '700 10.5px ') + FONT; c.textAlign = 'center'; c.textBaseline = 'middle';
-      halo(c, l[1] + (l[2] ? ' 기준' : ''), 0, 0, l[2] ? '#fff' : 'rgba(241,247,243,.92)'); c.restore();
-    });
     // 3) 공원 경계(민트 빛)
     c.save(); parkPath(c); c.lineJoin = 'round'; c.shadowColor = 'rgba(106,245,176,.8)'; c.shadowBlur = 12; c.strokeStyle = MINT; c.lineWidth = 1.8; c.stroke(); c.restore();
-    // 4) 거점 점(점수 색)
-    pts.slice().sort(function (a2, b2) { return b2.v - a2.v; }).forEach(function (q) {
-      var p = q.p, sel = S.sel === q.h.id, r = sel ? 7.5 : 5.5;
-      c.beginPath(); c.arc(p[0], p[1], r + 3.2, 0, Math.PI * 2); c.fillStyle = 'rgba(3,9,6,.85)'; c.fill();
-      c.beginPath(); c.arc(p[0], p[1], r + 1.7, 0, Math.PI * 2); c.fillStyle = sel ? MINT : '#fff'; c.fill();
-      c.beginPath(); c.arc(p[0], p[1], r, 0, Math.PI * 2); c.fillStyle = css(rampRGB(q.v)); c.fill();
+    // ---- 여기부터 TOP(글자·거점) ----
+    labels.forEach(function (l) {
+      var ang = l[3]; if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
+      t.save(); t.translate(l[0][0], l[0][1]); t.rotate(ang);
+      t.font = (l[2] ? '800 12px ' : '700 10.5px ') + FONT; t.textAlign = 'center'; t.textBaseline = 'middle';
+      halo(t, l[1] + (l[2] ? ' 기준' : ''), 0, 0, l[2] ? '#fff' : 'rgba(241,247,243,.92)'); t.restore();
+    });
+    // 4) 거점: 전체 보기에서는 점수 색 점, 당겨 본 장면에서는 거점 그림이 든 둥근 표지
+    pts.slice().sort(function (a2, b2) { return (S.sel === a2.h.id) - (S.sel === b2.h.id) || b2.v - a2.v; }).forEach(function (q) {
+      var p = q.p, sel = S.sel === q.h.id, r = q.rr, col = css(rampRGB(q.v));
+      if (!zm) {
+        r = sel ? 7.5 : 5.5;
+        t.beginPath(); t.arc(p[0], p[1], r + 3.2, 0, Math.PI * 2); t.fillStyle = 'rgba(3,9,6,.85)'; t.fill();
+        t.beginPath(); t.arc(p[0], p[1], r + 1.7, 0, Math.PI * 2); t.fillStyle = sel ? MINT : '#fff'; t.fill();
+        t.beginPath(); t.arc(p[0], p[1], r, 0, Math.PI * 2); t.fillStyle = col; t.fill();
+        return;
+      }
+      if (sel) { var g = t.createRadialGradient(p[0], p[1], r, p[0], p[1], 78); g.addColorStop(0, 'rgba(106,245,176,.34)'); g.addColorStop(1, 'rgba(106,245,176,0)'); t.fillStyle = g; t.beginPath(); t.arc(p[0], p[1], 78, 0, Math.PI * 2); t.fill(); }
+      t.beginPath(); t.arc(p[0], p[1], r + 4.4, 0, Math.PI * 2); t.fillStyle = 'rgba(3,9,6,.86)'; t.fill();
+      t.beginPath(); t.arc(p[0], p[1], r + 2, 0, Math.PI * 2); t.fillStyle = col; t.fill();
+      t.beginPath(); t.arc(p[0], p[1], r - .6, 0, Math.PI * 2); t.fillStyle = sel ? '#f1f7f3' : 'rgba(7,13,10,.95)'; t.fill();
+      pict(t, q.h.id, p[0], p[1], r * 1.24, sel ? DARK : INK);
     });
     pts.forEach(function (q) {
-      if (!q.far) return; var b = q.h.box, tx = clamp(q.p[0], b[0] + 10, b[0] + b[2] - 10), ty = q.p[1] < b[1] ? b[1] : b[1] + b[3];
-      c.beginPath(); c.moveTo(q.p[0], q.p[1] + (ty > q.p[1] ? 9 : -9)); c.lineTo(tx, ty); c.strokeStyle = 'rgba(3,9,6,.8)'; c.lineWidth = 3; c.stroke(); c.strokeStyle = 'rgba(241,247,243,.85)'; c.lineWidth = 1; c.stroke();
+      if (!q.far) return; var b2 = q.h.box, tx = clamp(q.p[0], b2[0] + 10, b2[0] + b2[2] - 10), ty = q.p[1] < b2[1] ? b2[1] : b2[1] + b2[3], gap = q.rr + 3.5;
+      t.beginPath(); t.moveTo(q.p[0], q.p[1] + (ty > q.p[1] ? gap : -gap)); t.lineTo(tx, ty); t.strokeStyle = 'rgba(3,9,6,.8)'; t.lineWidth = 3; t.stroke(); t.strokeStyle = 'rgba(241,247,243,.85)'; t.lineWidth = 1; t.stroke();
     });
     // 5) 이름표: 어두운 유리 알약 안에 이름과 점수
     pts.forEach(function (q) {
-      var b = q.h.box, low = q.v < CUT, sel = S.sel === q.h.id;
-      pill(c, b[0], b[1], b[2], b[3]); c.fillStyle = sel ? 'rgba(241,247,243,.96)' : 'rgba(7,13,10,.86)'; c.fill();
-      c.strokeStyle = sel ? '#fff' : low ? 'rgba(255,155,138,.6)' : 'rgba(255,255,255,.18)'; c.lineWidth = 1; c.stroke();
-      c.textAlign = 'left'; c.textBaseline = 'middle';
-      if (q.nm) { c.font = '600 ' + fs + 'px ' + FONT; c.fillStyle = sel ? DARK : INK; c.fillText(q.h.name, b[0] + pad, q.pos[1] + .5); }
-      c.font = '800 ' + (fs + 1) + 'px ' + FONT; c.fillStyle = sel ? (low ? '#c8372f' : '#0b7a45') : satTone(q.v)[2]; c.fillText(String(q.v), b[0] + pad + q.wn, q.pos[1] + .5);
+      var b2 = q.h.box, low = q.v < CUT, sel = S.sel === q.h.id;
+      pill(t, b2[0], b2[1], b2[2], b2[3]); t.fillStyle = sel ? 'rgba(241,247,243,.96)' : 'rgba(7,13,10,.86)'; t.fill();
+      t.strokeStyle = sel ? '#fff' : low ? 'rgba(255,155,138,.6)' : 'rgba(255,255,255,.18)'; t.lineWidth = 1; t.stroke();
+      t.textAlign = 'left'; t.textBaseline = 'middle';
+      if (q.nm) { t.font = '600 ' + fs + 'px ' + FONT; t.fillStyle = sel ? DARK : INK; t.fillText(q.h.name, b2[0] + pad, q.pos[1] + .5); }
+      t.font = '800 ' + (fs + 1) + 'px ' + FONT; t.fillStyle = sel ? (low ? '#c8372f' : '#0b7a45') : satTone(q.v)[2]; t.fillText(String(q.v), b2[0] + pad + q.wn, q.pos[1] + .5);
     });
-    stat(); A.ready = true; kick();
+    stat(); sc.ready = true; kick();
   }
 
   // ---------- 애니메이션: 화면 합성 ----------
   function ease(t) { return 1 - Math.pow(1 - clamp(t, 0, 1), 3); }
   function kick() { if (!A.raf) A.raf = requestAnimationFrame(frame); }
+  // 장면을 카메라가 보는 자리로 옮겨 그리기 위한 변환 · 카메라 기준 화면 좌표
+  function T(c, v) { var k = CAM.s / v.s; c.setTransform(DPR * k, 0, 0, DPR * k, DPR * (CAM.ox - v.ox * k), DPR * (CAM.oy - v.oy * k)); }
+  function PC(x, y) { return [CAM.ox + x * CAM.s, CAM.oy - y * CAM.s]; }
+  // 축척 막대와 방위(왼쪽 아래) + 배경 출처: 카메라 배율에 맞춰 매번 그림
+  function scaleBar(c) {
+    if (W < 760) return;
+    var s = CAM.s, m = [500, 200, 100, 50, 20].filter(function (v) { return v * s <= 270; })[0] || 20, len = m * s, x0 = 58, x1 = x0 + len, y0 = SAFE.b - 14, ink = 'rgba(241,247,243,.8)';
+    function two(draw) { c.strokeStyle = 'rgba(3,9,6,.55)'; c.lineWidth = 3.6; draw(); c.strokeStyle = ink; c.lineWidth = 1.2; draw(); }
+    c.lineJoin = 'round'; c.lineCap = 'butt'; c.setLineDash([]);
+    two(function () { c.beginPath(); c.moveTo(x0, y0 - 5); c.lineTo(x0, y0); c.lineTo(x1, y0); c.lineTo(x1, y0 - 5); c.stroke(); });
+    c.font = '600 10px ' + FONT; c.textBaseline = 'bottom'; c.textAlign = 'center'; halo(c, '0', x0, y0 - 7, ink); halo(c, m + 'm', x1 - 4, y0 - 7, ink);
+    var nx = 34, nc = y0 - 9; two(function () { c.beginPath(); c.arc(nx, nc, 9, 0, Math.PI * 2); c.stroke(); });
+    c.beginPath(); c.moveTo(nx, nc + 1); c.lineTo(nx, nc - 9); c.strokeStyle = ink; c.lineWidth = 3; c.stroke();
+    c.font = '700 10px ' + FONT; halo(c, 'N', nx, nc - 11, ink);
+    c.font = '500 9.5px ' + FONT; c.textAlign = 'left'; halo(c, A.sat > .5 ? '위성 사진 © Esri, Maxar, Earthstar Geographics' : '지도 © OpenStreetMap 기여자', x1 + 16, y0 + 1, 'rgba(241,247,243,.5)');
+  }
   function frame(now) {
-    A.raf = 0; if (!view) return;
+    A.raf = 0; if (!HOME || !CAM) return;
     var c = ctx, dt = A.last ? Math.min(64, now - A.last) : 16; A.last = now;
     if (REDUCE) { A.intro = 1; A.fade = 1; }
     A.intro = Math.min(1, A.intro + dt / 1400); A.fade = Math.min(1, A.fade + dt / 450);
+    // 카메라 이동: 고른 거점이 화면에서 곧은 길로 가운데까지 오도록, 배율은 고르게 커지도록
+    if (FLY) {
+      var f = FLY; f.t = REDUCE ? 1 : Math.min(1, f.t + dt / f.dur);
+      var e = f.t < .5 ? 4 * f.t * f.t * f.t : 1 - Math.pow(-2 * f.t + 2, 3) / 2, s = f.a.s * Math.pow(f.b.s / f.a.s, e);
+      var ax = f.a.ox + f.x * f.a.s, ay = f.a.oy - f.y * f.a.s, qx = ax + (f.b.ox + f.x * f.b.s - ax) * e, qy = ay + (f.b.oy - f.y * f.b.s - ay) * e;
+      CAM = { s: s, ox: qx - f.x * s, oy: qy + f.y * s };
+      if (f.t >= 1) { FLY = null; CAM = { s: f.b.s, ox: f.b.ox, oy: f.b.oy }; if (f.done) f.done(); }
+    }
+    // 당겨 본 장면은 카메라가 멈춘 뒤 서서히 나타나고, 떠날 때는 바로 물러남
+    var zt = ZOOM && ZOOM.ready && !FLY && ACT === ZOOM ? 1 : 0; A.z = REDUCE ? zt : A.z + clamp(zt - A.z, -dt / 180, dt / 380);
     // 위성 사진은 충분히 받아졌을 때 서서히 나타나고, 「지도」를 고르면 서서히 사라짐
-    var st = S.base === 'sat' && SAT && SAT.cover > .6 ? 1 : 0; A.sat = REDUCE ? st : A.sat + clamp(st - A.sat, -dt / 700, dt / 700);
-    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+    var st = S.base === 'sat' && HOME.SAT && HOME.SAT.cover > .6 ? 1 : 0; A.sat = REDUCE ? st : A.sat + clamp(st - A.sat, -dt / 700, dt / 700);
+    var zs = ZOOM && ZOOM.SAT && ZOOM.SAT.cover > .6 ? 1 : 0; A.zs = REDUCE || !zs ? zs : Math.min(1, A.zs + dt / 350);
+    var near = clamp(1 - (CAM.s / HOME.v.s - 1) * 2.5, 0, 1);   // 전체 보기에 가까울수록 1: 이름표는 당기기 시작하면 바로 물러남
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.clearRect(0, 0, cv.width, cv.height); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+    // 바탕: 전체 장면을 카메라에 맞춰 늘려 깔고, 그 위에 당겨 본 장면의 또렷한 바탕을 얹음
+    var solid = ZOOM && A.z >= 1 && (A.sat <= 0 ? !!ZOOM.BG : A.sat >= 1 && A.zs >= 1 && ZOOM.SAT.cover >= 1);
+    if (!solid) {
+      T(c, HOME.v); if (HOME.BG) c.drawImage(HOME.BG, 0, 0, W, H);
+      if (HOME.SAT && A.sat > 0) { c.globalAlpha = A.sat; c.drawImage(HOME.SAT, 0, 0, W, H); c.globalAlpha = 1; }
+    }
+    if (ZOOM && A.z > 0) {
+      T(c, ZOOM.v);
+      if (ZOOM.BG && A.sat < 1) { c.globalAlpha = A.z * (1 - A.sat); c.drawImage(ZOOM.BG, 0, 0, W, H); }
+      if (ZOOM.SAT && A.zs > 0 && A.sat > 0) { c.globalAlpha = A.z * A.zs * A.sat; c.drawImage(ZOOM.SAT, 0, 0, W, H); }
+      c.globalAlpha = 1;
+    }
+    // 화면 가장자리를 어둡게(화면에 붙어 있음)
+    c.setTransform(DPR, 0, 0, DPR, 0, 0); c.fillStyle = GR.vig; c.fillRect(0, 0, W, H); c.fillStyle = GR.top; c.fillRect(0, 0, W, 130);
+    // 강 이름(전체 보기에 가까울 때만)
+    if (near > 0 && HOME.names && HOME.names.length) {
+      c.save(); c.font = '600 12px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.letterSpacing = '7px'; c.fillStyle = 'rgba(241,247,243,' + (.4 * near) + ')';
+      HOME.names.forEach(function (n) { var p = PC(n[1], n[2]); c.fillText(n[0], p[0], p[1]); }); c.restore();
+    }
+    // 분포: 전체 장면은 당겨 본 장면이 나타나는 만큼 물러남
+    var fa = 1 - A.z, bb = GRID.bb, hv = HOME.v, icx = hv.ox + (bb[0] + bb[1]) / 2 * hv.s, icy = hv.oy - (bb[2] + bb[3]) / 2 * hv.s, e1 = ease(A.intro), irad = Math.hypot(W, H) * e1;
+    if (fa > 0) {
+      c.save(); T(c, hv);
+      // 첫 등장: 공원 가운데에서 원이 퍼지며 등고선이 드러남
+      if (A.intro < 1) { c.beginPath(); c.arc(icx, icy, irad, 0, Math.PI * 2); c.clip(); }
+      var fd = ACT === HOME && !FLY && A.fade < 1;
+      if (fd) { c.globalAlpha = fa; c.drawImage(PREV, 0, 0, W, H); }
+      c.globalAlpha = fa * (fd ? ease(A.fade) : 1); c.drawImage(HOME.LAY, 0, 0, W, H);
+      if (near > 0) { c.globalAlpha *= near; c.drawImage(HOME.TOP, 0, 0, W, H); }
+      c.restore(); c.globalAlpha = 1;
+      if (A.intro < 1) { T(c, hv); c.beginPath(); c.arc(icx, icy, irad, 0, Math.PI * 2); c.strokeStyle = 'rgba(106,245,176,' + (.9 * (1 - e1)) + ')'; c.lineWidth = 2.5; c.stroke(); }
+    }
+    if (ZOOM && A.z > 0) {
+      T(c, ZOOM.v); var fz = ACT === ZOOM && !FLY && A.fade < 1;
+      if (fz) { c.globalAlpha = A.z; c.drawImage(PREV, 0, 0, W, H); }
+      c.globalAlpha = A.z * (fz ? ease(A.fade) : 1); c.drawImage(ZOOM.LAY, 0, 0, W, H); c.drawImage(ZOOM.TOP, 0, 0, W, H); c.globalAlpha = 1;
+    }
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (BG) c.drawImage(BG, 0, 0, W, H);
-    if (SAT && A.sat > 0) { c.globalAlpha = A.sat; c.drawImage(SAT, 0, 0, W, H); c.globalAlpha = 1; }
-    // 첫 등장: 공원 가운데에서 원이 퍼지며 등고선이 드러남
-    var bx = GRID.bb, cx = P((bx[0] + bx[1]) / 2, (bx[2] + bx[3]) / 2), e = ease(A.intro), rad = Math.hypot(W, H) * e;
-    c.save();
-    if (A.intro < 1) { c.beginPath(); c.arc(cx[0], cx[1], rad, 0, Math.PI * 2); c.clip(); }
-    if (A.fade < 1) { c.drawImage(PREV, 0, 0, W, H); c.globalAlpha = ease(A.fade); }
-    c.drawImage(LAY, 0, 0, W, H); c.globalAlpha = 1;
-    c.restore();
-    if (A.intro < 1) { c.beginPath(); c.arc(cx[0], cx[1], rad, 0, Math.PI * 2); c.strokeStyle = 'rgba(106,245,176,' + (.9 * (1 - e)) + ')'; c.lineWidth = 2.5; c.stroke(); }
+    scaleBar(c);
     // 기준 미달 거점: 붉은 맥박
-    var k = S.mode, ph = (now % 1800) / 1800;
-    if (A.intro >= 1 && !REDUCE) S.hubs.forEach(function (h, i) {
-      if (h.s[k] >= CUT) return; var p = P(h.x, h.y), t = (ph + i * .13) % 1;
-      c.beginPath(); c.arc(p[0], p[1], 9 + t * 17, 0, Math.PI * 2); c.strokeStyle = 'rgba(255,155,138,' + (.7 * (1 - t)) + ')'; c.lineWidth = 2; c.stroke();
+    var k = S.mode, ph = (now % 1800) / 1800, show = Math.max(near, A.z);
+    if (A.intro >= 1 && !REDUCE && show > 0) S.hubs.forEach(function (h, i) {
+      if (h.s[k] >= CUT) return; var p = PC(h.x, h.y), t = (ph + i * .13) % 1; if (p[0] < -40 || p[0] > W + 40 || p[1] < -40 || p[1] > H + 40) return;
+      c.beginPath(); c.arc(p[0], p[1], 9 + 11 * A.z + t * 17, 0, Math.PI * 2); c.strokeStyle = 'rgba(255,155,138,' + (.7 * (1 - t) * show) + ')'; c.lineWidth = 2; c.stroke();
     });
     // 선택한 거점: 천천히 도는 점선 고리
-    var sh = S.sel && S.hubs.filter(function (h) { return h.id === S.sel; })[0];
-    if (sh) { var q = P(sh.x, sh.y); c.save(); c.translate(q[0], q[1]); c.rotate(now / 1600); c.beginPath(); c.arc(0, 0, 20, 0, Math.PI * 2); c.setLineDash([5, 4]); c.strokeStyle = MINT; c.lineWidth = 1.8; c.stroke(); c.restore(); }
-    if (!REDUCE || A.intro < 1 || A.fade < 1 || (A.sat > 0 && A.sat < 1)) kick();
+    var sh = hubSel();
+    if (sh) { var q = PC(sh.x, sh.y); c.save(); c.translate(q[0], q[1]); c.rotate(now / 1600); c.beginPath(); c.arc(0, 0, 20 + 9 * A.z, 0, Math.PI * 2); c.setLineDash([5, 4]); c.strokeStyle = MINT; c.lineWidth = 1.8; c.stroke(); c.restore(); }
+    if (!REDUCE || FLY || A.intro < 1 || A.fade < 1 || A.z !== zt || A.sat !== st || A.zs !== zs) kick();
   }
   // ---------- 왼쪽 글줄 ----------
   var FAC = { dens: '밀도', wx: '날씨', env: '주변 환경' };
@@ -654,33 +850,58 @@ body{overflow:auto}
     if (w) why += why === '더위' || why === '추위' ? '(체감 ' + w.feels + '℃)' : why === '초미세먼지' ? '(' + w.pm25 + '㎍/㎥)' : why === '비' ? '(강수확률 ' + w.pop + '%)' : '';
     return why + (h.type !== 'outdoor' ? ' · ' + TYPE[h.type] + ' 거점이라 영향 작음' : '');
   }
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
+  function zoneRow(z) { var g = legalOf(z); return g ? '<div><span>법적 지정</span><p><b>' + g.label + '</b><small>' + g.rule + (g.law && g.law !== '—' ? ' · ' + g.law : '') + '</small></p></div>' : ''; }
+  function photoOf(id) { var key = PHOTOS && PHOTOS.places && PHOTOS.places[id]; return key && PHOTOS.files ? PHOTOS.files[key] : null; }
+  // 거점 카드: 팀이 이용자 화면에 쓰는 사진(위키미디어 공용 자유 라이선스)이 있으면 그 사진을, 없으면 그 자리의 위성 사진을 가까이 당겨 보여 준다
+  function heroHTML(h) {
+    var inf = INFO[h.id] || {}, ph = photoOf(h.id);
+    return '<figure class="hero">' +
+      (ph ? '<img src="../needs/' + esc(ph.src) + '" alt="' + esc(ph.caption || h.name) + '">' : '<canvas id="shot" role="img" aria-label="' + esc(h.name) + ' 항공 사진"></canvas>') +
+      '<span class="tag">' + (ph ? '사진' : '항공 사진') + '</span>' +
+      '<figcaption><span class="pic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + (inf.d || '') + '"/></svg></span><span class="tx"><b>' + esc(h.name) + '</b><small>' + esc(inf.t || h.zone) + '</small></span></figcaption></figure>' +
+      '<div class="credit">' + (ph ? '사진: ' + esc(ph.caption) + ' · <a href="' + esc(ph.page) + '" target="_blank" rel="noopener">' + esc(ph.credit) + '</a> · ' + esc(ph.license) + ' · 위키미디어 공용'
+        : '위성 사진 © Esri, Maxar, Earthstar Geographics · 점선 고리가 거점 자리입니다') + '</div>';
+  }
   function side() {
-    var h = S.hubs.filter(function (o) { return o.id === S.sel; })[0], open = !!h, k = S.mode;
+    var h = hubSel(), open = !!h, k = S.mode;
     $('detail').hidden = !open; $('ov').hidden = open; $('side').classList.toggle('sel', open);
     $('listN').textContent = (k === 'all' ? '예상 점수' : MODES.filter(function (m) { return m[0] === k; })[0][1]) + ' · 낮은 순';
     $('hubs').innerHTML = S.hubs.slice().sort(function (a, b) { return a.s[k] - b.s[k]; }).map(function (o) {
       var t = satTone(o.s[k]);
-      return '<button type="button" class="hub' + (o.id === S.sel ? ' sel' : '') + '" data-id="' + o.id + '"><span class="nm">' + o.name + '<em>' + TYPE[o.type] + '</em></span><span class="bar"><i style="width:' + o.s[k] + '%;background:' + t[0] + '"></i></span><span class="pc" style="color:' + t[2] + '">' + o.s[k] + '점</span></button>';
+      return '<button type="button" class="hub' + (o.id === S.sel ? ' sel' : '') + '" data-id="' + o.id + '"><span class="nm">' + o.name + '<em>' + TYPE[o.type] + '</em>' + (o.extra ? '<em class="new">추가</em>' : '') + '</span><span class="bar"><i style="width:' + o.s[k] + '%;background:' + t[0] + '"></i></span><span class="pc" style="color:' + t[2] + '">' + o.s[k] + '점</span></button>';
     }).join('');
-    if (!open) return;
+    if (!open) { side.cur = null; return; }
+    // 머리(사진·그림·이름)는 거점이 바뀔 때만 새로 넣어, 시각을 옮길 때마다 사진이 다시 나타나지 않게 한다
+    if (side.cur !== h.id) {
+      side.cur = h.id;
+      $('dHead').innerHTML = '<div class="dh"><button type="button" class="bk" data-close>← 전체 보기</button><span class="n">' + h.zone + ' · ' + TYPE[h.type] + '</span></div>' + heroHTML(h);
+      heroShot();
+    }
     var w = S.wx && S.wx[S.hour], s = h.s, tn = satTone(s.all), day = [];
     for (var hr = 6; hr <= 22; hr++) { var w2 = S.wx && S.wx[hr]; day.push(sat(h, crowd(h, S.dow, hr, w2).ratio, w2).all); }
     var bw = 100 / day.length, cutY = 60 - CUT / 100 * 56;
     var bars = day.map(function (v, i) { var hh = v / 100 * 56; return '<rect data-h="' + (i + 6) + '" x="' + (i * bw + .6).toFixed(2) + '" y="' + (60 - hh).toFixed(1) + '" width="' + (bw - 1.2).toFixed(2) + '" height="' + hh.toFixed(1) + '" rx="1" fill="' + satTone(v)[0] + '" opacity="' + (i + 6 === S.hour ? 1 : .4) + '"><title>' + (i + 6) + '시 ' + v + '점</title></rect>'; }).join('');
     function cb(label, v, why) { return '<div><span>' + label + '</span><span class="bar"><i style="width:' + v + '%;background:' + satTone(v)[0] + '"></i></span><b>' + v + '</b><span class="why">' + why + '</span></div>'; }
-    $('detail').innerHTML = '<div class="dh"><button type="button" class="bk" data-close>← 전체 보기</button><span class="n">' + h.zone + ' · ' + TYPE[h.type] + '</span></div><div class="nm">' + h.name + '</div>' +
-      '<div class="score"><b style="color:' + tn[2] + '">' + s.all + '</b><small>점 · ' + tn[1] + '</small></div>' +
+    var facts = zoneRow(h.legal) + (h.extra ? '<div><span>추가 거점</span><p><b>' + h.what + '</b><small>위치는 OpenStreetMap(' + h.src + ') · 수용 인원과 끌림은 가정값(현장 계수 뒤 보정)</small></p></div>' : '');
+    $('dBody').innerHTML = '<div class="score"><b style="color:' + tn[2] + '">' + s.all + '</b><small>점 · ' + tn[1] + ' · ' + S.hour + '시 예상 만족도</small></div>' +
       '<div class="comp">' +
-      cb('밀도 쾌적', s.dens, h.people.toLocaleString() + ' / ' + h.capacity.toLocaleString() + '명 (' + crowdTone(h.ratio) + ' ' + Math.round(h.ratio * 100) + '%)') +
+      cb('밀도 쾌적', s.dens, h.people.toLocaleString() + ' / ' + h.capacity.toLocaleString() + '명 (' + crowdTone(h.ratio) + ' ' + Math.round(h.ratio * 100) + '%)' + (h.extra ? ' · 가정' : '')) +
       cb('날씨 쾌적', s.wx, wxWhyText(h, w)) +
       cb('주변 환경', s.env, h.envN ? '20m 칸 ' + h.envN + '개 · 취약도 ' + h.vuln.toFixed(1) + ' · 수목 ' + Math.round(h.tree * 100) + '%' : '격자 밖 · 기본값') +
       '</div>' +
       '<svg class="spark" viewBox="0 0 100 62" preserveAspectRatio="none" role="img" aria-label="' + h.name + ' 시간대별 예상 만족도">' + bars + '<line x1="0" x2="100" y1="' + cutY.toFixed(1) + '" y2="' + cutY.toFixed(1) + '" stroke="#f1f7f3" stroke-opacity=".6" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>' +
-      '<div class="note">6시~22시 예상 만족도 흐름 · 짙은 막대 = ' + S.hour + '시 · 점선 = 관리 기준(' + CUT + '점). 막대를 누르면 그 시각으로 옮깁니다.</div>';
+      '<div class="note">6시~22시 예상 만족도 흐름 · 짙은 막대 = ' + S.hour + '시 · 점선 = 관리 기준(' + CUT + '점). 막대를 누르면 그 시각으로 옮깁니다.</div>' +
+      (facts ? '<div class="facts">' + facts + '</div>' : '');
   }
   function select(id) {
-    var ch = S.sel !== (id || null); S.sel = id || null; side(); render();
-    if (ch && S.sel) { var sd = $('side'); sd.classList.remove('fresh'); void sd.offsetWidth; sd.classList.add('fresh'); sd.scrollTop = 0; if (SAFE && SAFE.r > W - 20 && sd.scrollIntoView) sd.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }); }
+    var ch = S.sel !== (id || null); S.sel = id || null; side();
+    if (ch) go(); else paint();
+    if (ch && S.sel) {
+      var sd = $('side'); sd.classList.remove('fresh'); void sd.offsetWidth; sd.classList.add('fresh'); sd.scrollTop = 0;
+      // 좁은 화면(패널이 지도 아래): 지도가 거점으로 당겨지는 것을 먼저 보여 준 뒤 상세로 내려감
+      if (SAFE && SAFE.r > W - 20 && sd.scrollIntoView) { clearTimeout(select.tm); select.tm = setTimeout(function () { if (S.sel) sd.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }); }, REDUCE ? 0 : 1050); }
+    }
   }
   $('side').addEventListener('click', function (e) {
     var b = e.target.closest('[data-id]'); if (b) { select(b.dataset.id); return; }
@@ -694,7 +915,7 @@ body{overflow:auto}
     var w = S.wx && S.wx[S.hour];
     S.hubs.forEach(function (h) { var c = crowd(h, S.dow, S.hour, w); h.people = c.people; h.ratio = c.ratio; h.s = sat(h, c.ratio, w); });
     $('hourLab').textContent = S.hour + '시';
-    field(); render(); timeline(); side(); left();
+    field(); paint(); timeline(); side(); left();
   }
   function parkSat(hr) {
     var s = 0, n = 0, w = S.wx && S.wx[hr];
@@ -712,9 +933,9 @@ body{overflow:auto}
   }
 
   // 마우스: 그 자리의 예상 점수, 거점이면 요인별 점수
-  function hubAt(mx, my, r) { var hit = null; S.hubs.forEach(function (h) { var p = P(h.x, h.y), b = h.box; if (Math.hypot(p[0] - mx, p[1] - my) < r || (b && mx >= b[0] && mx <= b[0] + b[2] && my >= b[1] && my <= b[1] + b[3])) hit = h; }); return hit; }
+  function hubAt(mx, my, r) { var hit = null; S.hubs.forEach(function (h) { var p = P(h.x, h.y), b = h.box; if (ACT === ZOOM && !b) return; if (Math.hypot(p[0] - mx, p[1] - my) < r || (b && mx >= b[0] && mx <= b[0] + b[2] && my >= b[1] && my <= b[1] + b[3])) hit = h; }); return hit; }
   $('map').addEventListener('mousemove', function (e) {
-    if (!view) return; var b = cv.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top, w = inv(mx, my), tip = $('tip'), hub = hubAt(mx, my, 12); cv.style.cursor = hub ? 'pointer' : '';
+    if (!view || FLY) return; var b = cv.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top, w = inv(mx, my), tip = $('tip'), hub = hubAt(mx, my, ACT === ZOOM ? 21 : 12); cv.style.cursor = hub ? 'pointer' : '';
     if (hub) tip.innerHTML = '<b>' + hub.name + ' ' + hub.s.all + '점</b> · 밀도 ' + hub.s.dens + ' · 날씨 ' + hub.s.wx + '(' + hub.s.wxWhy + ') · 환경 ' + hub.s.env + ' · 예상 ' + hub.people.toLocaleString() + '/' + hub.capacity.toLocaleString() + '명';
     else if (inPark(w[0], w[1])) tip.innerHTML = '이 자리 예상 <b>' + Math.round(fAt(w[0], w[1])) + '점</b>';
     else { tip.style.opacity = 0; return; }
@@ -722,7 +943,7 @@ body{overflow:auto}
     tip.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(' + (right ? 'calc(-100% - 12px)' : '12px') + ',-50%)'; tip.style.opacity = 1;
   });
   $('map').addEventListener('mouseleave', function () { $('tip').style.opacity = 0; });
-  cv.addEventListener('click', function (e) { var b = cv.getBoundingClientRect(), hit = hubAt(e.clientX - b.left, e.clientY - b.top, 14); select(hit && S.sel !== hit.id ? hit.id : null); });
+  cv.addEventListener('click', function (e) { if (FLY) return; var b = cv.getBoundingClientRect(), hit = hubAt(e.clientX - b.left, e.clientY - b.top, ACT === ZOOM ? 23 : 14); select(hit && S.sel !== hit.id ? hit.id : null); });
 
   $('modes').innerHTML = MODES.map(function (m) { return '<button type="button" class="mode" data-m="' + m[0] + '" aria-pressed="' + (m[0] === S.mode) + '" title="' + m[1] + '"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[m[0]] + '</svg></span>' + m[2] + '</button>'; }).join('');
   [].forEach.call($('base').children, function (x) { x.setAttribute('aria-pressed', x.dataset.b === S.base); });
@@ -730,7 +951,7 @@ body{overflow:auto}
     var b = e.target.closest('[data-b]'); if (!b || b.dataset.b === S.base) return; S.base = b.dataset.b;
     try { localStorage.setItem('sf-ops-base', S.base); } catch (er) {}
     [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); });
-    if (S.base === 'sat') { loadTiles(); buildSAT(); } kick();
+    if (S.base === 'sat') { [HOME, ZOOM].forEach(function (sc) { if (sc) { use(sc); loadTiles(); buildSAT(); } }); if (ACT) use(ACT); } kick();
   });
   $('modes').addEventListener('click', function (e) { var b = e.target.closest('[data-m]'); if (!b) return; S.mode = b.dataset.m; [].forEach.call($('modes').children, function (x) { x.setAttribute('aria-pressed', x === b); }); recompute(); });
   var hr = $('hour'), timer = null;
@@ -751,11 +972,13 @@ body{overflow:auto}
     a.time.forEach(function (t, i) { var h = +t.slice(11, 13); wx[h] = { feels: Math.round(a.apparent_temperature[i] * 10) / 10, pop: a.precipitation_probability[i], pm25: qi[t] == null ? null : Math.round(q.pm2_5[qi[t]] * 10) / 10 }; });
     S.wx = wx;
   }).catch(function () {});
-  Promise.all([J(D + 'park.geojson'), J(D + 'features.geojson'), J(D + 'network.json'), J(D + 'team.json'), J(D + 'hubs.json'), J(D + 'city3d.json').catch(function () { return null; })]).then(function (r) {
+  Promise.all([J(D + 'park.geojson'), J(D + 'features.geojson'), J(D + 'network.json'), J(D + 'team.json'), J(D + 'hubs.json'), J(D + 'city3d.json').catch(function () { return null; }), J(D + 'legal.json').catch(function () { return null; }), J('../needs/data/photos.json').catch(function () { return null; })]).then(function (r) {
     RINGS = r[0].features[0].geometry.coordinates.map(function (poly) { return poly[0].map(function (q) { return xy(q[0], q[1]); }); });
     FEAT = r[1]; NET = r[2]; NET.xy = NET.nodes.map(function (q) { return xy(q[0], q[1]); });
-    var cells = r[3].grid.features.map(function (f) { var c = f.geometry.coordinates[0], lo = 0, la = 0; for (var i = 0; i < 4; i++) { lo += c[i][0]; la += c[i][1]; } var p = xy(lo / 4, la / 4); return { x: p[0], y: p[1], score: f.properties.score, tree: f.properties.tree || 0 }; });
-    S.hubs = r[4].filter(function (h) { return h.type !== 'gate' && h.capacity; }).map(function (h) { var p = xy(h.lon, h.lat); h.x = p[0]; h.y = p[1]; h.env = envScore(h, cells); return h; });
+    var cells = r[3].grid.features.map(function (f) { var c = f.geometry.coordinates[0], lo = 0, la = 0; for (var i = 0; i < 4; i++) { lo += c[i][0]; la += c[i][1]; } var p = xy(lo / 4, la / 4); return { x: p[0], y: p[1], score: f.properties.score, tree: f.properties.tree || 0, id: f.properties.id }; });
+    CELLS = cells; LEGAL = r[6]; PHOTOS = r[7];
+    if (LEGAL) ZONES = LEGAL.shapes.features.map(function (f) { var g = f.geometry; return { zone: f.properties.zone, polys: (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(function (pg) { return pg.map(function (ring) { return ring.map(function (q) { return xy(q[0], q[1]); }); }); }) }; });
+    S.hubs = r[4].concat(EXTRA.map(function (h) { h.extra = true; return h; })).filter(function (h) { return h.type !== 'gate' && h.capacity; }).map(function (h) { var p = xy(h.lon, h.lat); h.x = p[0]; h.y = p[1]; h.env = envScore(h, cells); h.legal = LEGAL ? LEGAL.hubs[h.id] || zoneAt(h.x, h.y) : null; return h; });
     CITY = r[5]; if (CITY) CITY.rings = waterRings(CITY.water);
     makeGrid();
     return wxP;
