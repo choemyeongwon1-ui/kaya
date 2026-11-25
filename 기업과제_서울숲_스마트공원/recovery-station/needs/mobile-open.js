@@ -1,4 +1,4 @@
-// 이용자 화면(tour.html) 위쪽 「돌아가기」 옆에 「모바일로 보기」 버튼을 붙입니다.
+// 이용자 화면(tour.html) 왼쪽 아래 구석(내 위치 버튼 옆)에 「모바일로 보기」 버튼을 붙입니다.
 // - 누르면 ../mobile.html(폰 모양 안에서 이 화면이 도는 발표용 페이지)을 같은 탭에서 엽니다.
 // - 모바일 화면 왼쪽 위 「‹ 이용자 화면」이 여기 기억해 둔 주소로 되돌아옵니다.
 // - tour.js는 건드리지 않습니다. 화면이 다시 그려져도 버튼이 남도록 지켜보며 다시 붙입니다.
@@ -8,7 +8,12 @@
   var ID = 'nd-mobile-open', KEY = 'nd-mobile-return';
 
   var css = document.createElement('style');
-  css.textContent = '#' + ID + '{display:inline-flex!important;color:var(--ink)}#' + ID + ' svg{flex:none}';
+  // Bottom-left corner, right next to the 내 위치 button (.tr-locate: left 22px, bottom 30px, 44px).
+  // Desktop only — on a real phone the user is already on mobile.
+  css.textContent =
+    '#' + ID + '{position:fixed;z-index:1050;left:76px;bottom:35px;display:inline-flex!important;color:var(--ink);padding:9px 14px}' +
+    '#' + ID + ' svg{flex:none}' +
+    '@media(max-width:899px){#' + ID + '{display:none!important}}';
   document.head.appendChild(css);
 
   function make() {
@@ -27,10 +32,9 @@
   }
 
   function attach() {
-    if (document.getElementById(ID)) return;
-    var back = document.querySelector('.tr-link.tr-back');
-    if (!back || !back.parentNode) return;
-    back.parentNode.insertBefore(make(), back);
+    if (document.getElementById(ID) || !document.body) return;
+    if (!document.querySelector('.tr-locate')) return; // wait until the tour screen is built
+    document.body.appendChild(make());
   }
 
   attach();

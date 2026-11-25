@@ -936,3 +936,6 @@ div.tr-status-line{cursor:default}
 .tr-link.tr-back{display:inline-flex!important;font-weight:700;color:var(--ink)}
 .tr-brand b{white-space:nowrap}
 @media(max-width:420px){.tr-link.tr-back{padding:8px 11px}}
+
+/* 왼쪽 위 「머무는 숲」 옆 「코스 찾기」 글자 숨김 */
+.tr-brand-sub{display:none!important}
