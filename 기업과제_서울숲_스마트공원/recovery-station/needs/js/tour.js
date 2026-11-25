@@ -398,8 +398,8 @@ function ratings() {
   const agg = {};
   for (const j of allReviews()) for (const s of j.stops ?? []) {
     if (s.rating == null) continue;
-    const a = agg[s.id] ??= { sum: 0, count: 0, tags: {}, comments: [], seed: 0 };
-    a.sum += s.rating; a.count++; if (s.rating >= 4) a.good = (a.good ?? 0) + 1; if (j.seed) a.seed++;
+    const a = agg[s.id] ??= { sum: 0, count: 0, tags: {}, comments: [], seed: 0, rsum: 0 };
+    a.sum += s.rating; a.count++; if (s.rating >= 4) a.good = (a.good ?? 0) + 1; if (j.seed) a.seed++; else a.rsum += s.rating;
     for (const t of s.tags ?? []) a.tags[t] = (a.tags[t] ?? 0) + 1;
     if (s.comment) a.comments.push({ text: s.comment, rating: s.rating, at: j.at, mine: !j.seed });
   }
@@ -907,10 +907,14 @@ function ranked(rec, seen, prev, must) {
     let s = Object.keys(w).reduce((a, k) => a + w[k] * (r.parts[k] ?? 0), 0) / wsum * 100 - 25 * Math.min(r.tier, 3);
     if (fb.liked.length) s += 18 * Math.max(...fb.liked.map(p => sim(p, r.place)));
     if (fb.disliked.length) s -= Math.max(...fb.disliked.map(d => d.k * sim(d.place, r.place)));
-    if (prev) s -= 8 * sim(prev, r.place);
+    if (prev) s -= 16 * sim(prev, r.place);                     // 방금 본 곳과 비슷한 곳은 덜 (8→16)
+    // 가까운 곳부터: 걷는 시간 점수를 더 크게 보고(약 8%→25%), 지금 자리에서 10분 넘게 걸리는 곳은 1분마다 3점 뺌
+    s += 20 * (r.parts.walk ?? 0);
+    if (r.walkMin != null && r.walkMin > 10) s -= 3 * (r.walkMin - 10);
     if (fb.identity && PLACE_IDENTITY[r.place.id] != null) s += (PLACE_IDENTITY[r.place.id] - IDENTITY_MEAN) * 10;   // −9~+7점
-    const rt = rtOf(r.place.id);
-    if (rt && rt.count >= 3) s += (rt.avg - 3.6) * 10;
+    // 별점 가산은 실제 이용자 평가만(시연용 가상 평가는 화면 표시용 — 점수에 넣으면 특정 장소만 계속 뽑힘)
+    const rt = rtOf(r.place.id), real = rt ? rt.count - rt.seed : 0;
+    if (real >= 3) s += (rt.rsum / real - 3.6) * 10;
     if (must?.has(r.place.id)) s += 45;
     return { r, s };
   }).sort((a, b) => b.s - a.s);
