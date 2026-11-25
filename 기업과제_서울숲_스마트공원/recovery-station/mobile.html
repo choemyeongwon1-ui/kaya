@@ -53,7 +53,7 @@
   .phone::after{right:-4px;top:230px;height:100px}
   .screen{
     width:var(--pw);height:var(--ph);border-radius:54px;overflow:hidden;position:relative;
-    background:#fff;box-shadow:0 0 0 6px var(--bezel);
+    background:#08110d;box-shadow:0 0 0 6px var(--bezel);   /* dark, so zoom rounding never shows a light hairline */
     display:flex;flex-direction:column;
   }
   .status{
@@ -64,7 +64,7 @@
   .status.dark{color:#fff}
   .status .icons{display:flex;gap:6px;align-items:center}
   .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:3}
-  iframe{flex:1;width:100%;border:0;display:block;background:#fff}
+  iframe{flex:1;width:calc(100% + 1px);margin-right:-1px;border:0;display:block;background:#08110d}
   .home{height:var(--hb);flex:none;display:flex;align-items:center;justify-content:center;background:var(--sbg,#fff);transition:background .3s}
   .home i{width:136px;height:5px;border-radius:3px;background:#111;opacity:.85}
   .home.dark i{background:#fff}
