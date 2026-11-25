@@ -38,10 +38,11 @@
   .hint{margin-top:18px;font-size:12px;color:#61756a}
 
   /* phone */
-  .phone-wrap{width:calc((var(--pw) + 28px) * var(--scale));height:calc((var(--ph) + 28px) * var(--scale));flex:none}
+  /* zoom (not transform:scale): the browser lays the phone out at the target size, so the map inside
+     isn't re-rasterised through a scaled layer on every frame — smoother panning, sharper text. */
+  .phone-wrap{flex:none;zoom:var(--scale)}
   .phone{
     width:calc(var(--pw) + 28px);height:calc(var(--ph) + 28px);
-    transform:scale(var(--scale));transform-origin:top left;
     position:relative;border-radius:68px;padding:14px;
     background:linear-gradient(145deg,#3a3f3d,#1a1c1b 40%,#2c302e);
     box-shadow:0 0 0 2px #0b0b0b,0 40px 90px rgba(0,0,0,.55),0 12px 30px rgba(0,0,0,.4),inset 0 0 0 1.5px rgba(255,255,255,.08);
@@ -146,8 +147,14 @@
       document.getElementById('home').classList.toggle('dark',lum<140);
     }catch(e){}
   }
-  frame.addEventListener('load',function(){syncBars();setTimeout(syncBars,800);});
-  setInterval(syncBars,1500);
+  // Re-check only when something may have changed (load, a tap inside the phone) — not on a timer,
+  // because reading styles inside the frame forces it to recalculate layout and causes hitches.
+  var syncT=0;
+  function syncSoon(){ clearTimeout(syncT); syncT=setTimeout(syncBars,600); }
+  frame.addEventListener('load',function(){
+    syncBars(); setTimeout(syncBars,800);
+    try{ frame.contentDocument.addEventListener('click',syncSoon,true); }catch(e){}
+  });
 
   // Weather scenario buttons -> tour.html?wx=heat|dust|rain|cold (see tour.js "시연용").
   // _=timestamp makes the phone always load the latest pushed tour.html instead of a cached copy.

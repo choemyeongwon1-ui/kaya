@@ -31,12 +31,19 @@
     return a;
   }
 
+  // The button lives on <body> (outside #tour), so tour re-renders never remove it:
+  // attach once, then stop watching — a subtree observer would fire on every map tile while panning.
+  var mo = null;
   function attach() {
-    if (document.getElementById(ID) || !document.body) return;
-    if (!document.querySelector('.tr-locate')) return; // wait until the tour screen is built
+    if (document.getElementById(ID)) { if (mo) mo.disconnect(); return; }
+    if (!document.body || !document.querySelector('.tr-locate')) return; // wait until the tour screen is built
     document.body.appendChild(make());
+    if (mo) mo.disconnect();
   }
 
   attach();
-  new MutationObserver(attach).observe(document.documentElement, { childList: true, subtree: true });
+  if (!document.getElementById(ID)) {
+    mo = new MutationObserver(attach);
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
 })();
