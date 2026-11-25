@@ -6,7 +6,7 @@
 //     공원 밖이거나 위치를 못 쓰면 같은 화면을 '미리보기'로 재생합니다.
 //  4) 도착하면 그 자리에서 별점(+좋았던/아쉬운 점, 하고 싶은 말)을 받고, 바로 남은 코스를 고쳐 다음 곳으로 이어 갑니다.
 // 장소 점수는 맞춤형 추천 화면과 같은 recommend()를 매 구간 출발점에서 다시 계산해 쓰고, 이용자 별점을 얹습니다.
-import { loadData, buildModel } from './model.js';
+import { loadData, buildModel } from './model.js?v=2';   // ?v: model.js got places_extra
 import { seoulNow, fetchWeather, sampleWeather, annotate, applyScenario, kmaDays } from './weather.js';
 import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN, ACCESS_URL, SPEED, CALORIE } from './config.js?v=50'; // ?v: config.js got CALORIE — bust cached copies
 import { recommend, quietHours, josa, speedFor } from './recommend.js';
@@ -893,7 +893,8 @@ const usedMin = () => visited().reduce((a, s) => a + s.walkMin + dwell(), 0);
 
 const AFF_KEYS = NEEDS.map(n => n.key);
 function sim(a, b) {
-  const va = AFF_KEYS.map(k => AFFINITY[a.id]?.[k] ?? AFFINITY_DEFAULT), vb = AFF_KEYS.map(k => AFFINITY[b.id]?.[k] ?? AFFINITY_DEFAULT);
+  // 더한 장소(places_extra.json)는 표에 없어 장소에 붙은 aff 값을 씀
+  const va = AFF_KEYS.map(k => AFFINITY[a.id]?.[k] ?? a.aff?.[k] ?? AFFINITY_DEFAULT), vb = AFF_KEYS.map(k => AFFINITY[b.id]?.[k] ?? b.aff?.[k] ?? AFFINITY_DEFAULT);
   const dot = va.reduce((s, x, i) => s + x * vb[i], 0), na = Math.hypot(...va), nb = Math.hypot(...vb);
   const cos = na && nb ? dot / (na * nb) : 0;
   return .7 * Math.max(0, Math.min(1, (cos - .6) / .4)) + .3 * (a.type === b.type ? 1 : 0);

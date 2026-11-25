@@ -1,12 +1,12 @@
 // 자료를 읽어 계산에 쓰는 모형으로 엮습니다.
 // 기존 대시보드의 data/*.json(공원·보행망·격자·거점)과 이 화면의 data/*.json(시설·근처 장소)을 함께 씁니다.
-import { PLACE_NOTE, REST_NEAR, SNAP_PARK, TOILET_INSIDE, FLOOD_PENALTY } from './config.js';
+import { AFFINITY, PLACE_NOTE, REST_NEAR, SNAP_PARK, TOILET_INSIDE, FLOOD_PENALTY } from './config.js';
 import { toXY, inPolygon, PointIndex } from './geo.js';
 import { buildGraph, nearestNode, dijkstra } from './graph.js';
 
 export const APP_FILES = ['park.geojson', 'grid.geojson', 'network.json', 'features.geojson', 'context.geojson', 'hubs.json', 'team.json', 'meta.json'];
-export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json', 'programs.json', 'edges_extra.json'];
-const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json', 'programs.json', 'edges_extra.json'];      // 없어도 화면은 열림
+export const OWN_FILES = ['facilities.json', 'nearby.json', 'backdrop.json', 'survey.json', 'legal.json', 'programs.json', 'edges_extra.json', 'places_extra.json'];
+const OPTIONAL = ['survey.json', 'backdrop.json', 'legal.json', 'programs.json', 'edges_extra.json', 'places_extra.json'];      // 없어도 화면은 열림
 
 /** loadJson(경로) → 자료 묶음. appBase: 기존 대시보드 data 폴더, ownBase: 이 화면 data 폴더 */
 export async function loadData(loadJson, appBase = '../data/', ownBase = './data/') {
@@ -83,7 +83,12 @@ export function buildModel(data, extra = []) {
   cells.forEach((c, i) => (nodeCells.get(c.node) ?? nodeCells.set(c.node, []).get(c.node)).push(i));
 
   // ── 거점 ──
-  const hubs = data.hubs.map(h => {
+  // 기존 대시보드 거점(hubs.json) + 이 화면에서만 더한 장소(places_extra.json: 은행나무숲·바람의 언덕 등).
+  // 더한 장소의 '하고 싶은 일' 적합도와 한 줄 설명은 그 파일 값을 씀(표에 이미 있으면 표가 우선)
+  const ids = new Set(data.hubs.map(h => h.id));
+  const extraPlaces = (data.places_extra?.items ?? []).filter(p => p.id && !ids.has(p.id) && Number.isFinite(p.lat) && Number.isFinite(p.lon));
+  for (const p of extraPlaces) { if (p.aff) AFFINITY[p.id] ??= p.aff; if (p.note) PLACE_NOTE[p.id] ??= p.note; }
+  const hubs = [...data.hubs, ...extraPlaces].map(h => {
     const s = snap(h.lon, h.lat), [x, y] = toXY(h.lon, h.lat);
     const around = cellIndex.within(x, y, 45).map(i => cells[i]);
     const mean = k => around.length ? around.reduce((a, c) => a + c.p[k], 0) / around.length : null;

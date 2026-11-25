@@ -1,0 +1,337 @@
+{
+ "note": "이용자 화면(needs)에서만 쓰는 추가 장소. 기존 대시보드의 data/hubs.json은 건드리지 않음. 좌표: OpenStreetMap 또는 카카오맵 장소 좌표(각 항목 src·url). aff(하고 싶은 일 적합도)·pull·capacity(붐빔 계산용)는 팀 가정값 — 현장 계수·설문 후 고침.",
+ "checked": "2026-11-25",
+ "items": [
+  {
+   "id": "ginkgo-forest",
+   "name": "은행나무숲",
+   "zone": "문화예술공원",
+   "lon": 127.03709,
+   "lat": 37.54541,
+   "type": "shade",
+   "groups": [
+    "family",
+    "senior",
+    "youth"
+   ],
+   "pull": 0.6,
+   "capacity": 300,
+   "aff": {
+    "rest": 0.8,
+    "walk": 0.9,
+    "play": 0.2,
+    "active": 0.3,
+    "learn": 0.4,
+    "meet": 0.5
+   },
+   "note": "은행나무 숲길",
+   "what": "은행나무 600여 그루가 모인 숲길. 가을이면 노란 잎이 바닥을 덮어요.",
+   "hours": "상시",
+   "src": "좌표: 카카오맵(서울숲 은행나무숲) / 설명: 서울시 내손안에서울(2025-11-27 시민기자)",
+   "url": "https://place.map.kakao.com/17563475",
+   "osm": "",
+   "caution": "9번 출입구 쪽, 승마장 옆. OSM에는 이름 없음.",
+   "sure": true
+  },
+  {
+   "id": "wind-hill",
+   "name": "바람의 언덕",
+   "zone": "생태숲",
+   "lon": 127.03525,
+   "lat": 37.54373,
+   "type": "outdoor",
+   "groups": [
+    "family",
+    "senior",
+    "youth"
+   ],
+   "pull": 0.4,
+   "capacity": 200,
+   "aff": {
+    "rest": 0.7,
+    "walk": 0.7,
+    "play": 0.1,
+    "active": 0.4,
+    "learn": 0.3,
+    "meet": 0.4
+   },
+   "note": "억새 언덕·한강 바람",
+   "what": "서울숲에서 가장 높은 곳. 가을엔 억새가 출렁이고 한강 바람이 불어와요.",
+   "hours": "05:30-21:30(생태숲 기준)",
+   "src": "좌표: 카카오맵(서울숲 바람의언덕) / 설명: 내손안에서울(2025-11-27), 이용시간: 서울숲 공식 사이트(2021 보관본)",
+   "url": "https://place.map.kakao.com/18059792",
+   "osm": "node/13945278201",
+   "caution": "osm은 언덕 위 작품 '먼 곳에서 오는 바람' 노드(약 50m 거리). 생태숲 이용시간은 2021년 자료.",
+   "sure": true
+  },
+  {
+   "id": "cherry-tree-path",
+   "name": "벚나무길",
+   "zone": "체험학습원",
+   "lon": 127.03735,
+   "lat": 37.54148,
+   "type": "shade",
+   "groups": [
+    "family",
+    "senior",
+    "youth"
+   ],
+   "pull": 0.4,
+   "capacity": 200,
+   "aff": {
+    "rest": 0.4,
+    "walk": 1.0,
+    "play": 0.1,
+    "active": 0.4,
+    "learn": 0.3,
+    "meet": 0.3
+   },
+   "note": "벚나무 산책길",
+   "what": "바람의 언덕에서 곤충식물원 쪽으로 이어지는 벚나무 산책길.",
+   "hours": "상시",
+   "src": "OpenStreetMap(footway, Cherry Tree Path) / 설명: 서울시 내손안에서울(2020-11-10), 서울시 정원박람회 공지(2026)",
+   "url": "https://www.openstreetmap.org/way/1503710873",
+   "osm": "way/1503710873",
+   "caution": "선형 길이라 좌표는 길의 중심점.",
+   "sure": true
+  },
+  {
+   "id": "gallery-garden",
+   "name": "갤러리정원",
+   "zone": "체험학습원",
+   "lon": 127.0401,
+   "lat": 37.54162,
+   "type": "outdoor",
+   "groups": [
+    "family",
+    "senior",
+    "youth"
+   ],
+   "pull": 0.5,
+   "capacity": 200,
+   "aff": {
+    "rest": 0.7,
+    "walk": 0.6,
+    "play": 0.2,
+    "active": 0.1,
+    "learn": 0.7,
+    "meet": 0.4
+   },
+   "note": "옛 정수장을 살린 정원",
+   "what": "옛 정수장 물길과 구조물을 살려 만든 정원. 사계절 사진 찍기 좋아요.",
+   "hours": "상시",
+   "src": "OpenStreetMap(leisure=garden, 갤러리정원) / 설명: 서울시 내손안에서울(2020-11-10)",
+   "url": "https://www.openstreetmap.org/way/856378842",
+   "osm": "way/856378842",
+   "caution": "",
+   "sure": true
+  },
+  {
+   "id": "skate-park",
+   "name": "서울숲 스케이트파크",
+   "zone": "문화예술공원",
+   "lon": 127.04229,
+   "lat": 37.54506,
+   "type": "outdoor",
+   "groups": [
+    "family",
+    "youth"
+   ],
+   "pull": 0.4,
+   "capacity": 120,
+   "aff": {
+    "rest": 0.1,
+    "walk": 0.2,
+    "play": 0.7,
+    "active": 0.9,
+    "learn": 0.1,
+    "meet": 0.4
+   },
+   "note": "스케이트보드 마당",
+   "what": "스케이트보드·인라인을 탈 수 있는 야외 마당.",
+   "hours": "상시",
+   "src": "OpenStreetMap(leisure=pitch, sport=skateboard) / 카카오맵(서울숲 스케이트파크)",
+   "url": "https://www.openstreetmap.org/way/871884991",
+   "osm": "way/871884991",
+   "caution": "",
+   "sure": true
+  },
+  {
+   "id": "barrier-free-play",
+   "name": "무장애 놀이터",
+   "zone": "문화예술공원",
+   "lon": 127.03886,
+   "lat": 37.54356,
+   "type": "outdoor",
+   "groups": [
+    "family"
+   ],
+   "pull": 0.5,
+   "capacity": 150,
+   "aff": {
+    "rest": 0.4,
+    "walk": 0.1,
+    "play": 1.0,
+    "active": 0.5,
+    "learn": 0.2,
+    "meet": 0.5
+   },
+   "note": "누구나 노는 무장애 놀이터",
+   "what": "휠체어 탄 아이도 함께 놀 수 있게 만든 놀이터(2006년 국내 처음).",
+   "hours": "상시",
+   "src": "좌표: 카카오맵(서울숲 무장애놀이터) / 근거: 국민일보 2016-04-12 기사",
+   "url": "https://place.map.kakao.com/17561472",
+   "osm": "",
+   "caution": "숲속놀이터(forest-play)와 약 70m.",
+   "sure": true
+  },
+  {
+   "id": "sand-play",
+   "name": "어린이 모래놀이터",
+   "zone": "문화예술공원",
+   "lon": 127.0403,
+   "lat": 37.54387,
+   "type": "outdoor",
+   "groups": [
+    "family"
+   ],
+   "pull": 0.4,
+   "capacity": 100,
+   "aff": {
+    "rest": 0.3,
+    "walk": 0.1,
+    "play": 1.0,
+    "active": 0.4,
+    "learn": 0.2,
+    "meet": 0.4
+   },
+   "note": "모래놀이터",
+   "what": "아이들이 모래를 만지며 노는 작은 놀이터.",
+   "hours": "상시",
+   "src": "OpenStreetMap(leisure=playground) / 이름: 카카오맵(서울숲 어린이전용모래놀이터)",
+   "url": "https://www.openstreetmap.org/node/6804787594",
+   "osm": "node/6804787594",
+   "caution": "OSM에는 이름 없음, 이름은 카카오맵 기준.",
+   "sure": true
+  },
+  {
+   "id": "kids-cafe",
+   "name": "서울형 키즈카페 서울숲점(초록초록)",
+   "zone": "문화예술공원",
+   "lon": 127.03933,
+   "lat": 37.5434,
+   "type": "indoor",
+   "groups": [
+    "family"
+   ],
+   "pull": 0.5,
+   "capacity": 60,
+   "aff": {
+    "rest": 0.5,
+    "walk": 0.0,
+    "play": 1.0,
+    "active": 0.4,
+    "learn": 0.3,
+    "meet": 0.4
+   },
+   "note": "실내 놀이 공간(서울형 키즈카페)",
+   "what": "숲속놀이터 안의 실내 놀이 공간. 더위·비 올 때 아이와 쉬어 가기 좋아요.",
+   "hours": "운영시간·예약은 우리동네키움포털(icare.seoul.go.kr) 확인",
+   "src": "좌표: 카카오맵(서울형키즈카페 시립 서울숲점) / 설명: 서울시 내손안에서울(여기저기 서울형 키즈카페)",
+   "url": "https://place.map.kakao.com/2081050390",
+   "osm": "",
+   "caution": "숲속놀이터(forest-play)와 같은 자리. 실내 대체시설 후보.",
+   "sure": true
+  },
+  {
+   "id": "bird-hide",
+   "name": "조류관찰대",
+   "zone": "습지생태원",
+   "lon": 127.03966,
+   "lat": 37.5487,
+   "type": "shade",
+   "groups": [
+    "family",
+    "senior"
+   ],
+   "pull": 0.2,
+   "capacity": 40,
+   "aff": {
+    "rest": 0.4,
+    "walk": 0.3,
+    "play": 0.4,
+    "active": 0.0,
+    "learn": 1.0,
+    "meet": 0.2
+   },
+   "note": "물새 관찰대",
+   "what": "몸을 숨기고 왜가리·백로 같은 물새를 지켜보는 곳.",
+   "hours": "상시",
+   "src": "좌표: 카카오맵(조류관찰대) / 설명: 서울시 내손안에서울(2023-02-13 습지생태원)",
+   "url": "https://place.map.kakao.com/27587167",
+   "osm": "",
+   "caution": "카카오맵 이름은 '뚝섬유수지체육공원 조류관찰대'로 되어 있음(같은 습지생태원 안).",
+   "sure": true
+  },
+  {
+   "id": "kids-forest",
+   "name": "유아숲체험원",
+   "zone": "습지생태원",
+   "lon": 127.03884,
+   "lat": 37.54937,
+   "type": "shade",
+   "groups": [
+    "family"
+   ],
+   "pull": 0.3,
+   "capacity": 100,
+   "aff": {
+    "rest": 0.4,
+    "walk": 0.3,
+    "play": 1.0,
+    "active": 0.5,
+    "learn": 0.6,
+    "meet": 0.4
+   },
+   "note": "유아 숲놀이터",
+   "what": "통나무 징검다리·밧줄다리·모래놀이 등 자연 재료로 만든 유아 숲놀이터.",
+   "hours": "상시(프로그램은 별도 운영)",
+   "src": "좌표: 카카오맵(서울숲공원 유아숲체험원) / 설명: 서울시 내손안에서울(2023-02-13)",
+   "url": "https://place.map.kakao.com/364284113",
+   "osm": "",
+   "caution": "",
+   "sure": true
+  },
+  {
+   "id": "hangang-observatory",
+   "name": "서울숲 한강 전망대",
+   "zone": "한강수변",
+   "lon": 127.04169,
+   "lat": 37.53791,
+   "type": "outdoor",
+   "groups": [
+    "family",
+    "senior",
+    "youth"
+   ],
+   "pull": 0.4,
+   "capacity": 150,
+   "aff": {
+    "rest": 0.6,
+    "walk": 0.4,
+    "play": 0.1,
+    "active": 0.1,
+    "learn": 0.3,
+    "meet": 0.4
+   },
+   "note": "한강 전망대",
+   "what": "한강과 성수대교를 바라보는 전망대. 구름다리로 오르는 승강기가 있어요.",
+   "hours": "상시",
+   "src": "좌표: 카카오맵(서울숲 한강 전망대) / 설명: 서울시 내손안에서울",
+   "url": "https://place.map.kakao.com/1889582026",
+   "osm": "",
+   "caution": "엄밀히는 서울숲 경계 밖 한강공원 쪽.",
+   "sure": true
+  }
+ ]
+}
