@@ -23,6 +23,8 @@ const L = window.L;
 const root = document.getElementById('tour');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 「모바일로 보기」(../mobile.html)에서 돌아온 경우: 이미 본 '멀리서 날아 들어오는 장면'은 생략
+const backFromMobile = window.top === window && /\/mobile\.html/.test(document.referrer);
 const T = ms => (reduce ? 0 : ms);
 const store = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } } };
 const desk = () => innerWidth >= 900;
@@ -374,13 +376,13 @@ async function arrive() {
   el.intro.classList.add('hide');
   const { center, zoom } = map._getBoundsCenterZoom(app.model.parkBounds, padding());
   await new Promise(res => {
-    if (reduce) { map.setView(center, zoom); return res(); }
+    if (reduce || backFromMobile) { map.setView(center, zoom, { animate: false }); return res(); }
     map.once('moveend', res);
     map.flyTo(center, zoom, { duration: 1.5, easeLinearity: .12 });
   });
   parkOutline();
   el.map.classList.add('tr-arrived'); el.top.classList.add('tr-arrived'); el.locate.classList.add('show'); setBase(baseMode);
-  setTimeout(() => el.intro.remove(), 600);
+  setTimeout(() => el.intro.remove(), backFromMobile ? 0 : 600);
   go(1);
 }
 
@@ -1781,6 +1783,7 @@ function restart() {
 // ── 시작 ──
 async function boot() {
   renderTop(); makeMap(); renderIntro();
+  if (backFromMobile) el.intro.classList.add('hide');
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
   refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);
