@@ -234,7 +234,9 @@ function makeMap() {
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20, className: 'tr-base', attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 기여자 © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
   const sat = seasonImagery();
   L.tileLayer(sat.url, { maxZoom: 19, maxNativeZoom: sat.native, className: 'tr-sat', keepBuffer: 4, attribution: `위성 사진(${sat.label}) © Esri, Maxar, Earthstar Geographics` }).addTo(map);
-  map.setView(PARK_CENTER, 12.4);
+  // 모바일 화면에서 돌아온 경우: 지난번 공원 화면 자리에서 바로 시작(위성 사진도 받아 둔 것 그대로) → 멀리서 다시 불러오지 않음
+  let back = null; try { back = backFromMobile && JSON.parse(sessionStorage.getItem('sf-tour-view') || 'null'); } catch {}
+  if (back?.c) map.setView(back.c, back.z, { animate: false }); else map.setView(PARK_CENTER, 12.4);
   layers = {
     park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
@@ -380,6 +382,7 @@ async function arrive() {
     map.once('moveend', res);
     map.flyTo(center, zoom, { duration: 1.5, easeLinearity: .12 });
   });
+  try { sessionStorage.setItem('sf-tour-view', JSON.stringify({ c: [center.lat, center.lng], z: zoom })); } catch {}
   parkOutline();
   el.map.classList.add('tr-arrived'); el.top.classList.add('tr-arrived'); el.locate.classList.add('show'); setBase(baseMode);
   if (backFromMobile) setTimeout(() => el.intro.classList.add('hide'), 400);   // 공원 자리 지도가 깔린 뒤 걷어 냄
