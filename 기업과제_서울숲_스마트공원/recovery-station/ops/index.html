@@ -394,17 +394,25 @@ button{font:inherit;color:inherit}
     NET.edges.forEach(function (e) { var p = P(NET.xy[e[0]][0], NET.xy[e[0]][1]), q = P(NET.xy[e[1]][0], NET.xy[e[1]][1]); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); }); c.stroke();
     // 거점 이름표 자리를 먼저 잡는다(기본은 오른쪽, 겹칠 때만 다른 쪽. 등고선 숫자는 이 자리를 피함)
     var k = S.mode, pts = S.hubs.map(function (h) { return { h: h, p: P(h.x, h.y), v: h.s[k] }; }), boxes = [], fs = sm ? 10.5 : 11.5;
-    function hit(r, self) {
-      if (r[0] < 4 || r[0] + r[2] > W - 4 || r[1] < 4 || r[1] + r[3] > H - 4) return true;
-      return boxes.some(function (o) { return r[0] < o[0] + o[2] && r[0] + r[2] > o[0] && r[1] < o[1] + o[3] && r[1] + r[3] > o[1]; }) ||
-        pts.some(function (q) { return q !== self && q.p[0] > r[0] - 9 && q.p[0] < r[0] + r[2] + 9 && q.p[1] > r[1] - 9 && q.p[1] < r[1] + r[3] + 9; });
+    // 색 눈금(오른쪽 위)도 피할 자리로 넣는다
+    var scb = $('sc').getBoundingClientRect(), mpb = $('map').getBoundingClientRect(), keep = [[scb.left - mpb.left - 28, scb.top - mpb.top - 4, scb.width + 34, scb.height + 8]];
+    function ov(r, o) { return Math.max(0, Math.min(r[0] + r[2], o[0] + o[2]) - Math.max(r[0], o[0])) * Math.max(0, Math.min(r[1] + r[3], o[1] + o[3]) - Math.max(r[1], o[1])); }
+    function cost(r, self) {
+      var out = Math.max(0, 4 - r[0]) + Math.max(0, r[0] + r[2] - (W - 4)) + Math.max(0, 4 - r[1]) + Math.max(0, r[1] + r[3] - (H - 4));
+      var k2 = out * 400;
+      boxes.forEach(function (o) { k2 += ov(r, o) * 4; }); keep.forEach(function (o) { k2 += ov(r, o) * 2; });
+      pts.forEach(function (q) { if (q !== self) k2 += ov(r, [q.p[0] - 9, q.p[1] - 9, 18, 18]) * 3; });
+      return k2;
     }
     pts.slice().sort(function (a2, b2) { return (S.sel === b2.h.id) - (S.sel === a2.h.id) || a2.v - b2.v; }).forEach(function (q) {
       var p = q.p; c.font = '700 ' + fs + 'px ' + FONT; q.wn = c.measureText(q.h.name).width;
       c.font = '800 ' + (fs + 1.5) + 'px ' + FONT; var tw = q.wn + 4 + c.measureText(String(q.v)).width, o2 = 13;
       var cand = [[p[0] + o2, p[1]], [p[0] - o2 - tw, p[1]], [p[0] - tw / 2, p[1] - 18], [p[0] - tw / 2, p[1] + 19], [p[0] + o2, p[1] - 14], [p[0] - o2 - tw, p[1] - 14], [p[0] + o2, p[1] + 14], [p[0] - o2 - tw, p[1] + 14]];
-      for (var n = 0; n < cand.length && !q.pos; n++) if (!hit([cand[n][0] - 2, cand[n][1] - 9, tw + 4, 18], q)) q.pos = cand[n];
-      if (!q.pos) q.pos = p[0] + o2 + tw > W - 4 ? cand[1] : cand[0];
+      // 가까운 자리가 모두 막히면 위아래로 한 칸씩 더 떨어진 자리(지시선으로 이음)
+      [28, -28, 40, -40, 54, -54].forEach(function (dy) { cand.push([p[0] - tw / 2, p[1] + dy], [p[0] + o2 - 4, p[1] + dy], [p[0] - o2 - tw + 4, p[1] + dy]); });
+      var best = null;
+      for (var n = 0; n < cand.length; n++) { var k3 = cost([cand[n][0] - 2, cand[n][1] - 9, tw + 4, 18], q) + n * .5; if (!best || k3 < best[0]) best = [k3, cand[n], n]; if (k3 < 1) break; }
+      q.pos = best[1]; q.far = best[2] >= 8;
       q.h.box = [q.pos[0] - 2, q.pos[1] - 9, tw + 4, 18]; boxes.push(q.h.box);
     });
     // 3) 등고선(5점 간격, 10점마다 굵게) + 기준선 60
@@ -444,6 +452,10 @@ button{font:inherit;color:inherit}
       if (sel) { c.beginPath(); c.arc(p[0], p[1], r + 7, 0, Math.PI * 2); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill(); c.strokeStyle = INK; c.lineWidth = 1.5; c.stroke(); }
       c.beginPath(); c.arc(p[0], p[1], r + 2.5, 0, Math.PI * 2); c.fillStyle = INK; c.fill();
       c.beginPath(); c.arc(p[0], p[1], r, 0, Math.PI * 2); c.fillStyle = css(rampRGB(q.v)); c.fill();
+    });
+    pts.forEach(function (q) {
+      if (!q.far) return; var b = q.h.box, tx = clamp(q.p[0], b[0] + 4, b[0] + b[2] - 4), ty = q.p[1] < b[1] ? b[1] : b[1] + b[3];
+      c.beginPath(); c.moveTo(q.p[0], q.p[1] + (ty > q.p[1] ? 9 : -9)); c.lineTo(tx, ty); c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 3; c.stroke(); c.strokeStyle = '#151a17'; c.lineWidth = 1; c.stroke();
     });
     pts.forEach(function (q) {
       c.textAlign = 'left'; c.textBaseline = 'middle';
