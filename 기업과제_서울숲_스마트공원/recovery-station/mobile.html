@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>서울숲 모바일 화면</title>
+<meta name="description" content="서울숲, 머무는 숲 — 이용자 화면을 휴대폰에서 연 모습 (발표용)" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231f5f45'/><path d='M16 6l7 11h-4l5 8H8l5-8H9z' fill='%23fff'/></svg>" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  /* Presentation stage: a phone mockup that runs the real citizen screen (needs/tour.html) inside an iframe. */
+  :root{
+    --stage:#0d1512; --stage2:
+    #16241e; --ink:#eef3ef; --mute:#93a69b; --accent:#7fd3a6;
+    --body:#111; --bezel:#050505;
+    --pw:393px; --ph:852px;            /* phone screen size in CSS px */
+    --sb:47px; --hb:30px;               /* status bar / home indicator heights */
+    --scale:1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 50% 40%,var(--stage2),var(--stage));
+    color:var(--ink);font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+    overflow:hidden;display:flex;align-items:center;justify-content:center;gap:56px;
+  }
+  .caption{max-width:340px}
+  .caption .kicker{font-size:12px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+  .caption h1{font-size:34px;line-height:1.25;font-weight:700;margin:12px 0 14px;letter-spacing:-.02em}
+  .caption p{font-size:15px;line-height:1.65;color:var(--mute)}
+  .scn{margin-top:28px;display:flex;flex-wrap:wrap;gap:8px}
+  .scn button{
+    font:inherit;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 14px;cursor:pointer;
+  }
+  .scn button:hover{background:rgba(255,255,255,.12)}
+  .scn button[aria-pressed="true"]{background:var(--accent);color:#08251a;border-color:var(--accent);font-weight:600}
+  .hint{margin-top:18px;font-size:12px;color:#61756a}
+
+  /* phone */
+  .phone-wrap{width:calc((var(--pw) + 28px) * var(--scale));height:calc((var(--ph) + 28px) * var(--scale));flex:none}
+  .phone{
+    width:calc(var(--pw) + 28px);height:calc(var(--ph) + 28px);
+    transform:scale(var(--scale));transform-origin:top left;
+    position:relative;border-radius:68px;padding:14px;
+    background:linear-gradient(145deg,#3a3f3d,#1a1c1b 40%,#2c302e);
+    box-shadow:0 0 0 2px #0b0b0b,0 40px 90px rgba(0,0,0,.55),0 12px 30px rgba(0,0,0,.4),inset 0 0 0 1.5px rgba(255,255,255,.08);
+  }
+  /* side buttons */
+  .phone::before,.phone::after{content:"";position:absolute;width:4px;border-radius:2px;background:#2a2e2c}
+  .phone::before{left:-4px;top:180px;height:64px;box-shadow:0 84px 0 #2a2e2c}
+  .phone::after{right:-4px;top:230px;height:100px}
+  .screen{
+    width:var(--pw);height:var(--ph);border-radius:54px;overflow:hidden;position:relative;
+    background:#fff;box-shadow:0 0 0 6px var(--bezel);
+    display:flex;flex-direction:column;
+  }
+  .status{
+    height:var(--sb);flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:6px 34px 0 44px;font-size:16px;font-weight:600;color:#111;background:var(--sbg,#fff);
+    transition:background .3s,color .3s;
+  }
+  .status.dark{color:#fff}
+  .status .icons{display:flex;gap:6px;align-items:center}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:3}
+  iframe{flex:1;width:100%;border:0;display:block;background:#fff}
+  .home{height:var(--hb);flex:none;display:flex;align-items:center;justify-content:center;background:var(--sbg,#fff);transition:background .3s}
+  .home i{width:136px;height:5px;border-radius:3px;background:#111;opacity:.85}
+  .home.dark i{background:#fff}
+
+  body.clean .caption{display:none}
+  @media (max-width:820px){ .caption{display:none} body{gap:0} }
+</style>
+</head>
+<body>
+  <aside class="caption">
+    <div class="kicker">Seoul Forest · Mobile</div>
+    <h1>서울숲,<br>폰에서 여는<br>나에게 맞는 길</h1>
+    <p>공원에 온 사람이 휴대폰으로 보는 화면입니다. 하고 싶은 일과 같이 온 사람을 고르면 지금 날씨·붐빔에 맞는 갈 곳과 산책 코스를 알려 줍니다.</p>
+    <div class="scn" role="group" aria-label="날씨 상황">
+      <button data-s="" aria-pressed="true">평소</button>
+      <button data-s="heat" aria-pressed="false">폭염</button>
+      <button data-s="dust" aria-pressed="false">미세먼지</button>
+      <button data-s="rain" aria-pressed="false">큰비</button>
+      <button data-s="cold" aria-pressed="false">한파</button>
+    </div>
+    <div class="hint">H 설명 숨기기 · R 처음으로 · F 전체 화면</div>
+  </aside>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="island"></div>
+        <div class="status" id="status">
+          <span id="clock">9:41</span>
+          <span class="icons" aria-hidden="true">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.2c2.3 0 4.4.9 6 2.4l1.2-1.3A10.4 10.4 0 0 0 8 .4 10.4 10.4 0 0 0 .8 3.3L2 4.6a8.6 8.6 0 0 1 6-2.4Zm0 3.6c1.3 0 2.5.5 3.4 1.3l1.2-1.3A6.8 6.8 0 0 0 8 4a6.8 6.8 0 0 0-4.6 1.8l1.2 1.3A5 5 0 0 1 8 5.8Zm0 3.5c-.5 0-1 .2-1.3.5L8 11.2l1.3-1.4c-.3-.3-.8-.5-1.3-.5Z"/></svg>
+            <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".45"/></svg>
+          </span>
+        </div>
+        <iframe id="app" title="서울숲 이용자 화면" src="./needs/tour.html" allow="geolocation"></iframe>
+        <div class="home" id="home"><i></i></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var root=document.documentElement, frame=document.getElementById('app');
+  var PW=393+28, PH=852+28;
+
+  // Fit the phone to the window height (presentation screens vary).
+  function fit(){
+    var s=Math.min((innerHeight-48)/PH,(innerWidth-32)/PW,1.15);
+    root.style.setProperty('--scale',Math.max(.35,s).toFixed(3));
+  }
+  addEventListener('resize',fit); fit();
+
+  // Live clock in the status bar.
+  function tick(){var d=new Date();document.getElementById('clock').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');}
+  tick(); setInterval(tick,15000);
+
+  // Match status bar / home bar colour to the app's background so it looks like a native screen.
+  function syncBars(){
+    try{
+      var doc=frame.contentDocument; if(!doc||!doc.body) return;
+      var el=doc.elementFromPoint(doc.documentElement.clientWidth/2,2)||doc.body;
+      var bg='rgba(0, 0, 0, 0)';
+      while(el&&(bg==='rgba(0, 0, 0, 0)'||bg==='transparent')){bg=getComputedStyle(el).backgroundColor;el=el.parentElement;}
+      if(bg==='rgba(0, 0, 0, 0)'||bg==='transparent') bg=getComputedStyle(doc.body).backgroundColor;
+      var m=bg.match(/\d+(\.\d+)?/g)||[255,255,255];
+      var lum=(0.299*m[0]+0.587*m[1]+0.114*m[2]);
+      root.style.setProperty('--sbg',bg);
+      document.getElementById('status').classList.toggle('dark',lum<140);
+      document.getElementById('home').classList.toggle('dark',lum<140);
+    }catch(e){}
+  }
+  frame.addEventListener('load',function(){syncBars();setTimeout(syncBars,800);});
+  setInterval(syncBars,1500);
+
+  // Weather scenario buttons -> tour.html?s=...
+  var cur='';
+  function go(s){
+    cur=s;
+    frame.src='./needs/tour.html'+(s?'?s='+s:'');
+    document.querySelectorAll('.scn button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===s));});
+  }
+  document.querySelectorAll('.scn button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.s);});});
+
+  addEventListener('keydown',function(e){
+    if(e.target!==document.body) return;
+    var k=e.key.toLowerCase();
+    if(k==='h') document.body.classList.toggle('clean');
+    else if(k==='r') go(cur);
+    else if(k==='f'){ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function(){}); }
+  });
+})();
+</script>
+</body>
+</html>
