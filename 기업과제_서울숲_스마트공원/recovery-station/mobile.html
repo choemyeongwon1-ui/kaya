@@ -99,7 +99,7 @@
             <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".45"/></svg>
           </span>
         </div>
-        <iframe id="app" title="서울숲 이용자 화면" src="./needs/tour.html" allow="geolocation"></iframe>
+        <iframe id="app" title="서울숲 이용자 화면" src="about:blank" allow="geolocation"></iframe>
         <div class="home" id="home"><i></i></div>
       </div>
     </div>
@@ -139,11 +139,14 @@
   frame.addEventListener('load',function(){syncBars();setTimeout(syncBars,800);});
   setInterval(syncBars,1500);
 
-  // Weather scenario buttons -> tour.html?s=...
+  // Weather scenario buttons -> tour.html?wx=heat|dust|rain|cold (see tour.js "시연용").
+  // _=timestamp makes the phone always load the latest pushed tour.html instead of a cached copy.
+  function src(s){ return './needs/tour.html?'+(s?'wx='+s+'&':'')+'_='+Date.now(); }
   var cur='';
+  frame.src=src('');
   function go(s){
     cur=s;
-    frame.src='./needs/tour.html'+(s?'?s='+s:'');
+    frame.src=src(s);
     document.querySelectorAll('.scn button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===s));});
   }
   document.querySelectorAll('.scn button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.s);});});
