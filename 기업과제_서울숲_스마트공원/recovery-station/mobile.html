@@ -177,7 +177,9 @@
     //   the map behind 13 panels on every pan frame is the main GPU cost → smoother map.
     var st=doc.createElement('style');
     //   Without blur the map would show through the sheet, so the sheet gets the same tone, opaque.
+    //   Page background dark too: at fractional zoom the map can end a hair short of the edge.
     st.textContent='.tr-link.tr-back{display:none!important}'+
+      'html,body{background:#08110d!important}'+
       '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'+
       '.tr-panel{background:linear-gradient(180deg,#0e1813,#08100c)!important}';
     doc.head.appendChild(st);
