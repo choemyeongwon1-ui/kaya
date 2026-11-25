@@ -1,0 +1,68 @@
+/* 「이 나무 뭐지?」 (js/trees.js) — tour.css 변수(--mint, --ink, --line …)를 그대로 씀 */
+.tc-btn{position:fixed;z-index:1050;left:22px;bottom:84px;display:inline-flex;align-items:center;gap:8px;padding:11px 16px 11px 13px;border-radius:999px;cursor:pointer;
+  border:1px solid rgba(255,215,106,.45);background:rgba(20,18,8,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#ffe08a;font:inherit;font-size:13px;font-weight:700;letter-spacing:-.01em;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);transition:transform .2s,background .2s}
+.tc-btn:hover{transform:translateY(-1px);background:rgba(40,34,10,.86)}
+@media(max-width:899px){.tc-btn{left:auto;right:12px;bottom:auto;top:112px;padding:10px 13px 10px 11px;font-size:12.5px}}
+
+.tc-dim{position:fixed;inset:0;z-index:4000;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,8,6,.55);backdrop-filter:blur(3px);animation:tcFade .2s ease}
+@media(min-width:900px){.tc-dim{align-items:center}}
+.tc-sheet{position:relative;width:min(440px,100%);max-height:92vh;overflow:auto;padding:22px 20px 18px;border-radius:24px 24px 0 0;background:#0c1611;border:1px solid var(--line-2);color:var(--ink);box-shadow:0 -10px 40px rgba(0,0,0,.5);animation:tcUp .3s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:900px){.tc-sheet{border-radius:24px}}
+.tc-x{position:absolute;right:12px;top:10px;width:34px;height:34px;border:0;border-radius:50%;background:var(--glass-3);color:var(--ink-2);font-size:20px;line-height:1;cursor:pointer}
+.tc-head{display:flex;gap:11px;align-items:center;margin:0 34px 16px 0}
+.tc-head b{display:block;font-size:17px;font-weight:750;letter-spacing:-.02em}
+.tc-head small{font-size:12px;color:var(--mute)}
+.tc-ico{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(255,215,106,.12);color:#ffd76a}
+.tc-organs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tc-organ{display:grid;gap:3px;padding:16px 14px;border-radius:16px;border:1px solid var(--line);background:var(--glass-2);cursor:pointer;transition:border-color .2s,background .2s}
+.tc-organ:hover,.tc-organ:focus-within{border-color:rgba(255,215,106,.5);background:rgba(255,215,106,.07)}
+button.tc-organ{text-align:left;font:inherit;color:inherit}
+.tc-organ b{font-size:16px;font-weight:700}
+.tc-cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.tc-live{display:block;width:100%;height:100%;object-fit:cover}
+.tc-frame{position:absolute;inset:14% 20%;border:2px solid rgba(255,215,106,.85);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.25);pointer-events:none}
+.tc-tag{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:baseline;gap:8px;padding:10px 14px;border-radius:14px;background:rgba(10,18,14,.82);backdrop-filter:blur(10px);color:var(--ink);transition:opacity .3s}
+.tc-tag:empty{opacity:0}
+.tc-tag small{font-size:11.5px;color:var(--mute)}
+.tc-tag b{flex:1;font-size:22px;font-weight:800;letter-spacing:-.03em;color:#ffe08a}
+.tc-tag span{font-size:12px;font-weight:700;color:var(--ink-2)}
+.tc-tag.wait::after{content:'';position:absolute;right:12px;top:-28px;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,215,106,.3);border-top-color:#ffd76a;animation:tcSpin .8s linear infinite}
+.tc-tag:empty.wait::after{top:auto;bottom:0}
+.tc-livemore{display:flex;gap:6px;margin-top:8px}
+.tc-livemore:empty{display:none}
+.tc-livemore button{display:inline-flex;align-items:center;gap:6px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:700;padding:8px 13px;cursor:pointer;margin-top:0}
+.tc-organ small{font-size:11.5px;color:var(--mute)}
+.tc-album{display:block;margin-top:10px;padding:11px;text-align:center;border-radius:12px;border:1px dashed var(--line-2);color:var(--ink-2);font-size:12.5px;cursor:pointer}
+.tc-foot{margin:14px 0 0;font-size:10.5px;color:var(--mute);line-height:1.5}
+
+.tc-shot{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:16px;margin-bottom:14px}
+.tc-wait{display:flex;align-items:center;gap:10px;padding:18px 4px;font-size:13.5px;color:var(--ink-2)}
+.tc-wait i{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,215,106,.25);border-top-color:#ffd76a;animation:tcSpin .8s linear infinite}
+.tc-kicker{display:block;font-size:12px;color:var(--mute)}
+.tc-name{display:block;margin-top:2px;font-size:28px;font-weight:800;letter-spacing:-.035em;color:#ffe08a}
+.tc-sci{display:block;font-size:12.5px;color:var(--ink-2)}
+.tc-bar{position:relative;margin:12px 0 4px;height:22px;border-radius:999px;background:var(--glass-3);overflow:hidden}
+.tc-bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#c9a640,#ffd76a);border-radius:999px}
+.tc-bar span{position:relative;display:block;padding:0 10px;line-height:22px;font-size:11.5px;font-weight:700;color:#1d1600}
+.tc-msg{margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.tc-other{margin:8px 0 0;font-size:12px;color:var(--mute)}
+.tc-forest{margin-top:14px;padding:12px 13px;border-radius:14px;background:var(--glass-2);border:1px solid var(--line)}
+.tc-forest>small{display:block;margin-bottom:6px;font-size:11.5px;font-weight:700;color:var(--mint)}
+.tc-forest ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.tc-forest li{display:flex;gap:7px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.tc-forest li svg{flex:none;margin-top:2px;color:var(--mint)}
+.tc-forest li.now,.tc-forest li.now svg{color:#ffd76a}
+.tc-forest li.warn,.tc-forest li.warn svg{color:#ff9c8a}
+.tc-spots{display:grid;gap:6px;margin-top:8px}
+.tc-spots>div{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
+.tc-spots svg{flex:none;color:#ffd76a}
+.tc-spots span{flex:1}
+.tc-spots b{color:var(--ink)}
+.tc-spots button{flex:none;border:1px solid rgba(255,215,106,.4);background:rgba(255,215,106,.1);color:#ffd76a;font:inherit;font-size:11.5px;font-weight:650;padding:5px 10px;border-radius:999px;cursor:pointer}
+.tc-again{display:inline-flex;align-items:center;gap:7px;margin-top:16px;padding:10px 16px;border-radius:999px;border:0;background:#ffd76a;color:#1d1600;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.tc-pin{transform:translate(-50%,-50%);white-space:nowrap;font-size:11px;font-weight:700;color:#2a1d00;background:#ffd76a;padding:4px 9px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+@keyframes tcFade{from{opacity:0}}
+@keyframes tcUp{from{transform:translateY(30px);opacity:0}}
+@keyframes tcSpin{to{transform:rotate(360deg)}}
+.tc-detail{border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink-2)}

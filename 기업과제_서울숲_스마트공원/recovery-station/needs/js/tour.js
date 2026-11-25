@@ -18,6 +18,7 @@ import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
+import { mountTreeCam, clearTreePins } from './trees.js?v=9';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -1034,6 +1035,7 @@ async function begin(course = null, avoid = []) {
   flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers(); layers.access.clearLayers();
   accessOpen = false;
+  clearTreePins();
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
     h('div', { class: 'tr-pulse' }, h('i'), h('i'), h('i')),
@@ -1803,6 +1805,7 @@ function restart() {
 // ── 시작 ──
 async function boot() {
   renderTop(); makeMap(); renderIntro();
+  mountTreeCam({ map, L, hubs: () => app?.model?.hubById ?? {}, fly: ll => flyToVisible(ll, 17, .7) });
   if (backFromMobile) el.intro.classList.add('tr-quiet');   // 글자 없이 어두운 화면만 덮어 둠: 멀리 있는 처음 지도가 비치지 않게
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜

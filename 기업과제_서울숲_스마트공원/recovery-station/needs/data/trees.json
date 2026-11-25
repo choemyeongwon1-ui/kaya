@@ -1,0 +1,77 @@
+{
+  "source": "서울특별시 푸른도시국·서울기록원, 「시민의 숲을 기록하다, 서울숲」 전시 온라인판(2020, 서울숲 15주년) — 서울숲의 식물",
+  "url": "https://archives.seoul.go.kr/contents/seoulforest",
+  "basis": "2020년 전시 기준. 그루 수·키는 그때 집계라 지금과 다를 수 있습니다.",
+  "kinds": 350,
+  "count": {
+    "스트로브잣나무": 1640, "은행나무": 1401, "소나무": 971, "느티나무": 815,
+    "중국단풍": 723, "메타세쿼이아": 644, "상수리나무": 521
+  },
+  "height": {
+    "양버즘나무": 26, "느릅나무": 21, "소나무": 21, "리포플러나무": 20, "메타세쿼이아": 20,
+    "물푸레나무": 20, "상수리나무": 18, "스트로브잣나무": 18, "느티나무": 18
+  },
+  "groups": [
+    { "key": "only", "label": "서울숲에 딱 한 그루뿐인 나무",
+      "list": ["가시칠엽수", "구상나무", "나한송", "노간주나무", "다정큼나무", "돌배나무", "백당나무", "복사나무", "사철나무", "신나무", "오동나무", "오리나무", "용버들", "일본잎갈나무", "홍매"] },
+    { "key": "pet", "label": "반려견에게 위험한 나무", "warn": true,
+      "list": ["은행나무", "벚나무", "살구나무", "주목", "호랑가시나무"] },
+    { "key": "path", "label": "서울숲의 길을 만드는 나무",
+      "list": ["사과나무", "벚나무", "은행나무", "단풍나무", "메타세쿼이아"] },
+    { "key": "dust", "label": "미세먼지를 줄이는 나무",
+      "list": ["느티나무", "소나무", "스트로브잣나무", "메타세쿼이아", "양버즘나무", "주목", "갈참나무", "자귀나무", "향나무", "밤나무", "구상나무"] },
+    { "key": "white", "label": "흰 꽃이 피는 나무",
+      "list": ["벚나무", "회화나무", "이팝나무", "산사나무", "꽃사과나무", "물푸레나무", "마가목", "아까시나무", "산딸나무", "목련류", "쪽동백나무", "미국산사", "가죽나무", "쉬나무", "귀룽나무", "야광나무", "산벚나무", "산돌배", "노각나무", "왕벚나무", "매실나무", "무궁화", "사과나무"] },
+    { "key": "warm", "label": "기후변화를 보여 주는 따뜻한 남쪽 나무",
+      "list": ["종가시나무", "동백나무", "굴거리나무", "꽝꽝나무", "아왜나무", "구골나무", "먼나무", "붓순나무", "가시나무", "황칠나무", "호랑가시나무", "녹나무", "다정큼나무"] },
+    { "key": "story", "label": "이름에 이야기가 있는 나무",
+      "list": ["느티나무", "은행나무", "이팝나무", "신갈나무", "층층나무", "고로쇠나무", "갈참나무", "모과나무", "쉬나무", "야광나무", "노각나무", "가시나무", "백송"] },
+    { "key": "pick", "label": "서울숲이 고른 꽃과 나무",
+      "list": ["무궁화", "칠엽수", "백목련", "산수유", "백송", "목련", "느티나무", "살구나무", "하와이안자귀나무", "대왕참나무", "사과나무", "배롱나무", "능수버들", "단풍나무", "신갈나무", "자작나무", "황금회화나무", "박태기나무", "소나무", "호랑가시나무", "백합나무"] }
+  ],
+  "spotSource": "서울시 「내 손안에 서울」 시민기자 기사 ‘서울숲 단풍명소 8선 셀프투어’(2020.11.10), 서울시 단풍길 소개(은행나무 600주)",
+  "spots": [
+    { "name": "메타세쿼이아 산책길", "trees": ["메타세쿼이아"], "near": ["mirror-pond"], "where": "거울연못 옆" },
+    { "name": "벚나무길", "trees": ["벚나무"], "near": ["deer", "insect"], "where": "바람의 언덕 아래 사슴우리에서 곤충식물원·나비정원 가는 길" },
+    { "name": "은행나무숲", "trees": ["은행나무"], "where": "9번 출입구 쪽 · 은행나무 약 600그루" }
+  ],
+  "sciNote": "Pl@ntNet이 돌려주는 학명 → 국명. 국가표준식물목록 기준으로 맞춰 둔 것(검증 필요). 없는 학명은 속(genus) 이름으로, 그것도 없으면 영어 이름·학명을 그대로 보여 줌",
+  "sci": {
+    "Ginkgo biloba": "은행나무", "Pinus strobus": "스트로브잣나무", "Pinus densiflora": "소나무", "Pinus koraiensis": "잣나무", "Pinus bungeana": "백송", "Pinus thunbergii": "곰솔",
+    "Zelkova serrata": "느티나무", "Acer buergerianum": "중국단풍", "Acer palmatum": "단풍나무", "Acer pictum": "고로쇠나무", "Acer mono": "고로쇠나무", "Acer saccharinum": "은단풍", "Acer tataricum": "신나무", "Acer ginnala": "신나무",
+    "Metasequoia glyptostroboides": "메타세쿼이아", "Quercus acutissima": "상수리나무", "Quercus mongolica": "신갈나무", "Quercus aliena": "갈참나무", "Quercus palustris": "대왕참나무", "Quercus myrsinifolia": "가시나무", "Quercus glauca": "종가시나무", "Quercus variabilis": "굴참나무", "Quercus serrata": "졸참나무", "Quercus dentata": "떡갈나무",
+    "Platanus occidentalis": "양버즘나무", "Platanus × hispanica": "단풍버즘나무", "Platanus × acerifolia": "단풍버즘나무", "Platanus orientalis": "버즘나무",
+    "Ulmus davidiana": "느릅나무", "Ulmus parvifolia": "참느릅나무", "Ulmus pumila": "비술나무", "Celtis sinensis": "팽나무", "Fraxinus rhynchophylla": "물푸레나무", "Fraxinus chinensis": "물푸레나무",
+    "Liriodendron tulipifera": "백합나무", "Prunus × yedoensis": "왕벚나무", "Prunus yedoensis": "왕벚나무", "Prunus serrulata": "벚나무", "Prunus sargentii": "산벚나무", "Prunus armeniaca": "살구나무", "Prunus mume": "매실나무", "Prunus persica": "복사나무", "Prunus padus": "귀룽나무", "Prunus cerasifera": "자두나무",
+    "Taxus cuspidata": "주목", "Ilex cornuta": "호랑가시나무", "Ilex crenata": "꽝꽝나무", "Ilex integra": "감탕나무", "Ilex rotunda": "먼나무",
+    "Malus domestica": "사과나무", "Malus pumila": "사과나무", "Malus baccata": "야광나무", "Malus floribunda": "꽃사과나무", "Chaenomeles sinensis": "모과나무", "Pyrus pyrifolia": "돌배나무",
+    "Chionanthus retusus": "이팝나무", "Styphnolobium japonicum": "회화나무", "Sophora japonica": "회화나무", "Robinia pseudoacacia": "아까시나무", "Cornus kousa": "산딸나무", "Cornus officinalis": "산수유", "Cornus controversa": "층층나무",
+    "Magnolia denudata": "백목련", "Magnolia kobus": "목련", "Magnolia × soulangeana": "자주목련", "Aesculus turbinata": "칠엽수", "Aesculus hippocastanum": "가시칠엽수", "Lagerstroemia indica": "배롱나무", "Hibiscus syriacus": "무궁화",
+    "Albizia julibrissin": "자귀나무", "Salix babylonica": "수양버들", "Salix pseudolasiogyne": "능수버들", "Salix koreensis": "버드나무", "Betula platyphylla": "자작나무", "Betula pendula": "유럽자작나무", "Cercis chinensis": "박태기나무",
+    "Abies koreana": "구상나무", "Abies holophylla": "전나무", "Paulownia coreana": "오동나무", "Paulownia tomentosa": "참오동나무", "Camellia japonica": "동백나무", "Styrax japonicus": "때죽나무", "Styrax obassia": "쪽동백나무",
+    "Juniperus chinensis": "향나무", "Juniperus rigida": "노간주나무", "Castanea crenata": "밤나무", "Tetradium daniellii": "쉬나무", "Stewartia pseudocamellia": "노각나무", "Sorbus commixta": "마가목", "Ailanthus altissima": "가죽나무",
+    "Euonymus japonicus": "사철나무", "Alnus japonica": "오리나무", "Larix kaempferi": "일본잎갈나무", "Rhaphiolepis indica": "다정큼나무", "Rhaphiolepis umbellata": "다정큼나무", "Viburnum opulus": "백당나무", "Podocarpus macrophyllus": "나한송",
+    "Cedrus deodara": "개잎갈나무", "Crataegus pinnatifida": "산사나무", "Diospyros kaki": "감나무", "Morus alba": "뽕나무", "Koelreuteria paniculata": "모감주나무", "Cinnamomum camphora": "녹나무", "Daphniphyllum macropodum": "굴거리나무", "Viburnum odoratissimum": "아왜나무",
+    "Populus × canadensis": "이태리포플러", "Populus nigra": "양버들", "Buxus sinica": "회양목", "Buxus microphylla": "회양목", "Rhododendron yedoense": "산철쭉", "Rhododendron schlippenbachii": "철쭉", "Forsythia koreana": "개나리", "Syringa oblata": "라일락"
+  },
+  "genus": {
+    "Prunus": "벚나무 무리", "Acer": "단풍나무 무리", "Quercus": "참나무 무리", "Pinus": "소나무 무리", "Magnolia": "목련 무리", "Malus": "사과나무 무리", "Salix": "버드나무 무리",
+    "Betula": "자작나무 무리", "Ulmus": "느릅나무 무리", "Platanus": "버즘나무 무리", "Juniperus": "향나무 무리", "Ilex": "감탕나무 무리", "Cornus": "층층나무 무리", "Fraxinus": "물푸레나무 무리",
+    "Abies": "전나무 무리", "Populus": "포플러 무리", "Rhododendron": "진달래·철쭉 무리", "Rosa": "장미 무리", "Viburnum": "가막살나무 무리", "Euonymus": "화살나무 무리", "Taxus": "주목 무리", "Picea": "가문비나무 무리"
+  },
+  "seasonNote": "이달의 볼거리는 서울에서 보통 그 무렵 꽃·단풍이 드는 시기(어림)입니다. 해마다 날씨에 따라 1~2주 달라집니다. (검증 필요)",
+  "month": {
+    "1":  [["소나무", "늘 푸른 잎"], ["백송", "하얀 얼룩 줄기"], ["호랑가시나무", "빨간 열매"], ["스트로브잣나무", "늘 푸른 잎"]],
+    "2":  [["소나무", "늘 푸른 잎"], ["백송", "하얀 얼룩 줄기"], ["호랑가시나무", "빨간 열매"], ["구상나무", "늘 푸른 잎"]],
+    "3":  [["산수유", "노란 꽃"], ["매실나무", "흰·분홍 꽃"], ["백목련", "흰 꽃 (3월 말)"], ["능수버들", "연둣빛 새잎"]],
+    "4":  [["왕벚나무", "흰 꽃"], ["살구나무", "연분홍 꽃"], ["백목련", "흰 꽃"], ["박태기나무", "진분홍 꽃"], ["사과나무", "흰 꽃 (4월 말)"]],
+    "5":  [["이팝나무", "흰 꽃"], ["아까시나무", "흰 꽃·향기"], ["칠엽수", "원뿔 모양 꽃"], ["때죽나무", "흰 꽃"], ["산딸나무", "흰 꽃 (5월 말)"]],
+    "6":  [["산딸나무", "흰 꽃"], ["자귀나무", "분홍 꽃 (6월 말)"], ["느티나무", "짙은 그늘"], ["메타세쿼이아", "초록 터널"]],
+    "7":  [["배롱나무", "분홍 꽃"], ["무궁화", "꽃"], ["자귀나무", "분홍 꽃"], ["회화나무", "흰 꽃 (7월 말)"]],
+    "8":  [["배롱나무", "분홍 꽃"], ["무궁화", "꽃"], ["회화나무", "흰 꽃"], ["느티나무", "짙은 그늘"]],
+    "9":  [["배롱나무", "분홍 꽃"], ["무궁화", "꽃"], ["사과나무", "열매"], ["느티나무", "물들기 시작"]],
+    "10": [["느티나무", "주황 단풍"], ["대왕참나무", "붉은 단풍"], ["중국단풍", "단풍 (10월 말)"], ["사과나무", "열매"]],
+    "11": [["은행나무", "노란 잎"], ["단풍나무", "붉은 잎"], ["중국단풍", "붉은 잎"], ["메타세쿼이아", "갈색 잎"], ["대왕참나무", "붉은 잎"]],
+    "12": [["소나무", "늘 푸른 잎"], ["스트로브잣나무", "늘 푸른 잎"], ["호랑가시나무", "빨간 열매"], ["백송", "하얀 얼룩 줄기"]]
+  }
+}
