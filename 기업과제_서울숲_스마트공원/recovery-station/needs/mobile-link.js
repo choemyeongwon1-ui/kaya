@@ -3,6 +3,7 @@
 //   모바일 화면의 「대시보드」 버튼이 뒤로 가기로 돌아오므로, 보던 대시보드 화면·스크롤 위치가 그대로 남습니다.
 // - 대시보드는 빌드본이라 React 소스를 고치지 않고, 다시 그려져도 버튼이 남도록 지켜보며 다시 붙입니다.
 (function () {
+  if (window.top !== window) return; // never inside the phone frame
   var ID = 'nd-mobile-link';
   var HREF = './mobile.html';
 

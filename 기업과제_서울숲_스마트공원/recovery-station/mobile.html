@@ -155,6 +155,30 @@
   var cur='';
   frame.src=src('');
 
+  // Links inside the phone that leave the user screen (e.g. tour's 「돌아가기」) must open in the whole
+  // window, not inside the phone. Intercept clicks in the frame; as a fallback, if the frame still
+  // ends up on another page, move the whole window there.
+  function goDash(url){
+    var s=null; try{ s=JSON.parse(sessionStorage.getItem('nd-mobile-return')||'null'); }catch(err){}
+    var p=new URL(url,location.href).pathname, dir=new URL('./',location.href).pathname;
+    var isDash=(p===dir||p===dir+'index.html');   // the dashboard next to this page
+    location.href=(isDash&&s&&s.url)?s.url:url;   // back to the exact dashboard view we came from
+  }
+  function guardFrame(){
+    var w,doc; try{ w=frame.contentWindow; doc=w.document; }catch(e){ return; }
+    if(!doc||w.location.href==='about:blank') return;
+    if(!/\/needs\/tour\.html/.test(w.location.pathname)){ goDash(w.location.href); return; }
+    if(doc.__ndGuard) return; doc.__ndGuard=true;
+    doc.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('a[href]'); if(!a) return;
+      var u=new URL(a.getAttribute('href'),w.location.href);
+      if(u.origin===w.location.origin&&/\/needs\/tour\.html$/.test(u.pathname)) return; // stays in the user screen
+      if(a.target==='_blank') return;
+      e.preventDefault(); goDash(u.href);
+    },true);
+  }
+  frame.addEventListener('load',guardFrame);
+
   // Back to the dashboard we came from: needs/mobile-link.js saved its URL + scroll in sessionStorage
   // when the 「모바일 화면」 button was pressed; go there and it scrolls itself back.
   // (history.go is unreliable here because the iframe adds an unknown number of history entries.)
