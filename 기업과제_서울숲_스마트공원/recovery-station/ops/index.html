@@ -36,7 +36,7 @@ button{font:inherit;color:inherit}
 .scale canvas{width:50px;flex:1;min-height:0}
 .tip{position:absolute;left:0;top:0;pointer-events:none;font-size:12px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.97);color:var(--ink);border:1px solid var(--hair);box-shadow:0 2px 10px rgba(0,0,0,.12);white-space:nowrap;opacity:0;transition:opacity .12s}
 .tip b{font-variant-numeric:tabular-nums}
-.src{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:var(--muted);max-width:min(780px,72%);line-height:1.5}
+.src{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:var(--muted);max-width:min(700px,58%);line-height:1.5}
 /* 거점을 누르면 열리는 상세 패널 */
 .side{min-height:0;overflow:auto;border-left:1px solid var(--hair);background:var(--map);padding:12px;display:flex;flex-direction:column;gap:10px}
 .side[hidden]{display:none}
@@ -95,6 +95,20 @@ button{font:inherit;color:inherit}
 .wxr em{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px;justify-self:end}
 .left .note{margin-top:5px}
 @media(max-width:1100px){.left{display:none}}
+/* 등장 애니메이션 */
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.intro .hud>*,.intro .left section,.intro .scale,.intro .src{animation:up .6s cubic-bezier(.2,.7,.2,1) both}
+.intro .hud>:nth-child(2){animation-delay:.08s}.intro .left section:nth-child(1){animation-delay:.25s}.intro .left section:nth-child(2){animation-delay:.4s}.intro .left section:nth-child(3){animation-delay:.55s}.intro .scale{animation-delay:.3s}.intro .src{animation-delay:.7s}
+.intro .left .bar i{transform-origin:left;animation:grow .9s .5s cubic-bezier(.2,.7,.2,1) both}
+.side.fresh .card{animation:slideIn .45s cubic-bezier(.2,.7,.2,1) both}.side.fresh .card+.card{animation-delay:.08s}
+.side.fresh .bar i{transform-origin:left;animation:grow .7s .15s cubic-bezier(.2,.7,.2,1) both}
+.side.fresh .spark rect{transform-box:fill-box;transform-origin:bottom;animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.side.fresh .score b{animation:up .5s .1s both}
+.act{transition:border-color .15s,transform .15s}.act:hover{transform:translateX(2px)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:760px){.top .sub,.clock{display:none}.top h1{font-size:14px}.app{height:100svh}.hud{right:16px}.scale{width:36px;height:170px;top:118px;right:8px}.scale .t{display:none}.scale canvas{width:36px}.stat{font-size:11.5px}.stat b{font-size:17px}.src{display:none}.time .play{display:none}.time{grid-template-columns:auto minmax(0,1fr)}
 .body.open{grid-template-columns:minmax(0,1fr)}.side{position:absolute;left:0;right:0;bottom:0;max-height:60%;z-index:5;border-left:0;border-top:1px solid var(--hair);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.14)}}
 .embed .back{display:none}.embed .app{min-height:0}
@@ -119,7 +133,7 @@ button{font:inherit;color:inherit}
     <div class="left" id="left" aria-label="지금 상황 요약"></div>
     <div class="scale"><div class="t" id="scaleT">예상 만족도(점)</div><canvas id="sc"></canvas></div>
     <div class="tip" id="tip"></div>
-    <div class="src">등고선 5점 간격 · 흰 점선 = 관리 기준 60점 · ● = 거점(점수), 누르면 요인별 점수가 열립니다. 거점 점수를 거리 가중(가우스, 약 110m)으로 공원 전체에 펼친 추정 분포입니다. 만족도 = 밀도·날씨·주변 환경(팀 20m 격자) 가중 평균, 주신하(2008) 공원 평가 요인 기반·가중치 가정값.</div>
+    <div class="src">등고선 5점 간격 · 흰 점선 = 관리 기준 60점 · ● = 거점(점수), 누르면 요인별 점수가 열립니다. 거점 점수를 거리 가중(가우스, 약 110m)으로 공원 전체에 펼친 추정 분포입니다. 배경 지도: OpenStreetMap(ODbL). 만족도 = 밀도·날씨·주변 환경(팀 20m 격자) 가중 평균, 주신하(2008) 공원 평가 요인 기반·가중치 가정값.</div>
   </main>
   <aside class="side" id="side" hidden aria-label="선택한 거점 상세">
     <section class="card detail" id="detail" aria-live="polite"></section>
@@ -204,21 +218,96 @@ button{font:inherit;color:inherit}
   // ---------- 상태 ----------
   var S = { hubs: [], wx: null, hour: 12, dow: 1, mode: 'all', sel: null };
   var MODES = [['all', '종합 만족도'], ['dens', '밀도 쾌적'], ['wx', '날씨 쾌적'], ['env', '주변 환경']];
-  var RINGS = null, FEAT = null, NET = null, GRID = null, SIG = 110;
+  var RINGS = null, FEAT = null, NET = null, GRID = null, SIG = 110, CITY = null, BG = null;
   var cv = $('cv'), ctx = cv.getContext('2d'), W = 0, H = 0, DPR = 1, view = null;
+  var LAY = document.createElement('canvas'), LC = LAY.getContext('2d'), PREV = document.createElement('canvas'), A = { intro: 0, fade: 1, t0: 0, raf: 0 };
+  var REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function fit() {
     var b = $('map').getBoundingClientRect(); DPR = Math.min(2, devicePixelRatio || 1); W = b.width; H = b.height;
-    cv.width = W * DPR | 0; cv.height = H * DPR | 0;
-    var bx = GRID.bb, sm = W < 760, padL = sm ? 8 : W >= 1100 ? 284 : 40, padR = sm ? 46 : 96, padT = sm ? 112 : 92, padB = sm ? 16 : 40;
+    cv.width = W * DPR | 0; cv.height = H * DPR | 0; LAY.width = PREV.width = cv.width; LAY.height = PREV.height = cv.height;
+    var bx = GRID.bb, sm = W < 760, padL = sm ? 8 : W >= 1100 ? 272 : 40, padR = sm ? 46 : 78, padT = sm ? 112 : W >= 1100 ? 22 : 92, padB = sm ? 16 : 66;
     var s = Math.min((W - padL - padR) / (bx[1] - bx[0]), (H - padT - padB) / (bx[3] - bx[2]));
     view = { s: s, ox: padL + ((W - padL - padR) - (bx[1] - bx[0]) * s) / 2 - bx[0] * s, oy: padT + ((H - padT - padB) - (bx[3] - bx[2]) * s) / 2 + bx[3] * s };
-    render();
+    buildBG(); render();
   }
   function P(x, y) { return [view.ox + x * view.s, view.oy - y * view.s]; }
   function inv(px, py) { return [(px - view.ox) / view.s, (view.oy - py) / view.s]; }
   function inPark(x, y) { return RINGS.some(function (r) { return inside(x, y, r); }); }
   function inside(x, y, r) { var c = false; for (var i = 0, j = r.length - 1; i < r.length; j = i++) { if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; } return c; }
+
+  // ---------- 공원 바깥 배경(주변 도시) ----------
+  // 강 기슭 선분을 끝점끼리 이어 닫힌 고리로 만든다(한강은 여러 조각으로 옴)
+  function waterRings(list) {
+    var segs = list.filter(function (a) { return a.length >= 4; }).map(function (a) { var q = []; for (var i = 0; i < a.length; i += 2) q.push([a[i], a[i + 1]]); return q; });
+    var near = function (a, b) { return Math.abs(a[0] - b[0]) < 2 && Math.abs(a[1] - b[1]) < 2; }, used = [], out = [];
+    segs.forEach(function (sg, i) {
+      if (used[i]) return; used[i] = 1; var ring = sg.slice(), grew = true;
+      while (grew && !near(ring[0], ring[ring.length - 1])) {
+        grew = false;
+        for (var j = 0; j < segs.length; j++) {
+          if (used[j]) continue; var t = segs[j], e = ring[ring.length - 1];
+          if (near(t[0], e)) { ring = ring.concat(t.slice(1)); } else if (near(t[t.length - 1], e)) { ring = ring.concat(t.slice(0, -1).reverse()); } else continue;
+          used[j] = 1; grew = true; break;
+        }
+      }
+      var big = sg.length > 500 && sg[0][1] > -400 && Math.max.apply(null, sg.map(function (q) { return q[1]; })) > 20000;
+      out.push({ pts: ring, name: big ? '중랑천' : '한강' });
+    });
+    return out;
+  }
+  function buildBG() {
+    BG = document.createElement('canvas'); BG.width = cv.width; BG.height = cv.height;
+    var c = BG.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    c.fillStyle = '#f3f4f1'; c.fillRect(0, 0, W, H);
+    var mpx = view.s;   // 1m 당 화면 px
+    if (CITY) {
+      var flat = function (a, st) { c.beginPath(); for (var i = st; i < a.length; i += 2) { var q = P(a[i], a[i + 1]); if (i === st) c.moveTo(q[0], q[1]); else c.lineTo(q[0], q[1]); } };
+      // 물
+      c.beginPath(); CITY.rings.forEach(function (r) { r.pts.forEach(function (q, i) { var pp = P(q[0], q[1]); if (i) c.lineTo(pp[0], pp[1]); else c.moveTo(pp[0], pp[1]); }); c.closePath(); });
+      c.fillStyle = '#d3e4ec'; c.fill('evenodd'); c.strokeStyle = '#b4cedb'; c.lineWidth = 1; c.stroke();
+      // 도로: 회색 테두리 → 흰 속
+      [[CITY.minor, Math.max(2.2, 9 * mpx), '#dfe2dc'], [CITY.major, Math.max(4.5, 22 * mpx), '#d4d8d1']].forEach(function (g) {
+        c.lineCap = 'round'; c.lineJoin = 'round';
+        c.strokeStyle = g[2]; c.lineWidth = g[1] + 2; g[0].forEach(function (a) { flat(a, 0); c.stroke(); });
+        c.strokeStyle = '#ffffff'; c.lineWidth = g[1]; g[0].forEach(function (a) { flat(a, 0); c.stroke(); });
+      });
+      // 철도: 회색 선 + 흰 점선
+      c.lineCap = 'butt'; CITY.rail.forEach(function (a) { flat(a, 0); c.strokeStyle = '#b9bdb6'; c.lineWidth = 3.2; c.stroke(); c.strokeStyle = '#f3f4f1'; c.lineWidth = 1.6; c.setLineDash([6, 6]); c.stroke(); c.setLineDash([]); });
+      // 건물
+      c.fillStyle = '#e2e4df'; c.strokeStyle = '#cdd1ca'; c.lineWidth = .6;
+      CITY.buildings.forEach(function (a) { flat(a, 1); c.closePath(); c.fill(); c.stroke(); });
+      // 강 이름(화면 안쪽에서 물 위인 자리)
+      c.font = '700 13px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle';
+      CITY.rings.forEach(function (r) {
+        if (r.done) return; var best = null, wr = r.pts;
+        for (var py = 40; py < H - 30; py += 18) for (var px = 30; px < W - 30; px += 18) {
+          var w = inv(px, py); if (!inside(w[0], w[1], wr) || inPark(w[0], w[1])) continue;
+          var sc = -Math.abs(px - W * .55) - Math.abs(py - H * .78) * .6;
+          if (!best || sc > best[0]) best = [sc, px, py];
+        }
+        if (best) { c.save(); c.letterSpacing = '6px'; c.lineWidth = 3; c.strokeStyle = 'rgba(211,228,236,.9)'; c.strokeText(r.name, best[1], best[2]); c.fillStyle = '#5f8ca3'; c.fillText(r.name, best[1], best[2]); c.restore(); }
+      });
+    }
+    // 가장자리를 바탕색으로 흐리게(왼쪽 글줄·위 지표가 잘 읽히게)
+    var gl = c.createLinearGradient(0, 0, Math.min(330, W * .3), 0); gl.addColorStop(0, 'rgba(243,244,241,.94)'); gl.addColorStop(.75, 'rgba(243,244,241,.7)'); gl.addColorStop(1, 'rgba(243,244,241,0)');
+    c.fillStyle = gl; c.fillRect(0, 0, Math.min(330, W * .3), H);
+    var gt = c.createLinearGradient(0, 0, 0, 150); gt.addColorStop(0, 'rgba(243,244,241,.92)'); gt.addColorStop(1, 'rgba(243,244,241,0)');
+    c.fillStyle = gt; c.fillRect(0, 0, W, 150);
+    var gb = c.createLinearGradient(0, H - 70, 0, H); gb.addColorStop(0, 'rgba(243,244,241,0)'); gb.addColorStop(1, 'rgba(243,244,241,.92)');
+    c.fillStyle = gb; c.fillRect(0, H - 70, W, 70);
+    // 공원을 종이처럼 띄우는 그림자와 흰 테두리
+    c.save(); c.shadowColor = 'rgba(20,30,25,.28)'; c.shadowBlur = 26; c.shadowOffsetY = 8; parkPath(c); c.fillStyle = '#fff'; c.fill(); c.restore();
+    parkPath(c); c.lineJoin = 'round'; c.strokeStyle = '#fff'; c.lineWidth = 8; c.stroke();
+    // 축척 막대와 방위
+    if (W >= 760) {
+      var m = 300 * view.s > 220 ? 200 : 500, len = m * view.s, x1 = W - 24, x0 = x1 - len, y0 = H - 22;
+      c.strokeStyle = INK; c.lineWidth = 1.3; c.beginPath(); c.moveTo(x0, y0 - 5); c.lineTo(x0, y0); c.lineTo(x1, y0); c.lineTo(x1, y0 - 5); c.stroke();
+      c.font = '700 10px ' + FONT; c.fillStyle = '#4a524c'; c.textBaseline = 'bottom'; c.textAlign = 'center'; c.fillText('0', x0, y0 - 7); c.fillText(m + 'm', x1 - 4, y0 - 7);
+      var nx = x0 - 28; c.beginPath(); c.moveTo(nx, y0 - 24); c.lineTo(nx + 6, y0 - 8); c.lineTo(nx, y0 - 12); c.lineTo(nx - 6, y0 - 8); c.closePath(); c.fillStyle = INK; c.fill();
+      c.font = '800 10px ' + FONT; c.textBaseline = 'top'; c.fillText('N', nx, y0 - 6);
+    }
+  }
 
   // 공원 둘레 8m 격자
   function makeGrid() {
@@ -280,7 +369,9 @@ button{font:inherit;color:inherit}
   function halo(c, txt, x, y, fill) { c.lineJoin = 'round'; c.lineWidth = 3.5; c.strokeStyle = 'rgba(255,255,255,.94)'; c.strokeText(txt, x, y); c.fillStyle = fill; c.fillText(txt, x, y); }
   function render() {
     if (!view || !S.hubs.length || !S.hubs[0].s) return;
-    var c = ctx, sm = W < 760; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H);
+    // 바뀌기 전 그림을 남겨 두었다가 새 그림을 서서히 덮는다
+    if (A.ready) { var pc = PREV.getContext('2d'); pc.setTransform(1, 0, 0, 1, 0, 0); pc.clearRect(0, 0, PREV.width, PREV.height); pc.drawImage(LAY, 0, 0); A.fade = 0; }
+    var c = LC, sm = W < 760; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, W, H);
     // 1) 단계색 분포(공원 안만)
     var bx = GRID.bb, a = P(bx[0], bx[3]), b = P(bx[1], bx[2]), px0 = Math.floor(a[0]), py0 = Math.floor(a[1]), R = 2;
     var iw = Math.ceil((b[0] - a[0] + 2) / R), ih = Math.ceil((b[1] - a[1] + 2) / R), img = c.createImageData(iw, ih), dd = img.data;
@@ -359,7 +450,38 @@ button{font:inherit;color:inherit}
       c.font = '700 ' + fs + 'px ' + FONT; halo(c, q.h.name, q.pos[0], q.pos[1], INK);
       c.font = '800 ' + (fs + 1.5) + 'px ' + FONT; halo(c, String(q.v), q.pos[0] + q.wn + 4, q.pos[1], q.v < CUT ? LOW_INK : INK);
     });
-    stat();
+    stat(); A.ready = true; kick();
+  }
+
+  // ---------- 애니메이션: 화면 합성 ----------
+  function ease(t) { return 1 - Math.pow(1 - clamp(t, 0, 1), 3); }
+  function kick() { if (!A.raf) A.raf = requestAnimationFrame(frame); }
+  function frame(now) {
+    A.raf = 0; if (!view) return;
+    var c = ctx, dt = A.last ? Math.min(64, now - A.last) : 16; A.last = now;
+    if (REDUCE) { A.intro = 1; A.fade = 1; }
+    A.intro = Math.min(1, A.intro + dt / 1400); A.fade = Math.min(1, A.fade + dt / 450);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+    c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (BG) c.drawImage(BG, 0, 0, W, H);
+    // 첫 등장: 공원 가운데에서 원이 퍼지며 분포도가 드러남
+    var bx = GRID.bb, cx = P((bx[0] + bx[1]) / 2, (bx[2] + bx[3]) / 2), e = ease(A.intro), rad = Math.hypot(W, H) * e;
+    c.save();
+    if (A.intro < 1) { c.beginPath(); c.arc(cx[0], cx[1], rad, 0, Math.PI * 2); c.clip(); }
+    if (A.fade < 1) { c.drawImage(PREV, 0, 0, W, H); c.globalAlpha = ease(A.fade); }
+    c.drawImage(LAY, 0, 0, W, H); c.globalAlpha = 1;
+    c.restore();
+    if (A.intro < 1) { c.beginPath(); c.arc(cx[0], cx[1], rad, 0, Math.PI * 2); c.strokeStyle = 'rgba(255,255,255,' + (.9 * (1 - e)) + ')'; c.lineWidth = 3; c.stroke(); }
+    // 기준 미달 거점: 붉은 맥박
+    var k = S.mode, ph = (now % 1800) / 1800;
+    if (A.intro >= 1 && !REDUCE) S.hubs.forEach(function (h, i) {
+      if (h.s[k] >= CUT) return; var p = P(h.x, h.y), t = (ph + i * .13) % 1;
+      c.beginPath(); c.arc(p[0], p[1], 8 + t * 16, 0, Math.PI * 2); c.strokeStyle = 'rgba(200,55,47,' + (.55 * (1 - t)) + ')'; c.lineWidth = 2; c.stroke();
+    });
+    // 선택한 거점: 천천히 도는 점선 고리
+    var sh = S.sel && S.hubs.filter(function (h) { return h.id === S.sel; })[0];
+    if (sh) { var q = P(sh.x, sh.y); c.save(); c.translate(q[0], q[1]); c.rotate(now / 1600); c.beginPath(); c.arc(0, 0, 19, 0, Math.PI * 2); c.setLineDash([5, 4]); c.strokeStyle = '#151a17'; c.lineWidth = 1.6; c.stroke(); c.restore(); }
+    if (!REDUCE || A.intro < 1 || A.fade < 1) kick();
   }
   // ---------- 왼쪽 글줄 ----------
   var FAC = { dens: '밀도', wx: '날씨', env: '주변 환경' };
@@ -454,7 +576,7 @@ button{font:inherit;color:inherit}
       return '<button type="button" class="hub' + (o.id === S.sel ? ' sel' : '') + '" data-id="' + o.id + '"><span class="nm">' + o.name + '<em>' + TYPE[o.type] + '</em></span><span class="bar"><i style="width:' + o.s[k] + '%;background:' + t[0] + '"></i></span><span class="pc" style="color:' + t[2] + '">' + o.s[k] + '점</span></button>';
     }).join('');
   }
-  function select(id) { S.sel = id || null; side(); render(); }
+  function select(id) { var ch = S.sel !== (id || null); S.sel = id || null; side(); render(); if (ch && S.sel) { var sd = $('side'); sd.classList.remove('fresh'); void sd.offsetWidth; sd.classList.add('fresh'); } }
   $('side').addEventListener('click', function (e) {
     var b = e.target.closest('[data-id]'); if (b) { select(b.dataset.id); return; }
     if (e.target.closest('[data-close]')) { select(null); return; }
@@ -517,14 +639,16 @@ button{font:inherit;color:inherit}
     a.time.forEach(function (t, i) { var h = +t.slice(11, 13); wx[h] = { feels: Math.round(a.apparent_temperature[i] * 10) / 10, pop: a.precipitation_probability[i], pm25: qi[t] == null ? null : Math.round(q.pm2_5[qi[t]] * 10) / 10 }; });
     S.wx = wx;
   }).catch(function () {});
-  Promise.all([J(D + 'park.geojson'), J(D + 'features.geojson'), J(D + 'network.json'), J(D + 'team.json'), J(D + 'hubs.json')]).then(function (r) {
+  Promise.all([J(D + 'park.geojson'), J(D + 'features.geojson'), J(D + 'network.json'), J(D + 'team.json'), J(D + 'hubs.json'), J(D + 'city3d.json').catch(function () { return null; })]).then(function (r) {
     RINGS = r[0].features[0].geometry.coordinates.map(function (poly) { return poly[0].map(function (q) { return xy(q[0], q[1]); }); });
     FEAT = r[1]; NET = r[2]; NET.xy = NET.nodes.map(function (q) { return xy(q[0], q[1]); });
     var cells = r[3].grid.features.map(function (f) { var c = f.geometry.coordinates[0], lo = 0, la = 0; for (var i = 0; i < 4; i++) { lo += c[i][0]; la += c[i][1]; } var p = xy(lo / 4, la / 4); return { x: p[0], y: p[1], score: f.properties.score, tree: f.properties.tree || 0 }; });
     S.hubs = r[4].filter(function (h) { return h.type !== 'gate' && h.capacity; }).map(function (h) { var p = xy(h.lon, h.lat); h.x = p[0]; h.y = p[1]; h.env = envScore(h, cells); return h; });
+    CITY = r[5]; if (CITY) CITY.rings = waterRings(CITY.water);
     makeGrid();
     return wxP;
   }).then(function () {
+    document.body.classList.add('intro'); setTimeout(function () { document.body.classList.remove('intro'); }, 2200);
     recompute(); fit(); scale();
     if (window.ResizeObserver) new ResizeObserver(function () { fit(); scale(); timeline(); }).observe($('map')); else addEventListener('resize', function () { fit(); scale(); });
   }).catch(function (e) { $('stat').textContent = '자료를 불러오지 못했습니다: ' + e.message; });
