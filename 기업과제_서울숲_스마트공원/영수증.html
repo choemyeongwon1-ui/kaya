@@ -25,6 +25,12 @@ button{font-family:inherit}
 .hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(1200px 500px at 80% -10%,#2f7a59 0%,transparent 60%),linear-gradient(160deg,#1a4a36 0%,#0f2a1f 70%)}
 .hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.18;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
 .hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:center;min-height:460px;padding-top:44px;padding-bottom:28px}
+.backpill{position:fixed;top:14px;left:14px;z-index:60;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 15px 0 12px;border-radius:999px;background:rgba(20,32,26,.78);color:#fff;font-size:13px;font-weight:800;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 6px 18px rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .2s,background .2s}
+.backpill:hover{transform:translateX(-2px);background:rgba(20,32,26,.92)}
+.backpill:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
+.backpill svg{width:16px;height:16px}
+.fromtour{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:7px 13px;border-radius:12px;background:rgba(207,232,135,.12);color:#e9f3cf;font-size:13px;font-weight:600}
+.fromtour[hidden]{display:none}
 .tag{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 14px;border-radius:999px;background:rgba(207,232,135,.14);color:var(--lime);font-size:13px;font-weight:800;letter-spacing:.02em}
 .tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(207,232,135,.18)}
 .hero h1{margin:18px 0 16px;font-size:clamp(38px,6vw,68px);font-weight:800;letter-spacing:-.045em;line-height:1.08}
@@ -158,6 +164,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .place[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
 .place[aria-pressed="true"] em{transform:scale(1.25)}
 .place:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
+.place.hint:not([aria-pressed="true"]){border-color:#9dbf9d;border-style:dashed}
 .faces{display:flex;justify-content:space-between;gap:8px;margin:4px 0 10px}
 .face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1.5px solid #dcdcd4;border-radius:16px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
 .face em{font-style:normal;font-size:26px;line-height:1;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
@@ -360,11 +367,13 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 </style>
 </head>
 <body>
+<a class="backpill" id="backPill" href="recovery-station/needs/tour.html" title="서울숲 코스 찾기(이용자 화면)로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>이용자 화면으로</a>
 
 <header class="hero">
   <div class="wrap">
     <div>
       <span class="tag">시안 · 숲 영수증</span>
+      <p class="fromtour" id="fromTour" hidden>🌳 방금 걸은 산책 기록을 가져왔어요</p>
       <h1><span>오늘의 서울숲을</span><br><span><em>한 장</em>에 담아 가세요</span></h1>
       <p class="lead">출구 기계에 휴대폰을 대고 오늘 제일 좋았던 곳을 고르면, 오늘 머문 곳과 걸은 길, 사진과 한마디가 찍힌 영수증이 나옵니다. 이용자에게는 기념품이, 공원에는 만족도 자료가 됩니다.</p>
       <div class="cta"><a class="btn-l p" href="#try" id="goTry">QR 찍고 영수증 받아 보기 ↓</a><a class="btn-l s" href="#wall">방명록 보기</a></div>
@@ -660,6 +669,46 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   // ---------- 영수증 내용 ----------
   var state = { best: '', tags: [], memo: '', photo: null };
+
+  // ---------- 이용자 화면(코스 찾기)에서 넘어온 오늘 산책 ----------
+  // recovery-station/needs/js/tour.js 가 산책을 마칠 때 이 기기 localStorage('sf-receipt')에 남긴 기록. 서버로 보내지 않음.
+  var FROM = (location.search.match(/[?&]from=(tour|mobile)\b/) || [])[1] || null;
+  if (FROM === 'mobile') $('#backPill').href = 'recovery-station/mobile.html';
+  var TOUR = null;
+  if (FROM) {
+    try { TOUR = JSON.parse(localStorage.getItem('sf-receipt') || 'null'); } catch (e) { TOUR = null; }
+    if (TOUR && (!TOUR.stops || !TOUR.stops.length || Date.now() - TOUR.at > 12 * 3600e3)) TOUR = null;   // 12시간 지난 기록은 안 씀
+  }
+  if (TOUR) (function () {
+    // 영수증 지도와 같은 투영 (scratchpad mkcourses.py: park.geojson 경계, 폭 236, 여백 6)
+    var X = function (lon) { return Math.round(((lon - 127.030812) * 17060.1676 + 6) * 10) / 10; };
+    var Y = function (lat) { return Math.round(((37.551123 - lat) * 21516.7377 + 6) * 10) / 10; };
+    var path = TOUR.path || [];
+    var route = path.map(function (c, i) { return (i ? 'L' : 'M') + X(c[1]) + ' ' + Y(c[0]); }).join('');
+    var stops = [];
+    if (path.length) stops.push({ t: TOUR.gate || '입구', x: X(path[0][1]), y: Y(path[0][0]), g: 1 });
+    TOUR.stops.forEach(function (s) { stops.push({ t: s.t, x: X(s.lon), y: Y(s.lat), g: 0 }); });
+    COURSES.tour = { route: route, km: Math.round(TOUR.meters / 100) / 10, stops: stops };
+    var hm = function (m) { return m >= 60 ? Math.floor(m / 60) + '시간 ' + pad(m % 60) + '분' : m + '분'; };
+    var steps = Math.round(TOUR.meters / 0.7);   // 보폭 70cm 가정
+    var WITH_T = { 가족: '가족', 연인: '연인 2명', 친구: '친구', 혼자: '혼자', 어르신과: '어르신과', 반려견과: '반려견과' };
+    state.course = 'tour';
+    state.d = {
+      stay: hm(TOUR.stay), steps: steps.toLocaleString('ko-KR'), shade: TOUR.shade ? (TOUR.shade >= 1000 ? (TOUR.shade / 1000).toFixed(1) + 'km' : TOUR.shade + 'm') : '–',
+      with: WITH_T[TOUR.who] || DATA.with, weather: TOUR.wx || DATA.weather,
+      mins: TOUR.stops.map(function (s) { return s.min; }),
+    };
+    // 휴대폰 '오늘의 서울숲' 칸
+    var ICO = function (t) { return /호수|연못|분수|습지/.test(t) ? '💧' : /사슴/.test(t) ? '🦌' : /곤충|나비|식물/.test(t) ? '🦋' : /놀이/.test(t) ? '🛝' : /마당|잔디/.test(t) ? '🌿' : /박물관|센터|무대/.test(t) ? '🏛' : '🌳'; };
+    $('.rec').innerHTML =
+      '<div class="rec-item"><i>⏱</i><span>머문 시간</span><b>' + state.d.stay + '</b></div>' +
+      '<div class="rec-item"><i>👣</i><span>걸음</span><b>' + state.d.steps + '보</b></div>' +
+      '<div class="rec-item"><i>🌳</i><span>그늘 길</span><b>' + state.d.shade + '</b></div>' +
+      '<div class="rec-item"><i>📍</i><span>들른 곳</span><b>' + TOUR.stops.length + '곳</b></div>' +
+      (TOUR.who ? '<div class="rec-item"><i>🧺</i><span>함께 온 사람</span><b>' + esc(TOUR.who) + '</b></div>' : '');
+    $('#places').innerHTML = TOUR.stops.map(function (s) { return '<button class="place" type="button" data-v="' + esc(s.t) + '"><em>' + ICO(s.t) + '</em>' + esc(s.t) + '</button>'; }).join('');
+    $('#fromTour').hidden = false;
+  })();
   function ln(l, r, cls) { return '<div class="ln ' + (cls || '') + '"><span class="l">' + l + '</span><span class="d"></span><span class="r">' + r + '</span></div>'; }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function part(n, inner, pins) { return '<div data-part="' + n + '">' + (pins ? '<span class="pin">' + n + '</span>' : '') + inner + '</div>'; }
@@ -918,7 +967,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   var sample = { best: '사슴우리', tags: ['그늘이 시원해서', '아이가 좋아해서'], memo: '사슴이 가까이 왔다', photo: ditherFrom(fakeCv, 320, 240, false) };
   $('#heroRc').appendChild(makeReceipt(sample, { inkStatic: true }));
   // ---------- 서울숲 방명록(가상 예시) ----------
-  var WHO = [['가족', '👨‍👩‍👧'], ['연인', '💑'], ['친구', '🙌'], ['혼자', '🚶'], ['어르신과', '👵'], ['여행객', '🧳']];
+  var WHO = [['가족', '👨‍👩‍👧'], ['연인', '💑'], ['친구', '🙌'], ['혼자', '🚶'], ['어르신과', '👵'], ['반려견과', '🐕'], ['여행객', '🧳']];
   var WHO_ICON = {}; WHO.forEach(function (w) { WHO_ICON[w[0]] = w[1]; });
   var fakeA = ditherFrom(fakeCv, 320, 240, false), fakeB = ditherFrom(fakeCv, 320, 240, true);
   var WALL = [
@@ -1027,8 +1076,8 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bPostCancel').onclick = function () { view('done'); };
   $('#bPost').onclick = function () {
     var now = new Date(), ok = !!state.photo && $('#cPhoto').checked;
-    var WITH = { 가족: '가족 3명', 연인: '연인 2명', 친구: '친구 2명', 혼자: '혼자', 어르신과: '어르신과 2명', 여행객: '여행 2명' };
-    var mine = { best: state.best, tags: state.tags.slice(), memo: state.memo, who: myWho, visit: '오늘', nick: $('#nick').value.trim() || '오늘의 나', mine: true, photo: ok ? state.photo : null, photoOk: ok, d: { time: pad(now.getHours()) + ':' + pad(now.getMinutes()), with: WITH[myWho] } };
+    var WITH = { 가족: '가족 3명', 연인: '연인 2명', 친구: '친구 2명', 혼자: '혼자', 어르신과: '어르신과 2명', 반려견과: '반려견과', 여행객: '여행 2명' };
+    var mine = { best: state.best, tags: state.tags.slice(), memo: state.memo, who: myWho, visit: '오늘', nick: $('#nick').value.trim() || '오늘의 나', mine: true, photo: ok ? state.photo : null, photoOk: ok, course: state.course, d: Object.assign({}, state.d || {}, { time: pad(now.getHours()) + ':' + pad(now.getMinutes()), with: WITH[myWho] }) };
     WALL = WALL.filter(function (x) { return !x.mine; });
     WALL.unshift(mine);
     selWho = '전체'; selPlace = '전체'; renderWall(mine);
@@ -1053,12 +1102,13 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     }
   }
 
-  if (/[?&]qr\b/.test(location.search)) {
+  if (/[?&]qr\b/.test(location.search) || TOUR) {
     setTimeout(function () {
       document.getElementById('try').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
       $('#bScan').disabled = true; $('#tip').classList.add('gone'); $('#qrBox').classList.add('ok');
       view('rec'); kscreen('wait');
-      $('#cap').textContent = 'QR로 연결됐어요! 오늘 기록을 확인하고 제일 좋았던 곳을 골라 보세요.';
+      $('#cap').textContent = TOUR ? '방금 걸은 산책 기록이 넘어왔어요. 제일 좋았던 곳을 골라 보세요.' : 'QR로 연결됐어요! 오늘 기록을 확인하고 제일 좋았던 곳을 골라 보세요.';
+      if (TOUR && TOUR.best) { var pb = $('#places .place[data-v="' + TOUR.best + '"]'); if (pb) pb.classList.add('hint'); }
     }, 600);
   }
 

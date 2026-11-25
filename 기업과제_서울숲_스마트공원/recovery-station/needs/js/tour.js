@@ -1552,6 +1552,7 @@ function renderEnd() {
   const span = b => `${b.tomorrow ? '내일 ' : ''}${b.from}~${b.to === 0 ? 24 : b.to}시`;
   const later = q.now?.good ? 'now' : best ? span(best) : null;
   endInfo = { walkMin, meters, places: done.length || trip.stops.length, later: best ? span(best) : null };
+  endInfo.receipt = saveReceipt(walkMin, meters);
   setFocus(trip.stops.length > 0);
   // 마무리 흐름: 오늘 걸은 곳 → 코스 전체 한 번 묻기 → 나가는 길 안내(주 버튼) → 작별 화면. '다음에 올 때' 코스는 보조
   const flow = trip.stops.length ? courseAsk(walkMin, meters) : null;
@@ -1579,6 +1580,7 @@ function renderEnd() {
     next,
     h('div', { class: 'tr-end-links' },
       h('button', { type: 'button', class: 'tr-textbtn', onclick: restart }, '다른 코스 고르기'),
+      endInfo.receipt ? h('a', { class: 'tr-textbtn', href: receiptHref(), target: inFrame ? '_top' : null, onclick: flushCourse }, '영수증으로 남기기') : null,
       h('a', { class: 'tr-textbtn', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
     h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ];
@@ -1618,8 +1620,37 @@ function goodbye() {
       info.places ? h('p', null, `서울숲에서 ${info.places}곳, ${Math.round(info.walkMin)}분을 걸었어요.`) : null,
       info.later ? h('p', { class: 'tr-bye-later' }, icon('clock', 13), `다음에 오기 좋은 때 · ${info.later}`) : null,
       h('small', null, '남겨 주신 표정은 이름·위치 없이 공원 길과 쉼터를 고치는 데 써요.')),
+    info.receipt ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null },
+      h('span', { class: 'tr-bye-rc-t' }, h('b', null, '오늘 산책, 영수증으로 받기'), h('small', null, '걸은 길이 찍힌 한 장 · 방명록에도 남길 수 있어요')),
+      h('span', { class: 'tr-cta-arrow' }, '→')) : null,
     h('button', { type: 'button', class: 'tr-ghost tr-bye-home', onclick: restart }, '처음 화면으로'),
   ]);
+}
+
+// ── 마무리 6. 숲 영수증(../../영수증.html)으로 이어 주기 ──
+// 오늘 걸은 기록을 이 기기(localStorage)에만 잠깐 두고, 영수증 페이지가 읽어서 내 영수증·지도에 찍습니다. 서버로 보내지 않음.
+const RECEIPT_KEY = 'sf-receipt';
+const inFrame = (() => { try { return window.top !== window.self; } catch { return true; } })();   // 모바일 화면(mobile.html) 폰 틀 안이면 틀 밖으로 열기
+const receiptHref = () => `../../영수증.html?from=${inFrame ? 'mobile' : 'tour'}`;
+const WHO_OF = { alone: '혼자', couple: '연인', friends: '친구', kids: '가족', elders: '어르신과', pet: '반려견과' };
+function saveReceipt(walkMin, meters) {
+  if (!trip?.stops.length) return false;
+  const h0 = app.wx.hourly[0] ?? {};
+  const sky = h0.pty === 3 ? '눈' : h0.pty > 0 ? '비' : (h0.sky ?? 1) >= 4 ? '흐림' : h0.sky === 3 ? '구름' : '맑음';
+  const short = n => n.replace(/\(.*?\)/g, '').split('·')[0].trim();
+  const best = rated().filter(s => s.rating >= 4).sort((a, b) => b.rating - a.rating)[0];
+  const t0 = parseInt(trip.id, 36);
+  const path = trip.stops.flatMap(s => s.coords).filter((c, i, a) => i % 2 === 0 || i === a.length - 1).map(([la, lo]) => [+la.toFixed(5), +lo.toFixed(5)]);
+  const data = {
+    at: Date.now(), gate: trip.start?.name ?? null, wx: Number.isFinite(h0.temp) ? `${sky} ${Math.round(h0.temp)}℃` : null,
+    who: WHO_OF[st.company] ?? null, best: best ? short(best.r.place.name) : null,
+    walkMin: Math.round(walkMin), meters: Math.round(meters),
+    stay: Math.max(Math.round(walkMin), Math.round((Date.now() - t0) / 60000)),
+    shade: Math.round(sum(trip.stops, s => s.cmp?.main?.m ?? 0)),
+    stops: trip.stops.map(s => ({ t: short(s.r.place.name), lat: s.r.place.lat, lon: s.r.place.lon, min: s.walkMin, rating: s.rating })),
+    path,
+  };
+  try { localStorage.setItem(RECEIPT_KEY, JSON.stringify(data)); return true; } catch { return false; }
 }
 
 // ── 마무리 1. 코스 전체 한 번 묻기(이어지는 흐름) ──
