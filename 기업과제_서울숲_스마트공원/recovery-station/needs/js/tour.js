@@ -1030,6 +1030,40 @@ function gardensNear(coords, destId) {
   return out;
 }
 const gardenImg = g => (g.photo ? app.photos?.files?.[g.photo] : null);
+/** 박람회 정원 묶음(한 지점에 여러 개) → 정원 하나하나. 그 밖의 정원은 그대로 */
+function gardenUnits(gs) {
+  const out = [];
+  for (const g of [...gs].sort((a, b) => (a.dest - b.dest) || (a.at - b.at))) {
+    const ids = g.gardens ?? null;
+    if (!ids) { out.push({ ...g, spot: g.hub?.name }); continue; }
+    for (const id of ids) { const x = app.expo?.[id]; if (x) out.push({ ...x, hub: g.hub, at: g.at, dest: g.dest, season: true, expo: true, spot: g.hub?.name }); }
+  }
+  return out;
+}
+const REMAIN = { '남음': '박람회 뒤에도 남음', '모름': '남아 있는지 확인 필요' };
+/** 걷는 동안 패널: 가는 길에 볼 정원 하나하나 (지점마다 3개까지 보이고 나머지는 '더 보기') */
+function gardenStrip(s) {
+  const units = gardenUnits(s.gardens ?? []);
+  if (!units.length) return null;
+  const list = h('ol', { class: 'tr-gl' }), perSpot = {};
+  const card = u => h('li', null, h('button', { type: 'button', class: 'tr-gl-card', onclick: () => gardenShot(u) },
+    h('span', { class: 'tr-gl-ico' }, icon('leaf', 14)),
+    h('div', null,
+      h('small', null, [u.dest ? '도착하는 곳' : `${u.spot ?? ''} 지나며`, u.expo ? `정원박람회 ${u.kind}` : null].filter(Boolean).join(' · ')),
+      h('b', null, u.name),
+      u.text ? h('p', null, u.text) : null,
+      (u.maker || u.plants?.length) ? h('p', { class: 'tr-gl-sub' }, [u.maker ? `만든 이 ${u.maker}` : null, u.plants?.length ? `식물 ${u.plants.slice(0, 3).join(', ')}` : null].filter(Boolean).join(' · ')) : null,
+      u.expo && REMAIN[u.remains] ? h('em', { class: u.remains_sure ? 'ok' : '' }, u.remains_sure ? REMAIN[u.remains] : `${REMAIN[u.remains]}${u.remains === '남음' ? '(추정)' : ''}`) : null)));
+  const hidden = [];
+  for (const u of units) {
+    const k = u.hub?.id ?? u.id; perSpot[k] = (perSpot[k] ?? 0) + 1;
+    const li = card(u);
+    if (perSpot[k] > 3) { li.hidden = true; hidden.push(li); }
+    list.append(li);
+  }
+  const more = hidden.length ? h('button', { type: 'button', class: 'tr-gl-more', onclick: e => { hidden.forEach(li => { li.hidden = false; }); e.currentTarget.remove(); } }, `정원 ${hidden.length}곳 더 보기`) : null;
+  return h('section', { class: 'tr-gls' }, h('div', { class: 'tr-gls-head' }, icon('leaf', 13), h('b', null, `가는 길에 볼 정원 ${units.length}곳`), h('small', null, '눌러서 지도에서 보기')), list, more);
+}
 
 async function begin(course = null, avoid = []) {
   flushCourse();
@@ -1137,7 +1171,7 @@ function drawCourse({ reveal = false, changed = new Set() } = {}) {
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
-      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 600 })
+      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.gardens ? `정원 ${g.gardens.length}곳` : g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 600 })
         .addTo(layers.garden).on('click', () => gardenShot(g));
     }
   });
@@ -1383,7 +1417,9 @@ function navHud(rem, s) {
 function gardenPass(g) {
   gardenShot(g, true);
   const ph = gardenImg(g);
-  toast({ cls: 'garden', img: ph?.src, small: g.season ? '가는 길에 정원이 있어요' : `${g.next}월에 볼 수 있는 정원`, title: g.name }, 3600);
+  const u = gardenUnits([g]);
+  toast({ cls: 'garden', img: ph?.src, small: g.gardens ? `가는 길 정원 · 이 근처 ${u.length}곳` : g.season ? '가는 길에 정원이 있어요' : `${g.next}월에 볼 수 있는 정원`,
+    title: g.gardens ? u.slice(0, 2).map(x => x.name).join(' · ') : g.name, text: g.gardens ? u[0]?.text : null }, 4200);
 }
 function gardenShot(g, auto = false) {
   layers.gshot.clearLayers();
@@ -1423,6 +1459,7 @@ function renderGoing(s, live) {
       h('div', { class: 'tr-nav-bar' }, bar)),
     s.why ? h('div', { class: 'tr-why-next' }, icon('spark', 13), s.why) : null,
     live ? null : h('small', { class: 'tr-rate-why' }, '지도의 이 길로 가요. 공원에서 걸으면 내 위치를 따라 저절로 도착 화면이 떠요'),
+    gardenStrip(s),
     h('div', { class: 'tr-actions' }, live
       ? h('button', { type: 'button', class: 'tr-ghost', onclick: finishLeg }, '도착했어요')
       : h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: finishLeg }, '도착 화면 보기', h('span', { class: 'tr-cta-arrow' }, '→'))),
@@ -1814,8 +1851,9 @@ async function boot() {
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
   try {
     const wxLive = fetchWeather().catch(() => null);
-    const [data, raw, photos, gardens, seed] = await Promise.all([loadData(loadJson), Promise.race([wxLive, sleep(1500).then(() => null)]),
-      loadJson('./data/photos.json').catch(() => null), loadJson('./data/gardens.json').catch(() => null), loadJson('./data/ratings_seed.json').catch(() => null)]);
+    const [data, raw, photos, gardens, seed, expo] = await Promise.all([loadData(loadJson), Promise.race([wxLive, sleep(1500).then(() => null)]),
+      loadJson('./data/photos.json').catch(() => null), loadJson('./data/gardens.json').catch(() => null), loadJson('./data/ratings_seed.json').catch(() => null),
+      loadJson('./data/expo_gardens.json').catch(() => null)]);
     const now = seoulNow();
     const model = buildModel(data, []);
     model.parkBounds = L.geoJSON(data.park).getBounds();
@@ -1823,7 +1861,8 @@ async function boot() {
     // 시연용: tour.html?wx=heat|dust|rain|cold 이면 그 날씨로 고정
     const demo = ['heat', 'dust', 'rain', 'cold'].find(k => k === new URLSearchParams(location.search).get('wx'));
     const wxOf = w => annotate(demo ? applyScenario(w, demo) : w, now);
-    app = { data, model, now, wx: wxOf(raw ?? sampleWeather()), photos, gardens, seed, news: loadNews(store) };
+    app = { data, model, now, wx: wxOf(raw ?? sampleWeather()), photos, gardens, seed, news: loadNews(store),
+      expo: Object.fromEntries((expo?.items ?? []).map(x => [x.id, x])) };
     if (!raw) wxLive.then(w => { if (w) { app.wx = wxOf(w); paintWeather(); } });
     // 서울숲 프로그램: 실시간(중계 서버) → 못 받으면 저장본(data/programs.json)
     fetchPrograms().then(d => d ?? loadJson('./data/programs.json').catch(() => null)).then(d => { if (d?.items?.length) { app.programs = d; paintPrograms(); } });

@@ -943,3 +943,19 @@ div.tr-status-line{cursor:default}
 /* 모바일 화면에서 돌아올 때: 도입 화면을 글자 없이 어두운 덮개로만 */
 .tr-intro.tr-quiet{background:#08110d;transition:opacity .5s ease}
 .tr-intro.tr-quiet .tr-intro-in{display:none}
+/* 걷는 동안: 가는 길에 볼 정원 하나하나 */
+.tr-gls{margin-top:12px;padding:12px 12px 10px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+.tr-gls-head{display:flex;align-items:center;gap:7px;color:var(--mint);margin-bottom:8px}
+.tr-gls-head b{font-size:13.5px;color:#eafff3}
+.tr-gls-head small{margin-left:auto;font-size:11px;color:rgba(234,255,243,.45)}
+.tr-gl{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:340px;overflow:auto}
+.tr-gl-card{display:flex;gap:10px;width:100%;text-align:left;border:0;cursor:pointer;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.04);color:inherit;font:inherit;transition:background .2s}
+.tr-gl-card:hover{background:var(--mint-soft)}
+.tr-gl-ico{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,154,196,.14);color:#ffb3d1}
+.tr-gl-card small{display:block;font-size:10.5px;color:rgba(234,255,243,.5)}
+.tr-gl-card b{display:block;font-size:13.5px;margin:1px 0 2px;color:#f2fff8}
+.tr-gl-card p{margin:0;font-size:12px;line-height:1.45;color:rgba(234,255,243,.72)}
+.tr-gl-card p.tr-gl-sub{margin-top:3px;font-size:11px;color:rgba(234,255,243,.5)}
+.tr-gl-card em{display:inline-block;margin-top:5px;font-style:normal;font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.07);color:rgba(234,255,243,.6)}
+.tr-gl-card em.ok{background:var(--mint-soft);color:var(--mint)}
+.tr-gl-more{margin-top:8px;width:100%;border:1px dashed rgba(255,255,255,.15);background:none;color:rgba(234,255,243,.7);padding:8px;border-radius:10px;cursor:pointer;font:inherit;font-size:12.5px}
