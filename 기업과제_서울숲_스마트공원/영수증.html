@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>숲 영수증 시안</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
@@ -54,7 +54,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .rv.in{opacity:1;transform:none}
 
 /* ---------- 무대 ---------- */
-.stage{position:relative;margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px 36px;padding:28px 32px 0;border-radius:32px;overflow:hidden;background:linear-gradient(180deg,var(--scene-a) 0%,var(--scene-b) 70%);box-shadow:0 1px 2px rgba(20,32,26,.04),0 20px 50px -30px rgba(20,32,26,.35)}
+.stage{position:relative;margin-top:28px;display:grid;grid-template-columns:minmax(0,360px) minmax(0,360px);justify-content:center;gap:24px 72px;padding:28px 32px 0;border-radius:32px;overflow:hidden;background:linear-gradient(180deg,var(--scene-a) 0%,var(--scene-b) 70%);box-shadow:0 1px 2px rgba(20,32,26,.04),0 20px 50px -30px rgba(20,32,26,.35)}
 .scene{position:absolute;left:0;right:0;top:120px;height:260px;pointer-events:none;color:var(--tree)}
 .scene svg{width:100%;height:100%}
 .progress{grid-column:1/-1;position:relative;z-index:2;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
@@ -66,7 +66,55 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .progress .p span{margin-right:4px;font-variant-numeric:tabular-nums}
 .progress .p em{font-style:normal}
 .col-phone{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;padding-bottom:40px}
-.col-machine{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;min-height:820px}
+.col-machine{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;min-height:600px}
+/* 서울숲 방명록 */
+.wall-head{display:flex;align-items:flex-end;justify-content:space-between;gap:8px 24px;flex-wrap:wrap}
+.wall-head h2{margin-bottom:4px}
+.wall-stat{margin:0 0 10px;font-size:14.5px;color:var(--ink-2)}
+.wall-stat b{color:var(--brand);font-weight:800}
+.wall-bar{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:16px}
+.wall-filters{display:flex;flex-direction:column;gap:8px}
+.wall-filter{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.wall-filter > span{width:64px;font-size:12.5px;font-weight:800;color:var(--muted)}
+.wall-filter button{height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--hair);background:var(--surface);font:inherit;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.wall-filter button i{font-style:normal;margin-left:4px;opacity:.5;font-variant-numeric:tabular-nums}
+.wall-filter button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.wall-nav{display:flex;gap:8px;flex:none}
+.wall-nav button{width:42px;height:42px;border-radius:50%;border:1px solid var(--hair);background:var(--surface);font-size:17px;font-weight:700;color:var(--ink);cursor:pointer}
+.wall-nav button:hover{background:var(--surface-2)}
+.board{margin-top:16px;border-radius:28px;background:radial-gradient(rgba(120,90,50,.13) 1px,transparent 1.4px) 0 0/14px 14px,linear-gradient(180deg,#efe4cd,#e8dbbf);box-shadow:inset 0 2px 10px rgba(80,60,30,.12)}
+.wall-row{display:flex;align-items:flex-start;gap:30px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 28px;padding:40px 28px 36px;scrollbar-width:thin;outline:none}
+.witem{position:relative;flex:none;width:226px;scroll-snap-align:start;transform:translateY(var(--y,0)) rotate(var(--r,0deg));transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.witem:hover,.witem:focus-within{transform:translateY(calc(var(--y,0px) - 6px)) rotate(0deg);z-index:2}
+.witem::before{content:"";position:absolute;top:-13px;left:50%;z-index:3;width:84px;height:24px;transform:translateX(-50%) rotate(var(--tr,-3deg));background:rgba(255,250,235,.62);border-left:1px dashed rgba(0,0,0,.06);border-right:1px dashed rgba(0,0,0,.06);box-shadow:0 1px 2px rgba(0,0,0,.08);pointer-events:none}
+.wcard{display:block;width:100%;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.wcard:focus-visible{outline:2px solid #2a78d6;outline-offset:6px;border-radius:6px}
+.wcard .receipt{width:100%;padding:26px 14px 14px;box-shadow:0 1px 1px rgba(0,0,0,.06),0 16px 26px -16px rgba(60,40,10,.55)}
+.wcard .brandline{font-size:14px}
+.wcard .meta{margin-top:6px}
+.wvisit{display:inline-block;margin-top:2px;padding:1px 6px;border:1px solid currentColor;border-radius:4px;font-size:9.5px;font-weight:700}
+.wcard .photo{margin:8px 0 2px}
+.wcard .photo canvas{width:100%;height:auto;display:block}
+.wcard .okp{font-size:9px;text-align:right;opacity:.7}
+.wcard .wbest{margin-top:2px}
+.hand{margin:10px 2px 0;padding:10px 12px 8px;border-radius:3px;background:#fffbea;box-shadow:0 8px 14px -10px rgba(60,40,10,.5);font-family:"Nanum Pen Script",cursive;color:#23324a;transform:rotate(var(--hr,1deg))}
+.hand p{margin:0;font-size:23px;line-height:1.1;word-break:keep-all}
+.hand small{display:block;margin-top:4px;text-align:right;font-size:19px;color:#4a5568}
+.who-tag{position:absolute;top:10px;right:-12px;z-index:4;display:flex;align-items:center;gap:4px;padding:5px 10px 5px 8px;border-radius:999px;background:var(--brand);color:var(--brand-ink);font-size:12px;font-weight:800;box-shadow:0 6px 12px -6px rgba(0,0,0,.45);transform:rotate(6deg)}
+.mine-tag{position:absolute;top:-30px;left:-6px;z-index:5;padding:5px 11px;border-radius:999px;background:#e2703e;color:#fff;font-size:12px;font-weight:800;box-shadow:0 6px 14px -6px rgba(0,0,0,.4)}
+.wdel{display:block;margin:10px auto 0;height:32px;padding:0 14px;border:1px solid rgba(0,0,0,.15);border-radius:999px;background:rgba(255,255,255,.7);font:inherit;font-size:12.5px;font-weight:700;color:#5b4a35;cursor:pointer}
+.witem.new{animation:pin .7s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pin{0%{opacity:0;transform:translateY(-40px) rotate(-8deg)}100%{opacity:1}}
+.wall-empty{padding:40px;color:#7a6a52;font-weight:700}
+.wall-note{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.nick{min-height:0;height:44px;resize:none}
+.consent{display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:14px;background:#eef2ec;font-size:11.5px;line-height:1.5;color:#4f5a52;cursor:pointer}
+.consent input{margin-top:3px;width:17px;height:17px;accent-color:#1d4d3a;flex:none}
+.consent b{display:block;font-size:12.5px;color:#14201a}
+.consent-off{margin:12px 0 0;padding:10px 12px;border-radius:14px;background:#eef2ec;font-size:12px;color:#5b645d}
+.consent[hidden],.consent-off[hidden]{display:none}
+#bShare.done{background:#e7ebe5;color:#1d4d3a}
+@media (max-width:640px){.wall-nav{display:none}.witem{width:206px}.col-machine{min-height:440px}.wall-filter > span{width:100%}}
 .caption{max-width:330px;margin:0;padding:12px 16px;border-radius:16px;background:var(--surface);box-shadow:0 6px 20px -12px rgba(20,32,26,.3);text-align:center;font-size:13.5px;line-height:1.6;color:var(--ink-2);min-height:48px}
 .caption.swap{animation:cap .5s cubic-bezier(.2,.7,.2,1)}
 .sound{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer}
@@ -95,7 +143,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .btn:hover{filter:brightness(1.12)}.btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.35;cursor:not-allowed;filter:none;transform:none}
 .btn.ghost{background:#e7ebe5;color:#1d4d3a}
-.btn:focus-visible,.face:focus-visible,.chip:focus-visible,.rc-open:focus-visible,.sound:focus-visible,.mclose:focus-visible,.an-item:focus-visible,.btn-l:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
+.btn:focus-visible,.face:focus-visible,.chip:focus-visible,.rc-open:focus-visible,.sound:focus-visible,.mclose:focus-visible,.btn-l:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .rec{display:flex;flex-direction:column;gap:7px}
 .rec-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05);font-size:13px;opacity:0;transform:translateY(8px)}
 .view.on .rec-item{animation:up .45s cubic-bezier(.2,.7,.2,1) forwards}
@@ -247,8 +295,6 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .mini-qr{width:70px;height:70px;margin:8px auto 0}
 /* 영수증 부분 강조(읽는 법) */
 .receipt [data-part]{position:relative;border-radius:4px;transition:opacity .4s,background-color .4s,box-shadow .4s}
-.anat .receipt.focus [data-part]{opacity:.25}
-.anat .receipt.focus [data-part].hl{opacity:1;background:rgba(226,112,62,.09);box-shadow:0 0 0 6px rgba(226,112,62,.09),0 0 0 7.5px #e2703e}
 .pin{position:absolute;left:-30px;top:2px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1d4d3a;color:#fff;font:800 11px/1 var(--font);text-shadow:none;box-shadow:0 0 0 3px var(--scene-a);transition:transform .3s cubic-bezier(.3,1.6,.5,1),background .3s}
 .receipt [data-part].hl .pin{transform:scale(1.25);background:#e2703e}
 
@@ -260,20 +306,6 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .mclose{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:51}
 
 /* ---------- 읽는 법 ---------- */
-.anat{display:grid;grid-template-columns:350px minmax(0,1fr);gap:48px;margin-top:36px;align-items:start}
-.anat-paper{position:sticky;top:24px;display:flex;justify-content:center;padding:28px 0 28px 30px;border-radius:28px;background:linear-gradient(180deg,var(--scene-a),var(--scene-b))}
-.anat-paper .receipt{transform:rotate(-1.5deg)}
-.an-list{display:flex;flex-direction:column;gap:10px;padding-bottom:30vh}
-.an-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 16px;align-items:center;padding:16px 20px;border-radius:22px;background:var(--surface);border:1px solid var(--hair);cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .35s,box-shadow .35s,transform .35s,opacity .8s cubic-bezier(.2,.7,.2,1)}
-.an-item:hover{transform:translateX(4px)}
-.an-item.on{border-color:var(--brand);box-shadow:0 18px 40px -24px color-mix(in srgb,var(--brand) 70%,transparent)}
-.an-n{grid-row:span 2;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;background:var(--brand-wash);color:var(--brand);font-size:17px;font-weight:800;transition:background .35s,color .35s}
-.an-item.on .an-n{background:#e2703e;color:#fff}
-.an-item h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em}
-.an-item p{margin:0;font-size:14.5px;line-height:1.65;color:var(--ink-2)}
-.an-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.an-meta span{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:700;color:var(--ink-2)}
-.an-meta span b{color:var(--brand);font-weight:800}
 
 /* ---------- 순환 ---------- */
 .loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:36px;position:relative}
@@ -318,15 +350,12 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   .hero .wrap{grid-template-columns:minmax(0,1fr);min-height:0}
   .hero-art{height:380px}
   .stage{grid-template-columns:minmax(0,1fr);padding:22px 14px 0}
-  .anat{grid-template-columns:minmax(0,1fr);gap:24px}
-  .anat-paper{position:relative;top:0}
-  .an-list{padding-bottom:0}
   .loop{grid-template-columns:minmax(0,1fr);gap:22px}
   .loop-step{flex-direction:row;gap:16px;padding:0}.loop-step .txt{flex:1;min-width:0}
   .loop-step:not(:last-child)::after{display:none}
   .auth{grid-template-columns:minmax(0,1fr)}
 }
-@media (max-width:640px){.wrap{padding:0 16px}.progress .p em{display:none}.modal .receipt{transform:rotate(-1deg) scale(1.08)}section.part{padding-top:64px}.anat-paper{padding-left:34px}}
+@media (max-width:640px){.wrap{padding:0 16px}.progress .p em{display:none}.modal .receipt{transform:rotate(-1deg) scale(1.08)}section.part{padding-top:64px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}.pmbox .pm.hit{opacity:.85}.leaf{display:none}}
 </style>
 </head>
@@ -338,7 +367,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       <span class="tag">시안 · 숲 영수증</span>
       <h1><span>오늘의 서울숲을</span><br><span><em>한 장</em>에 담아 가세요</span></h1>
       <p class="lead">출구 기계에 휴대폰을 대고 오늘 제일 좋았던 곳을 고르면, 오늘 머문 곳과 걸은 길, 사진과 한마디가 찍힌 영수증이 나옵니다. 이용자에게는 기념품이, 공원에는 만족도 자료가 됩니다.</p>
-      <div class="cta"><a class="btn-l p" href="#try" id="goTry">QR 찍고 영수증 받아 보기 ↓</a><a class="btn-l s" href="#read">영수증 읽는 법</a></div>
+      <div class="cta"><a class="btn-l p" href="#try" id="goTry">QR 찍고 영수증 받아 보기 ↓</a><a class="btn-l s" href="#wall">방명록 보기</a></div>
       <div class="fine">화면 속 기록·번호·제휴 카페는 가상 예시입니다.</div>
     </div>
     <div class="hero-art" aria-hidden="true"><div class="float" id="heroRc"></div></div>
@@ -429,6 +458,19 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <button class="btn ghost" id="bRetake" type="button">다시 찍기</button>
             </div>
 
+            <div class="view" data-v="share">
+              <h4>방명록에 남길까요?</h4>
+              <p class="ph-sub">영수증이 서울숲 방명록에 걸려요.</p>
+              <div class="q">이름 대신 쓸 별명 (선택)</div>
+              <input class="memo nick" id="nick" maxlength="12" placeholder="예) 성수동 산책러" autocomplete="off">
+              <div class="q">어떤 나들이였나요</div>
+              <div class="chips" id="whoChips"></div>
+              <label class="consent" id="consentBox"><input type="checkbox" id="cPhoto"><span><b>내 사진도 함께 걸기 (선택)</b>얼굴이 보일 수 있어요. 동의하면 30일 동안 걸리고 언제든 내릴 수 있어요.</span></label>
+              <p class="consent-off" id="consentOff">사진을 찍지 않아서 지도·한마디만 걸려요.</p>
+              <button class="btn" id="bPost" type="button">남기기</button>
+              <button class="btn ghost" id="bPostCancel" type="button">그만두기</button>
+            </div>
+
             <div class="view" data-v="done">
               <h4>영수증이 나오고 있어요</h4>
               <div class="done-box">
@@ -437,6 +479,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
                 <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
                 <div class="wallet"><b>오늘의 영수증 보관함</b>지금까지 받은 영수증을 날짜별로 다시 볼 수 있어요<br><span class="tg">3번째 서울숲 영수증</span></div>
               </div>
+              <button class="btn" id="bShare" type="button">방명록에 남기기</button>
               <button class="ph-link" id="bAgain" type="button">↺ 처음부터 다시 보기</button>
             </div>
           </div>
@@ -465,14 +508,18 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     </div>
   </section>
 
-  <section class="part" id="read">
-    <div class="kick rv"><b>02</b>영수증 읽는 법</div>
-    <h2 class="rv">한 장에 담긴 일곱 가지</h2>
-    <p class="sub rv">항목을 누르면 영수증의 해당 부분이 표시됩니다.</p>
-    <div class="anat">
-      <div class="anat-paper rv"><div id="anatRc"></div></div>
-      <div class="an-list" id="anList"></div>
+  <section class="part" id="wall">
+    <div class="kick rv"><b>02</b>서울숲 방명록</div>
+    <div class="wall-head rv"><h2>다녀간 사람들이 남긴 영수증</h2><p class="wall-stat" id="wallStat"></p></div>
+    <div class="wall-bar rv">
+      <div class="wall-filters">
+        <div class="wall-filter" id="fWho" role="group" aria-label="누구와 왔나요"></div>
+        <div class="wall-filter" id="fPlace" role="group" aria-label="어디가 좋았나요"></div>
+      </div>
+      <div class="wall-nav"><button type="button" id="wPrev" aria-label="이전 영수증">←</button><button type="button" id="wNext" aria-label="다음 영수증">→</button></div>
     </div>
+    <div class="board rv"><div class="wall-row" id="wallRow" tabindex="0" aria-label="방명록 영수증 목록"></div></div>
+    <p class="wall-note">🔒 사진은 본인이 동의한 경우에만 걸리고, 30일 뒤 내려가요. 언제든 직접 내릴 수 있어요. 화면 속 방명록은 가상 예시예요.</p>
   </section>
 
   <p class="note rv">기록·번호·제휴 카페·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
@@ -539,8 +586,9 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     return '<svg class="barcode" viewBox="0 0 236 34" preserveAspectRatio="none" fill="#2b2a27" aria-hidden="true">' + s + '</svg>';
   }
   // 기념 소인(우체국 소인 모양): 둥근 테두리 안에 날짜, 오른쪽에 물결 줄
-  function postmark() {
+  function postmark(ds, tm) {
     var id = 'pm' + (uid++);
+    ds = ds || dateStr; tm = tm || '15:42';
     var waves = '';
     for (var k = 0; k < 5; k++) { var y = 22 + k * 15; waves += '<path d="M104 ' + y + ' q11 -7 22 0 t22 0 t22 0 t22 0 t22 0 t22 0"/>'; }
     return '<svg viewBox="0 0 236 104" aria-hidden="true">' +
@@ -549,37 +597,61 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       '<g fill="none" stroke="currentColor" filter="url(#g' + id + ')">' +
       '<circle cx="52" cy="52" r="48" stroke-width="2.6"/><circle cx="52" cy="52" r="29" stroke-width="1.4"/>' +
       '<text font-family="Pretendard Variable,sans-serif" font-size="10" font-weight="800" fill="currentColor" stroke="none" letter-spacing="1.6"><textPath href="#p' + id + '">SEOUL FOREST · 서울숲 · 성수 ·</textPath></text>' +
-      '<text x="52" y="47" text-anchor="middle" font-family="Nanum Gothic Coding,monospace" font-size="11.5" font-weight="700" fill="currentColor" stroke="none">' + dateStr.slice(2) + '</text>' +
-      '<text x="52" y="62" text-anchor="middle" font-family="Nanum Gothic Coding,monospace" font-size="9.5" fill="currentColor" stroke="none">15:42</text>' +
+      '<text x="52" y="47" text-anchor="middle" font-family="Nanum Gothic Coding,monospace" font-size="11.5" font-weight="700" fill="currentColor" stroke="none">' + ds.slice(2) + '</text>' +
+      '<text x="52" y="62" text-anchor="middle" font-family="Nanum Gothic Coding,monospace" font-size="9.5" fill="currentColor" stroke="none">' + tm + '</text>' +
       '<path d="M44 68l4-5 4 5 4-5 4 5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<g stroke-width="2.2" stroke-linecap="round">' + waves + '</g>' +
       '</g></svg>';
   }
   // 실제 서울숲 지도: 공원 경계·숲·물(recovery-station/data) 위에 산책로를 따라 걸은 길(가상 코스)
   var MAP = {"w": 236, "h": 291, "park": "M227.2 207.4L230.0 212.9L221.3 278.6L219.3 285.4L202.5 280.8L183.0 269.9L150.3 256.4L120.4 239.7L49.9 208.0L14.6 191.1L6.2 182.8L6.0 174.9L40.8 138.7L86.8 161.2L88.7 168.1L82.3 189.2L85.1 191.4L91.9 171.9L93.0 173.0L89.4 191.1L96.8 193.3L98.9 165.1L108.8 167.2L136.5 178.6L137.3 172.0L107.0 160.6L103.4 155.8L111.8 94.6L118.1 67.5L121.7 60.7L130.0 63.8L120.9 86.1L122.4 88.8L149.6 96.2L151.5 92.6L190.1 105.4L183.7 125.2L215.8 136.0L195.6 192.7L181.2 187.9L180.7 192.6L227.2 207.4ZM128.2 57.3L128.5 54.6L132.7 48.7L160.8 23.3L193.5 6.0L195.4 6.0L201.3 41.1L202.6 55.6L158.2 62.8L153.9 61.8L149.6 66.8L129.3 59.6L128.2 57.3Z", "forest": "M208.7 208.8L208.7 208.4L208.7 208.8ZM209.2 208.9L209.2 208.5L209.2 208.9ZM209.6 209.1L209.7 208.7L209.6 209.1ZM212.4 210.1L212.4 209.8L212.4 210.1ZM212.9 210.0L212.9 209.6L212.9 210.0ZM213.0 210.5L213.1 210.2L213.0 210.5ZM213.7 210.5L213.7 210.1L213.7 210.5ZM216.1 210.9L216.2 210.5L216.1 210.9ZM210.3 218.8L210.3 218.5L210.3 218.8ZM210.8 219.3L210.9 218.9L210.8 219.3ZM211.3 219.4L211.4 219.1L211.3 219.4ZM206.8 216.4L206.8 216.0L206.8 216.4ZM207.3 216.6L207.3 216.2L207.3 216.6ZM207.9 217.0L208.0 216.6L207.9 217.0ZM213.0 221.5L213.0 221.1L213.0 221.5ZM213.4 221.9L213.4 221.5L213.4 221.9ZM170.1 262.5L159.6 245.5L144.6 236.8L126.7 235.2L118.5 230.0L79.6 216.9L74.1 213.8L72.1 210.7L65.7 209.2L55.3 210.3L49.9 208.0L14.6 191.1L6.2 182.8L6.0 174.9L40.8 138.7L86.8 161.2L88.7 168.1L82.3 189.2L85.1 191.4L91.6 172.7L88.9 192.6L97.2 193.3L100.5 166.5L105.0 166.8L136.9 179.6L137.3 172.0L107.0 160.6L103.4 155.8L111.8 94.6L118.1 67.5L121.7 61.7L130.0 63.8L120.9 86.1L123.5 91.7L119.4 95.9L115.7 104.4L116.9 116.8L123.6 118.1L132.0 105.1L148.9 107.2L152.2 109.3L176.2 117.0L180.5 104.3L188.5 106.6L182.2 124.9L196.7 130.1L194.0 138.5L207.1 143.3L203.0 156.0L189.3 151.7L189.9 149.1L187.5 147.7L186.5 151.1L182.5 151.2L173.8 148.4L178.3 135.9L170.1 134.7L168.5 137.8L173.5 140.0L171.5 144.4L164.7 141.7L167.4 134.0L157.9 127.8L144.5 126.6L141.7 129.1L141.2 132.1L144.1 133.8L149.8 149.0L172.7 149.2L172.7 153.9L171.2 154.2L170.8 168.2L180.0 172.1L176.7 179.2L193.6 185.2L195.6 188.5L194.6 191.7L180.8 187.5L179.2 192.8L202.7 201.2L202.6 203.7L199.5 204.0L198.1 205.7L196.8 211.0L201.4 216.4L208.4 220.4L217.1 232.1L216.6 233.7L205.0 227.8L205.1 221.0L196.7 214.9L192.6 206.6L161.8 193.6L162.3 192.1L109.3 169.6L105.1 173.6L102.2 187.7L103.7 191.0L101.7 195.8L102.8 198.8L114.1 204.0L112.5 207.9L140.9 219.9L143.8 219.0L150.3 220.2L152.1 218.5L156.8 218.6L159.2 214.0L167.4 217.5L171.1 208.5L174.0 208.8L166.6 226.0L155.4 220.9L151.8 228.2L153.6 233.5L173.5 246.2L180.2 262.8L180.5 267.3L179.8 268.5L175.0 266.6L170.1 262.5Z", "water": "M127.8 127.2L136.7 134.2L138.8 142.3L143.1 149.5L142.3 153.8L144.5 156.1L148.0 155.7L147.4 156.8L144.8 157.6L134.9 154.2L133.7 147.4L130.8 141.9L122.0 134.2L123.5 128.8L125.3 126.7L127.8 127.2ZM153.9 46.0L157.8 44.5L161.7 38.5L166.1 39.7L168.2 39.0L169.1 36.9L168.5 29.7L173.0 26.6L175.2 39.1L172.8 42.2L171.7 43.0L168.0 41.7L164.5 43.9L165.2 47.2L163.1 52.9L154.8 53.1L152.8 50.8L152.5 48.3L153.9 46.0ZM47.1 179.4L48.6 182.8L55.0 179.0L57.7 181.9L59.9 181.9L65.7 186.4L66.4 189.0L57.5 187.0L52.5 183.3L47.3 186.2L46.1 185.2L45.3 179.7L36.6 177.9L35.3 173.4L30.1 171.3L30.0 168.2L32.6 165.3L37.2 164.6L41.8 171.2L43.9 178.0L47.1 179.4ZM185.5 154.7L185.0 156.1L175.4 152.9L175.9 151.4L185.5 154.7ZM106.7 198.7L105.4 197.3L105.6 194.5L108.0 193.2L109.7 193.8L110.9 196.3L110.2 198.0L106.7 198.7ZM112.8 201.6L111.2 199.3L111.7 197.4L114.0 196.1L115.8 196.7L116.9 199.2L116.3 200.9L112.8 201.6ZM109.1 179.7L107.4 177.2L107.8 175.1L110.5 173.4L112.7 174.1L113.8 178.2L112.2 179.8L109.1 179.7ZM115.9 183.0L114.1 180.5L114.6 178.4L117.2 176.7L119.4 177.3L120.5 181.5L118.9 183.1L115.9 183.0Z", "lawn": "M202.3 206.6L203.5 207.5L202.3 207.4L200.9 212.3L202.1 212.9L200.3 213.2L199.3 211.8L200.6 211.9L202.0 207.2L200.8 206.8L202.3 206.6ZM205.9 207.6L207.1 208.5L205.9 208.3L204.2 214.5L205.3 215.0L203.7 215.2L202.5 214.4L203.8 214.4L205.6 208.2L204.4 207.8L205.9 207.6ZM209.6 208.5L210.8 209.4L209.6 209.2L207.5 216.2L208.7 216.7L206.8 216.6L206.1 215.6L207.1 216.0L209.3 209.1L208.1 208.7L209.6 208.5ZM213.3 209.4L214.2 211.1L213.1 210.6L210.8 218.6L212.0 219.1L211.4 220.1L210.0 219.1L209.4 218.0L210.4 218.4L212.7 210.5L211.5 210.1L213.3 209.4ZM215.5 210.5L217.0 211.1L214.3 221.3L212.9 221.8L216.6 211.3L215.5 210.5ZM151.6 146.4L146.7 138.6L145.5 134.0L147.7 131.9L149.2 127.5L157.9 128.6L166.9 134.8L162.6 146.5L151.6 146.4ZM173.1 199.3L170.4 207.0L159.3 202.4L163.2 194.7L173.1 199.3Z", "route": "M183.6 95.6L190.5 98.0L181.5 123.7L184.0 124.6L183.2 128.6L171.1 124.6L161.7 151.1L155.2 152.7L148.2 156.0L149.4 153.0L146.9 149.4L145.4 145.0L143.0 143.3L141.9 141.4L132.2 146.3L131.2 145.1L108.5 156.3L105.6 156.7L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L82.7 191.9L88.2 197.1L107.0 211.2L121.2 217.5L136.4 221.4L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7", "stops": [{"id": "gate-north", "name": "성수동 방면 북측 입구", "x": 188.3, "y": 90.4}, {"id": "family-lawn", "name": "가족마당", "x": 155.9, "y": 137.1}, {"id": "lake", "name": "서울숲호수·수변휴게실", "x": 127.6, "y": 144.2}, {"id": "deer", "name": "사슴우리(생태숲)", "x": 74.2, "y": 184.0}, {"id": "insect", "name": "곤충식물원", "x": 149.3, "y": 214.3}, {"id": "gate-station", "name": "서울숲역 방면 입구", "x": 219.0, "y": 163.6}]};
+  var COURSES = {"c1":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L164.9 219.2L166.3 218.1L170.7 208.0L182.2 173.9L180.7 173.4L185.5 158.6L181.0 157.1L173.7 155.2L166.6 175.9L170.4 178.0L160.1 179.6L153.0 178.1L160.1 179.6L170.4 178.0L157.0 169.4L146.8 164.8L138.1 164.7L130.2 161.5L122.4 155.3L119.6 150.0L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L82.7 191.9L88.2 197.1L107.0 211.2L121.2 217.5L136.4 221.4L150.0 220.8L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":4.3,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"바닥분수","x":180.5,"y":153.7,"g":0},{"t":"숲속놀이터","x":153.4,"y":174.3,"g":0},{"t":"사슴우리","x":74.2,"y":184.0,"g":0},{"t":"곤충식물원","x":149.3,"y":214.3,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c2":{"route":"M183.6 95.6L151.2 84.1L149.4 88.6L142.4 85.7L142.0 86.6L131.2 83.3L134.2 77.1L124.5 72.4L129.8 62.5L137.1 55.4L141.6 55.6L148.1 54.2L151.6 55.3L153.6 57.2L158.4 56.7L158.3 53.3L162.0 49.5L161.5 45.5L162.0 49.5L158.3 53.3L158.4 56.7L153.6 57.2L151.6 55.3L146.9 54.2L141.6 55.6L137.1 55.4L134.5 57.1L128.6 64.1L121.8 77.1L118.2 93.4L114.5 104.6L115.0 116.6L113.5 125.0L114.2 128.2L112.7 137.7L113.5 141.4L112.3 149.1L113.0 153.2L105.6 156.7L108.5 156.3L126.5 147.4L108.5 156.3L105.6 156.7L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L82.7 191.9L88.2 197.1L107.0 211.2L112.3 216.5L119.2 221.2L122.4 224.9L126.2 227.8L129.9 229.0L139.9 230.0L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":3.6,"stops":[{"t":"성수동 입구","x":188.3,"y":90.4,"g":1},{"t":"습지생태원","x":165.1,"y":41.6,"g":0},{"t":"서울숲호수","x":127.6,"y":144.2,"g":0},{"t":"사슴우리","x":74.2,"y":184.0,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c3":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L150.0 220.8L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":2.5,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"곤충식물원","x":149.3,"y":214.3,"g":0},{"t":"나비정원","x":155.1,"y":214.8,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c4":{"route":"M183.6 95.6L190.5 98.0L181.5 123.7L184.0 124.6L183.2 128.6L171.1 124.6L165.6 141.0L171.1 124.6L167.9 126.6L166.0 126.6L161.8 124.0L156.5 122.1L152.3 121.7L148.2 122.9L140.8 128.8L139.9 130.0L141.9 141.4L143.0 143.3L145.4 145.0L146.9 149.4L149.4 153.0L147.0 158.2L143.6 160.1L146.5 162.6L146.8 164.8L157.0 169.4L170.4 178.0L179.8 181.1L170.7 208.0L166.3 218.1L164.9 219.2L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":2.5,"stops":[{"t":"성수동 입구","x":188.3,"y":90.4,"g":1},{"t":"가족마당","x":155.9,"y":137.1,"g":0},{"t":"야외무대","x":143.3,"y":129.6,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c5":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L164.9 219.2L166.3 218.1L170.7 208.0L179.8 181.1L187.0 183.7L188.9 178.4L187.3 177.8L187.7 176.5L180.7 173.4L185.5 158.6L181.0 157.1L173.7 155.2L175.3 150.9L166.7 149.9L155.2 152.7L148.2 156.0L149.4 153.0L146.9 149.4L145.4 145.0L143.0 143.3L141.9 141.4L132.6 146.2L131.2 145.1L126.5 147.4L131.2 145.1L132.6 146.2L141.9 141.4L143.0 143.3L145.4 145.0L146.9 149.4L149.4 153.0L147.0 158.2L143.6 160.1L146.5 162.6L146.8 164.8L157.0 169.4L170.4 178.0L179.8 181.1L170.7 208.0L166.3 218.1L164.9 219.2L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":4.0,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"방문자센터","x":193.5,"y":179.3,"g":0},{"t":"바닥분수","x":180.5,"y":153.7,"g":0},{"t":"서울숲호수","x":127.6,"y":144.2,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c6":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L164.9 219.2L166.3 218.1L170.7 208.0L184.0 169.0L185.4 169.5L193.6 164.4L194.5 161.8L200.8 164.0L203.3 156.7L189.9 151.6L190.3 150.3L188.3 149.2L165.6 141.0L177.4 145.2L166.6 175.9L170.4 178.0L160.1 179.6L153.0 178.1L151.2 180.3L163.4 192.1L174.7 196.1L170.7 208.0L166.3 218.1L164.9 219.2L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":3.8,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"군마상","x":199.9,"y":158.6,"g":0},{"t":"가족마당","x":155.9,"y":137.1,"g":0},{"t":"숲속놀이터","x":153.4,"y":174.3,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c7":{"route":"M183.6 95.6L151.2 84.1L149.4 88.6L142.4 85.7L142.0 86.6L131.2 83.3L134.2 77.1L124.5 72.4L129.8 62.5L137.1 55.4L141.6 55.6L148.1 54.2L151.6 55.3L153.6 57.2L158.4 56.7L158.3 53.3L162.0 49.5L161.5 45.5L162.0 49.5L158.3 53.3L158.4 56.7L153.6 57.2L151.6 55.3L146.9 54.2L141.6 55.6L137.1 55.4L134.5 57.1L128.6 64.1L121.8 77.1L118.2 93.4L114.5 104.6L115.0 116.6L113.5 125.0L114.2 128.2L112.7 137.7L113.5 141.4L112.3 149.1L113.0 153.2L105.6 156.7L108.5 156.3L126.5 147.4L131.2 145.1L132.6 146.2L141.9 141.4L139.9 130.0L151.3 95.1L155.8 85.7L183.6 95.6","km":2.1,"stops":[{"t":"성수동 입구","x":188.3,"y":90.4,"g":1},{"t":"습지생태원","x":165.1,"y":41.6,"g":0},{"t":"서울숲호수","x":127.6,"y":144.2,"g":0},{"t":"성수동 입구","x":188.3,"y":90.4,"g":1}]},"c8":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L164.9 219.2L166.3 218.1L170.7 208.0L182.2 173.9L180.7 173.4L185.5 158.6L181.0 157.1L174.9 155.2L169.4 155.6L154.8 162.6L146.8 164.8L140.0 164.9L134.4 163.6L126.1 158.7L121.2 153.8L119.6 150.0L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L81.0 189.7L82.1 184.1L87.1 172.0L87.4 167.6L89.4 164.3L93.5 161.9L94.8 163.1L100.0 164.1L101.5 159.0L105.6 156.7L108.5 156.3L126.5 147.4L131.2 145.1L132.6 146.2L141.9 141.4L139.9 130.0L151.3 95.1L155.8 85.7L183.6 95.6","km":3.3,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"바닥분수","x":180.5,"y":153.7,"g":0},{"t":"사슴우리","x":74.2,"y":184.0,"g":0},{"t":"서울숲호수","x":127.6,"y":144.2,"g":0},{"t":"성수동 입구","x":188.3,"y":90.4,"g":1}]},"c9":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L212.6 275.9L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":1.5,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"수도박물관","x":210.9,"y":278.9,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]},"c10":{"route":"M211.0 160.7L239.8 171.5L235.4 192.3L232.3 201.3L233.1 202.9L230.1 208.8L231.1 211.2L226.3 232.6L227.1 238.4L226.3 246.2L224.5 246.1L221.7 253.1L211.5 249.1L202.2 269.8L182.5 260.6L176.1 259.8L173.7 258.4L166.8 248.8L165.6 246.6L164.9 242.4L149.0 232.9L154.9 219.9L164.9 219.2L166.3 218.1L170.7 208.0L184.0 169.0L185.4 169.5L193.6 164.4L194.5 161.8L200.8 164.0L203.3 156.7L200.8 164.0L173.7 155.2L168.0 156.1L154.8 162.6L146.8 164.8L140.0 164.9L134.4 163.6L126.1 158.7L121.2 153.8L119.6 150.0L101.5 159.0L100.0 164.1L94.8 163.1L93.5 161.9L89.4 164.3L87.4 167.6L87.1 172.0L82.1 184.1L81.0 189.7L76.6 184.3L82.7 191.9L88.2 197.1L107.0 211.2L121.2 217.5L136.4 221.4L154.9 219.9L149.0 232.9L164.9 242.4L165.6 246.6L166.8 248.8L173.7 258.4L176.1 259.8L182.5 260.6L202.2 269.8L211.5 249.1L221.7 253.1L224.5 246.1L226.3 246.2L227.1 238.4L226.3 232.6L231.1 211.2L230.1 208.8L233.1 202.9L232.3 201.3L235.4 192.3L239.8 171.5L211.0 160.7","km":4.2,"stops":[{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1},{"t":"군마상","x":199.9,"y":158.6,"g":0},{"t":"사슴우리","x":74.2,"y":184.0,"g":0},{"t":"나비정원","x":155.1,"y":214.8,"g":0},{"t":"서울숲역 입구","x":219.0,"y":163.6,"g":1}]}};
   var STOP_LABEL = [
     { t: '입구', dx: 0, dy: -9, a: 'middle' }, { t: '가족마당', dx: 8, dy: -4, a: 'start' }, { t: '서울숲호수', dx: -2, dy: -9, a: 'end' },
     { t: '사슴우리', dx: -8, dy: 4, a: 'end' }, { t: '곤충식물원', dx: 8, dy: 9, a: 'start' }, { t: '출구', dx: 0, dy: 15, a: 'middle' },
   ];
   function realMap(st) {
-    var id = 'm' + (uid++), s = '<svg class="rc-map" viewBox="0 0 ' + MAP.w + ' ' + MAP.h + '" aria-label="서울숲 지도 위 오늘 걸은 길">';
+    var C = st && st.course && COURSES[st.course];
+    var id = 'm' + (uid++), s = '<svg class="rc-map" viewBox="0 0 ' + MAP.w + ' ' + MAP.h + '" aria-label="서울숲 지도 위 걸은 길">';
     s += '<defs><pattern id="f' + id + '" width="3.4" height="3.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="3.4" fill="#2b2a27"/></pattern>' +
       '<pattern id="w' + id + '" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".7" fill="#2b2a27"/></pattern></defs>';
     s += '<path d="' + MAP.forest + '" fill="url(#f' + id + ')" opacity=".35"/>';
     s += '<path d="' + MAP.lawn + '" fill="#2b2a27" opacity=".07"/>';
     s += '<path d="' + MAP.water + '" fill="url(#w' + id + ')" opacity=".7"/>';
     s += '<path d="' + MAP.park + '" fill="none" stroke="#2b2a27" stroke-width="1.5" stroke-linejoin="round"/>';
-    s += '<path d="' + MAP.route + '" fill="none" stroke="#faf8f1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
-    s += '<path d="' + MAP.route + '" fill="none" stroke="#2b2a27" stroke-width="2.2" stroke-dasharray="4 2.4" stroke-linecap="round" stroke-linejoin="round"/>';
-    var bestIdx = -1;
-    DATA.stops.forEach(function (x, i) { if (st && st.best === x[0]) bestIdx = i + 1; });
-    MAP.stops.forEach(function (p, i) {
-      var L = STOP_LABEL[i], last = i === MAP.stops.length - 1;
-      if (i === 0) s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#faf8f1" stroke="#2b2a27" stroke-width="1.8"/>';
-      else if (last) s += '<rect x="' + (p.x - 4) + '" y="' + (p.y - 4) + '" width="8" height="8" fill="#2b2a27"/>';
-      else s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6.5" fill="#2b2a27"/><text x="' + p.x + '" y="' + (p.y + 3) + '" text-anchor="middle" font-size="8" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">' + i + '</text>';
-      s += '<text x="' + (p.x + L.dx) + '" y="' + (p.y + L.dy) + '" text-anchor="' + L.a + '" font-size="8.5" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27" paint-order="stroke" stroke="#faf8f1" stroke-width="3">' + L.t + (i === bestIdx ? ' ★' : '') + '</text>';
-    });
+    var route = C ? C.route : MAP.route;
+    s += '<path d="' + route + '" fill="none" stroke="#faf8f1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+    s += '<path d="' + route + '" fill="none" stroke="#2b2a27" stroke-width="2.2" stroke-dasharray="4 2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+    function lab(x, y, txt, a) { return '<text x="' + x + '" y="' + y + '" text-anchor="' + a + '" font-size="8.5" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27" paint-order="stroke" stroke="#faf8f1" stroke-width="3">' + txt + '</text>'; }
+    if (C) {
+      var n = 0, last = C.stops.length - 1, same = C.stops[0].t === C.stops[last].t, prev = null;
+      C.stops.forEach(function (p, i) {
+        var right = p.x < 150, dy = 3;
+        // 바로 앞 장소와 가까우면 이름표를 위·아래로 비켜 놓음
+        if (!p.g && prev && Math.hypot(p.x - prev.x, p.y - prev.y) < 26) { right = prev.right; dy = p.y >= prev.y ? 13 : -7; }
+        if (!p.g) prev = { x: p.x, y: p.y, right: right };
+        if (p.g) {
+          if (i === 0) s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#faf8f1" stroke="#2b2a27" stroke-width="1.8"/>';
+          else s += '<rect x="' + (p.x - 4) + '" y="' + (p.y - 4) + '" width="8" height="8" fill="#2b2a27"/>';
+          if (i === last && same) return;
+          s += lab(p.x, p.y + (i === 0 ? -8 : 14), i === 0 ? (same ? '입·출구' : '입구') : '출구', 'middle');
+        } else {
+          n++;
+          s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6.5" fill="#2b2a27"/><text x="' + p.x + '" y="' + (p.y + 3) + '" text-anchor="middle" font-size="8" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">' + n + '</text>';
+          s += lab(p.x + (right ? 9 : -9), p.y + dy, p.t + (st.best === p.t ? ' ★' : ''), right ? 'start' : 'end');
+        }
+      });
+    } else {
+      var bestIdx = -1;
+      DATA.stops.forEach(function (x, i) { if (st && st.best === x[0]) bestIdx = i + 1; });
+      MAP.stops.forEach(function (p, i) {
+        var L = STOP_LABEL[i], lastS = i === MAP.stops.length - 1;
+        if (i === 0) s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#faf8f1" stroke="#2b2a27" stroke-width="1.8"/>';
+        else if (lastS) s += '<rect x="' + (p.x - 4) + '" y="' + (p.y - 4) + '" width="8" height="8" fill="#2b2a27"/>';
+        else s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6.5" fill="#2b2a27"/><text x="' + p.x + '" y="' + (p.y + 3) + '" text-anchor="middle" font-size="8" font-weight="700" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">' + i + '</text>';
+        s += lab(p.x + L.dx, p.y + L.dy, L.t + (i === bestIdx ? ' ★' : ''), L.a);
+      });
+    }
     s += '<text x="6" y="' + (MAP.h - 6) + '" font-size="7.5" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27">↓ 한강</text>';
     s += '<text x="' + (MAP.w - 6) + '" y="12" text-anchor="end" font-size="7.5" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27">성수동 ↑</text>';
     s += '<g transform="translate(14 14)" font-family="Nanum Gothic Coding,monospace" fill="#2b2a27"><path d="M0 -8 L3 2 L0 0 L-3 2Z"/><text x="0" y="11" text-anchor="middle" font-size="7">N</text></g>';
@@ -591,23 +663,33 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   function ln(l, r, cls) { return '<div class="ln ' + (cls || '') + '"><span class="l">' + l + '</span><span class="d"></span><span class="r">' + r + '</span></div>'; }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function part(n, inner, pins) { return '<div data-part="' + n + '">' + (pins ? '<span class="pin">' + n + '</span>' : '') + inner + '</div>'; }
+  // st.d: 사람마다 다른 기록(날짜·시각·번호·머문 시간·동행·날씨) — 없으면 기본 DATA
+  function rinfo(st) {
+    var d = st.d || {};
+    return {
+      date: d.date || dateStr, dow: d.dow || dow, time: d.time || '15:42', no: d.no || DATA.no,
+      stops: d.stops || (st.course && COURSES[st.course] ? COURSES[st.course].stops.filter(function (p) { return !p.g; }).map(function (p, i) { return [p.t, ((d.mins || [])[i] || 15) + '분']; }) : DATA.stops),
+      km: st.course && COURSES[st.course] ? COURSES[st.course].km + 'km' : '2.8km', stay: d.stay || DATA.stay, steps: d.steps || DATA.steps,
+      shade: d.shade || DATA.shade, with: d.with || DATA.with, weather: d.weather || DATA.weather, line: d.line || LINE,
+    };
+  }
   function buildReceipt(st, opt) {
     opt = opt || {};
-    var P = !!opt.pins, h = '';
+    var P = !!opt.pins, h = '', R = rinfo(st);
     h += '<div class="brandline">SEOUL FOREST</div><div class="brandsub">서울숲 · 숲 영수증</div>';
-    h += '<div class="meta fade"><div><span>' + dateStr + ' (' + dow + ') 15:42</span><span>No.' + DATA.no + '</span></div><div><span>서울숲역 방면 출구</span><span>단말기 ' + DATA.term + '</span></div></div>';
+    h += '<div class="meta fade"><div><span>' + R.date + ' (' + R.dow + ') ' + R.time + '</span><span>No.' + R.no + '</span></div><div><span>서울숲역 방면 출구</span><span>단말기 ' + DATA.term + '</span></div></div>';
     h += '<hr class="hr dbl">';
     var a = '<div class="sec">오늘 머문 곳</div>';
-    DATA.stops.forEach(function (s) { a += ln(s[0] + (st.best === s[0] ? ' ★' : ''), s[1]); });
-    a += '<hr class="hr">' + ln('머문 시간 합계', DATA.stay, 'big');
+    R.stops.forEach(function (s) { a += ln(s[0] + (st.best === s[0] ? ' ★' : ''), s[1]); });
+    a += '<hr class="hr">' + ln('머문 시간 합계', R.stay, 'big');
     h += part(1, a, P);
     h += '<hr class="hr">';
-    h += part(2, ln('걸음', DATA.steps + '보', 'sm') + ln('그늘 길', DATA.shade, 'sm') + ln('함께', DATA.with, 'sm') + ln('날씨', DATA.weather, 'sm'), P);
+    h += part(2, ln('걸음', R.steps + '보', 'sm') + ln('그늘 길', R.shade, 'sm') + ln('함께', R.with, 'sm') + ln('날씨', R.weather, 'sm'), P);
     h += '<hr class="hr dbl">';
-    h += part(3, '<div class="sec">오늘 걸은 서울숲 · 2.8km</div>' + realMap(st) + '<div class="fade" style="font-size:9.5px">○ 입구  ■ 출구  ★ 제일 좋았던 곳</div>', P);
+    h += part(3, '<div class="sec">오늘 걸은 서울숲 · ' + R.km + '</div>' + realMap(st) + '<div class="fade" style="font-size:9.5px">○ 입구  ■ 출구  ★ 제일 좋았던 곳</div>', P);
     var ph = '';
-    if (st.photo) ph += '<hr class="hr"><div class="sec">오늘의 한 장</div><div class="photo"><canvas class="rcPhoto"></canvas><div class="pcap"><span>서울숲 ' + dateStr + '</span><span>' + DATA.with + '</span></div></div>';
-    ph += '<div class="quote">“' + esc(st.memo || LINE + ' 쉬어 간 날') + '”</div>';
+    if (st.photo) ph += '<hr class="hr"><div class="sec">오늘의 한 장</div><div class="photo"><canvas class="rcPhoto"></canvas><div class="pcap"><span>서울숲 ' + R.date + '</span><span>' + R.with + '</span></div></div>';
+    ph += '<div class="quote">“' + esc(st.memo || R.line + ' 쉬어 간 날') + '”</div>';
     h += part(4, ph, P);
     h += '<hr class="hr">';
     var rt = '<div class="sec">오늘의 베스트</div>' + ln('제일 좋았던 곳', st.best ? st.best + ' ★' : '-');
@@ -615,9 +697,9 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     rt += '<div class="fade" style="font-size:10px;margin-top:4px">고른 곳은 서울숲을 더 좋게 만드는 데 쓰입니다.</div>';
     h += part(5, rt, P);
     h += '<hr class="hr">';
-    h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark() + '</div></div>', P);
+    h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark(R.date, R.time) + '</div></div>', P);
     h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>성수 동네 카페 10% 할인</b><div class="cs">제휴 카페(예시) · 발급일부터 7일<br>숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
-    h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(DATA.no) + '번째 사람</b><br>' + LINE + ', 고맙습니다</div>';
+    h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(R.no) + '번째 사람</b><br>' + R.line + ', 고맙습니다</div>';
     h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
   }
@@ -699,8 +781,8 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bSound').onclick = function () { soundOn = !soundOn; this.setAttribute('aria-pressed', String(soundOn)); this.textContent = soundOn ? '🔊 출력 소리 켜짐' : '🔈 출력 소리 꺼짐'; };
 
   // ---------- 화면 전환 ----------
-  var ORDER = ['scan', 'rec', 'rate', 'photo', 'count', 'check', 'done'];
-  var STEP_OF = { scan: 0, rec: 1, rate: 2, photo: 3, count: 3, check: 3, done: 4 };
+  var ORDER = ['scan', 'rec', 'rate', 'photo', 'count', 'check', 'done', 'share'];
+  var STEP_OF = { scan: 0, rec: 1, rate: 2, photo: 3, count: 3, check: 3, done: 4, share: 4 };
   var CAP = {
     scan: '① 출구에 선 영수증 기계의 QR을 휴대폰으로 찍습니다. 앱 설치는 필요 없습니다.',
     rec: '② 휴대폰에 남은 오늘 기록을 확인합니다. 이동 경로는 휴대폰 안에만 있습니다.',
@@ -812,7 +894,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(state, { inkStatic: true }));
     $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
   };
-  function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; $('#bOpen').focus(); }
+  function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; (wallOpener || $('#bOpen')).focus(); wallOpener = null; }
   $('#bClose').onclick = closeModal;
   $('#modal').addEventListener('click', function (e) { if (e.target === this || e.target.id === 'holder') closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
@@ -820,6 +902,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
     state = { best: '', tags: [], memo: '', photo: null };
+    var bs = $('#bShare'); bs.classList.remove('done'); bs.textContent = '방명록에 남기기'; $('#nick').value = '';
     $('#bScan').disabled = false; $('#tip').classList.remove('gone'); $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
     $$('#places .place,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
     $('#qrBox').classList.remove('ok', 'scanning');
@@ -830,46 +913,130 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     kscreen('qr'); view('scan');
   };
 
-  // ---------- 예시 영수증(첫 화면 · 읽는 법) ----------
+  // ---------- 예시 영수증(첫 화면) ----------
   var fakeCv = document.createElement('canvas'); fakeCv.width = 320; fakeCv.height = 240; drawFake(fakeCv);
   var sample = { best: '사슴우리', tags: ['그늘이 시원해서', '아이가 좋아해서'], memo: '사슴이 가까이 왔다', photo: ditherFrom(fakeCv, 320, 240, false) };
   $('#heroRc').appendChild(makeReceipt(sample, { inkStatic: true }));
-  var anat = makeReceipt(sample, { inkStatic: true, pins: true });
-  $('#anatRc').appendChild(anat);
-
-  var AN = [
-    { t: '오늘 머문 곳과 시간', p: '', from: '입구·출구 QR, 휴대폰 경로 기록', use: '어디에 오래 머무는지 파악' },
-    { t: '걸음 · 그늘 길 · 함께 · 날씨', p: '걸음 수, 그늘로 걸은 거리, 함께 온 사람, 그날 날씨입니다. 그늘 길 거리로 더운 날 그늘 길 추천이 효과가 있었는지 봅니다.', from: '휴대폰 경로 기록, 기상청 날씨', use: '그늘 길 추천 효과 확인' },
-    { t: '오늘 걸은 서울숲', p: '', from: '휴대폰 경로 기록 + 서울숲 지도', use: '오늘 걸은 길 기념 · 안 가 본 곳 보여 주기' },
-    { t: '오늘의 한 장과 한마디', p: '원하면 기계 카메라 사진이 흑백 점 사진으로 찍히고, 휴대폰에 쓴 한마디가 따옴표 안에 인쇄됩니다. 한마디를 안 쓰면 계절 문구가 들어갑니다.', from: '기계 카메라(선택), 이용자 입력', use: '추억 · SNS 공유(사진은 저장 안 함)' },
-    { t: '오늘의 베스트', p: '', from: '휴대폰에서 고르기(필수)', use: '장소별 만족도 → 좋은 곳은 지키고 나머지는 보완' },
-    { t: '오늘의 기념 소인', p: '우체국 소인처럼 오늘 날짜와 시각이 찍힌 도장입니다. 영수증이 다 나오면 마지막에 찍혀, 언제 서울숲에 왔는지 남겨 줍니다.', from: '출력한 날짜·시각', use: '방문 기념' },
-    { t: '동네 카페 쿠폰', p: '자르는 선 아래 쿠폰은 평가를 마친 사람에게 주는 보상입니다. 숲에서는 돈 쓰지 않고 머물고, 쿠폰은 숲을 나선 뒤 동네에서 씁니다.', from: '성동구·제휴 카페(예시)', use: '참여 보상 · 성수 상권 연계' },
+  // ---------- 서울숲 방명록(가상 예시) ----------
+  var WHO = [['가족', '👨‍👩‍👧'], ['연인', '💑'], ['친구', '🙌'], ['혼자', '🚶'], ['어르신과', '👵'], ['여행객', '🧳']];
+  var WHO_ICON = {}; WHO.forEach(function (w) { WHO_ICON[w[0]] = w[1]; });
+  var fakeA = ditherFrom(fakeCv, 320, 240, false), fakeB = ditherFrom(fakeCv, 320, 240, true);
+  var WALL = [
+    { course: 'c1', who: '가족', visit: '3번째 방문', nick: '지우네 가족', best: '사슴우리', tags: ['아이가 좋아해서'], memo: '아이가 사슴한테 인사했다', photo: fakeA, photoOk: true, d: { date: '2026.11.23', dow: '일', time: '16:10', no: '0412', with: '가족 4명', weather: '맑음 9℃', stay: '2시간 05분', mins: [10, 25, 30, 20] } },
+    { course: 'c2', who: '연인', visit: '첫 방문', nick: 'J & M', best: '서울숲호수', tags: ['경치가 좋아서'], memo: '호숫가 벤치에서 한참 앉아 있었다', d: { date: '2026.11.22', dow: '토', time: '14:25', no: '0377', with: '연인 2명', weather: '흐림 11℃', stay: '1시간 30분', mins: [15, 30, 12] } },
+    { course: 'c3', who: '혼자', visit: '12번째 방문', nick: '성수동 직장인', best: '곤충식물원', tags: ['조용해서'], memo: '추운 날엔 식물원 안이 최고', d: { date: '2026.11.22', dow: '토', time: '11:05', no: '0129', with: '혼자', weather: '맑음 8℃', stay: '58분', mins: [25, 20] } },
+    { course: 'c4', who: '친구', visit: '5번째 방문', nick: '뚝섬 셋', best: '가족마당', tags: ['쉴 곳이 있어서'], memo: '퇴근하고 잠깐, 숨 좀 쉬었다', photo: fakeB, photoOk: true, d: { date: '2026.11.21', dow: '금', time: '17:40', no: '0451', with: '친구 3명', weather: '맑음 12℃', stay: '1시간 12분', mins: [30, 15] } },
+    { course: 'c5', who: '어르신과', visit: '2번째 방문', nick: '손녀 하은', best: '서울숲호수', tags: ['쉴 곳이 있어서'], memo: '할머니랑 천천히 한 바퀴', d: { date: '2026.11.20', dow: '목', time: '10:30', no: '0088', with: '할머니와 2명', weather: '맑음 7℃', stay: '1시간 40분', mins: [10, 15, 35] } },
+    { course: 'c6', who: '가족', visit: '첫 방문', nick: '쌍둥이 아빠', best: '숲속놀이터', tags: ['아이가 좋아해서', '그늘이 시원해서'], memo: '', d: { date: '2026.11.19', dow: '수', time: '15:15', no: '0263', with: '가족 4명', weather: '구름 10℃', stay: '1시간 50분', mins: [10, 20, 45] } },
+    { course: 'c7', who: '친구', visit: '첫 방문', nick: '사진 동호회', best: '습지생태원', tags: ['경치가 좋아서'], memo: '갈대 사이로 해 지는 거 봤다', photo: fakeA, photoOk: true, d: { date: '2026.11.18', dow: '화', time: '16:40', no: '0344', with: '친구 2명', weather: '맑음 11℃', stay: '1시간 05분', mins: [30, 20] } },
+    { course: 'c8', who: '연인', visit: '4번째 방문', nick: '우리 둘', best: '사슴우리', tags: ['조용해서'], memo: '사슴 보러 또 올게', d: { date: '2026.11.16', dow: '일', time: '12:20', no: '0301', with: '연인 2명', weather: '맑음 14℃', stay: '1시간 25분', mins: [10, 25, 20] } },
+    { course: 'c9', who: '혼자', visit: '첫 방문', nick: '산책하는 대학생', best: '수도박물관', tags: ['조용해서'], memo: '옛 정수장 건물이 멋있다', d: { date: '2026.11.15', dow: '토', time: '13:50', no: '0276', with: '혼자', weather: '맑음 13℃', stay: '55분', mins: [40] } },
+    { course: 'c10', who: '여행객', visit: '첫 방문', nick: '부산에서 온 여행자', best: '사슴우리', tags: ['경치가 좋아서'], memo: '성수에서 걸어오기 딱 좋다', photo: fakeB, photoOk: true, d: { date: '2026.11.14', dow: '금', time: '11:20', no: '0158', with: '친구 2명', weather: '맑음 15℃', stay: '1시간 45분', mins: [15, 25, 30] } },
   ];
-  var list = $('#anList');
-  AN.forEach(function (a, i) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'an-item rv'; b.dataset.n = i + 1;
-    b.innerHTML = '<span class="an-n">' + (i + 1) + '</span><h3>' + a.t + '</h3><div class="an-meta"><span><b>어디서</b>' + a.from + '</span><span><b>무엇에</b>' + a.use + '</span></div>';
-    b.onclick = function () { focusPart(i + 1, true); };
-    list.appendChild(b);
+  var selWho = '전체', selPlace = '전체', wallOpener = null;
+  function wallCard(st) {
+    var R = rinfo(st), d = document.createElement('div');
+    d.className = 'receipt rc-ink';
+    d.innerHTML = '<div class="brandline">SEOUL FOREST</div>' +
+      '<div class="meta fade"><div><span>' + R.date + ' (' + R.dow + ') ' + R.time + '</span><span>' + R.with + '</span></div><div><span class="wvisit">' + esc(st.visit || '') + '</span><span>' + R.km + '</span></div></div>' +
+      (st.photoOk && st.photo ? '<div class="photo"><canvas class="rcPhoto"></canvas></div><div class="okp">사진 공개 동의</div>' : '') +
+      '<hr class="hr">' + realMap(st) +
+      '<hr class="hr"><div class="wbest">' + ln('제일 좋았던 곳', st.best + ' ★') + '</div>' +
+      (st.tags.length ? '<div class="tags fade">' + st.tags.map(function (x) { return '#' + x.replace(/\s/g, ''); }).join(' ') + '</div>' : '');
+    if (st.photoOk) paintPhotos(d, st.photo);
+    return d;
+  }
+  function chipRow(el, label, items, sel, total) {
+    el.innerHTML = '<span>' + label + '</span>' + ['전체'].concat(items.map(function (x) { return x[0]; })).map(function (p, i) {
+      var n = i === 0 ? total : items[i - 1][1];
+      return '<button type="button" data-v="' + p + '" aria-pressed="' + (p === sel) + '">' + (i && WHO_ICON[p] ? WHO_ICON[p] + ' ' : '') + p + '<i>' + n + '</i></button>';
+    }).join('');
+  }
+  function renderWall(newOne) {
+    var row = $('#wallRow'); row.innerHTML = '';
+    var shown = 0;
+    WALL.forEach(function (st, idx) {
+      if (selWho !== '전체' && st.who !== selWho) return;
+      if (selPlace !== '전체' && st.best !== selPlace) return;
+      shown++;
+      var it = document.createElement('div');
+      it.className = 'witem' + (st === newOne ? ' new' : '');
+      it.style.setProperty('--r', [-2.2, 1.6, -1, 2.4, -1.8, 1, -2.6, 1.8, -.8, 2][idx % 10] + 'deg');
+      it.style.setProperty('--y', [0, 18, 6, 24, 2, 14, 8, 20, 4, 12][idx % 10] + 'px');
+      it.style.setProperty('--tr', (idx % 2 ? 4 : -3) + 'deg');
+      var R = rinfo(st);
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'wcard';
+      b.setAttribute('aria-label', (st.nick || '') + ' · ' + R.date + ' 영수증 크게 보기');
+      b.appendChild(wallCard(st));
+      var hand = document.createElement('div');
+      hand.className = 'hand'; hand.style.setProperty('--hr', (idx % 2 ? -1.5 : 1.5) + 'deg');
+      hand.innerHTML = '<p>' + esc(st.memo || R.line + ' 쉬어 간 날') + '</p><small>— ' + esc(st.nick || '익명') + '</small>';
+      b.appendChild(hand);
+      b.onclick = function () {
+        wallOpener = b;
+        var full = { best: st.best, tags: st.tags, memo: st.memo, course: st.course, d: st.d, photo: st.photoOk ? st.photo : null };
+        $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(full, { inkStatic: true }));
+        $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
+      };
+      it.appendChild(b);
+      var tag = document.createElement('span'); tag.className = 'who-tag'; tag.textContent = (WHO_ICON[st.who] || '') + ' ' + st.who; it.appendChild(tag);
+      if (st.mine) {
+        var mt = document.createElement('span'); mt.className = 'mine-tag'; mt.textContent = '방금 남긴 내 영수증'; it.appendChild(mt);
+        var del = document.createElement('button'); del.type = 'button'; del.className = 'wdel'; del.textContent = '내리기';
+        del.onclick = function () {
+          WALL = WALL.filter(function (x) { return !x.mine; }); renderWall();
+          var bs = $('#bShare'); bs.classList.remove('done'); bs.textContent = '방명록에 남기기';
+        };
+        it.appendChild(del);
+      }
+      row.appendChild(it);
+    });
+    if (!shown) row.innerHTML = '<p class="wall-empty">아직 이 조건의 영수증이 없어요.</p>';
+    row.scrollLeft = 0;
+    var cw = {}, cp = {};
+    WALL.forEach(function (st) { cw[st.who] = (cw[st.who] || 0) + 1; cp[st.best] = (cp[st.best] || 0) + 1; });
+    var whoItems = WHO.map(function (w) { return [w[0], cw[w[0]] || 0]; }).filter(function (x) { return x[1]; });
+    var placeItems = Object.keys(cp).map(function (k) { return [k, cp[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+    var topWho = whoItems.slice().sort(function (a, b) { return b[1] - a[1]; })[0];
+    $('#wallStat').innerHTML = '지금까지 <b>' + WALL.length + '장</b> · 가장 많이 온 사람 <b>' + topWho[0] + '</b> · 가장 많이 고른 곳 <b>' + placeItems[0][0] + '</b>';
+    chipRow($('#fWho'), '누구와', whoItems, selWho, WALL.length);
+    chipRow($('#fPlace'), '좋았던 곳', placeItems, selPlace, WALL.length);
+  }
+  $('#fWho').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { selWho = b.dataset.v; renderWall(); } });
+  $('#fPlace').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { selPlace = b.dataset.v; renderWall(); } });
+  function wallStep(dir) { $('#wallRow').scrollBy({ left: dir * 256 * 2, behavior: reduce ? 'auto' : 'smooth' }); }
+  $('#wPrev').onclick = function () { wallStep(-1); };
+  $('#wNext').onclick = function () { wallStep(1); };
+  renderWall();
+
+  // ---------- 방명록에 남기기: 별명·나들이 종류·사진 동의 ----------
+  var myWho = '가족';
+  $('#whoChips').innerHTML = WHO.map(function (w) { return '<button class="chip" type="button" data-w="' + w[0] + '" aria-pressed="' + (w[0] === myWho) + '">' + w[1] + ' ' + w[0] + '</button>'; }).join('');
+  $('#whoChips').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    myWho = b.dataset.w; $$('#whoChips .chip').forEach(function (c) { c.setAttribute('aria-pressed', String(c === b)); });
   });
-  var curPart = 0;
-  function focusPart(n, scroll) {
-    if (n === curPart) return;
-    curPart = n;
-    anat.classList.add('focus');
-    $$('[data-part]', anat).forEach(function (el) { el.classList.toggle('hl', Number(el.dataset.part) === n); });
-    $$('.an-item', list).forEach(function (el) { el.classList.toggle('on', Number(el.dataset.n) === n); });
-    var hl = $('[data-part="' + n + '"]', anat);
-    if (scroll && hl && matchMedia('(max-width:980px)').matches) hl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-  }
-  if ('IntersectionObserver' in window) {
-    var io2 = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting && !matchMedia('(max-width:980px)').matches) focusPart(Number(e.target.dataset.n)); });
-    }, { rootMargin: '-45% 0px -45% 0px' });
-    $$('.an-item', list).forEach(function (el) { io2.observe(el); });
-  }
+  $('#bShare').onclick = function () {
+    if (this.classList.contains('done')) { $('#wall').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); return; }
+    var has = !!state.photo;
+    $('#cPhoto').checked = false;
+    $('#consentBox').hidden = !has; $('#consentOff').hidden = has;
+    view('share');
+  };
+  $('#bPostCancel').onclick = function () { view('done'); };
+  $('#bPost').onclick = function () {
+    var now = new Date(), ok = !!state.photo && $('#cPhoto').checked;
+    var WITH = { 가족: '가족 3명', 연인: '연인 2명', 친구: '친구 2명', 혼자: '혼자', 어르신과: '어르신과 2명', 여행객: '여행 2명' };
+    var mine = { best: state.best, tags: state.tags.slice(), memo: state.memo, who: myWho, visit: '오늘', nick: $('#nick').value.trim() || '오늘의 나', mine: true, photo: ok ? state.photo : null, photoOk: ok, d: { time: pad(now.getHours()) + ':' + pad(now.getMinutes()), with: WITH[myWho] } };
+    WALL = WALL.filter(function (x) { return !x.mine; });
+    WALL.unshift(mine);
+    selWho = '전체'; selPlace = '전체'; renderWall(mine);
+    view('done');
+    var bs = $('#bShare'); bs.classList.add('done'); bs.textContent = '남겼어요 · 방명록 보러 가기 ↓';
+    later(function () { $('#wall').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }, 700);
+  };
+
 
   // 첫 화면 낙엽
   if (!reduce) {
