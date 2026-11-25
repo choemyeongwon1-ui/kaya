@@ -207,11 +207,31 @@ function renderTop() {
 }
 
 // ── 지도 ──
+// Satellite photo that matches the current season. Esri's latest imagery of
+// Seoul Forest is a winter (leaf-off) capture, so spring/summer/autumn use
+// older World Imagery Wayback releases whose Seoul Forest tile was shot in that
+// season (picked by eye, 2026-11-25). ?season=spring|summer|autumn|winter overrides.
+const WAYBACK = 'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/';
+const SEASON_IMAGERY = {
+  // spring/summer: from z18 up these releases fall back to a leaf-off photo, so cap native zoom at 17.
+  spring: { label: '봄', url: WAYBACK + '5314/{z}/{y}/{x}', native: 17 },   // release 2022-05-18, fresh light green
+  summer: { label: '여름', url: WAYBACK + '15045/{z}/{y}/{x}', native: 17 }, // release 2020-04-29, deep summer green
+  autumn: { label: '가을', url: WAYBACK + '25285/{z}/{y}/{x}', native: 19 }, // release 2025-05-29, autumn foliage
+  winter: { label: '겨울', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', native: 19 },
+};
+function seasonImagery() {
+  const q = new URLSearchParams(location.search).get('season');
+  if (SEASON_IMAGERY[q]) return SEASON_IMAGERY[q];
+  const m = new Date().getMonth() + 1;
+  return SEASON_IMAGERY[m < 3 || m === 12 ? 'winter' : m <= 5 ? 'spring' : m <= 8 ? 'summer' : 'autumn'];
+}
+
 function makeMap() {
   map = L.map(el.map, { zoomControl: false, attributionControl: true, zoomSnap: 0, minZoom: 10, maxZoom: 19 });
   map.attributionControl.setPrefix(false);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20, className: 'tr-base', attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 기여자 © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, className: 'tr-sat', keepBuffer: 4, attribution: '위성 사진 © Esri, Maxar, Earthstar Geographics' }).addTo(map);
+  const sat = seasonImagery();
+  L.tileLayer(sat.url, { maxZoom: 19, maxNativeZoom: sat.native, className: 'tr-sat', keepBuffer: 4, attribution: `위성 사진(${sat.label}) © Esri, Maxar, Earthstar Geographics` }).addTo(map);
   map.setView(PARK_CENTER, 12.4);
   layers = {
     park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),

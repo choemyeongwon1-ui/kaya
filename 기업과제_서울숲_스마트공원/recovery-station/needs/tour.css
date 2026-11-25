@@ -18,8 +18,8 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
 .tr-map{position:absolute;inset:0;background:var(--bg)}
 .tr-map.leaflet-container{background:var(--bg)}
 .tr-sat{transition:opacity 1.2s ease}
-.tr-sat img{filter:brightness(.78) saturate(1.05) contrast(1.05);transition:filter 1.4s ease}
-.tr-map.tr-arrived .tr-sat img{filter:brightness(.52) saturate(.82) contrast(1.1)}
+.tr-sat img{filter:brightness(.92) saturate(1.2) contrast(1.05);transition:filter 1.4s ease}
+.tr-map.tr-arrived .tr-sat img{filter:brightness(.68) saturate(1.05) contrast(1.08)}
 .tr-map.tr-mapmode .tr-sat{opacity:0}
 .tr-map:not(.tr-mapmode) .tr-fade{display:none}
 .tr-map .leaflet-control-attribution{font-size:9px;background:rgba(5,11,8,.5);color:var(--mute);backdrop-filter:blur(8px);border-radius:8px 0 0 0;padding:2px 8px}
