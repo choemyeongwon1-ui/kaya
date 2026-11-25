@@ -846,7 +846,7 @@ function progRow(x, i = 0, { canAdd = false } = {}) {
 /** 첫 화면: 앞으로 2주 안의 서울숲 프로그램(날짜 순, 최대 4개) + 지도에 열리는 곳 표시 */
 function programBlock() {
   const list = progList().slice(0, 4);
-  paintProgramPins(list);
+  // 지도의 프로그램 장소 점(주황 동그라미)은 무엇인지 알기 어려워 뺌 — 오른쪽 목록만 보여 줌 (2026-11-25)
   if (!list.length) return null;
   // 첫 화면을 가볍게: 가장 가까운 1개만 보이고 나머지·설명은 '더 보기'
   const note = h('p', { class: 'tr-pop-note', hidden: true }, `서울시 공공서비스예약 · ${String(app.programs.checked ?? '').slice(5, 16) || '저장본'} 기준. 누르면 예약 화면으로 가요. 지도의 노란 점이 열리는 곳이에요.`);
