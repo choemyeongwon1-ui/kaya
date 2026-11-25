@@ -8,7 +8,7 @@
 // 장소 점수는 맞춤형 추천 화면과 같은 recommend()를 매 구간 출발점에서 다시 계산해 쓰고, 이용자 별점을 얹습니다.
 import { loadData, buildModel } from './model.js';
 import { seoulNow, fetchWeather, sampleWeather, annotate, applyScenario, kmaDays } from './weather.js';
-import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN, ACCESS_URL } from './config.js';
+import { NEEDS, COMPANY, STAYS, AFFINITY, AFFINITY_DEFAULT, REST_STD, PLACE_IDENTITY, IDENTITY_MEAN, ACCESS_URL, SPEED, CALORIE } from './config.js?v=50'; // ?v: config.js got CALORIE — bust cached copies
 import { recommend, quietHours, josa, speedFor } from './recommend.js';
 import { planRoute } from './route.js';
 import { dijkstra } from './graph.js';
@@ -779,6 +779,10 @@ function popularCourses() {
   return [...known.values()].filter(c => c.stops.every(id => app.model.hubById[id])).map(c => ({ ...c, avg: c.count ? c.sum / c.count : null }))
     .sort((a, b) => b.count - a.count || (b.avg ?? 0) - (a.avg ?? 0)).slice(0, 4);
 }
+/** 걸어서 쓴 칼로리(kcal, 어림값). config.js CALORIE 참고 */
+const kcalOf = (meters, speed = SPEED.normal) => Math.round((CALORIE.met[speed] ?? CALORIE.met[SPEED.normal]) * CALORIE.kg * meters / speed / 60);
+const legsKcal = legs => sum(legs, s => kcalOf(s.meters, s.rec?.speed));
+const KCAL_NOTE = `몸무게 ${CALORIE.kg}kg 기준 어림값이에요`;
 const courseLen = new Map();
 function courseStats(c) {
   if (courseLen.has(c.id)) return courseLen.get(c.id);
@@ -790,7 +794,7 @@ function courseStats(c) {
     meters += (planRoute(m, from.node, p.node, {}, env, speed)?.main?.meters ?? 0) + Math.round((from.off ?? 0) + p.off);
     from = p;
   }
-  const r = { meters, minutes: Math.max(1, Math.round(meters / speed)) };
+  const r = { meters, minutes: Math.max(1, Math.round(meters / speed)), kcal: kcalOf(meters, speed) };
   courseLen.set(c.id, r);
   return r;
 }
@@ -810,7 +814,7 @@ function quickBlock() {
       h('div', { class: 'tr-course-img' }, ph ? h('img', { src: ph.src, alt: '', loading: 'lazy' }) : icon('route', 20)),
       h('div', { class: 'tr-course-body' },
         h('b', null, c.name),
-        h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분`))));
+        h('small', { class: 'tr-course-chain' }, `${c.stops.length}곳 · ${s.minutes}분 · 약 ${s.kcal}kcal`))));
   });
   const rest = list.length - shown;
   return h('section', { class: 'tr-pop tr-quick' },
@@ -1138,10 +1142,12 @@ function renderPlan() {
   mount('tr-s-result', [
     tripHead(),
     h('h2', { class: 'tr-q' }, trip.course ? trip.course : `${legs.length}곳을 걷는 코스`),
-    h('div', { class: 'tr-stats' },
+    h('div', { class: 'tr-stats four' },
       h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
       h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
+      h('div', { title: KCAL_NOTE }, h('b', null, legsKcal(legs), h('small', null, 'kcal')), h('span', null, '쓰는 칼로리')),
       h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
+    h('p', { class: 'tr-kcal-note' }, `칼로리는 ${KCAL_NOTE}`),
     planNotes(legs),
     criteriaBox(legs),
     startRow(),
@@ -1555,9 +1561,10 @@ function renderEnd() {
   endNodes = [
     h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-picked' }, labels().map(p => h('span', null, p)))),
     h('h2', { class: 'tr-q' }, '오늘 산책, 여기까지예요'),
-    trip.stops.length ? h('div', { class: 'tr-stats' },
+    trip.stops.length ? h('div', { class: 'tr-stats four' },
       h('div', null, h('b', null, countUp(walkMin), h('small', null, '분')), h('span', null, '걸은 시간')),
       h('div', null, h('b', null, ...meterParts(meters)), h('span', null, '걸은 거리')),
+      h('div', { title: KCAL_NOTE }, h('b', null, countUp(legsKcal(trip.stops)), h('small', null, 'kcal')), h('span', null, '쓴 칼로리')),
       h('div', null, h('b', null, done.length ? countUp(done.filter(s => s.rating >= 4).length) : '–', h('small', null, done.length ? `/${done.length}곳` : '')), h('span', null, '좋았던 곳'))) : null,
     done.length ? h('ol', { class: 'tr-journey' }, done.map((s, i) => h('li', { class: s.rating <= 2 ? 'low' : '', style: `--i:${i}` },
       h('span', { class: 'tr-num' }, trip.stops.indexOf(s) + 1),

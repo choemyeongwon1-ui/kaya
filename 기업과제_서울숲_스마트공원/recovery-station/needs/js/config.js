@@ -3,6 +3,10 @@
 
 export const CENTER = { lat: 37.5443, lon: 127.0374 };          // 기존 대시보드와 같은 기준점(날씨 조회 위치)
 export const SPEED = { normal: 70, slow: 53 };                    // 걷는 속도 m/분 = 4.2km/h, 3.2km/h (기존 대시보드와 같은 값)
+// 걸어서 쓴 칼로리 = MET × 몸무게(kg) × 걸은 시간(h)
+// MET: Ainsworth 외, 2011 Compendium of Physical Activities — 평지 2.0mph(3.2km/h) 2.8(코드 17152), 2.5mph(4.0km/h) 3.0(코드 17170)
+// 몸무게 65kg는 (가정). 사람마다 다르므로 화면에는 '약'으로 보여 줍니다.
+export const CALORIE = { met: { [SPEED.normal]: 3.0, [SPEED.slow]: 2.8 }, kg: 65 };
 
 // ── 시민 화면 선택지 ─────────────────────────────────────────────
 export const NEEDS = [
