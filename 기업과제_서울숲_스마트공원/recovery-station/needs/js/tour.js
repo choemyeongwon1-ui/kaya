@@ -919,6 +919,17 @@ function ranked(rec, seen, prev, must) {
     return { r, s };
   }).sort((a, b) => b.s - a.s);
 }
+/** 1등만 고르면 늘 같은 코스가 나옴 → 1등과 VARY점 안쪽인 후보들 중에서 점수가 높을수록 잘 뽑히게 무작위로 하나 (담은 곳은 그대로 우선) */
+const VARY = 10;
+function pickNear(list) {
+  if (!list.length) return null;
+  const top = list[0].s, near = list.filter(x => x.s >= top - VARY && x.s > 0);
+  if (near.length < 2) return list[0].r;
+  const w = near.map(x => 1 + (x.s - (top - VARY)) / VARY);   // 1등 2배, 경계선 1배
+  let t = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < near.length; i++) if ((t -= w[i]) <= 0) return near[i].r;
+  return near[0].r;
+}
 function planFrom(from, count, seen0, queue = [], mustIds = []) {
   const seen = new Set(seen0), picks = [], q = [...queue], must = new Set(mustIds.filter(id => !seen.has(id)));
   let f = from, prev = null;
@@ -927,7 +938,7 @@ function planFrom(from, count, seen0, queue = [], mustIds = []) {
     let r = null;
     while (q.length && !r) { const id = q.shift(), x = rec.all.find(y => y.place.id === id); if (x && x.tier < 9 && !seen.has(id)) r = x; }
     if (!r && must.size && count - i <= must.size) r = rec.all.find(x => must.has(x.place.id)) ?? null;      // 남은 자리 = 담은 곳 수면 반드시
-    r ??= ranked(rec, seen, prev, must)[0]?.r;
+    r ??= pickNear(ranked(rec, seen, prev, must));
     if (!r) break;
     picks.push({ r, rec });
     seen.add(r.place.id); must.delete(r.place.id); prev = r.place; f = asFrom(r.place);
