@@ -68,11 +68,21 @@
   .home i{width:136px;height:5px;border-radius:3px;background:#111;opacity:.85}
   .home.dark i{background:#fff}
 
-  body.clean .caption{display:none}
+  /* back to dashboard: page corner, outside the phone */
+  .back{
+    position:fixed;top:20px;left:20px;display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;font-weight:600;color:var(--mute);text-decoration:none;
+    padding:8px 14px 8px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+  }
+  .back:hover{color:var(--ink);background:rgba(255,255,255,.1)}
+  body.clean .caption,body.clean .back{display:none}
   @media (max-width:820px){ .caption{display:none} body{gap:0} }
 </style>
 </head>
 <body>
+  <a class="back" href="./index.html?cover=0#home" title="대시보드로 돌아가기">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>대시보드
+  </a>
   <aside class="caption">
     <div class="kicker">Seoul Forest · Mobile</div>
     <h1>서울숲,<br>폰에서 여는<br>나에게 맞는 길</h1>
@@ -84,7 +94,7 @@
       <button data-s="rain" aria-pressed="false">큰비</button>
       <button data-s="cold" aria-pressed="false">한파</button>
     </div>
-    <div class="hint">H 설명 숨기기 · R 처음으로 · F 전체 화면</div>
+    <div class="hint">H 설명·버튼 숨기기 · R 처음으로 · F 전체 화면</div>
   </aside>
 
   <div class="phone-wrap">
