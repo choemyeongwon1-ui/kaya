@@ -80,8 +80,8 @@
 </style>
 </head>
 <body>
-  <a class="back" id="back" href="./index.html?cover=0#home" title="보던 대시보드로 돌아가기">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>대시보드
+  <a class="back" id="back" href="./needs/tour.html" title="큰 화면 이용자 화면으로 돌아가기">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>이용자 화면
   </a>
   <aside class="caption">
     <div class="kicker">Seoul Forest · Mobile</div>
@@ -158,12 +158,7 @@
   // Links inside the phone that leave the user screen (e.g. tour's 「돌아가기」) must open in the whole
   // window, not inside the phone. Intercept clicks in the frame; as a fallback, if the frame still
   // ends up on another page, move the whole window there.
-  function goDash(url){
-    var s=null; try{ s=JSON.parse(sessionStorage.getItem('nd-mobile-return')||'null'); }catch(err){}
-    var p=new URL(url,location.href).pathname, dir=new URL('./',location.href).pathname;
-    var isDash=(p===dir||p===dir+'index.html');   // the dashboard next to this page
-    location.href=(isDash&&s&&s.url)?s.url:url;   // back to the exact dashboard view we came from
-  }
+  function goDash(url){ location.href=url; }
   function guardFrame(){
     var w,doc; try{ w=frame.contentWindow; doc=w.document; }catch(e){ return; }
     if(!doc||w.location.href==='about:blank') return;
@@ -179,8 +174,8 @@
   }
   frame.addEventListener('load',guardFrame);
 
-  // Back to the dashboard we came from: needs/mobile-link.js saved its URL + scroll in sessionStorage
-  // when the 「모바일 화면」 button was pressed; go there and it scrolls itself back.
+  // Back to the user screen we came from: needs/mobile-open.js saved its URL in sessionStorage
+  // when 「모바일로 보기」 was pressed. Without it, the link's href (./needs/tour.html) is used.
   // (history.go is unreliable here because the iframe adds an unknown number of history entries.)
   document.getElementById('back').addEventListener('click',function(e){
     var s=null; try{ s=JSON.parse(sessionStorage.getItem('nd-mobile-return')||'null'); }catch(err){}
