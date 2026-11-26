@@ -66,10 +66,10 @@
   },
   "horse-plaza": {
    "src": "img/horse-plaza.jpg",
-   "caption": "서울숲 입구 쪽 군마상(경마 조각상)과 꽃밭",
-   "credit": "DreamingDorzel",
-   "license": "CC BY-SA 4.0",
-   "page": "https://commons.wikimedia.org/wiki/File:Seoul_Forest_Park.jpg"
+   "caption": "군마상과 꽃밭",
+   "credit": "InSapphoWeTrust",
+   "license": "CC BY-SA 2.0",
+   "page": "https://www.flickr.com/photos/56619626@N05/5487864991"
   },
   "water-museum": {
    "src": "img/water-museum.jpg",
@@ -77,6 +77,20 @@
    "credit": "Korearoadtour",
    "license": "CC BY-SA 4.0",
    "page": "https://commons.wikimedia.org/wiki/File:%EB%9A%9D%EB%8F%84-%EC%88%98%EC%9B%90%EC%A7%80-%EC%A0%9C1%EC%A0%95%EC%88%98%EC%9E%A5-Ttukdo-Reservoir-Purification-Plant-1-2.jpg"
+  },
+  "mirror-pond": {
+   "src": "img/mirror-pond.jpg",
+   "caption": "바닥분수",
+   "credit": "tompagenet",
+   "license": "CC BY-SA 2.0",
+   "page": "https://www.flickr.com/photos/73422480@N00/5822450552"
+  },
+  "cherry-tree-path": {
+   "src": "img/cherry-tree-path.jpg",
+   "caption": "서울숲 벚꽃",
+   "credit": "travel oriented",
+   "license": "CC BY-SA 2.0",
+   "page": "https://www.flickr.com/photos/99958070@N02/13510950523"
   }
  },
  "places": {
@@ -86,6 +100,8 @@
   "butterfly": "butterfly",
   "insect": "butterfly",
   "horse-plaza": "horse-plaza",
-  "water-museum": "water-museum"
+  "water-museum": "water-museum",
+  "mirror-pond": "mirror-pond",
+  "cherry-tree-path": "cherry-tree-path"
  }
 }
