@@ -157,3 +157,32 @@
   .tw-vs em{font-size:10px}
 }
 @media print{.tw-split,.tw-fps{display:none!important}}
+/* v8: 상황별 머리 점수 · 세 점수 막대 · 갈래 카드 · 가정 */
+.tw-heads{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.tw-hd{display:grid;gap:2px;padding:9px 10px;border-radius:12px;border:1px solid rgba(241,247,243,.12);background:rgba(255,255,255,.03);color:#f1f7f3;text-align:left;cursor:pointer;font:inherit}
+.tw-hd.on{border-color:rgba(106,245,176,.6);background:rgba(106,245,176,.09)}
+.tw-hd small{font-size:10.5px;color:rgba(241,247,243,.6);font-weight:600}
+.tw-hd span{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:rgba(241,247,243,.7)}
+.tw-hd span i{font-style:normal;font-size:14px;margin:0 4px;color:rgba(241,247,243,.4)}
+.tw-hd span b{color:#f1f7f3}
+.tw-hd em{font-style:normal;font-size:12px;font-weight:800;color:rgba(241,247,243,.5)}
+.tw-hd em.up,.tw-br b.up,.tw-lv b.up{color:#6af5b0}
+.tw-bars{margin-top:10px;display:grid;gap:5px}
+.tw-bars>small{font-size:10.5px;color:rgba(241,247,243,.55)}
+.tw-br{display:grid;grid-template-columns:64px minmax(0,1fr) 62px;gap:8px;align-items:center;font-size:11px;color:rgba(241,247,243,.75);font-variant-numeric:tabular-nums}
+.tw-br>i{position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.tw-br>i b,.tw-br>i em{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.tw-br>i em{background:#3fe6a6;opacity:.85}
+.tw-br>i b{background:rgba(241,247,243,.55);z-index:1;height:3px;top:auto}
+.tw-br>span:last-child{text-align:right}
+.tw-lv{margin-top:10px;padding:10px 11px;border-radius:12px;border:1px solid rgba(241,247,243,.1);background:rgba(255,255,255,.025)}
+.tw-lv h5{margin:0;font-size:12px;font-weight:700;color:rgba(241,247,243,.85);display:flex;gap:7px;align-items:center}
+.tw-lv h5 span{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(106,245,176,.15);color:#6af5b0}
+.tw-lv .pb{margin:7px 0 0;font-size:11.5px;line-height:1.55;color:rgba(241,247,243,.75)}
+.tw-lv .pb b{color:#f1f7f3}.tw-lv .pb b.bad{color:#ff9d5c}
+.tw-lv .ef{margin:8px 0 0;font-size:12px;line-height:1.5;color:#f1f7f3}
+.tw-lv .ef.mute{color:rgba(241,247,243,.55);font-size:11.5px}
+.tw-lv .tw-plan{margin-top:7px}
+.tw-asm{margin-top:10px;font-size:11px;color:rgba(241,247,243,.6)}
+.tw-asm summary{cursor:pointer;font-weight:700;color:rgba(241,247,243,.75)}
+.tw-asm ul{margin:6px 0 0;padding-left:16px;line-height:1.55}
