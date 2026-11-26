@@ -1,0 +1,28 @@
+/* 대시보드 밝은 모드 톤 다운
+ * 표지(어두운 3D)·이용자 화면(어두운 초록)과 이어지도록, 밝은 베이지·흰 카드 대신
+ * 차분한 세이지 회녹색 바탕과 덜 하얀 카드로 낮춤. 글자색·초록 포인트는 그대로(읽기 쉬움 유지).
+ * 어두운 모드([data-theme=dark])는 건드리지 않음. */
+:root:not([data-theme=dark]) {
+  --page: #d3d9cf;
+  --surface: #e8ebe3;
+  --surface-2: #dfe3d9;
+  --surface-3: #cfd5c9;
+  --hair: rgba(20, 32, 26, .1);
+  --grid: #d6dbd0;
+  --axis: #b3baae;
+  --brand-wash: #d4e2d6;
+  --shadow: 0 1px 2px rgba(20, 32, 26, .06), 0 12px 32px -18px rgba(20, 32, 26, .3);
+  --shadow-lg: 0 2px 4px rgba(20, 32, 26, .06), 0 24px 48px -24px rgba(20, 32, 26, .4);
+  --good-wash: #d6e8d2;
+  --warning-wash: #efe4c4;
+  --serious-wash: #eedacf;
+  --critical-wash: #ebd3d3;
+  --m-land: #dde1d6;
+  --m-road: #eef0ea;
+  --m-road-case: #c8cdbf;
+  --m-park: #cddcc1;
+  --m-lawn: #bfd6a6;
+  --m-bldg: #cbcfc2;
+  --m-path: #eef0ea;
+  --v0: #e9e3cc;
+}
