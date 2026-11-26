@@ -72,8 +72,24 @@ export function soonBusy(live) {
 }
 
 /* ---------- ① 오는 길 지도 위 흐름 ---------- */
+// 지도 왼쪽 위 「성수 → 서울숲 흐름」 범례(흐름이 그려질 때만)
+let keyBox = null;
+function showKey(map, on) {
+  if (!map) return;
+  if (!keyBox) { keyBox = document.createElement('div'); keyBox.className = 'tr-flow-card'; map.getContainer().appendChild(keyBox); }
+  keyBox.hidden = !on;
+  if (!on) return;
+  const sf = stationFlows(), jam = roadJam(), t = String(flow?.roadAvg?.time ?? flow?.park?.time ?? '').slice(11, 16);
+  keyBox.innerHTML = `<b>성수 → 서울숲 흐름</b><small>지하철·도로로 서울숲에 들어오는 흐름${t ? ` · ${t} 기준` : ''}</small>`
+    + `<div class="k"><span><i style="background:${ROAD_C['원활']}"></i>잘 뚫림</span><span><i style="background:${ROAD_C['서행']}"></i>느림</span><span><i style="background:${ROAD_C['정체']}"></i>막힘</span></div>`
+    + `<div class="k"><span><i class="arr"></i>역에서 내린 사람(10분) · 굵을수록 많음</span></div>`
+    + (sf.length ? `<div class="n">${sf.map(s => `${s.name}역 <b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>`).join(' · ')}명${sf.some(s => s.est) ? ' <em>(성수역은 추정)</em>' : ''}</div>` : '')
+    + (jam != null ? `<div class="n">주변 도로 ${Math.round(jam * 100)}% 막힘</div>` : '');
+}
+export function clearFlow(layer) { layer.clearLayers(); showKey(layer._map, false); }
 export function drawFlow(layer, L, center) {
   layer.clearLayers();
+  showKey(layer._map, !!flow);
   if (!flow) return;
   const off = { interactive: false };
   for (const r of flow.roads ?? []) {
@@ -137,6 +153,12 @@ const css = `
 .tr-flow-lab{position:absolute;transform:translate(-50%,calc(-100% - 10px));white-space:nowrap;font-size:11px;font-weight:600;color:#fff;background:rgba(7,13,10,.85);border:1px solid rgba(106,245,176,.5);border-radius:9px;padding:3px 7px;text-align:center;pointer-events:none}
 .tr-flow-lab b{color:#6af5b0;margin-left:2px}.tr-flow-lab small{display:block;font-size:9.5px;font-weight:500;opacity:.65}
 .tr-flow-lab.est{border-style:dashed;border-color:rgba(255,255,255,.3)}.tr-flow-lab.est b{color:#cfe}
+.tr-flow-card{position:absolute;z-index:500;left:16px;top:72px;max-width:260px;padding:10px 12px;border-radius:14px;background:rgba(7,13,10,.82);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);color:#f1f7f3;font-size:11px;line-height:1.45;pointer-events:none}
+.tr-flow-card>b{display:block;font-size:13px}.tr-flow-card>small{display:block;opacity:.6;margin-bottom:6px}
+.tr-flow-card .k{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:3px}.tr-flow-card .k i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.tr-flow-card .k i.arr{height:7px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
+.tr-flow-card .n{margin-top:5px;opacity:.85}.tr-flow-card .n b{color:#6af5b0}.tr-flow-card .n em{font-style:normal;opacity:.6}
+@media(max-width:899px){.tr-flow-card{top:64px;left:10px;max-width:200px;padding:8px 10px;font-size:10px}.tr-flow-card>small{display:none}}
 .tr-flow-key{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;opacity:.85;margin:8px 0 2px}
 .tr-flow-key i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .tr-flow-key i.arr{height:7px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
