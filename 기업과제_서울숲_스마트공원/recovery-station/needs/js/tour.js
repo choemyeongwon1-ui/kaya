@@ -1833,6 +1833,9 @@ function courseAsk(walkMin, meters) {
     pendingCourse = { send: () => sendCourse(data(), id), timer: setTimeout(flushCourse, 6000) };
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
+  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 사지 않아도 머무는 숲 → 가게 할인 대신 씨앗 나눔
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 쿠폰'), h('span', null, '표정 하나만 남겨도 씨앗 나눔 쿠폰을 드려요. 좋든 아쉽든 똑같이요.'));
+  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 받았어요'), h('span', null, '방문자센터에서 이 화면을 보여 주면 씨앗 한 봉지로 바꿔 드려요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
     on ? api.tags.add(x.key) : api.tags.delete(x.key);
@@ -1844,10 +1847,10 @@ function courseAsk(walkMin, meters) {
     api.face = v;
     word.textContent = { 5: '좋았어요', 3: '그저 그랬어요', 1: '별로였어요' }[v]; word.classList.add('on'); word.dataset.f = v >= 4 ? 'good' : v === 3 ? 'mid' : 'bad';
     if (flip) { api.tags.clear(); paintChips(v >= 4); }
-    arm(); api.onChange?.();
+    giftDone(); arm(); api.onChange?.();
   }, '오늘 코스 흐름');
   api.el = h('section', { class: 'tr-rate tr-flow' },
-    h('div', { class: 'tr-rate-h' }, h('b', null, stops.length > 1 ? '오늘 코스, 이어지는 흐름은 어땠어요?' : '오늘 산책, 어땠어요?'), word), pick, chips,
+    h('div', { class: 'tr-rate-h' }, h('b', null, stops.length > 1 ? '오늘 코스, 이어지는 흐름은 어땠어요?' : '오늘 산책, 어땠어요?'), word), gift, pick, chips,
     h('small', { class: 'tr-rate-why' }, '알려 주시면 다음 코스에 바로 반영하고, 공원 길·쉼터를 고치는 데 써요'));
   courseFb = api;
   return api;
