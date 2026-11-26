@@ -1758,12 +1758,13 @@ function exitWalk(ex) {
   ex.show();
   const { last, gate, meters, min, wc } = ex;
   mount('tr-s-exit', [
-    h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '나가는 길')),
+    h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '영수증 기계로')),
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '돌아가기')),
     h('h2', { class: 'tr-q' }, gate.name),
     h('p', { class: 'tr-exit-lead' }, `${last.name}에서 지도의 노란 길을 따라 약 ${fmtM(meters)}, ${min}분이에요.`),
-    Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `나가기 전에 · 가까운 화장실 약 ${fmtM(Math.round(wc))}`) : null,
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '다 나왔어요', h('span', { class: 'tr-cta-arrow' }, '→')),
+    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 오늘 산책 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나와요.'),
+    Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가는 길에 · 가까운 화장실 약 ${fmtM(Math.round(wc))}`) : null,
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→')),
   ]);
 }
 
@@ -1833,9 +1834,9 @@ function courseAsk(walkMin, meters) {
     pendingCourse = { send: () => sendCourse(data(), id), timer: setTimeout(flushCourse, 6000) };
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
-  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 사지 않아도 머무는 숲 → 가게 할인 대신 씨앗 나눔
-  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 쿠폰'), h('span', null, '표정 하나만 남겨도 씨앗 나눔 쿠폰을 드려요. 좋든 아쉽든 똑같이요.'));
-  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 받았어요'), h('span', null, '방문자센터에서 이 화면을 보여 주면 씨앗 한 봉지로 바꿔 드려요.')); };
+  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 쿠폰'), h('span', null, '표정 하나만 남기면, 영수증 기계에서 주변 카페 할인 쿠폰을 드려요. 좋든 아쉽든 똑같이요.'));
+  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 준비됐어요'), h('span', null, '가까운 영수증 기계에서 산책 영수증을 뽑으면 카페 할인 쿠폰이 함께 나와요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
     on ? api.tags.add(x.key) : api.tags.delete(x.key);
@@ -1892,30 +1893,52 @@ function nextBox(later) {
       later === 'now' ? '지금 한산하고 날씨도 좋아요 · 이어서 더 걷기 ›' : '아직 더 걷고 싶다면 · 이어서 걷기 ›'));
 }
 
-// ── 마무리 3. 나가는 길: 마지막 곳에서 가까운 출입구와 화장실 ──
+// ── 마무리 3. 나가는 길: 마지막 곳에서 가장 가까운 영수증 기계(출구 2곳 + 공원 곳곳) ──
+// 영수증 기계 배치(팀 제안): 두 출입구 + 구역마다 한 대씩. 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
+const KIOSKS = [
+  { id: 'gate-station', at: '서울숲역 방면 입구' },
+  { id: 'gate-north', at: '성수동 방면 북측 입구' },
+  { id: 'family-lawn', at: '가족마당' },
+  { id: 'lake', at: '서울숲호수' },
+  { id: 'insect', at: '곤충식물원 앞' },
+  { id: 'deer', at: '생태숲 사슴우리' },
+  { id: 'culture-ctr', at: '복합문화센터(습지생태원 옆)' },
+  { id: 'hangang-observatory', at: '한강 전망대' },
+];
+const kioskHubs = () => KIOSKS.map(k => ({ ...k, hub: app.model.hubById[k.id] })).filter(k => k.hub);
+function drawKiosks(pick) {
+  layers.route.eachLayer(l => { if (l.options?.kiosk) layers.route.removeLayer(l); });
+  for (const k of kioskHubs()) {
+    const on = pick === k.id;
+    L.marker([k.hub.lat, k.hub.lon], { kiosk: true, interactive: false, zIndexOffset: on ? 900 : 400,
+      icon: L.divIcon({ className: '', html: `<div class="tr-kiosk${on ? ' on' : ''}"><span>🧾</span>${on ? `<b>영수증 기계</b>` : ''}</div>`, iconSize: [0, 0] }) }).addTo(layers.route);
+  }
+}
 function exitBox() {
   const m = app.model, last = trip.stops[trip.stops.length - 1]?.r.place;
-  if (!last || !m.gates?.length) return null;
+  if (!last) return null;
   const speed = trip.stops[trip.stops.length - 1].rec?.speed ?? speedFor(st.company);
   const env = { scale: crowdScale(app.now.dow, app.now.hour), sunMode: 'none', floodPenalty: null };
-  const opts = m.gates.map(g => ({ g, route: planRoute(m, last.node, g.node, { nostairs: st.company === 'kids' || st.company === 'elders' }, env, speed) }))
+  const opts = kioskHubs().map(k => ({ k, route: k.hub.node === last.node ? { main: { meters: 0, coords: [] } } : planRoute(m, last.node, k.hub.node, { nostairs: st.company === 'kids' || st.company === 'elders' }, env, speed) }))
     .filter(x => x.route?.main).sort((a, b) => a.route.main.meters - b.route.main.meters);
   const best = opts[0];
   if (!best) return null;
-  const meters = Math.round(best.route.main.meters + (last.off ?? 0)), min = Math.max(1, Math.round(meters / speed));
+  const meters = Math.round(best.route.main.meters + (last.off ?? 0) + (best.k.hub.off ?? 0)), min = Math.max(1, Math.round(meters / speed));
   const wc = m.dToilet?.[last.node];
   const show = () => {
     layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); });
-    const coords = [[last.lat, last.lon], ...best.route.main.coords, [best.g.lat, best.g.lon]];
+    const coords = [[last.lat, last.lon], ...best.route.main.coords, [best.k.hub.lat, best.k.hub.lon]];
     L.polyline(coords, { interactive: false, className: 'tr-exit-line', color: '#ffd27a', weight: 4, opacity: .9, dashArray: '2 8', lineCap: 'round' }).addTo(layers.route);
+    drawKiosks(best.k.id);
     flyBounds(L.latLngBounds(coords), { ...padding(), maxZoom: 17.4 }, .8);
   };
-  const ex = { show, last, gate: best.g, meters, min, wc };
+  setTimeout(() => drawKiosks(best.k.id), 0);
+  const ex = { show, last, gate: { name: `영수증 기계 · ${best.k.at}` }, meters, min, wc };
   return h('div', { class: 'tr-exit main' },
     h('div', { class: 'tr-exit-row' },
-      h('span', { class: 'tr-exit-ico' }, icon('pin', 15)),
-      h('div', null, h('b', null, `가장 가까운 출구 · ${best.g.name}`), h('p', null, `${last.name}에서 약 ${fmtM(meters)} · ${min}분`))),
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => exitWalk(ex) }, '나가는 길 안내받기', h('span', { class: 'tr-cta-arrow' }, '→')),
+      h('span', { class: 'tr-exit-ico' }, '🧾'),
+      h('div', null, h('b', null, `가까운 영수증 기계 · ${best.k.at}`), h('p', null, `${last.name}에서 약 ${fmtM(meters)} · ${min}분 · 영수증 뽑고 카페 쿠폰 받기`))),
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => exitWalk(ex) }, '영수증 기계로 안내받기', h('span', { class: 'tr-cta-arrow' }, '→')),
     h('button', { type: 'button', class: 'tr-textbtn', onclick: goodbye }, '안내 없이 산책 마치기'));
 }
 function countUp(v, digits = 0) {
