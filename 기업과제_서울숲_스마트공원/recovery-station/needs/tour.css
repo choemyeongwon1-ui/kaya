@@ -92,6 +92,16 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
   padding:22px 22px 20px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent;
   opacity:0;transform:translateX(28px) scale(.98);pointer-events:none;transition:opacity .6s var(--ease),transform .7s var(--ease),max-height .5s var(--ease)}
 .tr-panel.show{opacity:1;transform:none;pointer-events:auto}
+/* 첫 화면 왼쪽 패널: 지금 서울숲(혼잡·날씨·오는 길) */
+.tr-side{position:absolute;z-index:1000;left:22px;top:80px;width:min(380px,30vw);max-height:calc(100% - 180px);box-sizing:border-box;
+  background:linear-gradient(180deg,rgba(14,24,19,.78),rgba(8,15,12,.74));backdrop-filter:blur(30px) saturate(1.5);-webkit-backdrop-filter:blur(30px) saturate(1.5);
+  border-radius:var(--r-lg);box-shadow:0 40px 100px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.07);
+  padding:16px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent;display:flex;flex-direction:column;gap:10px;
+  animation:trSideIn .6s var(--ease) both}
+.tr-side[hidden]{display:none}
+.tr-side>div:empty{display:none}
+@keyframes trSideIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@media(max-width:899px){.tr-side{display:none}}
 /* 내용 바뀔 때: 사라졌다가 차례로 올라옴 */
 .tr-panel>*{animation:trIn .6s var(--ease) both}
 .tr-panel>*:nth-child(2){animation-delay:.04s}.tr-panel>*:nth-child(3){animation-delay:.08s}.tr-panel>*:nth-child(4){animation-delay:.12s}

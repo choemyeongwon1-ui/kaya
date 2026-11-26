@@ -83,10 +83,12 @@ const el = {
   intro: h('div', { class: 'tr-intro' }),
   toast: h('div', { class: 'tr-toast', role: 'status', 'aria-live': 'polite' }),
   panel: h('section', { class: 'tr-panel', 'aria-live': 'polite' }),
+  // 첫 화면 왼쪽: 지금 서울숲(혼잡·날씨·오는 길). 넓은 화면에서만
+  side: h('aside', { class: 'tr-side', 'aria-label': '지금 서울숲', hidden: true }),
   top: h('header', { class: 'tr-top' }),
   locate: h('button', { type: 'button', class: 'tr-locate', 'aria-label': '내 위치로', onclick: () => centerMe() }, icon('target', 18)),
 };
-root.append(el.map, el.shade, el.top, el.toast, el.panel, el.locate, el.intro);
+root.append(el.map, el.shade, el.top, el.toast, el.side, el.panel, el.locate, el.intro);
 
 addEventListener('pointermove', e => {
   const t = e.target.closest?.('.tr-glow-on');
@@ -423,6 +425,7 @@ async function mount(cls, nodes) {
   }
   el.panel.className = `tr-panel show ${cls}`;
   el.panel.replaceChildren(...nodes.filter(Boolean));
+  if (cls !== 'tr-s-step' || st.step !== 1) el.side.hidden = true;
   el.panel.scrollTop = 0;
   return true;
 }
@@ -829,23 +832,33 @@ function declutterAccess() {
   });
 }
 
+let sideDesk = null;
+// 창 너비가 넓은↔좁은 화면을 넘나들면 첫 화면을 다시 그려 카드 자리를 맞춤
+addEventListener('resize', () => { if (st.step === 1 && el.panel.classList.contains('tr-s-step') && sideDesk !== null && desk() !== sideDesk) go(1); });
 function go(step) {
   st.step = step;
   const s = STEPS[step];
   const picked = [st.need && NEEDS.find(n => n.key === st.need)?.label, step > 2 && st.company && COMPANY.find(c => c.key === st.company)?.label].filter(Boolean);
   setFocus(false);
+  // 첫 단계: 질문을 맨 위에. 지금 서울숲 카드는 넓은 화면이면 왼쪽 패널, 좁으면 질문·선택지 아래
+  const live = step === 1 ? [
+    h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? ''),
+    h('div', { class: 'tr-status-slot' }, statusBar() ?? ''),
+    h('div', { class: 'tr-access-slot' }, accessBar() ?? ''),
+  ] : [];
+  const side = step === 1 && desk();
+  sideDesk = desk();
+  if (side) { el.side.replaceChildren(...live); el.side.hidden = false; } else el.side.hidden = true;
   mount('tr-s-step', [
-    h('div', { class: 'tr-panel-head' },
+    step === 1 ? null : h('div', { class: 'tr-panel-head' },
       h('div', { class: 'tr-stepno' }, h('b', null, `0${step}`), h('span', null, '/ 03')),
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
-    step === 1 ? h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? '') : null,
-    step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
-    step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
     picked.length ? h('div', { class: 'tr-picked' }, picked.map(p => h('span', null, p))) : null,
     h('div', { class: `tr-opts${step === 1 ? ' c3' : ''}` }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
       h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
+    ...(side ? [] : live),
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
   if (step !== 1 && accessOpen) accessOpen = false;
