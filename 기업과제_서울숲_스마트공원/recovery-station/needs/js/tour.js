@@ -639,7 +639,7 @@ function accessBar() {
         const odd = l.capacity != null && l.free >= l.capacity;
         const nm = l.name === '이름 없는 주차장' ? `${lotDong(l.address)} 주차장` : l.name.replace(/\s*공영주차장$/, ' 공영');
         return h('button', { type: 'button', onclick: () => focusAccess(l.lat, l.lon) },
-          h('i', null, 'P'), nm, h('b', null, `${l.free}면${odd ? '?' : ''}`), l.km != null ? h('span', null, `${l.km}km`) : null);
+          h('i', null, 'P'), nm, h('b', null, `${l.free}면`), l.km != null ? h('span', null, `${l.km}km`) : null);
       }))) : null,
     sit.busy ? h('p', { class: 'tr-acc-note warn' }, '지금 공원이 붐벼서 주차장도 찼을 수 있어요(붐빔 정도로 짐작). 서울숲역이 가까워요.') : null,
     a.subFlow?.off10 ? h('p', { class: `tr-acc-line${subSurge() ? ' warn' : ''}` }, icon('train', 13), `서울숲역 최근 10분 ${rngTxt(a.subFlow.off10)}명 내림${subSurge() ? ' · 평소보다 많아요' : ''}`) : null,
@@ -720,7 +720,7 @@ function accessPins(fly = false) {
     const live = l.live && l.free != null, d = gateDist(l.lat, l.lon);
     const odd = live && l.capacity != null && l.free >= l.capacity;   // 남은 자리 = 전체면 기계 값이 멈췄을 수 있음
     const name = l.name === '이름 없는 주차장' ? `${l.agent ?? ''} 주차장 (${lotDong(l.address)})`.trim() : l.name;
-    const tag = live ? `${l.free}면 남음${odd ? '?' : ''}` : l.capacity != null ? `${l.capacity.toLocaleString()}면` : '';
+    const tag = live ? `${l.free}면 남음` : l.capacity != null ? `${l.capacity.toLocaleString()}면` : '';
     add(l.lat, l.lon, `p ${live ? 'on' : 'off'}`, `<i>P</i>${tag ? `<span>${esc(tag)}</span>` : ''}`,
       head('parking', name, oneAddr(l.address)) +
       row('남은 자리', live ? `${l.free}면${l.time ? ` (${hm(l.time)} 기준)` : ''}` : '실시간 정보 없음') +
