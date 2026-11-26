@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=9';
-import { refreshFlow, drawFlow, clearFlow, flowCard, flowLegend, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=4';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=5';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -134,7 +134,6 @@ function paintHello() {
   if (!app) return;
   document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
   document.querySelectorAll('.tr-auto-slot').forEach(s => s.replaceChildren(autoBlock() ?? ''));
-  document.querySelectorAll('.tr-flowcard-slot').forEach(s => s.replaceChildren(flowCard() ?? ''));
   document.querySelectorAll('.tr-access-slot').forEach(s => s.replaceChildren(accessBar() ?? ''));
   accessPins();
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
@@ -652,7 +651,7 @@ function accessBar() {
       onclick: e => { accessShow[g.key] = !showing(g.key); e.currentTarget.setAttribute('aria-pressed', String(accessShow[g.key])); accessPins(); } },
       h('i', null, icon(g.icon, 13)), g.label, h('b', null, g.count))));
   const more = h('div', { class: 'tr-acc-more', hidden: !accessOpen },
-    legend, flowLegend(),
+    legend,
     h('div', { class: 'tr-acc-key' },
       near.length ? h('span', null, h('i', { class: 'off' }, 'P'), '남은 자리 모름') : null,
       liveLots.length ? h('span', null, h('i', { class: 'on' }, 'P'), '남은 자리 실시간') : null,
@@ -726,7 +725,7 @@ function accessPins(fly = false) {
   const wasMap = el.panel.classList.contains('accmap');
   el.panel.classList.toggle('accmap', on);
   if (on && !wasMap && !desk()) { const sec = el.panel.querySelector('.tr-access'); if (sec) el.panel.scrollTop = sec.offsetTop - 12; }
-  if (st.step === 1 && !trip) drawFlow(layers.flow, L, PARK_CENTER, app.model.gates, app.data.park); else clearFlow(layers.flow);
+  if (st.step === 1 && !trip) drawFlow(layers.flow); else clearFlow(layers.flow);
   if (!on) { if (fly && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
   const pts = [];
   const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
@@ -842,7 +841,6 @@ function go(step) {
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
     step === 1 ? h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? '') : null,
-    step === 1 ? h('div', { class: 'tr-flowcard-slot' }, flowCard() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-auto-slot' }, autoBlock() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
