@@ -42,7 +42,7 @@ Deno.serve(async req => {
       const sp = cd.LIVE_SUB_PPLTN, r = (a: string, b: string) => sp && sp[a] != null ? [num(sp[a]), num(sp[b])] : null;
       const st = (cd.SUB_STTS ?? []).map((s: Record<string, string>) => ({ name: s.SUB_STN_NM, line: s.SUB_STN_LINE, lat: num(s.SUB_STN_Y), lon: num(s.SUB_STN_X) }));
       if (!sp || !st.length) return null;
-      return { area, stations: st, off10: r('SUB_10WTHN_GTOFF_PPLTN_MIN', 'SUB_10WTHN_GTOFF_PPLTN_MAX'), off30: r('SUB_30WTHN_GTOFF_PPLTN_MIN', 'SUB_30WTHN_GTOFF_PPLTN_MAX'), on10: r('SUB_10WTHN_GTON_PPLTN_MIN', 'SUB_10WTHN_GTON_PPLTN_MAX'), time: sp.SUB_STN_TIME ?? null };
+      return { area, stations: st, off5: r('SUB_5WTHN_GTOFF_PPLTN_MIN', 'SUB_5WTHN_GTOFF_PPLTN_MAX'), offDay: r('SUB_ACML_GTOFF_PPLTN_MIN', 'SUB_ACML_GTOFF_PPLTN_MAX'), off10: r('SUB_10WTHN_GTOFF_PPLTN_MIN', 'SUB_10WTHN_GTOFF_PPLTN_MAX'), off30: r('SUB_30WTHN_GTOFF_PPLTN_MIN', 'SUB_30WTHN_GTOFF_PPLTN_MAX'), on10: r('SUB_10WTHN_GTON_PPLTN_MIN', 'SUB_10WTHN_GTON_PPLTN_MAX'), time: sp.SUB_STN_TIME ?? null };
     };
     const subways = [subOf(c, PARK), ...subRes.map((r, i) => subOf(r.status === 'fulfilled' ? r.value?.CITYDATA : null, SUB_AREAS[i]))].filter(Boolean);
 
