@@ -69,6 +69,18 @@
     '#sf3 .nav{display:flex;align-items:center;gap:18px;padding:9px 16px;border:1px solid var(--line);border-radius:999px;font:500 10.5px "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.14em;color:var(--ink2);background:rgba(10,12,24,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}',
     '#sf3 .nav i{width:6px;height:6px;border-radius:50%;background:var(--vio2);box-shadow:0 0 10px var(--vio);display:inline-block;margin-right:8px;animation:sf3Blink 2s ease-in-out infinite}',
     '#sf3 .nav em{font-style:normal;color:#ff6b7a}',
+    /* 소리 버튼 */
+    '#sf3 .tr{display:flex;align-items:center;gap:10px}',
+    '#sf3 .snd{display:inline-flex;align-items:center;gap:9px;height:34px;padding:0 14px 0 12px;border:1px solid var(--line);border-radius:999px;cursor:pointer;font:500 10.5px "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.14em;color:var(--ink2);background:rgba(10,12,24,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:color .3s,border-color .3s,box-shadow .3s}',
+    '#sf3 .snd:hover,#sf3 .snd:focus-visible{color:#fff;border-color:rgba(226,230,255,.45);outline:none}',
+    '#sf3 .snd .eq{display:inline-flex;align-items:flex-end;gap:2px;height:12px}',
+    '#sf3 .snd .eq i{width:2px;height:3px;border-radius:1px;background:currentColor;transition:height .3s}',
+    '#sf3 .snd.on{color:#fff;border-color:rgba(169,164,255,.6);box-shadow:0 0 18px rgba(123,116,255,.35)}',
+    '#sf3 .snd.on .eq i{background:var(--vio2);animation:sf3Eq 1s ease-in-out infinite}',
+    '#sf3 .snd.on .eq i:nth-child(2){animation-delay:-.3s;animation-duration:.8s}#sf3 .snd.on .eq i:nth-child(3){animation-delay:-.55s;animation-duration:1.15s}#sf3 .snd.on .eq i:nth-child(4){animation-delay:-.15s;animation-duration:.9s}',
+    '#sf3 .snd.ask{animation:sf3Ask 2.4s ease-in-out infinite}',
+    '@keyframes sf3Eq{0%,100%{height:3px}50%{height:12px}}',
+    '@keyframes sf3Ask{0%,100%{box-shadow:0 0 0 0 rgba(169,164,255,0)}50%{box-shadow:0 0 0 5px rgba(169,164,255,.18)}}',
     '#sf3 .copy{position:absolute;z-index:3;left:4.4vw;top:50%;transform:translateY(-46%);max-width:min(620px,46vw)}',
     '#sf3 .copy .ui-el{transform:translateY(22px)}#sf3.ui .copy .ui-el{transform:none}',
     '#sf3 .eyebrow{display:flex;align-items:center;gap:12px;font-size:10.5px;font-weight:600;letter-spacing:.3em;color:var(--vio2)}',
@@ -106,6 +118,7 @@
     '  #sf3 .shade{background:linear-gradient(0deg,rgba(5,7,13,.92) 0%,rgba(5,7,13,.7) 40%,transparent 62%),linear-gradient(180deg,rgba(5,7,13,.6),transparent 15%)}',
     '  #sf3 .copy{left:22px;right:22px;top:auto;bottom:12vh;transform:none;max-width:none}',
     '  #sf3 .top{left:20px;right:20px;top:18px}#sf3 .logo small,#sf3 .nav .hide{display:none}#sf3 .logo{letter-spacing:.3em;font-size:11.5px}',
+    '  #sf3 .snd .lb{display:none}#sf3 .snd{height:30px;padding:0 10px}',
     '  #sf3 .chip{left:20px;bottom:18px}#sf3 .compass{right:20px;bottom:16px}#sf3 .compass svg{width:44px;height:44px}#sf3 .compass small{display:none}',
     '  #sf3 .mouse{display:none}#sf3 .ghost{display:none}#sf3 .cred{margin-top:22px}#sf3 .tag .box{padding:5px 9px}#sf3 .tag i{display:none}}',
     '@media (prefers-reduced-motion:reduce){#sf3 *,#sf3{animation:none!important;transition-duration:.25s!important;transition-delay:0s!important}}'
@@ -141,7 +154,8 @@
     '<div class="load"><div class="ring">' + ringSvg + '<div class="core"></div><div class="dot"></div></div>' +
       '<div class="ltxt">LOADING SEOUL FOREST<span class="roll"><span>00</span></span>%<small>37.5443° N · 127.0374° E</small></div></div>' +
     '<div class="top ui-el" style="transition-delay:.2s"><div class="logo">SEOUL FOREST<small>SMART PARK · TOPIC 01</small></div>' +
-      '<div class="nav"><span class="now">—</span><span class="hide">SEONGDONG-GU</span><em>KR</em></div></div>' +
+      '<div class="tr"><button type="button" class="snd ask" aria-pressed="false" aria-label="도시 소리 켜기"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="lb">SOUND OFF</span></button>' +
+      '<div class="nav"><span class="now">—</span><span class="hide">SEONGDONG-GU</span><em>KR</em></div></div></div>' +
     '<div class="copy">' +
       '<div class="eyebrow ui-el" style="transition-delay:.4s"><svg viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z" fill="#7b74ff"/></svg>2026-2 AI-CCS · 이용자 맞춤형 스마트 공원</div>' +
       '<h1><span class="ln">' + chars(L1, .55, .05) + '</span><span class="ln l2">' + chars(L2, .8, .04) + '</span></h1>' +
@@ -191,6 +205,8 @@
     document.removeEventListener('keydown', onKey, true);
     clearInterval(clock);
     if (scene3) scene3.dive();
+    if (window.SF_SOUND) { window.SF_SOUND.dive(); setTimeout(function () { window.SF_SOUND.dispose(); }, 2000); }
+    removeWake();
     if (opt.href) { // 서울숲으로 파고든 뒤 어둠으로 가라앉으며 대시보드로 이동
       setTimeout(function () { root.classList.add('leave'); }, scene3 ? 750 : 0);
       setTimeout(function () { location.href = opt.href; }, scene3 ? 1350 : 600);
@@ -206,6 +222,35 @@
   document.addEventListener('keydown', onKey, true);
   if (opt.auto > 0) { root.querySelector('.bar').style.animation = 'sf3Bar ' + opt.auto + 'ms linear forwards'; setTimeout(close, opt.auto); }
   window.sfCover = { close: close };
+
+  // ── 도시 소리 (sound.js) ────────────────────────────────────
+  // 브라우저가 첫 클릭 전에는 소리를 막아서: 바로 켜 보고, 막히면 표지를 처음 누르거나 만질 때 켬.
+  // 오른쪽 위 SOUND 버튼으로 끄고 켬(끈 상태는 기억).
+  var snd = root.querySelector('.snd'), sndLb = snd.querySelector('.lb'), WAKE = ['pointerdown', 'touchstart', 'keydown'];
+  function sndPref() { try { return localStorage.getItem('sf-cover-sound') !== 'off'; } catch (e) { return true; } }
+  function sndShow(isOn) {
+    snd.classList.toggle('on', isOn); snd.classList.toggle('ask', !isOn && sndPref());
+    snd.setAttribute('aria-pressed', String(isOn)); snd.setAttribute('aria-label', isOn ? '도시 소리 끄기' : '도시 소리 켜기');
+    sndLb.textContent = isOn ? 'SOUND ON' : 'SOUND OFF';
+  }
+  function wake(e) {
+    if (done || !window.SF_SOUND || !sndPref() || window.SF_SOUND.on || (e && snd.contains(e.target))) return;
+    window.SF_SOUND.start().then(function (ok) { sndShow(ok); if (ok) removeWake(); });
+  }
+  function removeWake() { WAKE.forEach(function (t) { document.removeEventListener(t, wake, true); }); }
+  snd.addEventListener('click', function () {
+    if (!window.SF_SOUND) return;
+    window.SF_SOUND.toggle().then(function (isOn) {
+      try { localStorage.setItem('sf-cover-sound', isOn ? 'on' : 'off'); } catch (e) {}
+      sndShow(isOn); if (isOn) removeWake();
+    });
+  });
+  (function () {
+    var s = document.createElement('script'); s.src = BASE + 'sound.js?v=20261126';
+    s.onload = function () { if (sndPref()) wake(); };
+    (document.head || document.documentElement).appendChild(s);
+    WAKE.forEach(function (t) { document.addEventListener(t, wake, true); });
+  })();
 
   // ── 불러오기: three.js·후처리 / 도시 데이터 / 위성사진 ─────────
   var TV = '0.160.0', ESM = 'https://esm.sh/three@' + TV, JSD = 'https://cdn.jsdelivr.net/npm/three@' + TV + '/build/three.module.js';
