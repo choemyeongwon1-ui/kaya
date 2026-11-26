@@ -14,7 +14,7 @@ const ORGANS = [
 ];
 const SURE = 0.2;   // 이보다 낮으면 '확실하지 않아요'
 
-document.head.append(h('link', { rel: 'stylesheet', href: new URL('../trees.css?v=9', import.meta.url).href }));
+document.head.append(h('link', { rel: 'stylesheet', href: new URL('../trees.css?v=12', import.meta.url).href }));
 let data = null;
 const ready = fetch(new URL('../data/trees.json', import.meta.url), { cache: 'no-cache' })
   .then(r => (r.ok ? r.json() : null)).then(d => { data = d; return d; }).catch(() => null);
@@ -234,8 +234,11 @@ function showSpot(s) {
 export function mountTreeCam(c) {
   ctx = c;
   if (document.querySelector('.tc-btn')) return;
-  document.body.append(h('button', { type: 'button', class: 'tc-btn', onclick: startScreen, 'aria-label': '이 나무 뭐지? 사진으로 나무 이름 알아보기' },
-    camIcon(), h('span', null, '이 나무 뭐지?')));
+  const btn = h('button', { type: 'button', class: 'tc-btn', onclick: startScreen, 'aria-label': '이 나무 뭐지? 사진으로 나무 이름 알아보기' },
+    camIcon(), h('span', null, '이 나무 뭐지?'));
+  // 위쪽 막대(위성·지도 단추 옆)에 나란히. 막대가 없으면 화면에 떠 있게
+  const top = document.querySelector('.tr-top-r');
+  if (top) { btn.classList.add('top'); top.prepend(btn); } else document.body.append(btn);
 }
 function camIcon() {
   const s = document.createElement('span');

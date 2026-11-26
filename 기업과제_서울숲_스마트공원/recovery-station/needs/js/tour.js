@@ -18,7 +18,7 @@ import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
-import { mountTreeCam, clearTreePins } from './trees.js?v=10';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 import { refreshFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=18';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
 
 const L = window.L;
