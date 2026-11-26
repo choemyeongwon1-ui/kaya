@@ -120,7 +120,7 @@ export function drawFlow(layer, L, center, gates) {
   for (const r of [...(flow.roads ?? [])].sort((a, b) => (order[a.idx] ?? 0) - (order[b.idx] ?? 0))) {
     if (r.path.length < 2) continue;
     const c = ROAD_C[r.idx] ?? '#9aa', jam = r.idx === '정체';
-    L.polyline(r.path, { ...off, color: c, weight: jam ? 2.6 : 1.8, opacity: r.idx === '원활' ? .32 : jam ? .95 : .7, lineCap: 'round', lineJoin: 'round', className: jam ? 'tr-fl-jam' : '' }).addTo(layer);
+    L.polyline(r.path, { ...off, color: c, weight: jam ? 3 : 2.4, opacity: r.idx === '원활' ? .6 : jam ? .95 : .85, lineCap: 'round', lineJoin: 'round', className: jam ? 'tr-fl-jam' : '' }).addTo(layer);
   }
   // 붐빔 단계: 서울숲 + 주변 장소
   const pk = flow.park;

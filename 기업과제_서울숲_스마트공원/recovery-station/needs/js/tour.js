@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=9';
-import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=9';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=10';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
