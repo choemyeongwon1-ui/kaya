@@ -533,7 +533,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   <p class="note rv">기록·번호·제휴 카페·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
 </main>
-<footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드</footer>
+<footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드<br><small style="opacity:.6">셔터 소리: 「Canon T50 shutter noise」 Francois C, CC BY-SA 3.0 (위키미디어 공용, 앞부분만 잘라 씀)</small></footer>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="영수증 크게 보기">
   <button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
@@ -826,36 +826,23 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       src.connect(f); f.connect(gn); gn.connect(actx.destination); src.start();
     } catch (e) { /* 소리 없이 진행 */ }
   }
-  // 사진 찍는 순간 경쾌한 '찰~칵!': 밝게 스치는 '찰~'(높은 쇳소리 + 맑은 울림) → 잠깐 쉬고 → 또렷한 '칵!'(날카로운 딸깍 + 짧은 쿵)
+  // 사진 찍는 순간 '찰칵': 실제 카메라 셔터 녹음(shutter.mp3 — 위키미디어 공용 「Canon T50 shutter noise」 앞부분, Francois C, CC BY-SA 3.0)
+  // 버튼 누를 때 미리 받아 두고(iOS도 소리 나게 Web Audio로 재생), 못 받았으면 <audio>로 재생
+  var shutterBuf = null, shutterLoading = false;
+  function loadShutter() {
+    if (shutterBuf || shutterLoading || !actx) return;
+    shutterLoading = true;
+    fetch('./shutter.mp3').then(function (r) { return r.arrayBuffer(); })
+      .then(function (ab) { return new Promise(function (ok, no) { actx.decodeAudioData(ab, ok, no); }); })
+      .then(function (b) { shutterBuf = b; }).catch(function () { shutterLoading = false; });
+  }
   function shutterSound() {
     if (!soundOn) return;
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if (actx.state === 'suspended' && actx.resume) actx.resume();
-      var T = actx.currentTime + 0.01, out = actx.createGain(); out.gain.value = 0.9; out.connect(actx.destination);
-      // 잡음 한 덩이: 시작 at초, 길이 dur초, 필터(type, freq, Q), 크기 vol, attack초(0이면 바로 최대)
-      var noise = function (at, dur, type, freq, q, vol, attack) {
-        var len = Math.floor(actx.sampleRate * dur), buf = actx.createBuffer(1, len, actx.sampleRate), ch = buf.getChannelData(0), a = Math.floor(actx.sampleRate * (attack || 0));
-        for (var i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (i < a ? i / a : Math.pow(1 - (i - a) / (len - a), 3));
-        var src = actx.createBufferSource(); src.buffer = buf;
-        var f = actx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
-        var g = actx.createGain(); g.gain.value = vol;
-        src.connect(f); f.connect(g); g.connect(out); src.start(T + at);
-      };
-      // 맑은 음 한 번: 주파수 from→to로 미끄러지며 dur초 안에 사라짐
-      var ping = function (at, dur, from, to, vol, wave) {
-        var o = actx.createOscillator(), g = actx.createGain(); o.type = wave || 'sine';
-        o.frequency.setValueAtTime(from, T + at); o.frequency.exponentialRampToValueAtTime(to, T + at + dur);
-        g.gain.setValueAtTime(0.0001, T + at); g.gain.exponentialRampToValueAtTime(vol, T + at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, T + at + dur);
-        o.connect(g); g.connect(out); o.start(T + at); o.stop(T + at + dur + 0.02);
-      };
-      // 찰~ : 살짝 끌리는 밝은 스침
-      noise(0, 0.13, 'highpass', 4500, 0.7, 0.9, 0.02);
-      ping(0, 0.09, 3600, 2900, 0.25);
-      // 칵! : 또렷한 딸깍 + 경쾌한 맑은 울림 + 짧은 쿵
-      noise(0.15, 0.05, 'bandpass', 2600, 2.2, 2.4, 0);
-      ping(0.15, 0.12, 2200, 1500, 0.35, 'triangle');
-      ping(0.15, 0.06, 220, 90, 0.6);
+      if (actx && shutterBuf) {
+        if (actx.state === 'suspended' && actx.resume) actx.resume();
+        var src = actx.createBufferSource(); src.buffer = shutterBuf; src.connect(actx.destination); src.start();
+      } else { var a = new Audio('./shutter.mp3'); a.play().catch(function () {}); }
     } catch (e) { /* 소리 없이 진행 */ }
   }
   $('#bSound').onclick = function () { soundOn = !soundOn; this.setAttribute('aria-pressed', String(soundOn)); this.textContent = soundOn ? '🔊 출력 소리 켜짐' : '🔈 출력 소리 꺼짐'; };
@@ -945,7 +932,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     });
   }
   // 버튼을 누르는 순간 소리 장치를 깨워 둠(3초 뒤 찰칵 소리가 막히지 않게)
-  $('#bShoot').onclick = function () { try { if (soundOn) { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.resume) actx.resume(); } } catch (e) {} shoot(); };
+  $('#bShoot').onclick = function () { try { if (soundOn) { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.resume) actx.resume(); loadShutter(); } } catch (e) {} shoot(); };
   $('#bRetake').onclick = shoot;
   $('#bSkip').onclick = function () { state.photo = null; print(); };
   $('#bUse').onclick = function () { print(); };
