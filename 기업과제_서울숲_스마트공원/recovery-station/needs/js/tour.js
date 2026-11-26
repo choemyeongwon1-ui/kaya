@@ -1133,8 +1133,8 @@ const gardenImg = g => {
   if (k && F?.[k]) return F[k];
   return g.expo && F?.garden ? { ...F.garden, similar: true } : null;
 };
-/** 사진 출처 한 줄. 그 장소 사진이 아니면 '예시 사진'을 앞에 붙임 */
-const creditLine = ph => `<small>${ph.similar ? '예시 사진(이곳 아님) · ' : ''}${esc(ph.credit)} · ${esc(ph.license)}</small>`;
+/** 사진 출처 한 줄(찍은 사람 · 라이선스) */
+const creditLine = ph => `<small>${esc(ph.credit)} · ${esc(ph.license)}</small>`;
 /** 박람회 정원 묶음(한 지점에 여러 개) → 정원 하나하나. 그 밖의 정원은 그대로 */
 function gardenUnits(gs) {
   const out = [];
