@@ -1122,11 +1122,11 @@ function gardensNear(coords, destId) {
   }
   return out;
 }
-// 정원 사진: 정원마다 붙인 사진(photos.json gardens) → 정원 항목의 photo 키 → 박람회 정원은 서울숲 정원 사진을 '예시'로
+// 정원 사진: 정원마다 붙인 사진(photos.json gardens). 여러 정원 묶음은 그중 첫 정원 사진, 그 밖엔 정원 항목의 photo 키
 const gardenImg = g => {
-  const F = app.photos?.files, k = app.photos?.gardens?.[g.id] ?? g.photo;
-  if (k && F?.[k]) return F[k];
-  return g.expo && F?.garden ? { ...F.garden, similar: true } : null;
+  const F = app.photos?.files, G = app.photos?.gardens ?? {};
+  const k = G[g.id] ?? (g.gardens ? g.gardens.map(id => G[id]).find(Boolean) : null) ?? g.photo;
+  return k ? F?.[k] ?? null : null;
 };
 /** 사진 출처 한 줄(찍은 사람 · 라이선스) */
 const creditLine = ph => `<small>${esc(ph.credit)} · ${esc(ph.license)}</small>`;

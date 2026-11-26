@@ -987,3 +987,4 @@ div.tr-status-line{cursor:default}
 .tr-flower.mini .ct{fill:#ffd86b}
 .tr-flower.mini:hover,.tr-flower.mini:focus-visible{transform:scale(1.4) rotate(18deg)}
 .tr-flower.mini:hover .pt{fill:#ff9ec0}
+.tr-gl-img{flex:none;width:52px;height:52px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.05)}
