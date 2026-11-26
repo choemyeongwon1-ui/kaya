@@ -63,6 +63,7 @@
     var parkRings = [];
     if (PARK) PARK.features.forEach(function (f) { var g = f.geometry; (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).forEach(function (pg) { var ring = pg[0].map(function (q) { return [q[1], q[0]]; }); parkRings.push(ring); ring.forEach(function (p) { pts.push(p); }); }); });
     ['성수카페거리', '뚝섬역'].forEach(function (k) { pts.push(NEAR_POS[k]); });
+    stationFlows(d).forEach(function (s) { pts.push([s.lat, s.lon]); });
     if (!pts.length) return '';
     var la0 = Infinity, la1 = -Infinity, lo0 = Infinity, lo1 = -Infinity;
     pts.forEach(function (p) { la0 = Math.min(la0, p[0]); la1 = Math.max(la1, p[0]); lo0 = Math.min(lo0, p[1]); lo1 = Math.max(lo1, p[1]); });
@@ -78,22 +79,23 @@
     pc = n ? [pc[0] / n, pc[1] / n] : [37.5444, 127.0374];
     var C = P(pc), lvl = d.park && d.park.level, lc = LV_C[lvl] || '#6af5b0';
     // 주변 장소 ↔ 서울숲 연결선 (도시 맥락, 흐리게)
-    var near = (d.near || []).map(function (a) { var pos = NEAR_POS[a.name]; return pos ? { a: a, q: clampP(pos), off: !inBox(pos) } : null; }).filter(Boolean);
+    // 역 이름과 같은 장소(뚝섬역)는 역 화살표가 이미 있으니 점을 생략
+    var stNames = stationFlows(d).map(function (s) { return s.name + '역'; });
+    var near = (d.near || []).filter(function (a) { return stNames.indexOf(a.name) < 0; }).map(function (a) { var pos = NEAR_POS[a.name]; return pos ? { a: a, q: clampP(pos), off: !inBox(pos) } : null; }).filter(Boolean);
     function inBox(p) { return p[0] >= la0 && p[0] <= la1 && p[1] >= lo0 && p[1] <= lo1; }
     near.forEach(function (o) { s += '<line x1="' + C[0].toFixed(1) + '" y1="' + C[1].toFixed(1) + '" x2="' + o.q[0].toFixed(1) + '" y2="' + o.q[1].toFixed(1) + '" stroke="rgba(255,255,255,.14)" stroke-dasharray="2 4"/>'; });
     // 도로 (도시는 배경 — 얇게)
     d.roads.forEach(function (r) { s += '<path d="' + path(r.path) + '" fill="none" stroke="' + (RD_C[r.idx] || 'rgba(255,255,255,.3)') + '" stroke-width="' + (r.idx === '정체' ? 2.4 : 1.6) + '" stroke-linecap="round"><title>' + esc(r.name + ' ' + r.from + '→' + r.to + ' · ' + r.idx + ' ' + (r.speed != null ? r.speed + 'km/h' : '')) + '</title></path>'; });
     // 서울숲 (주인공)
     parkRings.forEach(function (r) { s += '<path d="' + path(r) + 'Z" fill="' + lc + '" fill-opacity=".2" stroke="' + lc + '" stroke-width="1.8"/>'; });
-    // 서울숲역 하차 → 공원 화살표 (굵기 = 최근 10분 하차)
-    var off = mid(d.subFlow && d.subFlow.off10);
-    (d.stations || []).forEach(function (st) {
-      if (st.lat == null) return;
-      var a = P([st.lat, st.lon]), dx = C[0] - a[0], dy = C[1] - a[1], L = Math.hypot(dx, dy) || 1, len = Math.min(L * .55, 46);
-      var b = [a[0] + dx / L * len, a[1] + dy / L * len], w = off == null ? 2 : Math.max(2, Math.min(11, off / 30));
-      s += '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" stroke="#6af5b0" stroke-width="' + w.toFixed(1) + '" stroke-linecap="round" marker-end="url(#cfA)" opacity=".9"/>';
+    // 역별 하차 → 서울숲 화살표 (굵기 = 최근 10분 하차)
+    stationFlows(d).forEach(function (st) {
+      var a = P([st.lat, st.lon]), dx = C[0] - a[0], dy = C[1] - a[1], L = Math.hypot(dx, dy) || 1, len = Math.min(L * .5, 40);
+      var b = [a[0] + dx / L * len, a[1] + dy / L * len], w = Math.max(2, Math.min(11, st.off10 / 30));
+      s += '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" stroke="#6af5b0" stroke-width="' + w.toFixed(1) + '" stroke-linecap="round" marker-end="url(#cfA)" opacity="' + (st.est ? .6 : .9) + '"' + (st.est ? ' stroke-dasharray="5 3"' : '') + '/>';
       s += '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="4" fill="#07100c" stroke="#fff" stroke-width="1.5"/>';
-      s += '<text x="' + (a[0] + 7).toFixed(1) + '" y="' + (a[1] + 15).toFixed(1) + '" font-size="10" fill="#f1f7f3">' + esc(st.name) + '역 하차 ' + esc(rng(d.subFlow && d.subFlow.off10)) + '명/10분</text>';
+      var right = a[0] > W - 110;
+      s += '<text x="' + (a[0] + (right ? -7 : 7)).toFixed(1) + '" y="' + (a[1] + 15).toFixed(1) + '" font-size="10" fill="#f1f7f3" text-anchor="' + (right ? 'end' : 'start') + '">' + esc(st.name) + '역(' + esc(st.line) + ') ' + (st.est ? '약 ' : '') + Math.round(st.off10) + '명' + (st.est ? '·추정' : '') + '</text>';
     });
     // 주변 장소 점
     near.forEach(function (o) {
@@ -107,25 +109,45 @@
     return s + '</svg>';
   }
 
-  /* ---------- 곧 붐벼요 ---------- */
-  function surge(sf) {
-    if (!sf || !sf.off10 || !sf.off30) return null;
-    var now = mid(sf.off10), before = (mid(sf.off30) - now) / 2;   // 그 앞 20분의 10분당 평균
-    return { now: now, before: before, hit: now >= SURGE_MIN && before > 0 && now >= before * SURGE_X };
+  /* 역별 하차 인원: 서울시는 장소 단위로 역을 묶어 줌. 역 하나짜리 장소는 그대로 쓰고,
+     여러 역이 묶인 장소(성수카페거리 = 뚝섬+성수)는 이미 아는 역 값을 빼서 나머지 역을 추정(가운데 값 기준). */
+  function stationFlows(d) {
+    var by = {}, subs = d.subways || [];
+    if (!subs.length && d.subFlow && d.stations) subs = [{ area: '서울숲공원', stations: d.stations, off10: d.subFlow.off10, off30: d.subFlow.off30 }];
+    subs.filter(function (a) { return a.stations.length === 1; }).forEach(function (a) { var s = a.stations[0]; by[s.name] = { name: s.name, line: lineNm(s.line), lat: s.lat, lon: s.lon, off10: mid(a.off10), off30: mid(a.off30), est: false }; });
+    subs.filter(function (a) { return a.stations.length > 1; }).forEach(function (a) {
+      var unknown = a.stations.filter(function (s) { return !by[s.name]; });
+      if (unknown.length !== 1) return;
+      var known = a.stations.filter(function (s) { return by[s.name]; }), o10 = mid(a.off10), o30 = mid(a.off30);
+      known.forEach(function (s) { o10 -= by[s.name].off10; o30 -= by[s.name].off30; });
+      var s = unknown[0];
+      if (o10 > 0) by[s.name] = { name: s.name, line: lineNm(s.line), lat: s.lat, lon: s.lon, off10: o10, off30: Math.max(o30, o10), est: true };
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).filter(function (s) { return s.lat != null && s.off10 != null; });
   }
+  function lineNm(l) { return /^\d+$/.test(String(l)) ? l + '호선' : String(l || ''); }
+
+  /* ---------- 곧 붐벼요 ---------- */
+  function surgeOf(st) {
+    var now = st.off10, before = (st.off30 - now) / 2;   // 그 앞 20분의 10분당 평균
+    return { name: st.name, est: st.est, now: now, before: before, hit: now >= SURGE_MIN && before > 0 && now >= before * SURGE_X };
+  }
+  // 서울숲에 붙은 역(서울숲역·뚝섬역)만 경보 대상. 성수역은 흐름 참고용(추정값이라 경보에 안 씀)
+  function surges(d) { return stationFlows(d).filter(function (s) { return !s.est; }).map(surgeOf); }
   function forecast(d) {
     var p = d.park; if (!p) return '';
     var cur = LV.indexOf(p.level), f = (p.forecast || []).slice(0, 6), up = null;
     f.forEach(function (x, i) { if (up == null && LV.indexOf(x.level) > cur) up = { x: x, h: i + 1 }; });
-    var sg = surge(d.subFlow), why = [], head;
+    var sgs = surges(d), hits = sgs.filter(function (g) { return g.hit; }), why = [], head;
     if (up) why.push('서울시 예측: ' + hm(up.x.time) + '쯤 「' + up.x.level + '」로 올라감 (' + rng([up.x.min, up.x.max]) + '명)');
-    if (sg && sg.hit) why.push('서울숲역 하차가 평소보다 많음: 최근 10분 약 ' + Math.round(sg.now) + '명, 그 앞 10분 평균 약 ' + Math.round(sg.before) + '명 → 10~20분 뒤 역 쪽 입구부터 붐빌 수 있음');
-    var hot = up || (sg && sg.hit);
-    if (sg && sg.hit) head = '곧 붐벼요 · 10~20분 뒤 역 쪽 입구';
+    hits.forEach(function (g) { why.push(g.name + '역 하차가 평소보다 많음: 최근 10분 약 ' + Math.round(g.now) + '명, 그 앞 10분 평균 약 ' + Math.round(g.before) + '명 → 10~20분 뒤 ' + g.name + '역 쪽 입구부터 붐빌 수 있음'); });
+    var hot = up || hits.length;
+    if (hits.length) head = '곧 붐벼요 · 10~20분 뒤 ' + hits.map(function (g) { return g.name; }).join('·') + '역 쪽 입구';
     else if (up) head = '곧 붐벼요 · ' + (up.h === 1 ? '1시간 안' : up.h + '시간 뒤') + ' 「' + up.x.level + '」';
     else head = '당분간 지금과 비슷해요 · 「' + p.level + '」 유지 예상';
-    if (!hot) why.push('서울시 6시간 예측에서 지금보다 붐비는 시간이 없음');
-    if (sg && !sg.hit) why.push('서울숲역 하차 최근 10분 약 ' + Math.round(sg.now) + '명 — 급증 아님');
+    if (!up) why.push('서울시 6시간 예측에서 지금보다 붐비는 시간이 없음');
+    var calm = sgs.filter(function (g) { return !g.hit; });
+    if (calm.length) why.push(calm.map(function (g) { return g.name + '역 ' + Math.round(g.now) + '명'; }).join(', ') + ' (최근 10분 하차) — 급증 아님');
     var bars = f.map(function (x) { var i = LV.indexOf(x.level); return '<span style="height:' + (30 + i * 23) + '%;background:' + (LV_C[x.level] || '#555') + '" title="' + esc(hm(x.time) + ' ' + x.level) + '"></span>'; }).join('');
     var xs = f.length ? '<div class="fcx"><span>' + esc(hm(f[0].time)) + '</span><span>' + esc(hm(f[f.length - 1].time)) + '</span></div>' : '';
     return '<div class="fc' + (hot ? ' up' : '') + '"><b>' + esc(head) + '</b><ul>' + why.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' + (bars ? '<div class="fcbar">' + bars + '</div>' + xs : '') + '</div>';
@@ -152,8 +174,10 @@
       var li = LV.indexOf(d.park.level);
       out.push({ key: 'crowd', st: li, cls: li >= 2 ? 'w' : 'ok', t: t, b: '서울숲 「' + d.park.level + '」 ' + rng([d.park.min, d.park.max]) + '명' + (li >= 2 ? ' → 덜 붐비는 구역으로 코스 분산' : ' → 분산 안내 없음'), s: li >= 2 ? '붐비는 거점은 추천 순위 낮춤' : '' });
     }
-    var sg = surge(d.subFlow);
-    if (sg) out.push({ key: 'surge', st: sg.hit ? 1 : 0, cls: sg.hit ? 'w' : 'ok', t: hm(d.fetched ? new Date(d.fetched).toTimeString() : ''), b: sg.hit ? '서울숲역 하차 급증 → 역 쪽 입구 혼잡 경보' : '서울숲역 하차 평소 수준', s: sg.hit ? '다른 입구·덜 붐비는 거점으로 안내' : '최근 10분 약 ' + Math.round(sg.now) + '명' });
+    var ft = hm(d.fetched ? new Date(d.fetched).toTimeString() : '');
+    surges(d).forEach(function (sg) {
+      out.push({ key: 'surge_' + sg.name, st: sg.hit ? 1 : 0, cls: sg.hit ? 'w' : 'ok', t: ft, b: sg.hit ? sg.name + '역 하차 급증 → ' + sg.name + '역 쪽 입구 혼잡 경보' : sg.name + '역 하차 평소 수준', s: sg.hit ? '다른 입구·덜 붐비는 거점으로 안내' : '최근 10분 약 ' + Math.round(sg.now) + '명' });
+    });
     if (d.roads && d.roads.length) {
       var jam = d.roads.filter(function (r) { return r.idx === '정체'; }).length / d.roads.length;
       out.push({ key: 'road', st: jam >= .3 ? 1 : 0, cls: jam >= .3 ? 'w' : 'ok', t: hm(d.roadAvg && d.roadAvg.time), b: '주변 도로 정체 ' + Math.round(jam * 100) + '%' + (jam >= .3 ? ' → 대중교통 이용 안내' : ' → 차량 안내 없음'), s: jam >= .3 ? '주차장 만차 가능성, 서울숲역·뚝섬역 안내' : '' });
@@ -196,10 +220,10 @@
       '<h3>도시 흐름 → 서울숲 <small>' + esc(hm(d.park && d.park.time) || '') + ' 기준 · 5분마다</small></h3>' +
       '<p class="sub">성수 일대에서 서울숲으로 들어오는 사람·차의 흐름</p>' +
       drawMap(d) +
-      '<div class="lg"><span><i style="background:' + RD_C['원활'] + '"></i>원활</span><span><i style="background:' + RD_C['서행'] + '"></i>서행</span><span><i style="background:' + RD_C['정체'] + '"></i>정체</span><span><i style="background:#6af5b0;height:6px"></i>역 하차(굵을수록 많음)</span></div>' +
+      '<div class="lg"><span><i style="background:' + RD_C['원활'] + '"></i>원활</span><span><i style="background:' + RD_C['서행'] + '"></i>서행</span><span><i style="background:' + RD_C['정체'] + '"></i>정체</span><span><i style="background:#6af5b0;height:6px"></i>역 하차 10분(굵을수록 많음 · 점선=추정)</span></div>' +
       '<h3 style="margin-top:14px">곧 붐벼요?</h3>' + forecast(d) +
       '<h3 style="margin-top:14px">자동 판단 기록 <small>오늘 · 바뀔 때만 기록</small></h3>' + logHtml(items) +
-      '<p class="src">자료: 서울시 실시간 도시데이터(서울숲공원 도로 소통·지하철 승하차·인구 혼잡도와 12시간 예측), Open-Meteo 체감온도·초미세먼지. 기준값(체감 31/33℃, 초미세먼지 36/76㎍/㎥, 역 하차 급증 1.5배)은 주제서·잠정 규칙이며 확정 전 (검증 필요). 기록은 이 브라우저에만 저장.</p>';
+      '<p class="src">자료: 서울시 실시간 도시데이터(서울숲공원 도로 소통·지하철 하차: 서울숲역·뚝섬역 실측, 성수역은 성수카페거리 묶음에서 뚝섬역을 뺀 추정 · 인구 혼잡도와 12시간 예측), Open-Meteo 체감온도·초미세먼지. 기준값(체감 31/33℃, 초미세먼지 36/76㎍/㎥, 역 하차 급증 1.5배)은 주제서·잠정 규칙이며 확정 전 (검증 필요). 기록은 이 브라우저에만 저장.</p>';
   }
   function tick() {
     Promise.allSettled([J(FLOW_URL), J(WX_URL), J(AQ_URL)]).then(function (r) {

@@ -7,6 +7,7 @@
 // 배포: supabase functions deploy seoul-flow --no-verify-jwt
 const PARK = '서울숲공원';
 const NEAR = ['성수카페거리', '뚝섬한강공원', '뚝섬역'];   // 서울시 장소 목록에 없으면 조용히 빠짐
+const SUB_AREAS = ['뚝섬역', '성수카페거리'];          // 지하철 승하차를 더 받아 올 주변 장소
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS' };
 const TTL = 5 * 60 * 1000;
 let cache: { at: number; body: string } | null = null;
@@ -27,16 +28,27 @@ Deno.serve(async req => {
     const key = await apiKey();
     if (!key) return json(JSON.stringify({ error: 'SEOUL_API_KEY not set' }), 500);
     const seoul = (path: string) => fetch(`http://openapi.seoul.go.kr:8088/${key}/json/${path}`).then(r => r.json());
-    const [cityRes, ...pp] = await Promise.allSettled([
+    const [cityRes, ...rest] = await Promise.allSettled([
       seoul(`citydata/1/5/${encodeURIComponent(PARK)}`),
+      ...SUB_AREAS.map(a => seoul(`citydata/1/5/${encodeURIComponent(a)}`)),
       ...[PARK, ...NEAR].map(a => seoul(`citydata_ppltn/1/5/${encodeURIComponent(a)}`)),
     ]);
+    const subRes = rest.slice(0, SUB_AREAS.length), pp = rest.slice(SUB_AREAS.length);
     const c = cityRes.status === 'fulfilled' ? cityRes.value?.CITYDATA : null;
     if (!c) return json(JSON.stringify({ error: 'no data' }), 502);
+    // 장소별 지하철: 서울시는 장소마다 그 장소의 역들을 묶어 승하차를 냄 (서울숲공원=서울숲역, 뚝섬역=뚝섬역, 성수카페거리=성수역 등)
+    const subOf = (cd: Record<string, any> | null, area: string) => {
+      if (!cd) return null;
+      const sp = cd.LIVE_SUB_PPLTN, r = (a: string, b: string) => sp && sp[a] != null ? [num(sp[a]), num(sp[b])] : null;
+      const st = (cd.SUB_STTS ?? []).map((s: Record<string, string>) => ({ name: s.SUB_STN_NM, line: s.SUB_STN_LINE, lat: num(s.SUB_STN_Y), lon: num(s.SUB_STN_X) }));
+      if (!sp || !st.length) return null;
+      return { area, stations: st, off10: r('SUB_10WTHN_GTOFF_PPLTN_MIN', 'SUB_10WTHN_GTOFF_PPLTN_MAX'), off30: r('SUB_30WTHN_GTOFF_PPLTN_MIN', 'SUB_30WTHN_GTOFF_PPLTN_MAX'), on10: r('SUB_10WTHN_GTON_PPLTN_MIN', 'SUB_10WTHN_GTON_PPLTN_MAX'), time: sp.SUB_STN_TIME ?? null };
+    };
+    const subways = [subOf(c, PARK), ...subRes.map((r, i) => subOf(r.status === 'fulfilled' ? r.value?.CITYDATA : null, SUB_AREAS[i]))].filter(Boolean);
 
     const rt = c.ROAD_TRAFFIC_STTS ?? {};
     const links = (rt.ROAD_TRAFFIC_STTS ?? []) as Record<string, string>[];
-    if (debug) return json(JSON.stringify({ roadKeys: Object.keys(rt), linkSample: links.slice(0, 2), subKeys: Object.keys(c.LIVE_SUB_PPLTN ?? {}) }));
+    if (debug) return json(JSON.stringify({ roadKeys: Object.keys(rt), linkSample: links.slice(0, 1), subways }));
     const roads = links.map(l => {
       let path = String(l.XYLIST ?? '').split('|').map(xy).filter(Boolean) as [number, number][];
       if (path.length < 2) path = [xy(l.START_ND_XY), xy(l.END_ND_XY)].filter(Boolean) as [number, number][];
@@ -65,7 +77,7 @@ Deno.serve(async req => {
       park: areas.find(a => a!.name === PARK) ?? null,
       near: areas.filter(a => a!.name !== PARK),
       roads, roadAvg: avg ? { idx: avg.ROAD_TRAFFIC_IDX, speed: num(avg.ROAD_TRAFFIC_SPD), time: avg.ROAD_TRAFFIC_TIME } : null,
-      subFlow, stations,
+      subFlow, stations, subways,
       source: '서울시 실시간 도시데이터(citydata · citydata_ppltn)',
     });
     cache = { at: Date.now(), body };
