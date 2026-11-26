@@ -1152,8 +1152,7 @@ function gardenStrip(s) {
       h('small', null, [u.dest ? '도착하는 곳' : u.spot ? `${u.spot} 근처` : '가는 길', u.expo ? `정원박람회 ${u.kind}` : null].filter(Boolean).join(' · ')),
       h('b', null, u.name),
       u.text ? h('p', null, u.text) : null,
-      (u.maker || u.plants?.length) ? h('p', { class: 'tr-gl-sub' }, [u.maker ? `만든 이 ${u.maker}` : null, u.plants?.length ? `식물 ${u.plants.slice(0, 3).join(', ')}` : null].filter(Boolean).join(' · ')) : null,
-      u.expo && u.remains_sure && REMAIN[u.remains] ? h('em', { class: 'ok' }, REMAIN[u.remains]) : null)));
+      (u.maker || u.plants?.length) ? h('p', { class: 'tr-gl-sub' }, [u.maker ? `만든 이 ${u.maker}` : null, u.plants?.length ? `식물 ${u.plants.slice(0, 3).join(', ')}` : null].filter(Boolean).join(' · ')) : null)));
   const hidden = [];
   for (const u of units) {
     const k = u.hub?.id ?? u.id; perSpot[k] = (perSpot[k] ?? 0) + 1;
