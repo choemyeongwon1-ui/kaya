@@ -2,7 +2,7 @@
  * 표지 도시 소리 (Web Audio로 그 자리에서 만듦 — 음원 파일·저작권 없음)
  *  - 낮게 깔리는 도시 웅웅거림(먼 차 소리)
  *  - 가끔 좌우로 지나가는 차
- *  - 은은한 신스 화음(스마트시티 분위기) + 이따금 반짝이는 신호음
+ *  - 서울숲 나뭇잎을 스치는 바람
  *  - 아주 가끔 먼 지하철 소리
  * window.SF_SOUND = { start(), stop(ms), toggle(), dive(), on }
  * 브라우저는 사용자가 한 번 누르기 전에는 소리를 막으므로, 표지에서 첫 클릭·터치·키 입력 때 켜짐.
@@ -59,44 +59,32 @@
     pf.type = 'bandpass'; pf.Q.value = 0.7; lfo(pf.frequency, 0.03, 120, 420);
     pg.gain.value = 0.05; p.connect(pf); pf.connect(pg); pg.connect(master); p.start();
 
-    // 3) 신스 화음: Am9 (A2 E3 G3 B3 C4) — 필터가 천천히 열렸다 닫힘
-    var padF = ctx.createBiquadFilter(), padG = ctx.createGain();
-    padF.type = 'lowpass'; padF.Q.value = 2; lfo(padF.frequency, 0.025, 450, 950);
-    padG.gain.value = 0.05; padF.connect(padG); padG.connect(master); padG.connect(verb);
-    [110, 164.81, 196, 246.94, 261.63].forEach(function (f, i) {
-      [-6, 6].forEach(function (cents) {
-        var o = ctx.createOscillator(); o.type = i === 0 ? 'triangle' : 'sawtooth';
-        o.frequency.value = f; o.detune.value = cents + (Math.random() * 4 - 2);
-        var g = ctx.createGain(); g.gain.value = i === 0 ? 0.5 : 0.16;
-        lfo(g.gain, 0.04 + Math.random() * 0.05, g.gain.value * 0.5, g.gain.value);
-        o.connect(g); g.connect(padF); o.start();
-      });
+    // 3) 숲 바람: 나뭇잎이 스치는 소리, 천천히 불었다 잦아듦(좌우 따로)
+    [-0.6, 0.6].forEach(function (pn, i) {
+      var w = loop(pink), hp = ctx.createBiquadFilter(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 700; lp.type = 'lowpass'; lfo(lp.frequency, 0.05 + i * 0.02, 1200, 2600);
+      lfo(g.gain, 0.06 + i * 0.025, 0.035, 0.045);
+      w.connect(hp); hp.connect(lp); lp.connect(g);
+      if (ctx.createStereoPanner) { var pp = ctx.createStereoPanner(); pp.pan.value = pn; g.connect(pp); pp.connect(master); } else g.connect(master);
+      w.start();
     });
 
-    // 4) 지나가는 차: 잡음이 높아졌다 낮아지며 좌→우(또는 우→좌)
-    every(2.2, 6.5, function () {
-      var t = ctx.currentTime, dur = 2.6 + Math.random() * 2.4, s = ctx.createBufferSource();
-      s.buffer = white; s.loop = true;
-      var f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
-      var g = ctx.createGain(), pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null, dir = Math.random() < 0.5 ? -1 : 1;
-      var lo = 220 + Math.random() * 180, hi = lo * (2 + Math.random());
-      f.frequency.setValueAtTime(lo, t); f.frequency.linearRampToValueAtTime(hi, t + dur * 0.5); f.frequency.linearRampToValueAtTime(lo * 0.8, t + dur);
-      var peak = 0.05 + Math.random() * 0.09;
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + dur * 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      s.connect(f); f.connect(g);
-      if (pan) { pan.pan.setValueAtTime(-0.9 * dir, t); pan.pan.linearRampToValueAtTime(0.9 * dir, t + dur); g.connect(pan); pan.connect(master); } else g.connect(master);
-      s.start(t); s.stop(t + dur + 0.1);
-    });
-
-    // 5) 반짝이는 신호음: 5음계 높은 음 하나, 길게 울림
-    var NOTES = [659.25, 783.99, 880, 987.77, 1174.66, 1318.51];
-    every(2.8, 7, function () {
-      var t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine'; o.frequency.value = NOTES[Math.floor(Math.random() * NOTES.length)];
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.035, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
-      var pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-      o.connect(g); if (pan) { pan.pan.value = Math.random() * 1.4 - 0.7; g.connect(pan); pan.connect(verb); pan.connect(master); } else { g.connect(verb); g.connect(master); }
-      o.start(t); o.stop(t + 2.4);
+    // 4) 지나가는 차: 낮은 엔진음 + 타이어 쉭 소리가 다가왔다 멀어지며 좌→우(또는 우→좌)
+    every(3, 8, function () {
+      var t = ctx.currentTime, dur = 3.5 + Math.random() * 3, dir = Math.random() < 0.5 ? -1 : 1, peak = 0.06 + Math.random() * 0.08;
+      var out = ctx.createGain(), pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(peak, t + dur * 0.5); out.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      if (pan) { pan.pan.setValueAtTime(-0.85 * dir, t); pan.pan.linearRampToValueAtTime(0.85 * dir, t + dur); out.connect(pan); pan.connect(master); } else out.connect(master);
+      // 엔진(낮은 웅)
+      var e = loop(brown), ef = ctx.createBiquadFilter(), eg = ctx.createGain();
+      ef.type = 'lowpass'; ef.frequency.setValueAtTime(140, t); ef.frequency.linearRampToValueAtTime(260, t + dur * 0.5); ef.frequency.linearRampToValueAtTime(110, t + dur);
+      eg.gain.value = 1.1; e.connect(ef); ef.connect(eg); eg.connect(out);
+      // 타이어(쉭) — 가까워질수록 밝게, 멀어지면 낮게(도플러 느낌)
+      var r = ctx.createBufferSource(), rf = ctx.createBiquadFilter(), rg = ctx.createGain();
+      r.buffer = white; r.loop = true; rf.type = 'bandpass'; rf.Q.value = 0.6;
+      rf.frequency.setValueAtTime(700, t); rf.frequency.linearRampToValueAtTime(1500, t + dur * 0.48); rf.frequency.linearRampToValueAtTime(550, t + dur);
+      rg.gain.value = 0.35; r.connect(rf); rf.connect(rg); rg.connect(out);
+      e.start(t); e.stop(t + dur + 0.1); r.start(t); r.stop(t + dur + 0.1);
     });
 
     // 6) 먼 지하철: 낮은 굉음 + 철컥철컥(바퀴 이음매)

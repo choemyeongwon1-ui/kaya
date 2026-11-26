@@ -246,7 +246,7 @@
     });
   });
   (function () {
-    var s = document.createElement('script'); s.src = BASE + 'sound.js?v=20261126';
+    var s = document.createElement('script'); s.src = BASE + 'sound.js?v=20261126b';
     s.onload = function () { if (sndPref()) wake(); };
     (document.head || document.documentElement).appendChild(s);
     WAKE.forEach(function (t) { document.addEventListener(t, wake, true); });
