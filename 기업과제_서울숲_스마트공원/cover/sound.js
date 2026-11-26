@@ -3,7 +3,7 @@
  *  - 로즈 피아노(FM 합성, 좌우 코러스, 느린 테이프 흔들림) 화음:
  *    Fmaj7(#11) → Em11 → Ebmaj7(#11) → Dm11 — 반음씩 미끄러져 내려가는 꿈같은 진행
  *  - 비브라폰 멜로디(드문드문), 넓게 부풀었다 사라지는 패드
- *  - 콘트라베이스 퉁김, 브러시 스네어, 라이드 심벌(재즈 스윙), 아주 여린 킥 (74 BPM)
+ *  - 콘트라베이스 퉁김, 브러시 스네어, 라이드 심벌(재즈 스윙), 아주 여린 킥 (100 BPM, 표지는 몇 초만 보이므로 처음부터 바로 전부 연주)
  *  - 메아리 없이 적당한 잔향, 밝은 음색(덜 어둡게)
  * window.SF_SOUND = { start(), stop(ms), toggle(), dive(), dispose(), on }
  * 브라우저는 사용자가 한 번 누르기 전에는 소리를 막으므로, 표지에서 첫 클릭·터치·키 입력 때 켜짐.
@@ -15,7 +15,7 @@
   var ctx = null, master = null, verb = null, echo = null, buses = null, wob = null, on = false, built = false;
   var timer = null, nextStep = 0, nextTime = 0, white = null;
 
-  var BPM = 74, BEAT = 60 / BPM, STEP = BEAT / 3;   // 셋잇단(스윙) 한 칸 = 1/3박, 한 마디 12칸
+  var BPM = 100, BEAT = 60 / BPM, STEP = BEAT / 3;   // 셋잇단(스윙) 한 칸 = 1/3박, 한 마디 12칸
   var mf = function (m) { return 440 * Math.pow(2, (m - 69) / 12); };
   var CHORDS = [
     { n: [57, 60, 64, 71], b: 41, sc: [69, 71, 72, 76, 79, 81] },   // Fmaj7(#11)
@@ -119,20 +119,20 @@
   var melodyBar = -1, phrase = [];
   function play(step, t) {
     var bar = Math.floor(step / 12), s = step % 12, beat = Math.floor(s / 3), sub = s % 3, ch = CHORDS[bar % 4], nx = CHORDS[(bar + 1) % 4];
-    var drums = bar >= 2, hum = (Math.random() - 0.5) * 0.012;   // 사람처럼 살짝 어긋나게
+    var drums = true, hum = (Math.random() - 0.5) * 0.012;   // 사람처럼 살짝 어긋나게
     if (s === 0) {
       padChord(ch.n, t, BEAT * 4);
       ch.n.forEach(function (m, i) { rhodes(m, t + i * 0.028, 0.15 - i * 0.012, BEAT * 2.4, i % 2 ? 0.45 : -0.45); });
     }
     if (beat === 2 && sub === 2) ch.n.slice(1).forEach(function (m, i) { rhodes(m, t + hum + i * 0.02, 0.07, BEAT * 1.2, i % 2 ? -0.4 : 0.4); });   // 셋째 박 뒤 살짝 밀어 치기
     // 비브라폰: 홀수 마디마다 그 화음 음계에서 2~4음을 드문드문
-    if (bar >= 1 && s === 0 && bar !== melodyBar) {
+    if (s === 0 && bar !== melodyBar) {
       melodyBar = bar; phrase = [];
-      if (bar % 2 === 1) { var k = 2 + Math.floor(Math.random() * 3), at = [2, 5, 6, 8, 9, 11]; for (var i = 0; i < k; i++) phrase.push([at[Math.floor(Math.random() * at.length)], ch.sc[Math.floor(Math.random() * ch.sc.length)]]); }
+      if (true) { var k = 2 + Math.floor(Math.random() * 3), at = [2, 5, 6, 8, 9, 11]; for (var i = 0; i < k; i++) phrase.push([at[Math.floor(Math.random() * at.length)], ch.sc[Math.floor(Math.random() * ch.sc.length)]]); }
     }
     phrase.forEach(function (p) { if (p[0] === s) vibes(p[1], t + hum, 0.09); });
     // 베이스: 1박 근음, 3박 5도, 4박 끝에 다음 화음으로 반음 접근
-    if (bar >= 1) {
+    {
       if (s === 0) bassNote(ch.b, t, BEAT * 1.6, 0.9);
       if (s === 6) bassNote(ch.b + 7, t + hum, BEAT * 1.2, 0.7);
       if (s === 11) bassNote(nx.b + 1, t + hum, BEAT * 0.3, 0.55);
@@ -156,7 +156,7 @@
       if (ctx.state !== 'running' || on) return on;
       if (!built) build();
       on = true;
-      var t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0.8, t + 3);
+      var t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0.8, t + 0.6);
       if (nextTime < t) { nextStep = 0; nextTime = t + 0.1; melodyBar = -1; }
       clearInterval(timer); timer = setInterval(function () { schedule(ctx.currentTime + 0.2); }, 40);
       schedule(t + 0.2);
