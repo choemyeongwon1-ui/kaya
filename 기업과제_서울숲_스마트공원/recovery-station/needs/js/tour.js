@@ -1126,7 +1126,14 @@ function gardensNear(coords, destId) {
   }
   return out;
 }
-const gardenImg = g => (g.photo ? app.photos?.files?.[g.photo] : null);
+// 정원 사진: 정원마다 붙인 사진(photos.json gardens) → 정원 항목의 photo 키 → 박람회 정원은 서울숲 정원 사진을 '예시'로
+const gardenImg = g => {
+  const F = app.photos?.files, k = app.photos?.gardens?.[g.id] ?? g.photo;
+  if (k && F?.[k]) return F[k];
+  return g.expo && F?.garden ? { ...F.garden, similar: true } : null;
+};
+/** 사진 출처 한 줄. 그 장소 사진이 아니면 '예시 사진'을 앞에 붙임 */
+const creditLine = ph => `<small>${ph.similar ? '예시 사진(이곳 아님) · ' : ''}${esc(ph.credit)} · ${esc(ph.license)}</small>`;
 /** 박람회 정원 묶음(한 지점에 여러 개) → 정원 하나하나. 그 밖의 정원은 그대로 */
 function gardenUnits(gs) {
   const out = [];
@@ -1144,7 +1151,7 @@ function gardenStrip(s) {
   if (!units.length) return null;
   const list = h('ol', { class: 'tr-gl' }), perSpot = {};
   const card = u => h('li', null, h('button', { type: 'button', class: 'tr-gl-card', onclick: () => gardenShot(u) },
-    h('span', { class: 'tr-gl-ico' }, icon('leaf', 14)),
+    (ph => ph ? h('img', { class: 'tr-gl-img', src: ph.src, alt: '', loading: 'lazy' }) : h('span', { class: 'tr-gl-ico' }, icon('leaf', 14)))(app.photos?.gardens?.[u.id] ? gardenImg(u) : null),
     h('div', null,
       h('small', null, [u.dest ? '도착하는 곳' : u.spot ? `${u.spot} 근처` : '가는 길', u.expo ? `정원박람회 ${u.kind}` : null].filter(Boolean).join(' · ')),
       h('b', null, u.name),
@@ -1523,7 +1530,7 @@ function gardenShot(g, auto = false) {
   const ph = gardenImg(g);
   const img = ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.caption ?? g.name)}">` : `<div class="tr-gshot-none">${icon('leaf', 30).outerHTML}<span>${esc(g.name)}</span></div>`;
   const tag = g.pos ? `정원박람회 ${g.kind ?? ''} · 자리는 배치도로 어림` : g.season ? (g.fresh ? '새 소식' : '지금 볼 수 있어요') : `${g.next}월에 피어요`;
-  const credit = ph ? `<small>${esc(ph.credit)} · ${esc(ph.license)}</small>` : '';
+  const credit = ph ? creditLine(ph) : '';
   const m = L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-gshot${g.season ? '' : ' off'}">${img}<div class="tr-gshot-cap"><em>${esc(tag)}</em><b>${esc(g.name)}</b><p>${esc(g.text?.length > 60 ? `${g.text.slice(0, 60)}…` : g.text ?? '')}</p></div>${credit}</div>`, iconSize: [230, 0], iconAnchor: [115, 26] }), interactive: false, zIndexOffset: 1100 }).addTo(layers.gshot);
   if (!auto) flyToVisible([g.hub.lat, g.hub.lon], 17.3, .8, desk() ? 120 : 130);
   setTimeout(() => { const n = m.getElement()?.firstChild; if (n) { n.classList.add('bye'); setTimeout(() => layers.gshot.removeLayer(m), 500); } }, auto ? 4200 : 7000);
@@ -1535,7 +1542,7 @@ async function showShot(s, i) {
   layers.shot.clearLayers();
   await flyToVisible([p.lat, p.lon], 17.8, .75, desk() ? 110 : 120);
   const img = ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.caption)}">` : `<div class="tr-shot-none">${icon(p.type === 'indoor' ? 'home' : 'tree', 28).outerHTML}</div>`;
-  const credit = ph ? `<small>${esc(ph.credit)} · ${esc(ph.license)}</small>` : '';
+  const credit = ph ? creditLine(ph) : '';
   L.marker([p.lat, p.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-shot">${img}<div class="tr-shot-cap"><span>${i + 1}</span><b>${esc(p.name)}</b></div>${credit}</div>`, iconSize: [240, 0], iconAnchor: [120, 30] }), interactive: false, zIndexOffset: 1000 }).addTo(layers.shot);
   await sleep(T(300));
 }

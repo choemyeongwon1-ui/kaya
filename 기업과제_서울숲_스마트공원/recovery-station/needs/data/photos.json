@@ -91,6 +91,134 @@
    "credit": "travel oriented",
    "license": "CC BY-SA 2.0",
    "page": "https://www.flickr.com/photos/99958070@N02/13510950523"
+  },
+  "family-lawn": {
+   "src": "img/family-lawn.jpg",
+   "caption": "예시: 여의도공원 잔디마당(서울숲 아님)",
+   "credit": "Wpcpey",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Yeouido_Park_Lawn_201604.jpg",
+   "similar": true
+  },
+  "stage": {
+   "src": "img/stage.jpg",
+   "caption": "예시: 안산 장미공원 야외공연장(서울숲 아님)",
+   "credit": "Aspere",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:231226_%EC%9E%A5%EB%AF%B8%EA%B3%B5%EC%9B%90_%EA%B3%B5%EC%97%B0%EC%9E%A5.jpg",
+   "similar": true
+  },
+  "courts": {
+   "src": "img/courts.jpg",
+   "caption": "예시: 안양 평촌중앙공원 배드민턴장(서울숲 아님)",
+   "credit": "Vipdus123",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Pyeongchon_Central_Park(X-game,_badminton_court).jpg",
+   "similar": true
+  },
+  "visitor": {
+   "src": "img/visitor.jpg",
+   "caption": "예시: 영국 리즈 미들턴공원 방문자센터(서울숲 아님)",
+   "credit": "Mary and Angus Hogg",
+   "license": "CC BY-SA 2.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Middleton_Park_Visitor_Centre_-_geograph.org.uk_-_5960305.jpg",
+   "similar": true
+  },
+  "forest-play": {
+   "src": "img/forest-play.jpg",
+   "caption": "예시: 독일 베를린 숲속 놀이터(서울숲 아님)",
+   "credit": "SupapleX",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Waldspielplatz_Pl%C3%A4nterwald_05.jpg",
+   "similar": true
+  },
+  "culture-ctr": {
+   "src": "img/culture-ctr.jpg",
+   "caption": "예시: 미국 에저턴공원 레크리에이션센터 건물(서울숲 아님)",
+   "credit": "EdgertonPark",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Edgerton_R_Center.jpg",
+   "similar": true
+  },
+  "ginkgo-forest": {
+   "src": "img/ginkgo-forest.jpg",
+   "caption": "예시: 일본 요코테시 은행나무길(서울숲 아님)",
+   "credit": "Rarisan",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:Yokote_City_Kurokawa_Ginkgo_Tree_Line_2024-A.jpg",
+   "similar": true
+  },
+  "wind-hill": {
+   "src": "img/wind-hill.jpg",
+   "caption": "예시: 서울 하늘공원 억새 언덕(서울숲 아님)",
+   "credit": "Ji-soo Seo",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Silver_grass_in_the_Sky_Park.jpg",
+   "similar": true
+  },
+  "gallery-garden": {
+   "src": "img/gallery-garden.jpg",
+   "caption": "예시: 선유도공원 정원(서울숲 아님)",
+   "credit": "Republic of Korea from Seoul, Republic of Korea",
+   "license": "CC BY-SA 2.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Korea_Seonyudo_Summer_20140805_13_(14839916134).jpg",
+   "similar": true
+  },
+  "skate-park": {
+   "src": "img/skate-park.jpg",
+   "caption": "예시: 영국 크랩트리공원 스케이트파크(서울숲 아님)",
+   "credit": "Mertbiol",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:Skatepark,_Crabtree_Park,_Camberley,_Surrey.jpg",
+   "similar": true
+  },
+  "barrier-free-play": {
+   "src": "img/barrier-free-play.jpg",
+   "caption": "예시: 휠체어 그네가 있는 무장애 놀이터(서울숲 아님)",
+   "credit": "Albarubescens",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Wheelchair_accessible_swing.jpg",
+   "similar": true
+  },
+  "sand-play": {
+   "src": "img/sand-play.jpg",
+   "caption": "예시: 일본 다카사고시 공원 모래놀이터(서울숲 아님)",
+   "credit": "Harimawood",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:%E9%AB%98%E7%A0%82%E5%B8%82%E5%B8%82%E3%83%8E%E6%B1%A0%E5%85%AC%E5%9C%92_%E7%A0%82%E5%A0%B4.jpg",
+   "similar": true
+  },
+  "kids-cafe": {
+   "src": "img/kids-cafe.jpg",
+   "caption": "예시: 홍콩 실내 어린이 놀이터(서울숲 아님)",
+   "credit": "Wpcpey",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Tung_Tao_Court_Indoor_playground_201407.jpg",
+   "similar": true
+  },
+  "bird-hide": {
+   "src": "img/bird-hide.jpg",
+   "caption": "예시: 대만 냐오쑹 습지공원 조류관찰대(서울숲 아님)",
+   "credit": "Heidi Meudt",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Bird_hide_Niaosong_Wetland_Park_May_2026.jpg",
+   "similar": true
+  },
+  "kids-forest": {
+   "src": "img/kids-forest.jpg",
+   "caption": "예시: 헝가리 숲 놀이터의 통나무 놀이시설(서울숲 아님)",
+   "credit": "Globetrotter19",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Pieces_of_wood_in_Szalajka_Valley_forest_playground,_Szilv%C3%A1sv%C3%A1rad,_2016_Hungary.jpg",
+   "similar": true
+  },
+  "hangang-observatory": {
+   "src": "img/hangang-observatory.jpg",
+   "caption": "예시: 한강 둔치에서 본 성수대교(서울숲 아님)",
+   "credit": "Chelsea Hicks from Seoul, South Korea, United States",
+   "license": "Public domain",
+   "page": "https://commons.wikimedia.org/wiki/File:Along_the_Han_River,_Seongsu_Bridge.jpg",
+   "similar": true
   }
  },
  "places": {
@@ -102,6 +230,22 @@
   "horse-plaza": "horse-plaza",
   "water-museum": "water-museum",
   "mirror-pond": "mirror-pond",
-  "cherry-tree-path": "cherry-tree-path"
+  "cherry-tree-path": "cherry-tree-path",
+  "family-lawn": "family-lawn",
+  "stage": "stage",
+  "courts": "courts",
+  "visitor": "visitor",
+  "forest-play": "forest-play",
+  "culture-ctr": "culture-ctr",
+  "ginkgo-forest": "ginkgo-forest",
+  "wind-hill": "wind-hill",
+  "gallery-garden": "gallery-garden",
+  "skate-park": "skate-park",
+  "barrier-free-play": "barrier-free-play",
+  "sand-play": "sand-play",
+  "kids-cafe": "kids-cafe",
+  "bird-hide": "bird-hide",
+  "kids-forest": "kids-forest",
+  "hangang-observatory": "hangang-observatory"
  }
 }
