@@ -71,28 +71,62 @@ export function soonBusy(live) {
   return { hot: false, head: `30분 뒤에도 「${live.level}」일 거예요`, text: sg.length ? '역에서 내리는 사람이 평소 수준이에요' : '서울시 예측에서도 더 붐비지 않아요', src: `${subTxt ? `${subTxt} · ` : ''}서울시 실시간 도시데이터` };
 }
 
-/* ---------- ① 성수 → 서울숲 흐름: 지도 왼쪽 위 상자 하나 ----------
- * 지도 위엔 아무것도 그리지 않고(2026-11-26 사용자 요청), 숫자만 상자로.
- * 역에서 내린 사람(최근 10분) + 주변 도로 상태 비율(서울시 도로 소통 구간 수 기준) */
+/* ---------- ① 성수 → 서울숲 흐름 ----------
+ * 지도: 주변 도로 소통(가는 선, 막힌 곳만 은은히 빛남) + 역 → 가까운 공원 입구로 휘어 들어가는 흐름선
+ *       (굵기 = 최근 10분 내린 사람, 안쪽에 빛이 천천히 흐름, 끝에 얇은 화살촉)
+ * 왼쪽 위 상자: 범례 + 역별 숫자 + 막힘 비율 */
+const M_LAT = 110900, M_LON = 88200;
+const distM = (a, b) => Math.hypot((a[0] - b[0]) * M_LAT, (a[1] - b[1]) * M_LON);
+function nearGate(p, gates, center) {
+  const gs = (gates ?? []).filter(g => g.lat != null).map(g => [g.lat, g.lon]);
+  return gs.length ? gs.reduce((a, g) => (distM(p, g) < distM(p, a) ? g : a)) : center;
+}
+/** 역 → 입구 부드러운 곡선(2차 베지어) */
+function curve(a, b, bend = .22) {
+  const dx = (b[1] - a[1]) * M_LON, dy = (b[0] - a[0]) * M_LAT;
+  const c = [(a[0] + b[0]) / 2 + dx * bend / M_LAT, (a[1] + b[1]) / 2 - dy * bend / M_LON];
+  return Array.from({ length: 33 }, (_, i) => { const t = i / 32, u = 1 - t; return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]]; });
+}
+
 let box = null;
 function showBox(map, on) {
   if (!map) return;
   if (!box) { box = document.createElement('div'); box.className = 'tr-flow-card'; map.getContainer().appendChild(box); }
   box.hidden = !on;
   if (!on) return;
-  const sf = stationFlows().sort((a, b) => b.off10 - a.off10);
-  const hit = Object.fromEntries(surges().filter(g => g.hit).map(g => [g.name, g.off10 / Math.max(g.before, 1)]));
-  const roads = flow?.roads ?? [], n = roads.length;
-  const pct = k => (n ? Math.round(100 * roads.filter(r => r.idx === k).length / n) : 0);
-  const t = String(flow?.roadAvg?.time ?? flow?.park?.time ?? '').slice(11, 16);
+  const sf = stationFlows(), jam = roadJam(), t = String(flow?.roadAvg?.time ?? flow?.park?.time ?? '').slice(11, 16);
   box.innerHTML = `<b>성수 → 서울숲 흐름</b><small>지하철·도로로 서울숲에 들어오는 흐름${t ? ` · ${t} 기준` : ''}</small>`
-    + (sf.length ? `<div class="h"><i class="arr"></i>역에서 내린 사람 (최근 10분)</div>`
-      + `<div class="n">${sf.map(s => `${s.name}역 <b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>${hit[s.name] ? `<em class="up"> ↑평소의 ${hit[s.name].toFixed(1)}배</em>` : ''}`).join(' · ')}명</div>`
-      + (sf.some(s => s.est) ? '<div class="n dim">(성수역은 추정)</div>' : '') : '')
-    + (n ? `<div class="h">주변 도로</div><div class="k"><span><i style="background:${ROAD_C['원활']}"></i>잘 뚫림 ${pct('원활')}%</span><span><i style="background:${ROAD_C['서행']}"></i>느림 ${pct('서행')}%</span><span><i style="background:${ROAD_C['정체']}"></i>막힘 ${pct('정체')}%</span></div>` : '');
+    + `<div class="k"><span><i style="background:${ROAD_C['원활']}"></i>잘 뚫림</span><span><i style="background:${ROAD_C['서행']}"></i>느림</span><span><i style="background:${ROAD_C['정체']}"></i>막힘</span></div>`
+    + `<div class="k"><span><i class="arr"></i>역에서 내린 사람(10분) · 굵을수록 많음</span></div>`
+    + (sf.length ? `<div class="n">${sf.map(s => `${s.name}역 <b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>`).join(' · ')}명${sf.some(s => s.est) ? '<em>(성수역은 추정)</em>' : ''}</div>` : '')
+    + (jam != null ? `<div class="n">주변 도로 ${Math.round(jam * 100)}% 막힘</div>` : '');
 }
 export function clearFlow(layer) { layer.clearLayers(); showBox(layer._map, false); }
-export function drawFlow(layer) { layer.clearLayers(); showBox(layer._map, !!flow); }
+export function drawFlow(layer, L, center, gates) {
+  layer.clearLayers();
+  showBox(layer._map, !!flow);
+  if (!flow) return;
+  const off = { interactive: false };
+  // 도로: 가늘게. 잘 뚫린 길은 옅게 깔고, 느림·막힘만 또렷하게(막힘은 은은한 빛)
+  const order = { '원활': 0, '서행': 1, '정체': 2 };
+  for (const r of [...(flow.roads ?? [])].sort((a, b) => (order[a.idx] ?? 0) - (order[b.idx] ?? 0))) {
+    if (r.path.length < 2) continue;
+    const c = ROAD_C[r.idx] ?? '#9aa', jam = r.idx === '정체';
+    L.polyline(r.path, { ...off, color: c, weight: jam ? 2.6 : 1.8, opacity: r.idx === '원활' ? .32 : jam ? .95 : .7, lineCap: 'round', lineJoin: 'round', className: jam ? 'tr-fl-jam' : '' }).addTo(layer);
+  }
+  // 역 → 입구 흐름선
+  const sf = stationFlows(), max = Math.max(1, ...sf.map(s => s.off10));
+  for (const s of sf) {
+    const a = [s.lat, s.lon], path = curve(a, nearGate(a, gates, center)), k = s.off10 / max, w = 3 + 7 * k;
+    const end = path.at(-1), pre = path.at(-4);
+    L.polyline(path, { ...off, color: '#6af5b0', weight: w + 8, opacity: .1, lineCap: 'round' }).addTo(layer);                 // 바깥 번짐
+    L.polyline(path, { ...off, color: '#6af5b0', weight: w, opacity: s.est ? .45 : .85, lineCap: 'round', className: 'tr-fl-core' }).addTo(layer);
+    L.polyline(path, { ...off, color: '#ecfff5', weight: Math.max(1.5, w * .35), opacity: .9, lineCap: 'round', dashArray: '6 30', className: 'tr-fl-run' }).addTo(layer);   // 안쪽에 흐르는 빛
+    const ang = Math.atan2(-(end[0] - pre[0]) * M_LAT, (end[1] - pre[1]) * M_LON) * 180 / Math.PI;
+    L.marker(end, { ...off, icon: L.divIcon({ className: 'tr-fl-wrap', html: `<svg class="tr-fl-tip" viewBox="-10 -10 20 20" style="transform:translate(-50%,-50%) rotate(${ang}deg)"><path d="M-4 -6 L5 0 L-4 6"/></svg>`, iconSize: [0, 0] }) }).addTo(layer);
+    L.marker(a, { ...off, icon: L.divIcon({ className: 'tr-fl-wrap', html: `<span class="tr-fl-st${s.est ? ' est' : ''}"></span><div class="tr-fl-tag${s.est ? ' est' : ''}${s.lon - center[1] > .008 ? ' left' : ''}"><span>${s.name}역</span><b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b></div>`, iconSize: [0, 0] }) }).addTo(layer);
+  }
+}
 
 export function flowLegend() {
   if (!flow) return null;
@@ -135,13 +169,23 @@ export function autoCard(items) {
 
 /* ---------- 스타일 ---------- */
 const css = `
-.tr-flow-card{position:absolute;z-index:500;left:16px;top:72px;max-width:300px;padding:12px 14px;border-radius:16px;background:rgba(7,13,10,.85);border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#f1f7f3;font-size:12px;line-height:1.5;pointer-events:none}
+.tr-flow-card{position:absolute;z-index:500;left:16px;top:72px;max-width:270px;padding:12px 14px;border-radius:16px;background:rgba(7,13,10,.84);border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#f1f7f3;font-size:11.5px;line-height:1.5;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .tr-flow-card>b{display:block;font-size:14px}.tr-flow-card>small{display:block;font-size:10.5px;opacity:.55;margin-bottom:8px}
-.tr-flow-card .h{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;opacity:.7}
-.tr-flow-card .n{margin-top:1px}.tr-flow-card .n b{color:#6af5b0;font-size:14px}.tr-flow-card .n.dim{opacity:.55;font-size:11px}.tr-flow-card .n em.up{font-style:normal;color:#ffc978;font-size:11px}
-.tr-flow-card .k{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:2px}.tr-flow-card .k i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
-.tr-flow-card i.arr{display:inline-block;width:16px;height:8px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
-@media(max-width:899px){.tr-flow-card{top:62px;left:10px;max-width:210px;padding:9px 11px;font-size:10.5px}.tr-flow-card>small{display:none}.tr-flow-card .n b{font-size:12px}}
+.tr-flow-card .k{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:4px}.tr-flow-card .k i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tr-flow-card .k i.arr{width:16px;height:8px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
+.tr-flow-card .n{margin-top:7px}.tr-flow-card .n b{color:#6af5b0}.tr-flow-card .n em{display:block;font-style:normal;opacity:.55}
+@media(max-width:899px){.tr-flow-card{top:62px;left:10px;max-width:210px;padding:9px 11px;font-size:10.5px}.tr-flow-card>small{display:none}}
+.tr-fl-jam{filter:drop-shadow(0 0 3px rgba(255,122,102,.75))}
+.tr-fl-core{filter:drop-shadow(0 0 5px rgba(106,245,176,.55))}
+.tr-fl-run{animation:trFlRun 2.2s linear infinite}@keyframes trFlRun{to{stroke-dashoffset:-36}}
+.tr-fl-tip{position:absolute;width:22px;height:22px;overflow:visible;pointer-events:none}.tr-fl-tip path{fill:none;stroke:#ecfff5;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #6af5b0)}
+.tr-fl-st{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#07100c;border:2px solid #ecfff5;box-shadow:0 0 0 0 rgba(106,245,176,.6);animation:trFlPulse 2.4s ease-out infinite}
+.tr-fl-st.est{border-color:rgba(236,255,245,.6);animation:none}@keyframes trFlPulse{70%{box-shadow:0 0 0 10px rgba(106,245,176,0)}100%{box-shadow:0 0 0 0 rgba(106,245,176,0)}}
+.tr-fl-tag{position:absolute;transform:translate(10px,-50%);display:flex;align-items:baseline;gap:6px;white-space:nowrap;padding:4px 10px 4px 9px;border-radius:999px;background:rgba(7,13,10,.78);border:1px solid rgba(106,245,176,.35);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none}
+.tr-fl-tag span{font-size:11px;color:rgba(241,247,243,.75)}.tr-fl-tag b{font-size:13px;font-weight:750;color:#6af5b0;letter-spacing:-.01em}
+.tr-fl-tag.left{transform:translate(calc(-100% - 10px),-50%)}
+.tr-fl-tag.est{border-style:dashed;border-color:rgba(255,255,255,.25)}.tr-fl-tag.est b{color:#d9efe3}
+@media(prefers-reduced-motion:reduce){.tr-fl-run,.tr-fl-st{animation:none}}
 .tr-flow-head{display:block;width:0;height:0;margin:-7px 0 0 -2px;border-left:12px solid #6af5b0;border-top:7px solid transparent;border-bottom:7px solid transparent;transform-origin:2px 7px;filter:drop-shadow(0 0 3px rgba(0,0,0,.6))}
 .tr-flow-lab{position:absolute;transform:translate(-50%,calc(-100% - 10px));white-space:nowrap;font-size:11px;font-weight:600;color:#fff;background:rgba(7,13,10,.85);border:1px solid rgba(106,245,176,.5);border-radius:9px;padding:3px 7px;text-align:center;pointer-events:none}
 .tr-flow-lab b{color:#6af5b0;margin-left:2px}.tr-flow-lab small{display:block;font-size:9.5px;font-weight:500;opacity:.65}
