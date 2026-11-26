@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="description" content="서울숲 디지털트윈 — 만족도로 찾은 문제를 보완하기 전에, 보완한 모습과 얻게 될 이익을 3D로 미리 봅니다." />
+<title>서울숲 디지털트윈</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231f5f45'/><path d='M16 6l7 11h-4l5 8H8l5-8H9z' fill='%23fff'/></svg>" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<style>
+:root{
+  --bg:#08110d; --panel:rgba(9,18,14,.86); --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.16);
+  --ink:#eafff3; --ink-2:rgba(234,255,243,.74); --mute:rgba(234,255,243,.5);
+  --mint:#6af5b0; --mint-soft:rgba(106,245,176,.12); --mint-ink:#062014;
+  --g1:#ffd166; --g2:#ff8c42; --g3:#ef476f;
+  --before:#ff8c42; --after:#6af5b0;
+  --r:16px; --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+#map{position:fixed;inset:0}
+.maplibregl-ctrl-attrib{font-size:10px;background:rgba(8,17,13,.7)!important;color:var(--mute)}
+.maplibregl-ctrl-attrib a{color:var(--ink-2)}
+button{font:inherit;color:inherit}
+
+/* top bar */
+.top{position:fixed;top:14px;left:14px;right:14px;z-index:5;display:flex;align-items:center;gap:10px;pointer-events:none}
+.top>*{pointer-events:auto}
+.back{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px 0 11px;border-radius:999px;background:var(--panel);border:1px solid var(--line-2);color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.back:hover{border-color:var(--mint)}
+.brand{display:flex;flex-direction:column;line-height:1.15;padding:6px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.brand small{font-size:10.5px;color:var(--mint);font-weight:700;letter-spacing:.06em}
+.brand b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.seg{margin-left:auto;display:flex;padding:4px;border-radius:999px;background:var(--panel);border:1px solid var(--line-2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.seg button{border:0;background:none;cursor:pointer;height:36px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:700;color:var(--ink-2);display:inline-flex;align-items:center;gap:7px;transition:background .25s,color .25s}
+.seg button i{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.8}
+.seg button[aria-pressed="true"][data-m="before"]{background:var(--before);color:#2a1305}
+.seg button[aria-pressed="true"][data-m="after"]{background:var(--after);color:var(--mint-ink)}
+.seg button:focus-visible,.tab:focus-visible,.zc:focus-visible,.back:focus-visible,.zmk:focus-visible{outline:2px solid #8cc8ff;outline-offset:2px}
+
+/* panel */
+.panel{position:fixed;left:14px;top:66px;bottom:14px;width:390px;z-index:4;display:flex;flex-direction:column;border-radius:20px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:hidden}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;cursor:pointer;padding:8px 4px 7px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mute);transition:background .2s,color .2s}
+.tab small{font-size:10px;font-weight:700;letter-spacing:.04em}
+.tab b{font-size:13.5px;font-weight:700}
+.tab[aria-selected="true"]{background:var(--mint-soft);color:var(--ink)}
+.tab[aria-selected="true"] small{color:var(--mint)}
+.body{flex:1;overflow:auto;padding:18px 18px 22px;scrollbar-width:thin}
+.body h2{margin:0 0 6px;font-size:21px;font-weight:800;letter-spacing:-.035em;line-height:1.3}
+.lead{margin:0 0 16px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.card{padding:13px 14px;border-radius:var(--r);background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:9px}
+.card h3{margin:0 0 4px;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.card p{margin:0;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.cite{display:block;margin-top:6px;font-size:10.5px;color:var(--mute);line-height:1.45}
+.ipa{display:grid;grid-template-columns:auto 1fr auto;gap:5px 8px;align-items:center;margin:9px 0 2px;font-size:11.5px;color:var(--ink-2)}
+.ipa .bar{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.ipa .bar i{display:block;height:100%;border-radius:4px}
+.ipa .imp i{background:#9fd8ff}.ipa .sat i{background:var(--g2)}
+.ipa b{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgba(239,71,111,.16);color:#ff9bb3}
+.pill.mint{background:var(--mint-soft);color:var(--mint)}
+.pill.gray{background:rgba(255,255,255,.08);color:var(--ink-2)}
+.zc{display:flex;gap:12px;width:100%;text-align:left;cursor:pointer;padding:12px 13px;border-radius:var(--r);background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:8px;transition:border-color .2s,background .2s}
+.zc:hover{border-color:var(--line-2)}
+.zc[aria-pressed="true"]{border-color:var(--mint);background:var(--mint-soft)}
+.zc .no{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--g3);color:#fff;font-weight:800;font-size:14px}
+.zc .no.hold{background:rgba(255,255,255,.18)}
+.zc b{display:block;font-size:14px;margin-bottom:3px}
+.zc span{display:block;font-size:12px;color:var(--ink-2);line-height:1.5}
+.fx{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.fx div{padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.fx i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.fx small{font-size:11.5px;color:var(--ink-2)}
+.fx b{display:block;margin-top:4px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+.fx b em{font-style:normal;font-size:11.5px;font-weight:500;color:var(--mute);margin-left:3px}
+table.zt{width:100%;border-collapse:collapse;font-size:11.5px;color:var(--ink-2)}
+table.zt th,table.zt td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+table.zt th:first-child,table.zt td:first-child{text-align:left}
+table.zt th{font-weight:600;color:var(--mute);font-size:10.5px}
+.ben{padding:14px;border-radius:var(--r);background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:9px}
+.ben small{font-size:12px;color:var(--ink-2)}
+.ben .row{display:flex;align-items:baseline;gap:8px;margin-top:6px;flex-wrap:wrap}
+.ben .b4{font-size:15px;font-weight:600;color:var(--before);font-variant-numeric:tabular-nums;text-decoration:line-through;text-decoration-color:rgba(255,140,66,.5)}
+.ben .ar{color:var(--mute)}
+.ben .af{font-size:24px;font-weight:800;color:var(--after);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ben .dl{margin-left:auto;font-size:13px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--mint-soft);color:var(--mint)}
+.ben .why{margin:7px 0 0;font-size:11.5px;color:var(--mute);line-height:1.5}
+.ben.hero{background:linear-gradient(135deg,rgba(106,245,176,.14),rgba(106,245,176,.03));border-color:rgba(106,245,176,.3)}
+.note{margin-top:12px;padding:11px 12px;border-radius:12px;border:1px dashed var(--line-2);font-size:11px;line-height:1.55;color:var(--mute)}
+.next{margin-top:14px;width:100%;height:46px;border:0;border-radius:999px;background:var(--mint);color:var(--mint-ink);font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.next:hover{filter:brightness(1.06)}
+
+/* legend & toast */
+.legend{position:fixed;right:14px;bottom:30px;z-index:4;padding:11px 13px;border-radius:14px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:11.5px;color:var(--ink-2);display:grid;gap:6px;min-width:168px}
+.legend b{font-size:11px;color:var(--mute);font-weight:700;letter-spacing:.04em}
+.legend div{display:flex;align-items:center;gap:7px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+.legend [data-only]{display:none}
+body[data-mode="after"] .legend [data-only="after"]{display:flex}
+.stamp{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:4;padding:7px 16px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.02em;pointer-events:none;transition:background .3s,color .3s}
+body[data-mode="before"] .stamp{background:rgba(255,140,66,.92);color:#2a1305}
+body[data-mode="after"] .stamp{background:rgba(106,245,176,.94);color:var(--mint-ink)}
+
+/* zone markers on map */
+.zmk{display:flex;align-items:center;gap:6px;border:0;padding:3px 10px 3px 3px;border-radius:999px;background:rgba(9,18,14,.88);border:1px solid var(--line-2);cursor:pointer;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.zmk b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--g3);color:#fff;font-size:12px}
+.zmk.hold b{background:#56605b}
+.zmk.on{border-color:var(--mint)}
+.rmk{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 4px;border-radius:999px;background:rgba(201,162,122,.95);color:#2b1a0b;font-size:11px;font-weight:800;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.rmk::before{content:'';width:14px;height:14px;border-radius:50%;background:#fff6ea url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b1a0b' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M4 13h16M6 13v5M18 13v5M5 9h14'/%3E%3C/svg%3E") center/10px no-repeat}
+body[data-mode="after"] .rmk{opacity:1;transform:none}
+
+@media (max-width:820px){
+  .top{top:10px;left:10px;right:10px;flex-wrap:wrap}
+  .brand{display:none}
+  .seg{margin-left:auto}
+  .seg button{padding:0 13px;font-size:13px}
+  .panel{left:0;right:0;top:auto;bottom:0;width:auto;height:48vh;border-radius:20px 20px 0 0;border-bottom:0}
+  .legend{display:none}
+  .stamp{top:58px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body data-mode="before">
+<div id="map" aria-label="서울숲 3D 지도"></div>
+
+<header class="top">
+  <a class="back" href="./index.html?cover=0#home" title="대시보드로 돌아가기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>대시보드로</a>
+  <div class="brand"><small>DIGITAL TWIN</small><b>서울숲 보완 시뮬레이션</b></div>
+  <div class="seg" role="group" aria-label="보완 전 후 보기">
+    <button type="button" data-m="before" aria-pressed="true"><i></i>보완 전</button>
+    <button type="button" data-m="after" aria-pressed="false"><i></i>보완 후</button>
+  </div>
+</header>
+<div class="stamp" id="stamp" aria-live="polite">지금 서울숲</div>
+
+<aside class="panel" aria-label="보완 시뮬레이션 설명">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-t="0" aria-selected="true"><small>01</small><b>문제</b></button>
+    <button class="tab" role="tab" data-t="1" aria-selected="false"><small>02</small><b>어디</b></button>
+    <button class="tab" role="tab" data-t="2" aria-selected="false"><small>03</small><b>보완안</b></button>
+    <button class="tab" role="tab" data-t="3" aria-selected="false"><small>04</small><b>이익</b></button>
+  </div>
+  <div class="body" id="body" role="tabpanel"></div>
+</aside>
+
+<div class="legend" aria-label="범례">
+  <b>취약 정도 (팀 분석)</b>
+  <div><i style="background:var(--g1)"></i>약간 취약</div>
+  <div><i style="background:var(--g2)"></i>취약</div>
+  <div><i style="background:var(--g3)"></i>심각</div>
+  <div data-only="after"><i style="background:rgba(106,245,176,.55)"></i>보완으로 나아진 칸</div>
+  <div data-only="after"><i style="background:#4cc77a"></i>새로 심는 나무</div>
+  <div data-only="after"><i style="background:#f2eadf"></i>그늘막·파고라</div>
+  <div data-only="after"><i style="background:#c9a27a"></i>쉼터(벤치)</div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var fmt = function (n) { return Math.round(n).toLocaleString('ko-KR'); };
+  var pct = function (a, b) { return Math.round((b - a) / a * 100); };
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mobile = function () { return innerWidth <= 820; };
+
+  // ---------- 만족도로 본 문제 (논문값: needs/README.md 근거 표와 같음) ----------
+  var PROBLEMS = [
+    { t: '쉴 곳이 부족해요', tag: '중점 개선', imp: 3.52, sat: 2.53, fix: '쉼터 6곳 추가',
+      d: '서울숲 이용자 설문에서 휴게시설·벤치는 중요하다는 답에 비해 만족이 가장 크게 모자랐어요.',
+      cite: '박지영(2024) 서울대 박사논문, 서울숲 설문 IPA (5점 척도)' },
+    { t: '편의시설이 모자라요', tag: '중점 개선', imp: 3.87, sat: 3.55, fix: '쉼터·벤치 보강',
+      d: '주관식 답 1위는 쓰레기통·의자·화장실 부족이었어요.',
+      cite: '이주호(2023) 한양대 석사논문, 서울숲 편의시설 IPA (5점 척도)' },
+    { t: '덥고 그늘이 부족한 곳이 있어요', tag: '공간 분석', fix: '그늘막·녹음수',
+      d: '여름 위성 지표온도가 공원 평균보다 높은 칸이 몰려 있어요. 취약 구역 4곳 중 3곳의 주된 원인이 더위예요.',
+      cite: '팀 취약지 분석 — Landsat 8/9 지표온도 6장면(2023~2026), 20m 격자' },
+    { t: '붐비고 복잡하다는 불만', tag: '리뷰', fix: '혼잡 분산(이용자 화면)',
+      d: '구글 리뷰 3,403건 중 3점 이하 408건(12.0%)의 키워드 1~2위는 주차·부족, 이어서 사람·주말·복잡·편의시설이었어요.',
+      cite: '이주경·손용훈(2021) 한국조경학회지 49(4)' }
+  ];
+
+  var T = null, map = null, mode = 'before', tab = 0, zoneSel = null, K = 0, anim = 0;
+  var GH = 1.3;   // 취약 등급 1칸당 기둥 높이(m). 그늘막(3.8m)·나무보다 낮게 해서 보완 시설이 가려지지 않게
+
+  // ---------- 보완 시설 3D 모양 (팀 보완 후보 칸마다) ----------
+  var MLON = 1 / (Math.cos(37.544 * Math.PI / 180) * 111320), MLAT = 1 / 110950;
+  function circle(lon, lat, r, n) { n = n || 10; var ring = []; for (var i = 0; i <= n; i++) { var a = i / n * 2 * Math.PI; ring.push([lon + Math.cos(a) * r * MLON, lat + Math.sin(a) * r * MLAT]); } return [ring]; }
+  function box(lon, lat, w, h) { var x = w / 2 * MLON, y = h / 2 * MLAT; return [[[lon - x, lat - y], [lon + x, lat - y], [lon + x, lat + y], [lon - x, lat + y], [lon - x, lat - y]]]; }
+  function rnd(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+  function F(geom, b, h, color, kind) { return { type: 'Feature', geometry: { type: 'Polygon', coordinates: geom }, properties: { b: b, h: h, color: color, kind: kind } }; }
+  function tree(out, lon, lat, r, h, crown) {
+    out.push(F(circle(lon, lat, .45, 6), 0, 3, '#6b4a2f', 'trunk'));
+    out.push(F(circle(lon, lat, r, 10), 2.4, h, crown, 'tree'));
+    out.push(F(circle(lon, lat, r * .62, 10), h, h + 1.6, crown, 'tree'));
+  }
+  function buildInterventions() {
+    var out = [], counts = { trees: 0, buffer: 0, shade: 0, rest: 0 };
+    T.grid.forEach(function (f, i) {
+      var p = f.properties, R = rnd(i * 7 + 3), lon = p.x, lat = p.y;
+      if (p.c === 'plant') {
+        for (var k = 0; k < 3; k++) { tree(out, lon + (R() - .5) * 12 * MLON, lat + (R() - .5) * 12 * MLAT, 3 + R() * .9, 8.5 + R() * 2.5, '#4cc77a'); counts.trees++; }
+      } else if (p.c === 'buffer') {
+        for (var j = 0; j < 3; j++) { tree(out, lon + (j - 1) * 6 * MLON, lat + (R() - .5) * 4 * MLAT, 2.6, 7 + R() * 1.5, '#2f9e5b'); counts.buffer++; }
+      } else if (p.c === 'shade') {
+        out.push(F(box(lon, lat, 10, 10), 3.8, 4.2, '#f2eadf', 'canopy'));
+        [[-4.4, -4.4], [4.4, -4.4], [4.4, 4.4], [-4.4, 4.4]].forEach(function (o) { out.push(F(circle(lon + o[0] * MLON, lat + o[1] * MLAT, .2, 6), 0, 3.8, '#9aa3a0', 'post')); });
+        counts.shade++;
+      }
+    });
+    T.restNew.forEach(function (ll) {
+      var lat = ll[0], lon = ll[1];
+      out.push(F(box(lon, lat, 6, 6), 2.7, 3.1, '#c9a27a', 'pergola'));
+      [[-2.7, -2.7], [2.7, -2.7], [2.7, 2.7], [-2.7, 2.7]].forEach(function (o) { out.push(F(circle(lon + o[0] * MLON, lat + o[1] * MLAT, .15, 6), 0, 2.7, '#8b6b4a', 'post')); });
+      out.push(F(box(lon, lat - 1.2 * MLAT, 3, .7), .4, .55, '#8b6b4a', 'bench'));
+      out.push(F(box(lon, lat + 1.2 * MLAT, 3, .7), .4, .55, '#8b6b4a', 'bench'));
+      counts.rest++;
+    });
+    T.ivCounts = counts;
+    return { type: 'FeatureCollection', features: out };
+  }
+
+  // ---------- 지도 ----------
+  function initMap() {
+    map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: { sat: { type: 'raster', tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize: 256, maxzoom: 19, attribution: '위성 사진 © Esri, Maxar, Earthstar Geographics · 건물 © OpenStreetMap 기여자' } },
+        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#08110d' } }, { id: 'sat', type: 'raster', source: 'sat', paint: { 'raster-brightness-max': .62, 'raster-saturation': -.25 } }]
+      },
+      center: [127.0388, 37.5432], zoom: mobile() ? 14.4 : 15.25, pitch: 58, bearing: -22, maxPitch: 75, antialias: true, attributionControl: { compact: true }
+    });
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    map.setPadding(padding());   // 설명 패널에 가리지 않게 지도 중심을 비켜 둠
+    addEventListener('resize', function () { map.setPadding(padding()); });
+    map.on('load', function () {
+      map.setLight({ anchor: 'viewport', color: '#ffffff', intensity: .45, position: [1.4, 200, 35] });
+      map.addSource('park', { type: 'geojson', data: { type: 'Feature', geometry: T.park, properties: {} } });
+      map.addSource('bld', { type: 'geojson', data: { type: 'FeatureCollection', features: T.buildings } });
+      map.addSource('grid', { type: 'geojson', data: { type: 'FeatureCollection', features: T.grid } });
+      map.addSource('iv', { type: 'geojson', data: buildInterventions() });
+      map.addLayer({ id: 'park-glow', type: 'line', source: 'park', paint: { 'line-color': '#6af5b0', 'line-width': 8, 'line-opacity': .18, 'line-blur': 6 } });
+      map.addLayer({ id: 'park-line', type: 'line', source: 'park', paint: { 'line-color': '#6af5b0', 'line-width': 1.6, 'line-opacity': .85 } });
+      map.addLayer({ id: 'gain', type: 'fill', source: 'grid', filter: ['>', ['get', 'g'], ['get', 'ga']], layout: { visibility: 'none' }, paint: { 'fill-color': '#6af5b0', 'fill-opacity': .32 } });
+      map.addLayer({ id: 'grid', type: 'fill-extrusion', source: 'grid', filter: ['>=', ['get', 'g'], 1], paint: {
+        'fill-extrusion-color': ['match', ['get', 'g'], 1, '#ffd166', 2, '#ff8c42', '#ef476f'],
+        'fill-extrusion-height': ['*', ['get', 'g'], GH], 'fill-extrusion-base': 0, 'fill-extrusion-opacity': .62 } });
+      map.addLayer({ id: 'bld', type: 'fill-extrusion', source: 'bld', paint: { 'fill-extrusion-color': '#cfd8d3', 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-base': 0, 'fill-extrusion-opacity': .82 } });
+      map.addLayer({ id: 'iv', type: 'fill-extrusion', source: 'iv', layout: { visibility: 'none' }, paint: {
+        'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': 0, 'fill-extrusion-base': 0, 'fill-extrusion-opacity': 1 } });
+      zoneMarkers(); restMarkers();
+      setMode(mode, true);
+      if (!reduce) setTimeout(function () { map.easeTo({ bearing: -12, duration: 6000, easing: function (t) { return t; } }); }, 600);
+    });
+  }
+
+  function zoneMarkers() {
+    T.zones.forEach(function (z) {
+      var el = document.createElement('button');
+      el.type = 'button'; el.className = 'zmk' + (z.hold ? ' hold' : ''); el.dataset.r = z.rank;
+      el.innerHTML = '<b>' + z.rank + '</b>' + z.name;
+      el.setAttribute('aria-label', '보완 우선 ' + z.rank + '순위 ' + z.name);
+      el.onclick = function () { selectZone(z.rank); if (tab !== 1) setTab(1); };
+      new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -14] }).setLngLat([z.lon, z.lat]).addTo(map);
+    });
+  }
+  function restMarkers() {
+    T.restNew.forEach(function (ll) {
+      // 지도 라이브러리가 마커 바깥 요소의 opacity를 직접 바꾸므로, 보이고 숨기는 건 안쪽 요소(.rmk)에서
+      var wrap = document.createElement('div'), el = document.createElement('div');
+      el.className = 'rmk'; el.textContent = '쉼터 +1'; wrap.appendChild(el);
+      new maplibregl.Marker({ element: wrap, anchor: 'top', offset: [0, 6] }).setLngLat([ll[1], ll[0]]).addTo(map);
+    });
+  }
+
+  function growTo(target) {
+    cancelAnimationFrame(anim);
+    var from = K, t0 = performance.now(), dur = reduce ? 0 : 1100;
+    (function step(now) {
+      var t = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - Math.pow(1 - t, 3);
+      K = from + (target - from) * e;
+      map.setPaintProperty('iv', 'fill-extrusion-height', ['*', ['get', 'h'], K]);
+      map.setPaintProperty('iv', 'fill-extrusion-base', ['*', ['get', 'b'], K]);
+      if (target === 0 && t === 1) map.setLayoutProperty('iv', 'visibility', 'none');
+      if (t < 1) anim = requestAnimationFrame(step);
+    })(performance.now());
+  }
+
+  function setMode(m, quiet) {
+    mode = m; document.body.dataset.mode = m;
+    $$('.seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === m)); });
+    $('#stamp').textContent = m === 'before' ? '보완 전 · 지금 서울숲' : '보완 후 · 미리 보기(시뮬레이션)';
+    if (!map || !map.getLayer('grid')) return;
+    var G = m === 'before' ? 'g' : 'ga';
+    map.setFilter('grid', ['>=', ['get', G], 1]);
+    map.setPaintProperty('grid', 'fill-extrusion-color', ['match', ['get', G], 1, '#ffd166', 2, '#ff8c42', '#ef476f']);
+    map.setPaintProperty('grid', 'fill-extrusion-height', ['*', ['get', G], GH]);
+    map.setLayoutProperty('gain', 'visibility', m === 'after' ? 'visible' : 'none');
+    if (m === 'after') { map.setLayoutProperty('iv', 'visibility', 'visible'); growTo(1); } else growTo(0);
+    if (!quiet && tab === 3) render();
+  }
+
+  function selectZone(rank) {
+    zoneSel = rank;
+    var z = T.zones.filter(function (x) { return x.rank === rank; })[0];
+    $$('.zmk').forEach(function (e) { e.classList.toggle('on', +e.dataset.r === rank); });
+    $$('.zc').forEach(function (e) { e.setAttribute('aria-pressed', String(+e.dataset.r === rank)); });
+    if (z && map) map.flyTo({ center: [z.lon, z.lat], zoom: mobile() ? 16.4 : 17.2, pitch: 62, bearing: -30 + rank * 18, duration: reduce ? 0 : 2200, padding: padding() });
+  }
+  function overview() {
+    zoneSel = null;
+    $$('.zmk').forEach(function (e) { e.classList.remove('on'); });
+    if (map) map.flyTo({ center: [127.0388, 37.5432], zoom: mobile() ? 14.4 : 15.25, pitch: 58, bearing: -22, duration: reduce ? 0 : 1800, padding: padding() });
+  }
+  function padding() { return mobile() ? { top: 60, bottom: innerHeight * .48, left: 0, right: 0 } : { top: 60, bottom: 20, left: 410, right: 20 }; }
+
+  // ---------- 패널 ----------
+  function setTab(t) {
+    tab = t;
+    $$('.tab').forEach(function (b) { b.setAttribute('aria-selected', String(+b.dataset.t === t)); });
+    setMode(t >= 2 ? 'after' : 'before', true);
+    if (t === 0 || t === 3) overview();
+    render();
+    $('#body').scrollTop = 0;
+  }
+  function nextBtn(label, t) { return '<button class="next" type="button" data-next="' + t + '">' + label + ' →</button>'; }
+
+  function render() {
+    var S = T.scenario, h = '';
+    if (tab === 0) {
+      h += '<h2>만족도로 찾은<br>서울숲의 문제</h2><p class="lead">이용자 만족도 조사와 리뷰, 위성 분석을 모으면 서울숲의 불만은 크게 네 가지예요. 지도 위 색칠된 칸이 지금 불편한 곳이에요.</p>';
+      PROBLEMS.forEach(function (p) {
+        h += '<div class="card"><h3>' + p.t + ' <span class="pill' + (p.imp ? '' : ' gray') + '">' + p.tag + '</span></h3><p>' + p.d + '</p>';
+        if (p.imp) h += '<div class="ipa"><span>중요도</span><span class="bar imp"><i style="width:' + p.imp / 5 * 100 + '%"></i></span><b>' + p.imp.toFixed(2) + '</b><span>만족도</span><span class="bar sat"><i style="width:' + p.sat / 5 * 100 + '%"></i></span><b>' + p.sat.toFixed(2) + '</b></div>';
+        h += '<span class="cite">근거 · ' + p.cite + '</span></div>';
+      });
+      h += nextBtn('어디를 고칠지 보기', 1);
+    } else if (tab === 1) {
+      h += '<h2>먼저 고칠 곳 4곳</h2><p class="lead">취약 정도(더위 35% · 시설 접근 25% · 대기 25% · 혼잡 15%)가 높은 칸이 모인 구역을 우선순위대로 골랐어요. 누르면 그곳으로 날아가요.</p>';
+      T.zones.forEach(function (z) {
+        h += '<button class="zc" type="button" data-r="' + z.rank + '" aria-pressed="' + (zoneSel === z.rank) + '"><span class="no' + (z.hold ? ' hold' : '') + '">' + z.rank + '</span><span><b>' + z.name + '</b>' +
+          '<span>주된 원인 <strong>' + z.dom + '</strong> · 면적 ' + fmt(z.area) + '㎡ · 우선점수 ' + z.priority + '</span>' +
+          '<span>여름 지표온도 ' + z.lst + '℃ · 나무 덮인 비율 ' + z.tree + '% · 가장 가까운 쉼터 ' + z.drest + 'm</span>' +
+          (z.hold ? '<span class="pill gray" style="margin-top:5px">보류 · 현장 확인 필요</span>' : '') + '</span></button>';
+      });
+      h += '<p class="cite">근거 · 팀 취약지 분석(20m 격자 ' + fmt(T.grid.length) + '칸, Landsat·Sentinel-2·ESA WorldCover·OSM). 지표온도 공원 평균 ' + T.lstMean + '℃.</p>';
+      h += nextBtn('보완한 모습 미리 보기', 2);
+    } else if (tab === 2) {
+      var C = T.ivCounts || { trees: 0, buffer: 0, shade: 0 };
+      h += '<h2>이렇게 보완해요</h2><p class="lead">문제마다 설계 처방을 붙였어요. 지도에서 <b>보완 후</b> 모습으로 바뀌면서 나무·그늘막·쉼터가 올라와요.</p>';
+      h += '<div class="fx">' +
+        '<div><small><i style="background:#f2eadf"></i>그늘막·파고라</small><b>' + fmt(S.shade) + '<em>㎡</em></b></div>' +
+        '<div><small><i style="background:#4cc77a"></i>녹음수 식재</small><b>' + fmt(S.plant) + '<em>㎡ · ' + S.trees + '그루</em></b></div>' +
+        '<div><small><i style="background:#2f9e5b"></i>차폐 수림대</small><b>' + fmt(S.buffer) + '<em>㎡ · ' + S.buf_trees + '그루</em></b></div>' +
+        '<div><small><i style="background:#c9a27a"></i>쉼터(벤치) 추가</small><b>' + S.rest_add + '<em>곳</em></b></div></div>';
+      h += '<div class="card"><h3>문제 → 처방</h3><p>쉴 곳 부족(만족도 2.53) → <b>쉼터 6곳</b> · 더위 → <b>그늘막·녹음수</b> · 큰길 쪽 대기·소음 → <b>차폐 수림대</b></p></div>';
+      h += '<div class="card"><h3>구역별 처방</h3><table class="zt"><tr><th>구역</th><th>식재㎡</th><th>그늘㎡</th><th>차폐㎡</th><th>나무</th></tr>';
+      T.zones.forEach(function (z) { h += '<tr><td>' + z.rank + '. ' + z.near + '</td><td>' + fmt(z.plant) + '</td><td>' + fmt(z.shade) + '</td><td>' + fmt(z.buffer) + '</td><td>' + z.trees + '</td></tr>'; });
+      h += '</table><span class="cite">구역 밖 후보 칸 처방까지 합친 총량이 위 카드예요. 지도의 나무 ' + C.trees + '그루·차폐목 ' + C.buffer + '그루·그늘막 ' + C.shade + '기는 후보 칸마다 배치한 개념 모형이에요.</span></div>';
+      h += nextBtn('얻게 될 이익 보기', 3);
+    } else {
+      h += '<h2>보완하면 얻는 것</h2><p class="lead">같은 모델로 보완 후를 다시 계산한 값이에요. 위 <b>보완 전/보완 후</b> 버튼으로 지도를 번갈아 보세요.</p>';
+      h += ben('심각하게 취약한 면적', S.severe_before, S.severe_after, '㎡', '취약 칸 중에서도 가장 위험한 칸이 절반 넘게 줄어요.', true);
+      h += ben('취약한 면적', S.vuln_before, S.vuln_after, '㎡', '더위·접근·대기·혼잡을 합친 점수가 높은 칸의 넓이예요.');
+      h += ben('가장 가까운 쉼터까지 평균 거리', S.rest_before, S.rest_after, 'm', '쉴 곳 만족도(2.53)를 올릴 직접 근거예요. 어르신 기준 쉼터 간격(100m)에 가까워져요.');
+      h += ben('쉼터에서 가장 먼 10%의 거리', S.rest_before_p90, S.rest_after_p90, 'm', '공원 안에서 쉴 곳이 가장 먼 사각지대가 얼마나 줄어드는지 보여 줘요.');
+      h += '<div class="ben"><small>보완한 칸의 여름 지표온도</small><div class="row"><span class="af">' + S.lst_cand.toFixed(1) + '℃</span><span class="dl">추정</span></div><p class="why">그늘막·녹음수 효과계수(가정)로 계산한 값이에요.</p></div>';
+      h += ben('평균 취약 점수 (100점 만점)', S.score_before, S.score_after, '점', '공원 전체 칸의 평균이에요.');
+      h += '<div class="note">수치는 팀 취약지 분석 시나리오(team.json, ' + T.imported.slice(0, 10) + ' 가져옴)의 값이고, 시설 효과계수는 <b>가정</b>이 들어간 추정이에요. 지도의 격자 색은 이 총량에 맞춘 개념 표시예요(보완 후 취약 ' + fmt(T.gridCheck.vuln_after) + '㎡, 심각 ' + fmt(T.gridCheck.severe_after) + '㎡로 팀 값과 근사). 실제 만족도 상승은 보완 뒤 설문으로 확인해야 해요.</div>';
+    }
+    $('#body').innerHTML = h;
+    $$('#body .zc').forEach(function (b) { b.onclick = function () { selectZone(+b.dataset.r); }; });
+    $$('#body [data-next]').forEach(function (b) { b.onclick = function () { setTab(+b.dataset.next); }; });
+  }
+  function ben(label, a, b, unit, why, hero) {
+    var d = pct(a, b);
+    return '<div class="ben' + (hero ? ' hero' : '') + '"><small>' + label + '</small><div class="row"><span class="b4">' + fmt(a) + unit + '</span><span class="ar">→</span><span class="af">' + (unit === '점' ? b.toFixed(1) : fmt(b)) + unit + '</span><span class="dl">' + (d > 0 ? '+' : '') + d + '%</span></div><p class="why">' + why + '</p></div>';
+  }
+
+  $$('.seg button').forEach(function (b) { b.onclick = function () { setMode(b.dataset.m); }; });
+  $$('.tab').forEach(function (b) { b.onclick = function () { setTab(+b.dataset.t); }; });
+  addEventListener('keydown', function (e) { if (e.target.closest && e.target.closest('input,textarea')) return; if (e.key === 'b' || e.key === 'B') setMode(mode === 'before' ? 'after' : 'before'); });
+
+  fetch('./data/twin.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+    T = d; render(); initMap();
+  }).catch(function () { $('#body').innerHTML = '<p class="lead">데이터(data/twin.json)를 불러오지 못했어요.</p>'; });
+})();
+</script>
+</body>
+</html>
