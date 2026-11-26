@@ -1017,15 +1017,21 @@ function gardenList() {
   const fresh = (app.news ?? []).filter(n => n.kind === 'garden' && n.place && (!n.from || n.from <= today) && (!n.to || today <= n.to))
     .map(n => ({ id: n.id, name: n.title, place: n.place, text: n.text, fresh: true, season: true }));
   const items = (app.gardens?.items ?? []).filter(g => g.place).map(g => ({ ...g, season: inSeason(g), next: Array.isArray(g.months) ? (g.months.find(m => m > month) ?? g.months[0]) : null }));
-  return [...fresh, ...items].filter(g => app.model.hubById[g.place]);
+  // 박람회 정원: 배치도로 어림한 자리(lat/lon)가 있으면 정원 하나하나를 지도 점으로, 없는 것만 지점 묶음으로 남김
+  const own = Object.values(app.expo ?? {}).filter(x => x.remains !== '철거' && Number.isFinite(x.lat) && Number.isFinite(x.lon))
+    .map(x => ({ ...x, pos: [x.lat, x.lon], expo: true, season: true, spot: app.model.hubById[x.place]?.name ?? null }));
+  const placed = new Set(own.map(x => x.id));
+  const rest = items.map(g => g.gardens ? { ...g, gardens: g.gardens.filter(id => !placed.has(id)) } : g).filter(g => !g.gardens || g.gardens.length);
+  return [...fresh, ...rest.filter(g => app.model.hubById[g.place]), ...own];
 }
 function gardensNear(coords, destId) {
   const out = [];
   for (const g of gardenList()) {
-    const hub = app.model.hubById[g.place], ll = L.latLng(hub.lat, hub.lon);
+    const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place], ll = L.latLng(hub.lat, hub.lon);
     let best = Infinity, at = 0;
     coords.forEach((c, i) => { const d = ll.distanceTo(c); if (d < best) { best = d; at = i; } });
-    if (best <= GARDEN_NEAR || g.place === destId) out.push({ ...g, hub, at, dest: g.place === destId });
+    const dest = !g.pos && g.place === destId;
+    if (best <= GARDEN_NEAR || dest) out.push({ ...g, hub, at, dest });
   }
   return out;
 }
@@ -1035,7 +1041,7 @@ function gardenUnits(gs) {
   const out = [];
   for (const g of [...gs].sort((a, b) => (a.dest - b.dest) || (a.at - b.at))) {
     const ids = g.gardens ?? null;
-    if (!ids) { out.push({ ...g, spot: g.hub?.name }); continue; }
+    if (!ids) { out.push({ ...g, spot: g.spot ?? g.hub?.name }); continue; }
     for (const id of ids) { const x = app.expo?.[id]; if (x) out.push({ ...x, hub: g.hub, at: g.at, dest: g.dest, season: true, expo: true, spot: g.hub?.name }); }
   }
   return out;
@@ -1049,7 +1055,7 @@ function gardenStrip(s) {
   const card = u => h('li', null, h('button', { type: 'button', class: 'tr-gl-card', onclick: () => gardenShot(u) },
     h('span', { class: 'tr-gl-ico' }, icon('leaf', 14)),
     h('div', null,
-      h('small', null, [u.dest ? '도착하는 곳' : `${u.spot ?? ''} 지나며`, u.expo ? `정원박람회 ${u.kind}` : null].filter(Boolean).join(' · ')),
+      h('small', null, [u.dest ? '도착하는 곳' : u.spot ? `${u.spot} 근처` : '가는 길', u.expo ? `정원박람회 ${u.kind}` : null].filter(Boolean).join(' · ')),
       h('b', null, u.name),
       u.text ? h('p', null, u.text) : null,
       (u.maker || u.plants?.length) ? h('p', { class: 'tr-gl-sub' }, [u.maker ? `만든 이 ${u.maker}` : null, u.plants?.length ? `식물 ${u.plants.slice(0, 3).join(', ')}` : null].filter(Boolean).join(' · ')) : null,
@@ -1171,7 +1177,7 @@ function drawCourse({ reveal = false, changed = new Set() } = {}) {
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
-      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.gardens ? `정원 ${g.gardens.length}곳` : g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 600 })
+      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: g.pos ? `<div class="tr-flower mini" title="${esc(g.name)}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms"></div>` : `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.gardens ? `정원 ${g.gardens.length}곳` : g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: g.pos ? [12, 12] : [26, 26], iconAnchor: g.pos ? [6, 6] : [13, 13] }), zIndexOffset: g.pos ? 590 : 600 })
         .addTo(layers.garden).on('click', () => gardenShot(g));
     }
   });
@@ -1425,7 +1431,7 @@ function gardenShot(g, auto = false) {
   layers.gshot.clearLayers();
   const ph = gardenImg(g);
   const img = ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.caption ?? g.name)}">` : `<div class="tr-gshot-none">${icon('leaf', 30).outerHTML}<span>${esc(g.name)}</span></div>`;
-  const tag = g.season ? (g.fresh ? '새 소식' : '지금 볼 수 있어요') : `${g.next}월에 피어요`;
+  const tag = g.pos ? `정원박람회 ${g.kind ?? ''} · 자리는 배치도로 어림` : g.season ? (g.fresh ? '새 소식' : '지금 볼 수 있어요') : `${g.next}월에 피어요`;
   const credit = ph ? `<small>${esc(ph.credit)} · ${esc(ph.license)}</small>` : '';
   const m = L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-gshot${g.season ? '' : ' off'}">${img}<div class="tr-gshot-cap"><em>${esc(tag)}</em><b>${esc(g.name)}</b><p>${esc(g.text?.length > 60 ? `${g.text.slice(0, 60)}…` : g.text ?? '')}</p></div>${credit}</div>`, iconSize: [230, 0], iconAnchor: [115, 26] }), interactive: false, zIndexOffset: 1100 }).addTo(layers.gshot);
   if (!auto) flyToVisible([g.hub.lat, g.hub.lon], 17.3, .8, desk() ? 120 : 130);

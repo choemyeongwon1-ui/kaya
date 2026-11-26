@@ -50,7 +50,11 @@
    "remains_src": "공모정원처럼 존치 조건이 공개된 자료는 못 찾음. 폐막 사진 목록에 포함 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "A1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/artist-garden/invitation-garden?article=41848",
-   "sure": true
+   "sure": true,
+   "lat": 37.54516,
+   "lon": 127.04049,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-b1-multispecies",
@@ -66,7 +70,11 @@
    "remains_src": "서울시 보도자료 「2026 서울국제정원박람회, 서울다움 담은 작가정원 국제 공모」(2025-11-10): 정원유형 '존치정원(행사 후에도 존치)' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "B1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/artist-garden/artists-garden?article=41879",
-   "sure": true
+   "sure": true,
+   "lat": 37.54444,
+   "lon": 127.04016,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-b2-popk",
@@ -85,7 +93,11 @@
    "remains_src": "서울시 보도자료 「2026 서울국제정원박람회, 서울다움 담은 작가정원 국제 공모」(2025-11-10): 정원유형 '존치정원(행사 후에도 존치)' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "B2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/artist-garden/artists-garden?article=41875",
-   "sure": true
+   "sure": true,
+   "lat": 37.54417,
+   "lon": 127.03848,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-b3-seoul-sojourn",
@@ -101,7 +113,11 @@
    "remains_src": "서울시 보도자료 「2026 서울국제정원박람회, 서울다움 담은 작가정원 국제 공모」(2025-11-10): 정원유형 '존치정원(행사 후에도 존치)' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "B3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/artist-garden/artists-garden?article=41871",
-   "sure": true
+   "sure": true,
+   "lat": 37.54461,
+   "lon": 127.03882,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-b4-source-of-flow",
@@ -117,7 +133,11 @@
    "remains_src": "서울시 보도자료 「2026 서울국제정원박람회, 서울다움 담은 작가정원 국제 공모」(2025-11-10): 정원유형 '존치정원(행사 후에도 존치)' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "B4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/artist-garden/artists-garden?article=41867",
-   "sure": true
+   "sure": true,
+   "lat": 37.54586,
+   "lon": 127.03872,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-b5-urban-weaving",
@@ -154,7 +174,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41931",
-   "sure": true
+   "sure": true,
+   "lat": 37.54466,
+   "lon": 127.04211,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c2-jiguhada",
@@ -175,7 +199,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41966",
-   "sure": true
+   "sure": true,
+   "lat": 37.5451,
+   "lon": 127.0418,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c3-rethink-health",
@@ -196,7 +224,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41953",
-   "sure": true
+   "sure": true,
+   "lat": 37.54535,
+   "lon": 127.04151,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c4-kkaebi",
@@ -216,7 +248,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41960",
-   "sure": true
+   "sure": true,
+   "lat": 37.54532,
+   "lon": 127.04092,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c5-garden-of-dreams",
@@ -237,7 +273,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C5",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41938",
-   "sure": true
+   "sure": true,
+   "lat": 37.54558,
+   "lon": 127.04088,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c6-saetbyeol",
@@ -257,7 +297,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C6",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41972",
-   "sure": true
+   "sure": true,
+   "lat": 37.54589,
+   "lon": 127.04063,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c7-book-forest",
@@ -278,7 +322,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C7",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41969",
-   "sure": true
+   "sure": true,
+   "lat": 37.54595,
+   "lon": 127.04042,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c8-summit-silo",
@@ -299,7 +347,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C8",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42008",
-   "sure": true
+   "sure": true,
+   "lat": 37.54539,
+   "lon": 127.04023,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c9-elif",
@@ -320,7 +372,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C9",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42011",
-   "sure": true
+   "sure": true,
+   "lat": 37.54551,
+   "lon": 127.03994,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c10-crown-shyness",
@@ -341,7 +397,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C10",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42019",
-   "sure": true
+   "sure": true,
+   "lat": 37.54562,
+   "lon": 127.03964,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c11-the-round",
@@ -361,7 +421,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C11",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41956",
-   "sure": true
+   "sure": true,
+   "lat": 37.54565,
+   "lon": 127.03941,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c12-eco-zone",
@@ -382,7 +446,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C12",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42000",
-   "sure": true
+   "sure": true,
+   "lat": 37.54584,
+   "lon": 127.03941,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c13-restful-path",
@@ -402,7 +470,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C13",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41997",
-   "sure": true
+   "sure": true,
+   "lat": 37.54613,
+   "lon": 127.03983,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c14-greenplus",
@@ -423,7 +495,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C14",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41983",
-   "sure": true
+   "sure": true,
+   "lat": 37.54647,
+   "lon": 127.03899,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c15-learning",
@@ -444,7 +520,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C15",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41993",
-   "sure": true
+   "sure": true,
+   "lat": 37.5463,
+   "lon": 127.03834,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c16-slow-stroll",
@@ -465,7 +545,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C16",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41995",
-   "sure": true
+   "sure": true,
+   "lat": 37.54599,
+   "lon": 127.0388,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c17-saengsaeng",
@@ -485,7 +569,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C17",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41990",
-   "sure": true
+   "sure": true,
+   "lat": 37.54596,
+   "lon": 127.03832,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c18-starfriends",
@@ -506,7 +594,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C18",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41987",
-   "sure": true
+   "sure": true,
+   "lat": 37.54572,
+   "lon": 127.03845,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c19-kwangya",
@@ -526,7 +618,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C19",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41976",
-   "sure": true
+   "sure": true,
+   "lat": 37.54565,
+   "lon": 127.0382,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c20-inspiration",
@@ -547,7 +643,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C20",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41947",
-   "sure": true
+   "sure": true,
+   "lat": 37.54485,
+   "lon": 127.03779,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c21-breathing-earth",
@@ -567,7 +667,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C21",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42014",
-   "sure": true
+   "sure": true,
+   "lat": 37.54457,
+   "lon": 127.03921,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c22-road-to-forest",
@@ -587,7 +691,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C22",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41944",
-   "sure": true
+   "sure": true,
+   "lat": 37.54436,
+   "lon": 127.03892,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c23-brick",
@@ -608,7 +716,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C23",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41964",
-   "sure": true
+   "sure": true,
+   "lat": 37.54404,
+   "lon": 127.03876,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c24-fantasy-loop",
@@ -628,7 +740,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C24",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41979",
-   "sure": true
+   "sure": true,
+   "lat": 37.5439,
+   "lon": 127.03913,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c25-weaving-forest",
@@ -649,7 +765,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C25",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41981",
-   "sure": true
+   "sure": true,
+   "lat": 37.54369,
+   "lon": 127.03929,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c26-dream-circuit",
@@ -670,7 +790,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C26",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41941",
-   "sure": true
+   "sure": true,
+   "lat": 37.5435,
+   "lon": 127.03895,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c27-elysian",
@@ -690,7 +814,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C27",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42016",
-   "sure": true
+   "sure": true,
+   "lat": 37.54442,
+   "lon": 127.03971,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c28-spicy-happiness",
@@ -711,7 +839,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C28",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41958",
-   "sure": true
+   "sure": true,
+   "lat": 37.544,
+   "lon": 127.03976,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c29-kbeauty",
@@ -732,7 +864,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C29",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41950",
-   "sure": true
+   "sure": true,
+   "lat": 37.54425,
+   "lon": 127.04051,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c30-eco-play",
@@ -753,7 +889,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C30",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41929",
-   "sure": true
+   "sure": true,
+   "lat": 37.54386,
+   "lon": 127.04046,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c31-yuhan",
@@ -774,7 +914,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C31",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=42003",
-   "sure": true
+   "sure": true,
+   "lat": 37.5436,
+   "lon": 127.04006,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-c32-dodam",
@@ -795,7 +939,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "C32",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/enterprise-garden?article=41933",
-   "sure": true
+   "sure": true,
+   "lat": 37.54331,
+   "lon": 127.04046,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d1-majung",
@@ -816,7 +964,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44084",
-   "sure": true
+   "sure": true,
+   "lat": 37.54397,
+   "lon": 127.04217,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d2-green-pulse",
@@ -837,7 +989,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44082",
-   "sure": true
+   "sure": true,
+   "lat": 37.54541,
+   "lon": 127.0406,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d3-morning-blooms",
@@ -857,7 +1013,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44080",
-   "sure": true
+   "sure": true,
+   "lat": 37.54597,
+   "lon": 127.03904,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d4-reborn-forest",
@@ -877,7 +1037,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44078",
-   "sure": true
+   "sure": true,
+   "lat": 37.54573,
+   "lon": 127.03909,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d5-carbon-saving",
@@ -898,7 +1062,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D5",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44076",
-   "sure": true
+   "sure": true,
+   "lat": 37.54564,
+   "lon": 127.03919,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d6-dwelling-line",
@@ -919,7 +1087,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D6",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44074",
-   "sure": true
+   "sure": true,
+   "lat": 37.54493,
+   "lon": 127.03899,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d7-garden-of-heart",
@@ -939,7 +1111,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D7",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44072",
-   "sure": true
+   "sure": true,
+   "lat": 37.54485,
+   "lon": 127.03868,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d8-ieum-50",
@@ -960,7 +1136,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D8",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44070",
-   "sure": true
+   "sure": true,
+   "lat": 37.54373,
+   "lon": 127.03804,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d9-succulent",
@@ -981,7 +1161,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D9",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44068",
-   "sure": true
+   "sure": true,
+   "lat": 37.54417,
+   "lon": 127.03947,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-d10-k-heritage",
@@ -1002,7 +1186,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "D10",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/institutional-garden?article=44066",
-   "sure": true
+   "sure": true,
+   "lat": 37.54387,
+   "lon": 127.04014,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-e1-ulsan",
@@ -1023,7 +1211,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "E1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/local-garden?article=44098",
-   "sure": true
+   "sure": true,
+   "lat": 37.54584,
+   "lon": 127.03789,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-e2-gyeonggi",
@@ -1044,7 +1236,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "E2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/local-garden?article=44096",
-   "sure": true
+   "sure": true,
+   "lat": 37.54586,
+   "lon": 127.03906,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-e3-chungju",
@@ -1065,7 +1261,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "E3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/local-garden?article=44093",
-   "sure": true
+   "sure": true,
+   "lat": 37.54534,
+   "lon": 127.03816,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-e4-jeonju",
@@ -1086,7 +1286,11 @@
    "remains_src": "서울시 기업동행정원 업무협약 보도자료(GS건설·HDC·AFoCO 등) Q&A: '인수 후 서울시가 유지관리' / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "E4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/participation-garden/local-garden?article=44091",
-   "sure": true
+   "sure": true,
+   "lat": 37.54555,
+   "lon": 127.03863,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-f-depths",
@@ -2134,7 +2338,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44146",
-   "sure": true
+   "sure": true,
+   "lat": 37.54506,
+   "lon": 127.04082,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k2-citizen-gardener",
@@ -2155,7 +2363,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44144",
-   "sure": true
+   "sure": true,
+   "lat": 37.54714,
+   "lon": 127.03834,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k3-greenfriends",
@@ -2171,7 +2383,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44142",
-   "sure": true
+   "sure": true,
+   "lat": 37.54711,
+   "lon": 127.0381,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k4-kids-cafe",
@@ -2187,7 +2403,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44140",
-   "sure": true
+   "sure": true,
+   "lat": 37.54331,
+   "lon": 127.03939,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k5-seoul-run",
@@ -2208,7 +2428,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K5",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44138",
-   "sure": true
+   "sure": true,
+   "lat": 37.54336,
+   "lon": 127.03977,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k6-kpop",
@@ -2224,7 +2448,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K6",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44135",
-   "sure": true
+   "sure": true,
+   "lat": 37.54404,
+   "lon": 127.0409,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k7-vertical",
@@ -2245,7 +2473,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K7",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44133",
-   "sure": true
+   "sure": true,
+   "lat": 37.54297,
+   "lon": 127.04196,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-k8-urban",
@@ -2329,7 +2561,11 @@
    "remains_src": "개별 존치 계획 자료 못 찾음 / 폐막 보도자료: 전체 225개 중 191개 존치(개별 명단은 미공개)",
    "code": "K11",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/story-garden?article=44125",
-   "sure": true
+   "sure": true,
+   "lat": 37.54235,
+   "lon": 127.03628,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j-pokemon",
@@ -2345,7 +2581,11 @@
    "remains_src": "공식 페이지 전시기간 5.1.~6.21. 종료 (정원산업전 캐릭터 팝업정원(기간 한정 전시))",
    "code": null,
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43745",
-   "sure": true
+   "sure": true,
+   "lat": 37.54541,
+   "lon": 127.03709,
+   "pos_how": "where",
+   "pos_conf": "mid"
   },
   {
    "id": "expo26-j-kakao",
@@ -2393,7 +2633,11 @@
    "remains_src": "기간 한정 팝업(5.1.~10.27.). 폐막 뒤 철거 명시 자료는 없음, 225-191=34개 미존치 수와 팝업 수(자치구 25+캐릭터 9)가 일치해 철거로 추정",
    "code": "J1",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43764",
-   "sure": true
+   "sure": true,
+   "lat": 37.54428,
+   "lon": 127.04173,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j2-nature-rest",
@@ -2413,7 +2657,11 @@
    "remains_src": "기간 한정 팝업(5.1.~10.27.). 철거 명시 자료 없음(추정)",
    "code": "J2",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43761",
-   "sure": true
+   "sure": true,
+   "lat": 37.5453,
+   "lon": 127.04171,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j3-circular-ridge",
@@ -2429,7 +2677,11 @@
    "remains_src": "기간 한정 팝업(5.1.~10.27.). 철거 명시 자료 없음(추정)",
    "code": "J3",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43757",
-   "sure": true
+   "sure": true,
+   "lat": 37.54514,
+   "lon": 127.04132,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j4-flower-play",
@@ -2445,7 +2697,11 @@
    "remains_src": "기간 한정 팝업(5.1.~10.27.). 철거 명시 자료 없음(추정)",
    "code": "J4",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43752",
-   "sure": true
+   "sure": true,
+   "lat": 37.54681,
+   "lon": 127.03864,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j6-ondeok",
@@ -2461,7 +2717,11 @@
    "remains_src": "기간 한정 팝업(5.1.~10.27.). 철거 명시 자료 없음(추정)",
    "code": "J6",
    "url": "https://www.seoul.go.kr/festa/garden/y2026/created-garden/charming-garden/character-pop-garden?article=43754",
-   "sure": true
+   "sure": true,
+   "lat": 37.54315,
+   "lon": 127.03968,
+   "pos_how": "code",
+   "pos_conf": "high"
   },
   {
    "id": "expo26-j5-seoul-anda",
@@ -2477,7 +2737,12 @@
    "remains_src": "리플릿 캐릭터팝업정원 목록(J1~J6)에 포함된 기간 한정 팝업. 정확한 기간·철거 명시 자료 없음(추정)",
    "code": null,
    "url": "https://www.seoul.go.kr/festa/garden/files/2026/04/6a9e802d05fd56.37605650.pdf",
-   "sure": false
+   "sure": false,
+   "lat": 37.54504,
+   "lon": 127.03721,
+   "pos_how": "code",
+   "pos_conf": "high"
   }
- ]
+ ],
+ "position_note": "lat/lon = 공식 리플릿 배치도(3쪽)의 정원 번호 위치를 대응점 16곳 아핀 변환으로 옮긴 어림 위치 (대응점 오차 평균 14m·최대 32m, 배치도가 도식이라 실제와 수십 m 차이 가능). 구역만 표시된 정원(학생·글로벌·시민·자치구)은 개별 위치가 없어 비워 둠."
 }

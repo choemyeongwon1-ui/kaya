@@ -63,6 +63,20 @@
    "credit": "Enigma7seven",
    "license": "CC BY-SA 3.0",
    "page": "https://commons.wikimedia.org/wiki/File:Seoulforest_001.jpg"
+  },
+  "horse-plaza": {
+   "src": "img/horse-plaza.jpg",
+   "caption": "서울숲 입구 쪽 군마상(경마 조각상)과 꽃밭",
+   "credit": "DreamingDorzel",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Seoul_Forest_Park.jpg"
+  },
+  "water-museum": {
+   "src": "img/water-museum.jpg",
+   "caption": "뚝도수원지 제1정수장 건물(1907) — 지금은 수도박물관으로 쓰임",
+   "credit": "Korearoadtour",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:%EB%9A%9D%EB%8F%84-%EC%88%98%EC%9B%90%EC%A7%80-%EC%A0%9C1%EC%A0%95%EC%88%98%EC%9E%A5-Ttukdo-Reservoir-Purification-Plant-1-2.jpg"
   }
  },
  "places": {
@@ -70,6 +84,8 @@
   "lake": "lake",
   "wetland": "pond",
   "butterfly": "butterfly",
-  "insect": "butterfly"
+  "insect": "butterfly",
+  "horse-plaza": "horse-plaza",
+  "water-museum": "water-museum"
  }
 }

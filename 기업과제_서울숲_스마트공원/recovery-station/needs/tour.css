@@ -959,3 +959,6 @@ div.tr-status-line{cursor:default}
 .tr-gl-card em{display:inline-block;margin-top:5px;font-style:normal;font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.07);color:rgba(234,255,243,.6)}
 .tr-gl-card em.ok{background:var(--mint-soft);color:var(--mint)}
 .tr-gl-more{margin-top:8px;width:100%;border:1px dashed rgba(255,255,255,.15);background:none;color:rgba(234,255,243,.7);padding:8px;border-radius:10px;cursor:pointer;font:inherit;font-size:12.5px}
+/* 박람회 정원 하나하나: 작은 점(이름은 누르면 카드로) */
+.tr-flower.mini{width:12px;height:12px;box-shadow:0 0 0 2px rgba(5,11,8,.55),0 0 10px rgba(255,154,196,.55)}
+.tr-flower.mini:hover{transform:scale(1.5)}
