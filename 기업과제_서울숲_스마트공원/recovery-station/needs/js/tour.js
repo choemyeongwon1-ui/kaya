@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=9';
-import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=7';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=9';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -133,7 +133,6 @@ function paintLive() {
 function paintHello() {
   if (!app) return;
   document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
-  document.querySelectorAll('.tr-auto-slot').forEach(s => s.replaceChildren(autoBlock() ?? ''));
   document.querySelectorAll('.tr-access-slot').forEach(s => s.replaceChildren(accessBar() ?? ''));
   accessPins();
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
@@ -841,7 +840,6 @@ function go(step) {
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
     step === 1 ? h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? '') : null,
-    step === 1 ? h('div', { class: 'tr-auto-slot' }, autoBlock() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
