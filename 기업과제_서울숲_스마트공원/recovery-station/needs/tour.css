@@ -614,7 +614,27 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
 .tr-lc-bars span{font-size:10px;color:var(--mute);line-height:1}
 .tr-lc-bars .now span{color:var(--ink);font-weight:600}
 .tr-lc-fc>small{display:block;margin-top:8px;font-size:12px;color:var(--ink-2)}
-.tr-lc-src{margin:10px 0 0;font-size:10.5px;color:var(--mute)}@media(max-width:899px){.tr-livepop{position:fixed;top:64px;left:16px;right:16px;width:auto}}
+.tr-lc-src{margin:10px 0 0;font-size:10.5px;color:var(--mute)}
+/* 실시간 인구: 추정 가운데 값 · 증감 · 안내 문구 · 1시간 뒤 예측 · 기준 시각/카운트다운 · 새 값 반짝임 · 옛 값/연결 실패 */
+.tr-lc-est{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:3px 0 0}
+.tr-lc-est>small{font-size:10.5px;color:var(--mute);text-align:right}
+.tr-lc-trend{flex:none;font-size:11px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.tr-lc-trend small{font-weight:400;color:var(--mute)}
+.tr-lc-trend.up{color:var(--warn)}.tr-lc-trend.down{color:var(--mint)}
+.tr-lc-msg{margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tr-lc-next{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 5px;margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
+.tr-lc-next b{font-weight:700;color:var(--ink)}
+.tr-lc-next small{margin-left:auto;font-size:10.5px;color:var(--mute)}
+.tr-lc-meta{display:flex;flex-wrap:wrap;gap:2px 10px;margin:8px 0 0;font-size:10.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.tr-lc-meta .bad{color:var(--bad);font-weight:600}
+.tr-livecard.old .tr-lc-dot{animation:none;background:var(--mute)}
+.tr-livecard.old .tr-lc-head strong{color:var(--ink-2)}
+.tr-livecard.fail{--c:var(--mute)}
+.tr-live.old i{animation:none;opacity:.5}
+.tr-livecard.flash{animation:trLcFlash 1.3s var(--ease)}
+@keyframes trLcFlash{0%{box-shadow:0 0 0 0 var(--c),inset 0 0 0 999px rgba(106,245,176,.14)}60%{box-shadow:0 0 0 8px transparent,inset 0 0 0 999px rgba(106,245,176,.05)}100%{box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.tr-livecard.flash{animation:none}}
+@media(max-width:899px){.tr-livepop{position:fixed;top:64px;left:16px;right:16px;width:auto}}
 /* ── 서울숲 날씨 3일(기상청 단기예보) ── */
 .tr-wxcard{margin:-8px 0 18px;padding:12px 12px 10px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
 .tr-wx-now{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:0 2px 10px;border-bottom:1px solid var(--line)}
@@ -960,5 +980,10 @@ div.tr-status-line{cursor:default}
 .tr-gl-card em.ok{background:var(--mint-soft);color:var(--mint)}
 .tr-gl-more{margin-top:8px;width:100%;border:1px dashed rgba(255,255,255,.15);background:none;color:rgba(234,255,243,.7);padding:8px;border-radius:10px;cursor:pointer;font:inherit;font-size:12.5px}
 /* 박람회 정원 하나하나: 작은 점(이름은 누르면 카드로) */
-.tr-flower.mini{width:12px;height:12px;box-shadow:0 0 0 2px rgba(5,11,8,.55),0 0 10px rgba(255,154,196,.55)}
-.tr-flower.mini:hover{transform:scale(1.5)}
+/* 분홍 꽃 모양. 꽃잎은 반투명(나타나는 애니메이션 trDrop이 opacity를 덮어써서 색 자체를 반투명하게 함) */
+.tr-flower.mini{width:18px;height:18px;background:none;box-shadow:none;transition:transform .2s}
+.tr-flower.mini svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 3px rgba(255,154,196,.45)) drop-shadow(0 1px 1px rgba(5,11,8,.5))}
+.tr-flower.mini .pt{fill:rgba(255,182,206,.6);stroke:rgba(255,236,242,.7);stroke-width:.6;transition:fill .2s}
+.tr-flower.mini .ct{fill:#ffd86b}
+.tr-flower.mini:hover,.tr-flower.mini:focus-visible{transform:scale(1.4) rotate(18deg)}
+.tr-flower.mini:hover .pt{fill:#ff9ec0}

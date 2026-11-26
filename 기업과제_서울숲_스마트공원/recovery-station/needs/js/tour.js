@@ -94,17 +94,36 @@ addEventListener('pointermove', e => {
   t.style.setProperty('--mx', `${e.clientX - r.left}px`); t.style.setProperty('--my', `${e.clientY - r.top}px`);
 }, { passive: true });
 
-// ── 실시간 인구 배지(중계 서버가 있을 때만 보임) ──
-let live = null;
+// ── 실시간 인구 배지·카드(중계 서버가 있을 때만 보임) ──
+// 서울시 실시간 도시데이터(citydata_ppltn)는 인원을 500명 단위 구간(MIN~MAX)으로만 주고 5분마다 바뀝니다.
+// live      : 추천·안내 계산에 쓰는 값. 방금 받았고 기준 시각이 60분 이내일 때만 (못 받으면 null → 요일·시간대 추정으로 돌아감)
+// liveShown : 카드에 보여 주는 마지막으로 받은 값. 늘 기준 시각과 '○분 전'을 같이 보여 줘서 옛 값을 지금 값처럼 보이지 않게 함
+// 60분: 서울시 값은 정상일 때도 기준 시각이 실제보다 30분쯤 늦게 옴(2026-11-26 실측 '31분 전'). 그보다 훨씬 늦으면 '오래된 값'
+const LIVE_EVERY = 5 * 60 * 1000, LIVE_STALE_MIN = 60;
+// 박람회 정원 하나하나를 지도에 찍는 작은 분홍 꽃(꽃잎 5장 + 노란 꽃술)
+const FLOWER_SVG = `<svg viewBox="-10 -10 20 20" aria-hidden="true"><g class="pt">${[0, 72, 144, 216, 288].map(a => `<ellipse cx="0" cy="-4.9" rx="3.5" ry="4.9" transform="rotate(${a})"/>`).join('')}</g><circle class="ct" r="2.5"/></svg>`;
+let live = null, liveShown = null, livePrev = null;
+const liveSt = { checkedAt: 0, okAt: 0, failed: false, next: 0, busy: false, flash: false };
+const kstDate = t => { const d = t ? new Date(`${String(t).replace(' ', 'T')}:00+09:00`) : null; return d && !isNaN(d) ? d : null; };   // PPLTN_TIME 'YYYY-MM-DD HH:MM'(한국 시각)
+const liveAgeMin = () => { const d = kstDate(liveShown?.time); return d ? Math.max(0, Math.floor((Date.now() - d) / 60000)) : null; };
+const agoText = m => m == null ? '' : m < 1 ? '방금' : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''} 전` : `${Math.floor(m / 1440)}일 전`;
+const hmOf = ms => { const d = new Date(ms); return `${d.getHours()}시 ${String(d.getMinutes()).padStart(2, '0')}분`; };
+const hhmm = t => String(t ?? '').slice(11, 16);
+const cdText = () => { const s = Math.max(0, Math.ceil((liveSt.next - Date.now()) / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const midOf = v => (v && v.min != null && v.max != null ? (v.min + v.max) / 2 : null);
+const liveOld = () => liveSt.failed || (liveAgeMin() ?? 0) > LIVE_STALE_MIN;
 const liveEl = h('button', { type: 'button', class: 'tr-live', hidden: true, 'aria-expanded': 'false', 'aria-label': '서울숲 실시간 붐빔 자세히', onclick: () => toggleLivePop() });
 const livePop = h('div', { class: 'tr-livepop', hidden: true });
 function paintLive() {
-  if (!live) { liveEl.hidden = true; livePop.hidden = true; return; }
-  liveEl.hidden = false;
-  liveEl.className = `tr-live r${live.rank}`;
-  liveEl.title = `${live.msg ?? ''}\n서울시 실시간 도시데이터(통신사 신호로 어림한 값) · ${live.time} 기준`;
-  liveEl.replaceChildren(h('i'), h('span', null, '서울숲 지금'), h('b', null, live.level),
-    live.min != null ? h('small', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}명 · ${String(live.time).slice(-5)}`) : null);
+  const v = liveShown;
+  if (!v) { liveEl.hidden = true; livePop.hidden = true; }
+  else {
+    liveEl.hidden = false;
+    liveEl.className = `tr-live r${v.rank}${liveOld() ? ' old' : ''}`;
+    liveEl.title = `${v.msg ?? ''}\n서울시 실시간 도시데이터(통신사 신호로 어림한 값) · ${v.time} 기준${liveSt.failed ? ` · 연결 실패(마지막 확인 ${hmOf(liveSt.okAt)})` : ''}`;
+    liveEl.replaceChildren(h('i'), h('span', null, '서울숲 지금'), h('b', null, v.level),
+      v.min != null ? h('small', null, `${fmtPeople(v.min)}~${fmtPeople(v.max)}명 · ${hhmm(v.time)}`) : null);
+  }
   if (!livePop.hidden) livePop.replaceChildren(liveCard());
   document.querySelectorAll('.tr-livetop-slot').forEach(s => s.replaceChildren(liveCard('top') ?? ''));
   document.querySelectorAll('.tr-livecard-slot').forEach(s => s.replaceChildren(liveCard('rest') ?? ''));
@@ -117,7 +136,31 @@ function paintHello() {
   accessPins();
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
 }
-async function refreshLive() { live = await fetchLiveCrowd(); paintLive(); }
+async function refreshLive() {
+  if (liveSt.busy) return;
+  liveSt.busy = true; liveSt.next = Date.now() + LIVE_EVERY;
+  const d = await fetchLiveCrowd();
+  liveSt.busy = false; liveSt.checkedAt = Date.now();
+  if (d) {
+    liveSt.flash = !liveShown || liveShown.time !== d.time || liveShown.min !== d.min || liveShown.level !== d.level;
+    if (liveShown && liveShown.time !== d.time) livePrev = liveShown;   // 늘었는지 줄었는지 견줄 직전 값
+    liveShown = d; liveSt.okAt = Date.now(); liveSt.failed = false;
+  } else liveSt.failed = true;
+  live = liveShown && !liveOld() ? liveShown : null;
+  paintLive(); liveSt.flash = false;
+}
+// 1초마다: 카운트다운·'○분 전' 글자만 바꾸고, 다음 확인 시각이 지났으면 다시 불러옴(휴대폰이 잠들어 타이머가 밀려도 깨면 따라잡음)
+function liveTick() {
+  if (!document.hidden && liveSt.next && Date.now() >= liveSt.next) refreshLive();
+  const cd = cdText(), ago = agoText(liveAgeMin());
+  document.querySelectorAll('.tr-lc-cd').forEach(e => { if (e.textContent !== cd) e.textContent = cd; });
+  document.querySelectorAll('.tr-lc-ago').forEach(e => { if (e.textContent !== ago) e.textContent = ago; });
+}
+// 화면을 껐다 켜거나 다른 탭에서 돌아오면 바로 새로 불러옴
+const wakeLive = () => { if (!document.hidden && Date.now() - liveSt.checkedAt > 10000) { liveTick(); refreshLive(); } };
+document.addEventListener('visibilitychange', wakeLive);
+addEventListener('focus', wakeLive);
+addEventListener('pageshow', e => { if (e.persisted) wakeLive(); });
 function toggleLivePop(force) {
   const open = force ?? livePop.hidden;
   livePop.hidden = !open; liveEl.setAttribute('aria-expanded', String(open));
@@ -173,20 +216,45 @@ const hh = t => String(t ?? '').slice(11, 13);
 /** 지금 서울숲: 붐빔 단계 · 인원 · 축구장 한 면당 몇 명 · 앞으로 몇 시간
  *  part: 'top' = 첫 화면 맨 위에 늘 보이는 부분(단계·인원·막대) / 'rest' = 「자세히」 안 나머지 / 없으면 전부 */
 function liveCard(part) {
-  if (!live) return null;
+  const live = liveShown;   // 카드는 마지막으로 받은 값을 기준 시각과 함께 보여 줌(바깥 live는 추천 계산용)
+  const top_ = part !== 'rest', rest = part !== 'top';
+  if (!live) {   // 한 번도 못 받았으면: 예비 값 없이 '연결 실패'만
+    return liveSt.failed && top_ ? h('section', { class: `tr-livecard fail old${part ? ` ${part}` : ''}`, 'aria-label': '서울숲 실시간 붐빔' },
+      h('div', { class: 'tr-lc-head' }, h('span', { class: 'tr-lc-dot' }), h('small', null, '지금 서울숲'), h('b', null, '연결 실패')),
+      h('p', { class: 'tr-lc-meta' }, h('span', { class: 'bad' }, '서울시 실시간 인구를 받지 못했어요'), h('span', null, '다시 시도까지 ', h('span', { class: 'tr-lc-cd' }, cdText())))) : null;
+  }
   const fc = (live.forecast ?? []).filter(f => f.max != null).slice(0, 8);
   const top = Math.max(live.max ?? 0, ...fc.map(f => f.max)) || 1;
   const perPitch = v => Math.round(v / PARK_M2 * PITCH_M2);
   const day = fc.filter(f => +hh(f.time) >= 6 && +hh(f.time) < 22);      // 밤(22~6시)은 '한산한 때'로 권하지 않음
   const calm = day.length ? day.reduce((a, f) => (f.max < a.max ? f : a)) : null;
   const rankOf = lv => Math.max(0, LIVE_STEPS.indexOf(lv));
-  const top_ = part !== 'rest', rest = part !== 'top';
-  return h('section', { class: `tr-livecard r${live.rank}${part ? ` ${part}` : ''}`, 'aria-label': '서울숲 실시간 붐빔' },
+  // 큰 숫자: 500명 단위 구간의 가운데 값(추정). 정확한 인원이 아님
+  const mid = midOf(live), pm = midOf(livePrev);
+  const trend = mid != null && pm != null ? Math.sign(mid - pm) : null;
+  // 1시간 뒤: 같은 응답의 FCST_PPLTN(서울시 12시간 예측) 중 기준 시각 + 1시간에 가장 가까운 것
+  const t0 = kstDate(live.time);
+  const f1 = t0 ? (live.forecast ?? []).map(f => ({ ...f, dt: (kstDate(f.time) - t0) / 60000 })).filter(f => f.min != null && f.dt >= 30)
+    .sort((a, b) => Math.abs(a.dt - 60) - Math.abs(b.dt - 60))[0] : null;
+  const f1d = f1 ? Math.sign(midOf(f1) - (mid ?? midOf(f1))) : 0;
+  const old = liveOld(), age = liveAgeMin();
+  return h('section', { class: `tr-livecard r${live.rank}${part ? ` ${part}` : ''}${old ? ' old' : ''}${liveSt.flash && top_ ? ' flash' : ''}`, 'aria-label': '서울숲 실시간 붐빔' },
     top_ && h('div', { class: 'tr-lc-head' },
       h('span', { class: 'tr-lc-dot' }), h('small', null, '지금 서울숲'), h('b', null, live.level),
-      live.min != null ? h('strong', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}`, h('small', null, '명')) : null),
+      mid != null ? h('strong', null, `약 ${fmtPeople(mid)}`, h('small', null, '명')) : null),
+    top_ && mid != null && h('div', { class: 'tr-lc-est' },
+      trend != null ? h('span', { class: `tr-lc-trend ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'same'}`, title: `직전 ${hhmm(livePrev.time)} 기준 ${fmtPeople(livePrev.min)}~${fmtPeople(livePrev.max)}명` },
+        trend > 0 ? '▲ 늘었어요' : trend < 0 ? '▼ 줄었어요' : '= 그대로', h('small', null, ` 직전 ${hhmm(livePrev.time)}보다`)) : h('span'),
+      h('small', null, `${fmtPeople(live.min)}~${fmtPeople(live.max)}명 구간의 가운데 값(추정)`)),
     top_ && h('div', { class: 'tr-lc-gauge', role: 'img', 'aria-label': `4단계 중 ${live.rank + 1}단계 ${live.level}` },
       LIVE_STEPS.map((s, i) => h('div', { class: i <= live.rank ? `on s${i}` : '' }, h('i'), h('span', null, s)))),
+    top_ && live.msg ? h('p', { class: 'tr-lc-msg', title: live.msg }, live.msg) : null,
+    top_ && f1 ? h('p', { class: 'tr-lc-next' }, `${f1.dt <= 90 ? `1시간 뒤(${+hh(f1.time)}시)` : `${+hh(f1.time)}시`} ${f1d > 0 ? '↗' : f1d < 0 ? '↘' : '→'} `,
+      h('b', null, `${fmtPeople(f1.min)}~${fmtPeople(f1.max)}명`), f1.level ? ` · ${f1.level}` : '', h('small', null, '서울시 예측')) : null,
+    top_ && h('p', { class: 'tr-lc-meta' },
+      liveSt.failed ? h('span', { class: 'bad' }, `연결 실패 · 마지막 확인 ${hmOf(liveSt.okAt)}`) : null,
+      h('span', null, `기준 ${hhmm(live.time)} · `, h('span', { class: 'tr-lc-ago' }, agoText(age)), !liveSt.failed && old ? ' (오래된 값)' : ''),
+      h('span', null, liveSt.failed ? '다시 시도까지 ' : '다음 확인까지 ', h('span', { class: 'tr-lc-cd' }, cdText()))),
     rest && live.min != null ? h('p', { class: 'tr-lc-feel' }, icon('users', 13), `축구장 한 면 넓이에 약 ${perPitch(live.min)}~${perPitch(live.max)}명꼴`) : null,
     rest && fc.length ? h('div', { class: 'tr-lc-fc' },
       h('div', { class: 'tr-lc-bars' },
@@ -757,8 +825,7 @@ function go(step) {
     h('div', { class: `tr-opts${step === 1 ? ' c3' : ''}` }, s.opts().map((o, i) => h('button', { type: 'button', class: 'tr-opt tr-glow-on', style: `--i:${i}`, onclick: ev => choose(s.key, o.key, ev.currentTarget) },
       h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
-    step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,
-  ]);
+    step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
   if (step !== 1 && accessOpen) { accessOpen = false; accessPins(); }
 }
 async function choose(key, value, btn) {
@@ -1177,7 +1244,7 @@ function drawCourse({ reveal = false, changed = new Set() } = {}) {
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
-      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: g.pos ? `<div class="tr-flower mini" title="${esc(g.name)}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms"></div>` : `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.gardens ? `정원 ${g.gardens.length}곳` : g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: g.pos ? [12, 12] : [26, 26], iconAnchor: g.pos ? [6, 6] : [13, 13] }), zIndexOffset: g.pos ? 590 : 600 })
+      L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: g.pos ? `<div class="tr-flower mini" title="${esc(g.name)}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${FLOWER_SVG}</div>` : `<div class="tr-flower${g.season ? '' : ' off'}" style="--d:${(reveal ? i * 200 + 400 : 0)}ms">${icon('leaf', 13).outerHTML}<em>${esc(g.gardens ? `정원 ${g.gardens.length}곳` : g.name)}${g.season ? '' : ` · ${g.next}월`}</em></div>`, iconSize: g.pos ? [18, 18] : [26, 26], iconAnchor: g.pos ? [9, 9] : [13, 13] }), zIndexOffset: g.pos ? 590 : 600 })
         .addTo(layers.garden).on('click', () => gardenShot(g));
     }
   });
@@ -1851,7 +1918,7 @@ async function boot() {
   mountTreeCam({ map, L, hubs: () => app?.model?.hubById ?? {}, fly: ll => flyToVisible(ll, 17, .7) });
   if (backFromMobile) el.intro.classList.add('tr-quiet');   // 글자 없이 어두운 화면만 덮어 둠: 멀리 있는 처음 지도가 비치지 않게
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
-  refreshLive(); setInterval(refreshLive, 5 * 60 * 1000);      // 서울시 자료가 5분마다 바뀜
+  refreshLive(); setInterval(liveTick, 1000);      // 서울시 자료가 5분마다 바뀜: 5분마다 다시 불러오고 카운트다운 표시
   refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
