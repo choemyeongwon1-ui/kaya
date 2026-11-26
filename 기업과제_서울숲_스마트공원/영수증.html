@@ -826,6 +826,24 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       src.connect(f); f.connect(gn); gn.connect(actx.destination); src.start();
     } catch (e) { /* 소리 없이 진행 */ }
   }
+  // 사진 찍는 순간 '찰칵': 셔터가 열리고 닫히는 짧은 소리 두 번(잡음을 걸러 날카롭게, 아주 빨리 줄어듦)
+  function shutterSound() {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended' && actx.resume) actx.resume();
+      var click = function (at, freq, vol, dur) {
+        var len = Math.floor(actx.sampleRate * dur), buf = actx.createBuffer(1, len, actx.sampleRate), ch = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
+        var src = actx.createBufferSource(); src.buffer = buf;
+        var f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 1.4;
+        var gn = actx.createGain(); gn.gain.value = vol;
+        src.connect(f); f.connect(gn); gn.connect(actx.destination); src.start(actx.currentTime + at);
+      };
+      click(0, 3200, 1.6, 0.045);      // 찰
+      click(0.075, 1800, 1.3, 0.07);   // 칵
+    } catch (e) { /* 소리 없이 진행 */ }
+  }
   $('#bSound').onclick = function () { soundOn = !soundOn; this.setAttribute('aria-pressed', String(soundOn)); this.textContent = soundOn ? '🔊 출력 소리 켜짐' : '🔈 출력 소리 꺼짐'; };
 
   // ---------- 화면 전환 ----------
@@ -902,7 +920,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       };
       var snap = function () {
         $('#kCount').textContent = ''; $('#flash').classList.remove('go'); void $('#flash').offsetWidth; $('#flash').classList.add('go');
-        printerSound(60);
+        shutterSound();
         var dc = mode === 'video' && video.videoWidth ? ditherFrom(video, video.videoWidth, video.videoHeight, true) : ditherFrom(fake, fake.width, fake.height, true);
         state.photo = dc;
         stopCam();
@@ -912,7 +930,8 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       tick();
     });
   }
-  $('#bShoot').onclick = shoot;
+  // 버튼을 누르는 순간 소리 장치를 깨워 둠(3초 뒤 찰칵 소리가 막히지 않게)
+  $('#bShoot').onclick = function () { try { if (soundOn) { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.resume) actx.resume(); } } catch (e) {} shoot(); };
   $('#bRetake').onclick = shoot;
   $('#bSkip').onclick = function () { state.photo = null; print(); };
   $('#bUse').onclick = function () { print(); };
