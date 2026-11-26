@@ -11,7 +11,7 @@ const LV = ['여유', '보통', '약간 붐빔', '붐빔'];
 const ROAD_C = { '원활': '#6af5b0', '서행': '#ffc978', '정체': '#ff7a66' };
 // 하차 급증: 최근 10분 ≥ 80명이면서 그 앞 20분의 10분 평균의 1.5배 이상(잠정 규칙, 검증 필요)
 const SURGE_MIN = 80, SURGE_X = 1.5;
-const LOG_KEY = 'sf-tour-autolog-v1';
+const LOG_KEY = 'sf-tour-autolog-v2';
 
 let flow = null;
 export const getFlow = () => flow;
@@ -58,15 +58,17 @@ export const roadJam = () => {
   return r.length ? r.filter(x => x.idx === '정체').length / r.length : null;
 };
 
-/** 곧 붐벼요: 역 급증(10~20분 뒤) 또는 서울시 예측이 3시간 안에 지금보다 한 단계 이상 오름 */
+/** 30분 뒤 예측(늘 보임): 서울숲역·뚝섬역 하차 급증이면 '붐빌 수 있어요', 서울시 예측이 3시간 안에 오르면 그 시각,
+ *  둘 다 아니면 '지금처럼'. 역 하차 → 공원 도착까지 20~30분으로 봄(잠정, 검증 필요) */
 export function soonBusy(live) {
-  const hits = surges().filter(s => s.hit);
-  if (hits.length) return { when: '10~20분 뒤', text: `${hits.map(s => `${s.name}역`).join('·')}에서 사람이 많이 내리고 있어요`, src: '지하철 내린 사람 · 짐작' };
-  if (!live?.level) return null;
+  const sg = surges(), hits = sg.filter(s => s.hit);
+  const subTxt = sg.length ? sg.map(s => `${s.name}역 ${Math.round(s.off10)}명`).join(' · ') + ' (10분간 내림)' : '';
+  if (hits.length) return { hot: true, head: '30분 뒤 서울숲이 붐빌 수 있어요', text: `${hits.map(s => `${s.name}역`).join('·')}에서 평소보다 사람이 많이 내리고 있어요`, src: `${subTxt} · 서울시 실시간 도시데이터` };
+  if (!live?.level) return sg.length ? { hot: false, head: '30분 뒤에도 지금과 비슷해요', text: '역에서 내리는 사람이 평소 수준이에요', src: subTxt } : null;
   const cur = LV.indexOf(live.level);
   const up = (live.forecast ?? []).slice(0, 3).find(f => LV.indexOf(f.level) > cur);
-  if (up) return { when: `${+String(up.time).slice(11, 13)}시쯤`, text: `「${up.level}」으로 바뀔 거예요`, src: '서울시 예측' };
-  return null;
+  if (up) return { hot: true, head: `${+String(up.time).slice(11, 13)}시쯤 서울숲이 붐빌 수 있어요`, text: `「${live.level}」 → 「${up.level}」`, src: `서울시 혼잡 예측${subTxt ? ` · ${subTxt}` : ''}` };
+  return { hot: false, head: `30분 뒤에도 「${live.level}」일 거예요`, text: sg.length ? '역에서 내리는 사람이 평소 수준이에요' : '서울시 예측에서도 더 붐비지 않아요', src: `${subTxt ? `${subTxt} · ` : ''}서울시 실시간 도시데이터` };
 }
 
 /* ---------- ① 오는 길 지도 위 흐름 ---------- */
@@ -106,7 +108,7 @@ function loadLog() {
   try { const v = JSON.parse(localStorage.getItem(LOG_KEY) || 'null'); if (v?.day === new Date().toDateString()) return v; } catch {}
   return { day: new Date().toDateString(), last: {}, items: [] };
 }
-/** rules: [{ key, on, onText, offText }] — 켜지고 꺼질 때만 한 줄씩 남김(처음 열었을 땐 켜진 것만) */
+/** rules: [{ key, on, onText, offText }] — 처음 열면 지금 판단을 모두 한 줄씩, 그 뒤엔 켜지고 꺼질 때만 */
 export function recordAuto(rules) {
   const lg = loadLog(), d = new Date(), t = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
   let changed = false;
@@ -114,18 +116,19 @@ export function recordAuto(rules) {
     const prev = lg.last[r.key];
     if (prev === r.on) continue;
     lg.last[r.key] = r.on; changed = true;
-    if (prev === undefined && !r.on) continue;
     lg.items.unshift({ t, on: r.on, text: r.on ? r.onText : r.offText });
   }
   if (changed) { lg.items = lg.items.slice(0, 30); try { localStorage.setItem(LOG_KEY, JSON.stringify(lg)); } catch {} }
   return lg.items;
 }
+let autoMore = false;
 export function autoCard(items) {
-  return h('section', { class: 'tr-auto', 'aria-label': '오늘 알아서 바꾼 것' },
-    h('b', { class: 'tr-auto-h' }, '오늘 알아서 바꾼 것'),
-    items.length ? h('ol', null, items.slice(0, 8).map(i => h('li', { class: i.on ? 'on' : '' }, h('time', null, i.t), h('span', null, i.text))))
-      : h('p', null, '아직 없어요. 날씨도 붐빔도 괜찮아서 평소대로 골라 드려요.'),
-    h('p', { class: 'tr-lc-src' }, '날씨·붐빔·지하철이 기준을 넘으면 화면이 스스로 안내를 바꿔요 · 이 기기에만 저장'));
+  const list = h('ol', null, items.slice(0, autoMore ? 30 : 4).map(i => h('li', { class: i.on ? 'on' : '' }, h('time', null, i.t), h('span', null, i.text))));
+  return h('section', { class: 'tr-auto', 'aria-label': '자동 판단 기록' },
+    h('div', { class: 'tr-auto-h' }, h('i'), h('b', null, '자동 판단 기록'), h('small', null, '도시 데이터를 보고 시스템이 스스로 바꾼 것')),
+    list,
+    items.length > 4 ? h('button', { type: 'button', class: 'tr-auto-more', onclick: e => { autoMore = !autoMore; e.currentTarget.closest('.tr-auto').replaceWith(autoCard(items)); } }, autoMore ? '접기' : `지난 기록 ${items.length - 4}개 더 보기`) : null,
+    h('p', { class: 'tr-lc-src' }, '5분마다 날씨·붐빔·지하철·도로를 확인 · 기준(체감 31℃ 등)은 잠정 · 이 기기에만 저장'));
 }
 
 /* ---------- 스타일 ---------- */
@@ -138,10 +141,14 @@ const css = `
 .tr-flow-key i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .tr-flow-key i.arr{height:7px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
 .tr-flow-key p{flex-basis:100%;margin:4px 0 0}
-.tr-lc-soon{margin:8px 0 0;padding:8px 10px;border-radius:10px;background:rgba(255,201,120,.12);border:1px solid rgba(255,201,120,.45);font-size:12.5px;line-height:1.45}
-.tr-lc-soon b{color:#ffc978;margin-right:4px}.tr-lc-soon small{display:block;font-size:10.5px;opacity:.6}
-.tr-auto{margin-top:12px;padding:12px 12px 8px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-.tr-auto-h{display:block;font-size:13px;margin-bottom:6px}
+.tr-lc-soon{margin:8px 0 0;padding:8px 10px;border-radius:10px;background:rgba(106,245,176,.07);border:1px solid rgba(106,245,176,.25);font-size:12px;line-height:1.45}
+.tr-lc-soon b{display:block;font-size:13.5px;color:#6af5b0}.tr-lc-soon small{display:block;font-size:10.5px;opacity:.6}
+.tr-lc-soon.hot{background:rgba(255,201,120,.12);border-color:rgba(255,201,120,.5)}.tr-lc-soon.hot b{color:#ffc978}
+.tr-auto{margin:10px 0 0;padding:12px 12px 8px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.tr-auto-h{display:flex;align-items:baseline;gap:7px;margin-bottom:6px;flex-wrap:wrap}.tr-auto-h b{font-size:13px}.tr-auto-h small{font-size:10.5px;opacity:.55}
+.tr-auto-h i{width:7px;height:7px;border-radius:50%;background:#6af5b0;box-shadow:0 0 8px #6af5b0;align-self:center;animation:trAutoP 2s infinite}
+@keyframes trAutoP{50%{opacity:.35}}
+.tr-auto-more{border:0;background:none;color:inherit;opacity:.6;font-size:11.5px;padding:4px 0;cursor:pointer;text-decoration:underline}
 .tr-auto ol{list-style:none;margin:0;padding:0}
 .tr-auto li{display:grid;grid-template-columns:42px 1fr;gap:6px;padding:6px 0;border-top:1px solid rgba(255,255,255,.07);font-size:12.5px;line-height:1.45;opacity:.7}
 .tr-auto li.on{opacity:1}.tr-auto li time{font-size:11.5px;opacity:.6;padding-top:1px}

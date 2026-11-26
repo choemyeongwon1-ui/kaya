@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=9';
-import { refreshFlow, drawFlow, flowLegend, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=1';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { refreshFlow, drawFlow, flowLegend, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=2';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -133,6 +133,7 @@ function paintLive() {
 function paintHello() {
   if (!app) return;
   document.querySelectorAll('.tr-status-slot').forEach(s => s.replaceChildren(statusBar() ?? ''));
+  document.querySelectorAll('.tr-auto-slot').forEach(s => s.replaceChildren(autoBlock() ?? ''));
   document.querySelectorAll('.tr-access-slot').forEach(s => s.replaceChildren(accessBar() ?? ''));
   accessPins();
   document.querySelectorAll('.tr-quick-slot').forEach(s => s.replaceChildren(quickBlock()));
@@ -252,7 +253,7 @@ function liveCard(part) {
     top_ && live.msg ? h('p', { class: 'tr-lc-msg', title: live.msg }, live.msg) : null,
     top_ && f1 ? h('p', { class: 'tr-lc-next' }, `${f1.dt <= 90 ? `1시간 뒤(${+hh(f1.time)}시)` : `${+hh(f1.time)}시`} ${f1d > 0 ? '↗' : f1d < 0 ? '↘' : '→'} `,
       h('b', null, `${fmtPeople(f1.min)}~${fmtPeople(f1.max)}명`), f1.level ? ` · ${f1.level}` : '', h('small', null, '서울시 예측')) : null,
-    top_ && (sb => sb ? h('p', { class: 'tr-lc-soon' }, h('b', null, `곧 붐벼요 · ${sb.when}`), sb.text, h('small', null, sb.src)) : null)(soonBusy(live)),
+    top_ && (sb => sb ? h('p', { class: `tr-lc-soon${sb.hot ? ' hot' : ''}` }, h('b', null, sb.head), sb.text, h('small', null, sb.src)) : null)(soonBusy(live)),
     top_ && h('p', { class: 'tr-lc-meta' },
       liveSt.failed ? h('span', { class: 'bad' }, `연결 실패 · 마지막 확인 ${hmOf(liveSt.okAt)}`) : null,
       h('span', null, `기준 ${hhmm(live.time)} · `, h('span', { class: 'tr-lc-ago' }, agoText(age)), !liveSt.failed && old ? ' (오래된 값)' : ''),
@@ -445,9 +446,11 @@ function renderIntro(err) {
     err ? h('p', null, err) : h('div', { class: 'tr-intro-bar' }, h('i')),
     err ? h('button', { type: 'button', class: 'tr-cta', onclick: () => location.reload() }, '다시 시도') : null));
 }
+// 첫 화면은 서울숲을 가운데 두고 사방으로 넓혀 성수역·뚝섬역·주변 도로까지 보이게(도시 흐름 지도)
+const cityBounds = () => app.model.parkBounds.pad(.5);
 async function arrive() {
   if (!backFromMobile) el.intro.classList.add('hide');
-  const { center, zoom } = map._getBoundsCenterZoom(app.model.parkBounds, padding());
+  const { center, zoom } = map._getBoundsCenterZoom(cityBounds(), padding());
   await new Promise(res => {
     if (reduce || backFromMobile) { map.setView(center, zoom, { animate: false }); return res(); }
     map.once('moveend', res);
@@ -514,6 +517,22 @@ function situation() {
  * 첫 화면 맨 위 한 줄: 기온 · 미세먼지 · 붐빔. 누르면 자세한 붐빔·날씨 카드가 펼쳐짐
  * 평소엔 한 줄만, 더위·미세먼지 나쁨·붐빔일 때만 색 띠와 한 문장으로 커짐(위험할 때만 눈에 띄게)
  */
+/** 자동 판단 기록: 날씨·붐빔·지하철·도로가 기준을 넘거나 내려올 때마다, 시스템이 바꾼 안내를 숫자와 함께 한 줄씩.
+ *  처음 열면 지금 판단을 모두 한 번 적음. 기준값(체감 31℃ 등)은 주제서 예시·잠정 규칙(검증 필요) */
+function autoBlock() {
+  if (!app) return null;
+  const w = app.wx, h0 = w?.hourly?.[0], an = w?.air?.now, sit = situation(), rn = rainNow();
+  const dust = an ? [an.pm10Label, an.pm25Label].filter(g => DUST_G.includes(g)).sort((a, b) => DUST_G.indexOf(b) - DUST_G.indexOf(a))[0] ?? null : null;
+  const feels = h0 ? Math.round(h0.feels ?? h0.temp) : null, jam = roadJam();
+  const rules = [];
+  if (feels != null) rules.push({ key: 'hot', on: !!sit.hot, onText: `체감온도 ${feels}℃ → 그늘·물가 코스로 자동 전환`, offText: `체감온도 ${feels}℃ → 평소 코스` });
+  if (access?.rain) rules.push({ key: 'rain', on: !!rn, onText: `비 ${rn?.mm60 ?? ''}mm → 물가 길 빼고 실내 안내`, offText: '비 없음 → 야외 코스 그대로' });
+  if (dust) rules.push({ key: 'dust', on: DUST_G.indexOf(dust) >= 2, onText: `미세먼지 ${dust} → 실내 장소 함께 안내`, offText: `미세먼지 ${dust} → 야외 활동 괜찮음` });
+  if (liveShown) rules.push({ key: 'busy', on: !!sit.busy, onText: `서울숲 「${liveShown.level}」 → 덜 붐비는 곳으로 분산`, offText: `서울숲 「${liveShown.level}」 → 분산 안 함` });
+  for (const g of surges()) rules.push({ key: `surge_${g.name}`, on: g.hit, onText: `${g.name}역 10분간 ${Math.round(g.off10)}명 내림(평소의 ${(g.off10 / Math.max(g.before, 1)).toFixed(1)}배) → 혼잡 경보`, offText: `${g.name}역 10분간 ${Math.round(g.off10)}명 내림 → 평소 수준` });
+  if (jam != null) rules.push({ key: 'jam', on: jam >= .3, onText: `주변 도로 ${Math.round(jam * 100)}% 막힘 → 지하철 권장`, offText: `주변 도로 ${Math.round(jam * 100)}% 막힘 → 차량 안내 없음` });
+  return rules.length ? autoCard(recordAuto(rules)) : null;
+}
 let statusOpen = false;
 const DUST_G = ['좋음', '보통', '나쁨', '매우나쁨'];
 function statusBar() {
@@ -533,18 +552,8 @@ function statusBar() {
   if (h0) chips.push(h('span', { class: 'tmp' }, h('b', null, `${Math.round(h0.temp)}°`), h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? ` 체감 ${Math.round(h0.feels)}°` : ''));
   if (dust) chips.push(h('span', { class: `g${DUST_G.indexOf(dust) + 1}` }, '미세먼지 ', h('b', null, dust)));
   if (!chips.length && !warn) return null;
-  // 오늘 알아서 바꾼 것: 아래 기준이 켜지고 꺼질 때 한 줄씩(추천·안내가 실제로 이 값들로 바뀜)
-  const jam = roadJam();
-  const autoItems = recordAuto([
-    { key: 'hot', on: !!sit.hot, onText: '더워서 그늘·물가 길 위주로 골라요', offText: '더위가 누그러져 평소대로 골라요' },
-    { key: 'rain', on: !!rn, onText: '비가 와서 물가 길은 피하고 실내도 알려 드려요', offText: '비가 그쳐 평소대로 골라요' },
-    { key: 'dust', on: DUST_G.indexOf(dust) >= 2, onText: `미세먼지가 ${dust ?? '나빠'}서 실내 장소도 같이 알려 드려요`, offText: '미세먼지가 나아졌어요' },
-    { key: 'busy', on: !!sit.busy, onText: '붐벼서 덜 붐비는 곳 위주로 골라요', offText: '붐빔이 풀려 평소대로 골라요' },
-    ...surges().map(g => ({ key: `surge_${g.name}`, on: g.hit, onText: `${g.name}역에서 사람이 많이 내려요 · 곧 붐빈다고 알려 드려요`, offText: `${g.name}역 내리는 사람이 줄었어요` })),
-    { key: 'jam', on: jam != null && jam >= .3, onText: '주변 길이 많이 막혀서 지하철을 권해요', offText: '주변 길이 풀렸어요' },
-  ]);
   const lc = liveCard('rest'), wc = weatherCard(), ec = envCard(), canOpen = true;
-  const more = h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? ''), ec, autoCard(autoItems));
+  const more = h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? ''), ec);
   const label = () => statusOpen ? '접기' : '자세히';
   const line = h(canOpen ? 'button' : 'div', { type: canOpen ? 'button' : null, class: 'tr-status-line', 'aria-expanded': canOpen ? String(statusOpen) : null,
     onclick: canOpen ? e => { statusOpen = !statusOpen; more.hidden = !statusOpen; e.currentTarget.setAttribute('aria-expanded', String(statusOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } : null },
@@ -715,8 +724,8 @@ function accessPins(fly = false) {
   const wasMap = el.panel.classList.contains('accmap');
   el.panel.classList.toggle('accmap', on);
   if (on && !wasMap && !desk()) { const sec = el.panel.querySelector('.tr-access'); if (sec) el.panel.scrollTop = sec.offsetTop - 12; }
-  if (on) drawFlow(layers.flow, L, PARK_CENTER); else layers.flow.clearLayers();
-  if (!on) { if (fly && app?.model?.parkBounds) flyBounds(app.model.parkBounds, padding(), .8); return; }
+  if (st.step === 1 && !trip) drawFlow(layers.flow, L, PARK_CENTER); else layers.flow.clearLayers();
+  if (!on) { if (fly && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
   const pts = [];
   const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
   const add = (lat, lon, cls, inner, pop, z = 0) => {
@@ -831,6 +840,7 @@ function go(step) {
       step > 1 ? h('button', { type: 'button', class: 'tr-back', onclick: () => go(step - 1) }, '이전') : null),
     h('div', { class: 'tr-dots', 'aria-label': `${step}/3단계` }, [1, 2, 3].map(i => h('i', { class: i < step ? 'done' : i === step ? 'on' : '' }))),
     step === 1 ? h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? '') : null,
+    step === 1 ? h('div', { class: 'tr-auto-slot' }, autoBlock() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-status-slot' }, statusBar() ?? '') : null,
     step === 1 ? h('div', { class: 'tr-access-slot' }, accessBar() ?? '') : null,
     h('h2', { class: 'tr-q' }, s.q),
@@ -839,7 +849,8 @@ function go(step) {
       h('span', { class: 'tr-opt-ico' }, icon(o.icon, 18)), h('b', null, o.label), o.desc ? h('small', null, o.desc) : null))),
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
-  if (step !== 1 && accessOpen) { accessOpen = false; accessPins(); }
+  if (step !== 1 && accessOpen) accessOpen = false;
+  if (layers) accessPins();
 }
 async function choose(key, value, btn) {
   watchMe();          // 첫 선택 때 위치를 물어봅니다(코스를 짤 때쯤 준비되도록)
@@ -1756,7 +1767,7 @@ function goodbye() {
   const info = endInfo ?? { walkMin: 0, places: 0, later: null };
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers();
   setFocus(false);
-  flyBounds(app.model.parkBounds, padding(), 1.2);
+  flyBounds(cityBounds(), padding(), 1.2);
   trip = null; hud = null;
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
@@ -1921,7 +1932,7 @@ function restart() {
   trip = null; hud = null;
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
-  flyBounds(app.model.parkBounds, padding(), 1);
+  flyBounds(cityBounds(), padding(), 1);
   go(1);
 }
 
