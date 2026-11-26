@@ -131,14 +131,15 @@ export function drawFlow(layer, L, center, gates) {
   const off = { interactive: false };
   // 붐빔 단계: 서울숲 + 주변 장소
   const pk = flow.park;
-  if (pk?.level) levelPill(L, layer, center, '서울숲', pk.level, pk.min != null ? `${pk.min.toLocaleString()}~${pk.max.toLocaleString()}명` : '', true);
+  if (pk?.level) levelPill(L, layer, center, '서울숲', pk.level, '', true);
   for (const a of flow.near ?? []) if (NEAR_POS[a.name] && a.level) levelPill(L, layer, NEAR_POS[a.name], a.name, a.level, '', false);
   // 역: 내린 사람이 많을수록 크게 퍼지는 빛 + 숫자 이름표
-  const sf = stationFlows(), max = Math.max(1, ...sf.map(s => s.off10));
+  // 추정값(성수역)은 빼고, 이름표는 역 이름 + 인원만
+  const sf = stationFlows().filter(s => !s.est), max = Math.max(1, ...sf.map(s => s.off10));
   for (const s of sf) {
     const k = s.off10 / max, size = Math.round(40 + 56 * k), u = vsUsual(s), hot = u?.cls === 'hot';
-    const tag = `<div class="tr-fl-tag${s.est ? ' est' : ''}${s.lon - center[1] > .008 ? ' left' : ''}" style="--o:${Math.round(size * .32) + 8}px">`
-      + `<span>${s.name}역</span><b>${s.est ? '약 ' : ''}${nf(s.off10)}<small>명 내림</small></b>${u ? `<em class="${u.cls}">${u.text}</em>` : ''}</div>`;
+    const tag = `<div class="tr-fl-tag${s.lon - center[1] > .008 ? ' left' : ''}" style="--o:${Math.round(size * .32) + 8}px">`
+      + `<span>${s.name}역</span><b>${nf(s.off10)}<small>명</small></b></div>`;
     L.marker([s.lat, s.lon], { ...off, zIndexOffset: 700, icon: L.divIcon({ className: 'tr-fl-wrap', iconSize: [0, 0],
       html: `<div class="tr-fl-bc${hot ? ' hot' : ''}${s.est ? ' est' : ''}" style="--z:${size}px;--d:${(3.4 - 1.4 * k).toFixed(2)}s"><i class="glow"></i><i class="sonar"></i><i class="sonar"></i><i class="sonar"></i><i class="core"></i></div>${tag}` }) }).addTo(layer);
   }

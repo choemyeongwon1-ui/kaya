@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
-import { refreshFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=18';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
+import { refreshFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=19';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -1153,7 +1153,7 @@ function gardenStrip(s) {
       h('b', null, u.name),
       u.text ? h('p', null, u.text) : null,
       (u.maker || u.plants?.length) ? h('p', { class: 'tr-gl-sub' }, [u.maker ? `만든 이 ${u.maker}` : null, u.plants?.length ? `식물 ${u.plants.slice(0, 3).join(', ')}` : null].filter(Boolean).join(' · ')) : null,
-      u.expo && REMAIN[u.remains] ? h('em', { class: u.remains_sure ? 'ok' : '' }, u.remains_sure ? REMAIN[u.remains] : `${REMAIN[u.remains]}${u.remains === '남음' ? '(추정)' : ''}`) : null)));
+      u.expo && u.remains_sure && REMAIN[u.remains] ? h('em', { class: 'ok' }, REMAIN[u.remains]) : null)));
   const hidden = [];
   for (const u of units) {
     const k = u.hub?.id ?? u.id; perSpot[k] = (perSpot[k] ?? 0) + 1;
@@ -1525,10 +1525,10 @@ function gardenPass(g) {
 function gardenShot(g, auto = false) {
   layers.gshot.clearLayers();
   const ph = gardenImg(g);
-  const img = ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.caption ?? g.name)}">` : `<div class="tr-gshot-none">${icon('leaf', 30).outerHTML}<span>${esc(g.name)}</span></div>`;
-  const tag = g.pos ? `정원박람회 ${g.kind ?? ''} · 자리는 배치도로 어림` : g.season ? (g.fresh ? '새 소식' : '지금 볼 수 있어요') : `${g.next}월에 피어요`;
-  const credit = ph ? creditLine(ph) : '';
-  const m = L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-gshot${g.season ? '' : ' off'}">${img}<div class="tr-gshot-cap"><em>${esc(tag)}</em><b>${esc(g.name)}</b><p>${esc(g.text?.length > 60 ? `${g.text.slice(0, 60)}…` : g.text ?? '')}</p></div>${credit}</div>`, iconSize: [230, 0], iconAnchor: [115, 26] }), interactive: false, zIndexOffset: 1100 }).addTo(layers.gshot);
+  // 사진 출처는 화면에 쓰지 않고 마우스를 올리면 보이게(라이선스 표시는 유지)
+  const img = ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.caption ?? g.name)}" title="${esc(`${ph.credit ?? ''} · ${ph.license ?? ''}`)}">` : `<div class="tr-gshot-none">${icon('leaf', 30).outerHTML}<span>${esc(g.name)}</span></div>`;
+  const tag = g.pos ? `정원박람회 ${g.kind ?? ''}`.trim() : g.season ? (g.fresh ? '새 소식' : '지금 볼 수 있어요') : `${g.next}월에 피어요`;
+  const m = L.marker([g.hub.lat, g.hub.lon], { icon: L.divIcon({ className: '', html: `<div class="tr-gshot${g.season ? '' : ' off'}">${img}<div class="tr-gshot-cap"><em>${esc(tag)}</em><b>${esc(g.name)}</b><p>${esc(g.text?.length > 60 ? `${g.text.slice(0, 60)}…` : g.text ?? '')}</p></div></div>`, iconSize: [230, 0], iconAnchor: [115, 26] }), interactive: false, zIndexOffset: 1100 }).addTo(layers.gshot);
   if (!auto) flyToVisible([g.hub.lat, g.hub.lon], 17.3, .8, desk() ? 120 : 130);
   setTimeout(() => { const n = m.getElement()?.firstChild; if (n) { n.classList.add('bye'); setTimeout(() => layers.gshot.removeLayer(m), 500); } }, auto ? 4200 : 7000);
   layers.garden.eachLayer(x => { const n = x.getElement?.()?.firstChild; if (n && x.getLatLng().equals([g.hub.lat, g.hub.lon])) { n.classList.remove('ping'); void n.offsetWidth; n.classList.add('ping'); } });
