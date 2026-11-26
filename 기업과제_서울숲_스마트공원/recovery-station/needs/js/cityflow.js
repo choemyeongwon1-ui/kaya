@@ -126,19 +126,18 @@ function levelPill(L, layer, ll, name, level, people, big) {
 export function clearFlow(layer) { layer.clearLayers(); showBox(layer._map, false); }
 export function drawFlow(layer, L, center, gates) {
   layer.clearLayers();
-  showBox(layer._map, !!flow);
+  showBox(layer._map, false);   // 왼쪽 설명 상자는 쓰지 않음(지도 이름표만)
   if (!flow) return;
   const off = { interactive: false };
   // 붐빔 단계: 서울숲 + 주변 장소
   const pk = flow.park;
   if (pk?.level) levelPill(L, layer, center, '서울숲', pk.level, '', true);
-  for (const a of flow.near ?? []) if (NEAR_POS[a.name] && a.level) levelPill(L, layer, NEAR_POS[a.name], a.name, a.level, '', false);
   // 역: 내린 사람이 많을수록 크게 퍼지는 빛 + 숫자 이름표
   // 추정값(성수역)은 빼고, 이름표는 역 이름 + 인원만
   const sf = stationFlows().filter(s => !s.est), max = Math.max(1, ...sf.map(s => s.off10));
   for (const s of sf) {
     const k = s.off10 / max, size = Math.round(40 + 56 * k), u = vsUsual(s), hot = u?.cls === 'hot';
-    const tag = `<div class="tr-fl-tag${s.lon - center[1] > .008 ? ' left' : ''}" style="--o:${Math.round(size * .32) + 8}px">`
+    const tag = `<div class="tr-fl-tag up" style="--o:${Math.round(size * .22) + 10}px">`
       + `<span>${s.name}역</span><b>${nf(s.off10)}<small>명</small></b></div>`;
     L.marker([s.lat, s.lon], { ...off, zIndexOffset: 700, icon: L.divIcon({ className: 'tr-fl-wrap', iconSize: [0, 0],
       html: `<div class="tr-fl-bc${hot ? ' hot' : ''}${s.est ? ' est' : ''}" style="--z:${size}px;--d:${(3.4 - 1.4 * k).toFixed(2)}s"><i class="glow"></i><i class="sonar"></i><i class="sonar"></i><i class="sonar"></i><i class="core"></i></div>${tag}` }) }).addTo(layer);
@@ -214,7 +213,7 @@ const css = `
 .tr-fl-bc.hot .sonar{border-color:rgba(255,179,92,.9)}.tr-fl-bc.hot .core{fill:#fff1dc;filter:drop-shadow(0 0 6px #ffb35c) drop-shadow(0 0 12px rgba(255,179,92,.7))}
 .tr-fl-bc.est .trk{stroke-dasharray:3 4}.tr-fl-bc.est .arc{opacity:.6}.tr-fl-bc.est .sonar{display:none}
 @keyframes trBcSpin{to{transform:rotate(360deg)}}@keyframes trBcSonar{0%{opacity:.8;transform:scale(.9)}100%{opacity:0;transform:scale(2)}}
-.tr-fl-wrap .tr-fl-tag{transform:translate(var(--o,10px),-50%)}.tr-fl-wrap .tr-fl-tag.left{transform:translate(calc(-100% - var(--o,10px)),-50%)}
+.tr-fl-wrap .tr-fl-tag{transform:translate(var(--o,10px),-50%)}.tr-fl-wrap .tr-fl-tag.left{transform:translate(calc(-100% - var(--o,10px)),-50%)}.tr-fl-wrap .tr-fl-tag.up{transform:translate(-50%,calc(-100% - var(--o,10px)))}
 @media(prefers-reduced-motion:reduce){.tr-fl-bc .spin,.tr-fl-bc .sonar{animation:none}}
 .tr-flow-card{min-width:250px}
 .tr-flow-card .sr{padding:7px 0 6px}.tr-flow-card .sr+.sr{border-top:1px solid rgba(255,255,255,.07)}

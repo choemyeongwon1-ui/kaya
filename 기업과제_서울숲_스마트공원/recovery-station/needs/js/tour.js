@@ -19,7 +19,7 @@ import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, s
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
-import { refreshFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=19';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=22';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -312,7 +312,7 @@ function makeMap() {
     park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
     gshot: L.layerGroup().addTo(map), shot: L.layerGroup().addTo(map), prog: L.layerGroup().addTo(map),
-    access: L.layerGroup().addTo(map),
+    flow: L.layerGroup().addTo(map), access: L.layerGroup().addTo(map),
   };
 }
 let baseMode = store.get('sf-tour-base', 'sat') === 'map' ? 'map' : 'sat';
@@ -445,9 +445,11 @@ function renderIntro(err) {
     err ? h('p', null, err) : h('div', { class: 'tr-intro-bar' }, h('i')),
     err ? h('button', { type: 'button', class: 'tr-cta', onclick: () => location.reload() }, '다시 시도') : null));
 }
+// 첫 화면은 서울숲 둘레를 조금 넓혀 서울숲역·뚝섬역까지 보이게
+const cityBounds = () => app.model.parkBounds.pad(.3);
 async function arrive() {
   if (!backFromMobile) el.intro.classList.add('hide');
-  const { center, zoom } = map._getBoundsCenterZoom(app.model.parkBounds, padding());
+  const { center, zoom } = map._getBoundsCenterZoom(cityBounds(), padding());
   await new Promise(res => {
     if (reduce || backFromMobile) { map.setView(center, zoom, { animate: false }); return res(); }
     map.once('moveend', res);
@@ -722,7 +724,8 @@ function accessPins(fly = false) {
   const wasMap = el.panel.classList.contains('accmap');
   el.panel.classList.toggle('accmap', on);
   if (on && !wasMap && !desk()) { const sec = el.panel.querySelector('.tr-access'); if (sec) el.panel.scrollTop = sec.offsetTop - 12; }
-  if (!on) { if (fly && app?.model?.parkBounds) flyBounds(app.model.parkBounds, padding(), .8); return; }
+  if (st.step === 1 && !trip) drawFlow(layers.flow, L, PARK_CENTER, app.model.gates); else clearFlow(layers.flow);
+  if (!on) { if (fly && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
   const pts = [];
   const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
   const add = (lat, lon, cls, inner, pop, z = 0) => {
@@ -1770,7 +1773,7 @@ function goodbye() {
   const info = endInfo ?? { walkMin: 0, places: 0, later: null };
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers();
   setFocus(false);
-  flyBounds(app.model.parkBounds, padding(), 1.2);
+  flyBounds(cityBounds(), padding(), 1.2);
   trip = null; hud = null; document.body.classList.remove('tr-walking');
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
@@ -1935,7 +1938,7 @@ function restart() {
   trip = null; hud = null; document.body.classList.remove('tr-walking');
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
-  flyBounds(app.model.parkBounds, padding(), 1);
+  flyBounds(cityBounds(), padding(), 1);
   go(1);
 }
 
@@ -1947,7 +1950,7 @@ async function boot() {
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(liveTick, 1000);      // 서울시 자료가 5분마다 바뀜: 5분마다 다시 불러오고 카운트다운 표시
   refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);
-  const flowTick = () => refreshFlow().then(() => { if (app) paintLive(); });
+  const flowTick = () => refreshFlow().then(() => { if (app) { paintLive(); accessPins(); } });
   flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
