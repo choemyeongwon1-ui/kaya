@@ -122,8 +122,8 @@ function treeGeo(kind, hi) {
     put(g, (vx, vy, vz) => { const k = 1 + (hash3(Math.round(vx * 40), Math.round(vy * 40), Math.round(vz * 40) + li) - .5) * .3; return [(vx * k + x) * sx, (vy * k + y) * sy + cy, (vz * k + z) * sx, .58 + .55 * clamp01((vy + r) / (2 * r)) + tint]; });
   });
   const trunk = (h, r0, r1) => { const g = new THREE.CylinderGeometry(r1, r0, 1, hi ? 7 : 5).toNonIndexed(); put(g, (x, y, z) => [x, (y + .5) * h, z], true); };
-  if (kind === 0) { trunk(3.4, .3, .18); lobes(hi ? [[0, 0, 0, 1], [.62, -.15, .2, .72], [-.58, -.1, -.28, .75], [.18, .42, -.5, .66], [-.24, .36, .52, .66], [.1, -.35, .55, .6], [-.1, .62, 0, .6]] : [[0, 0, 0, 1.05], [.6, -.1, .2, .75], [-.55, -.05, -.3, .78], [0, .45, .2, .7]], hi ? 1 : 0, 3, 2.7, 5.2); }
-  if (kind === 1) { trunk(4.2, .26, .15); lobes(hi ? [[0, -.6, 0, .8], [0, .1, 0, .85], [0, .8, 0, .7], [.3, .2, .25, .55], [-.3, -.1, -.25, .55]] : [[0, -.4, 0, .85], [0, .5, 0, .8]], hi ? 1 : 0, 2.2, 3.2, 6.4); }
+  if (kind === 0) { trunk(3.4, .3, .18); lobes(hi ? [[0, 0, 0, 1.05], [.62, -.15, .2, .74], [-.58, -.1, -.28, .76], [.12, .45, -.4, .68], [-.18, .3, .55, .68]] : [[0, 0, 0, 1.1], [.6, -.1, .2, .78], [-.5, .1, -.3, .8]], hi ? 1 : 0, 3, 2.7, 5.2); }
+  if (kind === 1) { trunk(4.2, .26, .15); lobes(hi ? [[0, -.55, 0, .82], [0, .2, 0, .86], [0, .85, 0, .68]] : [[0, -.4, 0, .85], [0, .5, 0, .8]], hi ? 1 : 0, 2.2, 3.2, 6.4); }
   if (kind === 2) {
     trunk(2.2, .25, .14);
     (hi ? [[2.6, 4.2, 3.6], [2.0, 3.6, 5.6], [1.3, 3.0, 7.4]] : [[2.4, 8, 5]]).forEach(([r, h, y]) => { const g = new THREE.ConeGeometry(r, h, hi ? 9 : 7).toNonIndexed(); put(g, (vx, vy, vz) => [vx, vy + y, vz, .55 + .45 * clamp01((vy + h / 2) / h)]); });
@@ -240,7 +240,7 @@ export async function openTwin(o) {
 
   // ---------- 렌더러 · 하늘 · 빛 ----------
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, low ? 1 : 1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, low ? 1 : 1.25));
   renderer.setScissorTest(true);   // 한 프레임에 왼쪽(지금)·오른쪽(개선 후)을 시저로 나눠 그림
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = low ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .5;
@@ -347,7 +347,7 @@ export async function openTwin(o) {
     m.castShadow = m.receiveShadow = true; scene.add(m);
   }
 
-  // ---------- 나무: 종류 3 × (가까움·멂) InstancedMesh, 카메라에서 330m 안은 자세한 모양, 600m 넘으면 절반만 ----------
+  // ---------- 나무: 종류 3 × (가까움·멂) InstancedMesh, 보는 지점 130m 안은 자세한 모양·그림자, 600m 넘으면 절반만 ----------
   let TREES = [];
   const TM = new Float32Array(Math.max(1, TL.length) * 16), TC = new Float32Array(Math.max(1, TL.length) * 3);
   { const m4 = new THREE.Matrix4(), qt = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), c = new THREE.Color(), up = new THREE.Vector3(0, 1, 0);
@@ -355,15 +355,15 @@ export async function openTwin(o) {
       if (t[5] === 2) c.setHSL(.33 + t[3] * .03, .32, .2 + t[3] * .05); else if (t[5] === 1) c.setHSL(.22 + t[3] * .05, .44, .31 + t[3] * .06); else c.setHSL(.24 + t[3] * .07, .38 + t[3] * .14, .29 + t[3] * .09); c.toArray(TC, k * 3); }); }
   const TMESH = [0, 1, 2].map(kd => [0, 1].map(hi => {
     const cnt = Math.max(1, TL.filter(t => t[5] === kd).length), m = new THREE.InstancedMesh(add(treeGeo(kd, !!hi)), std(0xffffff, { roughness: .92, vertexColors: true }), cnt);
-    m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cnt * 3), 3); m.castShadow = true; m.receiveShadow = !!hi; m.frustumCulled = false; m.count = 0; scene.add(m); TREES.push(m); return m;
+    m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cnt * 3), 3); m.castShadow = !!hi; m.receiveShadow = !!hi; m.frustumCulled = false; m.count = 0; scene.add(m); TREES.push(m); return m;
   }));
-  let lodAt = null, lodSig = '';
+  let lodAt = null, lodSig = ''; const lodF = new THREE.Vector3();
   function treeLOD() {
-    const p = camera.position; if (lodAt && lodAt.distanceTo(p) < 40) return; lodAt = (lodAt || new THREE.Vector3()).copy(p);
+    const p = camera.position, f = controls.target; if (lodAt && lodAt.distanceTo(p) < 40 && lodF.distanceTo(f) < 30) return; lodAt = (lodAt || new THREE.Vector3()).copy(p); lodF.copy(f);
     const cnt = [[0, 0], [0, 0], [0, 0]];
     for (let k = 0; k < TL.length; k++) {
       const dx = TM[k * 16 + 12] - p.x, dz = TM[k * 16 + 14] - p.z, d2 = dx * dx + dz * dz + p.y * p.y; if (d2 > 360000 && (k & 1)) continue;
-      const kd = TL[k][5], hi = d2 < 108900 ? 1 : 0, m = TMESH[kd][hi], c = cnt[kd][hi]++;
+      const kd = TL[k][5], fx = TM[k * 16 + 12] - f.x, fz = TM[k * 16 + 14] - f.z, hi = fx * fx + fz * fz < 16900 ? 1 : 0, m = TMESH[kd][hi], c = cnt[kd][hi]++;
       m.instanceMatrix.array.set(TM.subarray(k * 16, k * 16 + 16), c * 16); m.instanceColor.array.set(TC.subarray(k * 3, k * 3 + 3), c * 3);
     }
     const sig = cnt.flat().join(','); if (sig === lodSig) return; lodSig = sig;
@@ -615,7 +615,7 @@ export async function openTwin(o) {
     '<header class="tw-top tw-g"><b>디지털트윈 개선 시뮬레이션</b><span class="tw-tag">관리자</span>' + (rat.demo ? '<span class="tw-demo">시연용 가상 평가</span>' : '') +
     '<span class="tw-sp"></span><span class="tw-seg tw-scn" role="group" aria-label="상황"><button type="button" data-t="crowd" aria-pressed="true">붐비는 날</button><button type="button" data-t="heat" aria-pressed="false">더운 날</button></span>' +
     '<span class="tw-seg" role="group" aria-label="보기 방식"><button type="button" data-t="one" aria-pressed="false">한 화면</button><button type="button" data-t="split" aria-pressed="true">나눠 보기</button></span>' +
-    '<button type="button" data-t="glow" aria-pressed="false">칸 불편도</button><button type="button" data-t="hq" aria-pressed="' + !low + '" title="카메라가 멈추면 틈 그늘(GTAO)을 더해 한 번 더 그려요">고화질</button><span class="tw-q" hidden></span>' +
+    '<button type="button" data-t="glow" aria-pressed="false">칸 불편도</button><button type="button" data-t="hq" aria-pressed="false" title="카메라가 멈추면 틈 그늘(GTAO)을 더해 한 번 더 그려요">고화질</button><span class="tw-q" hidden></span>' +
     '<button type="button" class="tw-exit" data-t="exit">지도로 나가기</button></header>' +
     '<aside class="tw-left tw-g"><div class="tw-livebox"></div><h3>방문객 평가가 낮은 곳 <small>누르면 그곳의 개선안을 보여 줘요</small></h3><div class="tw-lowl"></div></aside>' +
     '<aside class="tw-right tw-g"><div class="tw-pred"></div><div class="tw-rate"></div></aside>' +
@@ -823,7 +823,7 @@ export async function openTwin(o) {
   }
 
   // ---------- 그리기(바뀔 때만 · 멈추면 고화질 한 번) ----------
-  let W = 1, H = 1, split = true, views = [], VIS = null, hqWant = !low, HQ = null, hqPend = false, hqAt = 0, hqLoading = false;
+  let W = 1, H = 1, split = true, views = [], VIS = null, hqWant = false, HQ = null, hqPend = false, hqAt = 0, hqLoading = false;
   function size() { W = root.clientWidth || innerWidth; H = root.clientHeight || innerHeight; renderer.setSize(W, H, false); layoutBlocks(); }
   function visRect() {
     const g = q => { const e = ui.querySelector(q); return e ? e.getBoundingClientRect() : null; }, L = g('.tw-left'), Rr = g('.tw-right'), T = g('.tw-top'), Tm = g('.tw-time');
