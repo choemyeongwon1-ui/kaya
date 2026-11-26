@@ -14,7 +14,7 @@ const ORGANS = [
 ];
 const SURE = 0.2;   // 이보다 낮으면 '확실하지 않아요'
 
-document.head.append(h('link', { rel: 'stylesheet', href: new URL('../trees.css?v=8', import.meta.url).href }));
+document.head.append(h('link', { rel: 'stylesheet', href: new URL('../trees.css?v=9', import.meta.url).href }));
 let data = null;
 const ready = fetch(new URL('../data/trees.json', import.meta.url), { cache: 'no-cache' })
   .then(r => (r.ok ? r.json() : null)).then(d => { data = d; return d; }).catch(() => null);

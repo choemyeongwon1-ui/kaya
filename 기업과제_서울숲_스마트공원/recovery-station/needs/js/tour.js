@@ -18,8 +18,8 @@ import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
-import { mountTreeCam, clearTreePins } from './trees.js?v=9';
-import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=10';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { mountTreeCam, clearTreePins } from './trees.js?v=10';
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=13';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -1437,6 +1437,7 @@ async function startLeg() {
   if (!s) return renderEnd();
   layers.shot.clearLayers(); layers.gshot.clearLayers();
   s.walking = true;
+  document.body.classList.add('tr-walking');   // 「이 나무 뭐지?」는 걷기 시작하면 보임
   for (const v of visited()) v.layer?.eachLayer(l => l.setStyle?.({ opacity: l.options.className === 'tr-passed' ? .22 : .12 }));
   drawCourse();
   const live = !!me.pos && Date.now() - me.pos.at < 90000 && L.latLng(me.pos.lat, me.pos.lon).distanceTo(s.coords[0]) < NEAR_START + 30;
@@ -1774,7 +1775,7 @@ function goodbye() {
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers();
   setFocus(false);
   flyBounds(cityBounds(), padding(), 1.2);
-  trip = null; hud = null;
+  trip = null; hud = null; document.body.classList.remove('tr-walking');
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
   mount('tr-s-bye', [
@@ -1935,7 +1936,7 @@ function newCourse() {
 function restart() {
   flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers();
-  trip = null; hud = null;
+  trip = null; hud = null; document.body.classList.remove('tr-walking');
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
   st.must.clear();
   flyBounds(cityBounds(), padding(), 1);

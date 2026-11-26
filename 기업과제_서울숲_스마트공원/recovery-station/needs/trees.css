@@ -66,3 +66,6 @@ button.tc-organ{text-align:left;font:inherit;color:inherit}
 @keyframes tcUp{from{transform:translateY(30px);opacity:0}}
 @keyframes tcSpin{to{transform:rotate(360deg)}}
 .tc-detail{border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink-2)}
+
+/* 걷기 시작하기 전엔 숨김(tour.js가 body에 tr-walking을 붙임) */
+body:not(.tr-walking) .tc-btn{display:none}

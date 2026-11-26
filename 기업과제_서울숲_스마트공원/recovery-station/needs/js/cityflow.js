@@ -94,12 +94,16 @@ function showBox(map, on) {
   if (!box) { box = document.createElement('div'); box.className = 'tr-flow-card'; map.getContainer().appendChild(box); }
   box.hidden = !on;
   if (!on) return;
-  const sf = stationFlows(), jam = roadJam(), t = String(flow?.roadAvg?.time ?? flow?.park?.time ?? '').slice(11, 16);
+  const sf = stationFlows().sort((a, b) => b.off10 - a.off10);
+  const hit = Object.fromEntries(surges().filter(g => g.hit).map(g => [g.name, g.off10 / Math.max(g.before, 1)]));
+  const roads = flow?.roads ?? [], n = roads.length;
+  const pct = k => (n ? Math.round(100 * roads.filter(r => r.idx === k).length / n) : 0);
+  const t = String(flow?.roadAvg?.time ?? flow?.park?.time ?? '').slice(11, 16);
   box.innerHTML = `<b>성수 → 서울숲 흐름</b><small>지하철·도로로 서울숲에 들어오는 흐름${t ? ` · ${t} 기준` : ''}</small>`
-    + `<div class="k"><span><i style="background:${ROAD_C['원활']}"></i>잘 뚫림</span><span><i style="background:${ROAD_C['서행']}"></i>느림</span><span><i style="background:${ROAD_C['정체']}"></i>막힘</span></div>`
-    + `<div class="k"><span><i class="arr"></i>역에서 내린 사람(10분) · 굵을수록 많음</span></div>`
-    + (sf.length ? `<div class="n">${sf.map(s => `${s.name}역 <b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>`).join(' · ')}명${sf.some(s => s.est) ? '<em>(성수역은 추정)</em>' : ''}</div>` : '')
-    + (jam != null ? `<div class="n">주변 도로 ${Math.round(jam * 100)}% 막힘</div>` : '');
+    + (sf.length ? `<div class="h"><i class="arr"></i>역에서 내린 사람 (최근 10분)</div>`
+      + `<div class="n">${sf.map(s => `${s.name}역 <b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>${hit[s.name] ? `<em class="up"> ↑평소의 ${hit[s.name].toFixed(1)}배</em>` : ''}`).join(' · ')}명</div>`
+      + (sf.some(s => s.est) ? '<div class="n dim">(성수역은 추정)</div>' : '') : '')
+    + (n ? `<div class="h">주변 도로</div><div class="k"><span><i style="background:${ROAD_C['원활']}"></i>잘 뚫림 ${pct('원활')}%</span><span><i style="background:${ROAD_C['서행']}"></i>느림 ${pct('서행')}%</span><span><i style="background:${ROAD_C['정체']}"></i>막힘 ${pct('정체')}%</span></div>` : '');
 }
 // 주변 장소 표시 위치(대략, 라벨용 — 서울시 장소 경계의 정확한 중심 아님, 검증 필요)
 const NEAR_POS = { '성수카페거리': [37.5446, 127.0559], '뚝섬한강공원': [37.5296, 127.0673] };
@@ -136,7 +140,9 @@ export function drawFlow(layer, L, center, gates) {
     L.polyline(path, { ...off, color: '#ecfff5', weight: Math.max(1.5, w * .35), opacity: .9, lineCap: 'round', dashArray: '6 30', className: 'tr-fl-run' }).addTo(layer);   // 안쪽에 흐르는 빛
     const ang = Math.atan2(-(end[0] - pre[0]) * M_LAT, (end[1] - pre[1]) * M_LON) * 180 / Math.PI;
     L.marker(end, { ...off, icon: L.divIcon({ className: 'tr-fl-wrap', html: `<svg class="tr-fl-tip" viewBox="-10 -10 20 20" style="transform:translate(-50%,-50%) rotate(${ang}deg)"><path d="M-4 -6 L5 0 L-4 6"/></svg>`, iconSize: [0, 0] }) }).addTo(layer);
-    L.marker(a, { ...off, icon: L.divIcon({ className: 'tr-fl-wrap', html: `<span class="tr-fl-st${s.est ? ' est' : ''}"></span><div class="tr-fl-tag${s.est ? ' est' : ''}${s.lon - center[1] > .008 ? ' left' : ''}"><span>${s.name}역</span><b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b></div>`, iconSize: [0, 0] }) }).addTo(layer);
+    const g = surges().find(x => x.name === s.name), hot = !!g?.hit;
+    const ring = `<span class="tr-fl-crowd${hot ? ' hot' : ''}${s.est ? ' est' : ''}" style="--s:${Math.round(34 + 60 * k)}px;--d:${(2.8 - 1.4 * k).toFixed(2)}s"><i></i><i></i><i></i></span>`;
+    L.marker(a, { ...off, icon: L.divIcon({ className: 'tr-fl-wrap', html: `${ring}<span class="tr-fl-st${s.est ? ' est' : ''}"></span><div class="tr-fl-tag${s.est ? ' est' : ''}${s.lon - center[1] > .008 ? ' left' : ''}"><span>${s.name}역</span><b>${s.est ? '약 ' : ''}${Math.round(s.off10)}</b>${hot ? `<em>평소의 ${(g.off10 / Math.max(g.before, 1)).toFixed(1)}배</em>` : ''}</div>`, iconSize: [0, 0] }) }).addTo(layer);
   }
 }
 
@@ -187,6 +193,17 @@ const css = `
 .tr-flow-card .k i.arr{width:16px;height:8px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
 .tr-flow-card .n{margin-top:7px}.tr-flow-card .n b{color:#6af5b0}.tr-flow-card .n em{display:block;font-style:normal;opacity:.55}
 @media(max-width:899px){.tr-flow-card{top:62px;left:10px;max-width:210px;padding:9px 11px;font-size:10.5px}.tr-flow-card>small{display:none}}
+.tr-flow-card .h{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;opacity:.7}
+.tr-flow-card .n.dim{opacity:.55;font-size:11px;margin-top:0}.tr-flow-card .n em.up{display:inline;font-style:normal;color:#ffc978;font-size:11px;opacity:1}
+.tr-flow-card i.arr{display:inline-block;width:16px;height:8px;background:#6af5b0;clip-path:polygon(0 25%,65% 25%,65% 0,100% 50%,65% 100%,65% 75%,0 75%)}
+.tr-fl-crowd{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.tr-fl-crowd i{position:absolute;left:calc(var(--s) / -2);top:calc(var(--s) / -2);width:var(--s);height:var(--s);border-radius:50%;border:2.5px solid rgba(106,245,176,.95);background:radial-gradient(circle,rgba(106,245,176,.35),rgba(106,245,176,0) 72%);box-shadow:0 0 12px rgba(106,245,176,.5);opacity:0;transform:scale(.2);animation:trFlRip var(--d) ease-out infinite}
+.tr-fl-crowd i:nth-child(2){animation-delay:calc(var(--d) / 3)}.tr-fl-crowd i:nth-child(3){animation-delay:calc(var(--d) * 2 / 3)}
+.tr-fl-crowd.hot i{border-color:rgba(255,179,92,.9);background:radial-gradient(circle,rgba(255,179,92,.3),rgba(255,179,92,0) 70%)}
+.tr-fl-crowd.est i{border-style:dashed;border-color:rgba(236,255,245,.4)}
+@keyframes trFlRip{0%{opacity:1;transform:scale(.15)}100%{opacity:0;transform:scale(1)}}
+.tr-fl-tag em{font-style:normal;font-size:10.5px;font-weight:700;color:#ffb35c}
+@media(prefers-reduced-motion:reduce){.tr-fl-crowd i{animation:none;opacity:.5;transform:none}}
 .tr-fl-jam{filter:drop-shadow(0 0 3px rgba(255,122,102,.75))}
 .tr-fl-core{filter:drop-shadow(0 0 5px rgba(106,245,176,.55))}
 .tr-fl-run{animation:trFlRun 2.2s linear infinite}@keyframes trFlRun{to{stroke-dashoffset:-36}}
