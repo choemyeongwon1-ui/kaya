@@ -18,7 +18,8 @@ import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
-import { mountTreeCam, clearTreePins } from './trees.js?v=9';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
+import { mountTreeCam, clearTreePins } from './trees.js?v=9';
+import { refreshFlow, drawFlow, flowLegend, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=1';   // 도시 흐름: 도로 막힘·역별 하차·곧 붐벼요·알아서 바꾼 것   // 「이 나무 뭐지?」 카메라로 수종 알아보기
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -251,6 +252,7 @@ function liveCard(part) {
     top_ && live.msg ? h('p', { class: 'tr-lc-msg', title: live.msg }, live.msg) : null,
     top_ && f1 ? h('p', { class: 'tr-lc-next' }, `${f1.dt <= 90 ? `1시간 뒤(${+hh(f1.time)}시)` : `${+hh(f1.time)}시`} ${f1d > 0 ? '↗' : f1d < 0 ? '↘' : '→'} `,
       h('b', null, `${fmtPeople(f1.min)}~${fmtPeople(f1.max)}명`), f1.level ? ` · ${f1.level}` : '', h('small', null, '서울시 예측')) : null,
+    top_ && (sb => sb ? h('p', { class: 'tr-lc-soon' }, h('b', null, `곧 붐벼요 · ${sb.when}`), sb.text, h('small', null, sb.src)) : null)(soonBusy(live)),
     top_ && h('p', { class: 'tr-lc-meta' },
       liveSt.failed ? h('span', { class: 'bad' }, `연결 실패 · 마지막 확인 ${hmOf(liveSt.okAt)}`) : null,
       h('span', null, `기준 ${hhmm(live.time)} · `, h('span', { class: 'tr-lc-ago' }, agoText(age)), !liveSt.failed && old ? ' (오래된 값)' : ''),
@@ -310,7 +312,7 @@ function makeMap() {
     park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
     gshot: L.layerGroup().addTo(map), shot: L.layerGroup().addTo(map), prog: L.layerGroup().addTo(map),
-    access: L.layerGroup().addTo(map),
+    flow: L.layerGroup().addTo(map), access: L.layerGroup().addTo(map),
   };
 }
 let baseMode = store.get('sf-tour-base', 'sat') === 'map' ? 'map' : 'sat';
@@ -531,8 +533,18 @@ function statusBar() {
   if (h0) chips.push(h('span', { class: 'tmp' }, h('b', null, `${Math.round(h0.temp)}°`), h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? ` 체감 ${Math.round(h0.feels)}°` : ''));
   if (dust) chips.push(h('span', { class: `g${DUST_G.indexOf(dust) + 1}` }, '미세먼지 ', h('b', null, dust)));
   if (!chips.length && !warn) return null;
-  const lc = liveCard('rest'), wc = weatherCard(), ec = envCard(), canOpen = !!(lc || wc || ec);
-  const more = canOpen ? h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? ''), ec) : null;
+  // 오늘 알아서 바꾼 것: 아래 기준이 켜지고 꺼질 때 한 줄씩(추천·안내가 실제로 이 값들로 바뀜)
+  const jam = roadJam();
+  const autoItems = recordAuto([
+    { key: 'hot', on: !!sit.hot, onText: '더워서 그늘·물가 길 위주로 골라요', offText: '더위가 누그러져 평소대로 골라요' },
+    { key: 'rain', on: !!rn, onText: '비가 와서 물가 길은 피하고 실내도 알려 드려요', offText: '비가 그쳐 평소대로 골라요' },
+    { key: 'dust', on: DUST_G.indexOf(dust) >= 2, onText: `미세먼지가 ${dust ?? '나빠'}서 실내 장소도 같이 알려 드려요`, offText: '미세먼지가 나아졌어요' },
+    { key: 'busy', on: !!sit.busy, onText: '붐벼서 덜 붐비는 곳 위주로 골라요', offText: '붐빔이 풀려 평소대로 골라요' },
+    ...surges().map(g => ({ key: `surge_${g.name}`, on: g.hit, onText: `${g.name}역에서 사람이 많이 내려요 · 곧 붐빈다고 알려 드려요`, offText: `${g.name}역 내리는 사람이 줄었어요` })),
+    { key: 'jam', on: jam != null && jam >= .3, onText: '주변 길이 많이 막혀서 지하철을 권해요', offText: '주변 길이 풀렸어요' },
+  ]);
+  const lc = liveCard('rest'), wc = weatherCard(), ec = envCard(), canOpen = true;
+  const more = h('div', { class: 'tr-status-more', hidden: !statusOpen }, h('div', { class: 'tr-livecard-slot' }, lc ?? ''), h('div', { class: 'tr-wxcard-slot' }, wc ?? ''), ec, autoCard(autoItems));
   const label = () => statusOpen ? '접기' : '자세히';
   const line = h(canOpen ? 'button' : 'div', { type: canOpen ? 'button' : null, class: 'tr-status-line', 'aria-expanded': canOpen ? String(statusOpen) : null,
     onclick: canOpen ? e => { statusOpen = !statusOpen; more.hidden = !statusOpen; e.currentTarget.setAttribute('aria-expanded', String(statusOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); } : null },
@@ -629,7 +641,7 @@ function accessBar() {
       onclick: e => { accessShow[g.key] = !showing(g.key); e.currentTarget.setAttribute('aria-pressed', String(accessShow[g.key])); accessPins(); } },
       h('i', null, icon(g.icon, 13)), g.label, h('b', null, g.count))));
   const more = h('div', { class: 'tr-acc-more', hidden: !accessOpen },
-    legend,
+    legend, flowLegend(),
     h('div', { class: 'tr-acc-key' },
       near.length ? h('span', null, h('i', { class: 'off' }, 'P'), '남은 자리 모름') : null,
       liveLots.length ? h('span', null, h('i', { class: 'on' }, 'P'), '남은 자리 실시간') : null,
@@ -703,6 +715,7 @@ function accessPins(fly = false) {
   const wasMap = el.panel.classList.contains('accmap');
   el.panel.classList.toggle('accmap', on);
   if (on && !wasMap && !desk()) { const sec = el.panel.querySelector('.tr-access'); if (sec) el.panel.scrollTop = sec.offsetTop - 12; }
+  if (on) drawFlow(layers.flow, L, PARK_CENTER); else layers.flow.clearLayers();
   if (!on) { if (fly && app?.model?.parkBounds) flyBounds(app.model.parkBounds, padding(), .8); return; }
   const pts = [];
   const rate = l => l.rate ? `${l.rateMin}분 ${Number(l.rate).toLocaleString()}원` : l.paid === false ? '무료' : null;
@@ -1920,6 +1933,8 @@ async function boot() {
   addEventListener('pagehide', flushCourse);   // 마침 화면에서 창을 닫아도 코스 평가는 보냄
   refreshLive(); setInterval(liveTick, 1000);      // 서울시 자료가 5분마다 바뀜: 5분마다 다시 불러오고 카운트다운 표시
   refreshAccess(); setInterval(refreshAccess, 5 * 60 * 1000);
+  const flowTick = () => refreshFlow().then(() => { if (app) { paintLive(); accessPins(); } });
+  flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
   try {
