@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>서울숲 운영 관제 · 만족도 등고선 분포도</title>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/addons/"}}</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 /* 운영 관제: 위성 사진 위에 거점별 예상 만족도를 등고선으로 펼친 화면 (이용자 화면과 같은 밤의 숲 톤) */
@@ -182,6 +183,17 @@ body{overflow:auto}
 .panel{position:relative;top:auto;right:auto;bottom:auto;width:auto;margin-top:-20px;border-radius:24px 24px 0 0;border-width:1px 0 0;overflow:visible;box-shadow:none;background:#08110d;-webkit-backdrop-filter:none;backdrop-filter:none;padding:18px 16px 24px}
 }
 .embed .back{display:none}
+/* 디지털트윈 개선 시뮬레이션 들어가는 단추 (관리자) */
+.tw-entry{margin-top:12px}
+.tw-open{display:grid;grid-template-columns:auto 1fr;gap:2px 11px;align-items:center;width:100%;text-align:left;padding:13px 14px;border-radius:var(--r-md);border:1px solid rgba(106,245,176,.45);background:var(--mint-soft);cursor:pointer;transition:transform .2s var(--ease),border-color .2s}
+.tw-open:hover{transform:translateY(-1px);border-color:var(--mint)}
+.tw-open span{grid-row:1/3;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:var(--mint-ink)}
+.tw-open svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round}
+.tw-open b{font-size:14px;color:var(--mint)}.tw-open small{font-size:11px;color:var(--ink-2);line-height:1.45}
+/* 3D로 들어가는 동안 2D 지도를 흐림 */
+body>*:not(.tw){transition:filter .9s var(--ease),opacity .9s var(--ease)}
+body.tw-go>*:not(.tw){filter:blur(10px) saturate(.8);opacity:.55;pointer-events:none}
+body.tw-full>*:not(.tw){visibility:hidden}
 </style>
 </head>
 <body>
@@ -259,8 +271,8 @@ body{overflow:auto}
   }
   function sat(hb, ratio, w) {
     var d = densScore(ratio), x = wxScore(hb.type, w), e = hb.env;
-    var v = Math.round(.75 * (d * SW.dens + x.v * SW.wx + e * SW.env) + .25 * Math.min(d, x.v, e));
-    return { all: v, dens: Math.round(d), wx: Math.round(x.v), env: Math.round(e), wxWhy: x.why };
+    var raw = .75 * (d * SW.dens + x.v * SW.wx + e * SW.env) + .25 * Math.min(d, x.v, e), v = Math.round(raw);
+    return { all: v, raw: raw, dens: Math.round(d), wx: Math.round(x.v), env: Math.round(e), wxWhy: x.why };
   }
   function envScore(hb, cells) {
     for (var R = 80; R <= 160; R += 70) {
@@ -796,7 +808,8 @@ body{overflow:auto}
   function left() {
     var el = $('left'); if (!el || !S.hubs[0].s) return;
     var w = S.wx && S.wx[S.hour], low = S.hubs.filter(function (h) { return h.s.all < CUT; }).sort(function (a, b) { return a.s.all - b.s.all; });
-    var html = '<section><h3>지금 조치할 곳 <span class="n' + (low.length ? '' : ' ok') + '">' + (low.length ? low.length + '곳' : '없음') + '</span></h3>';
+    var html = '<section class="tw-entry" style="margin:0 0 14px"><button type="button" class="tw-open" data-tw="auto"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 평가가 낮은 곳마다 최선의 개선안을 3D로 확인</small></button></section>';
+    html += '<section><h3>지금 조치할 곳 <span class="n' + (low.length ? '' : ' ok') + '">' + (low.length ? low.length + '곳' : '없음') + '</span></h3>';
     html += low.length ? low.slice(0, 3).map(function (h) {
       var a = action(h, w), t = satTone(h.s.all);
       return '<button type="button" class="act" data-id="' + h.id + '"><span class="h">' + h.name + '<b style="color:' + t[2] + '">' + h.s.all + '</b></span><span class="c"><i>' + FAC[a[0]] + ' ' + h.s[a[0]] + '점</i>이 가장 낮음 → ' + a[1] + '</span></button>';
@@ -895,13 +908,14 @@ body{overflow:auto}
       cb('밀도 쾌적', s.dens, h.people.toLocaleString() + ' / ' + h.capacity.toLocaleString() + '명 (' + crowdTone(h.ratio) + ' ' + Math.round(h.ratio * 100) + '%)' + (h.extra ? ' · 가정' : '')) +
       cb('날씨 쾌적', s.wx, wxWhyText(h, w)) +
       cb('주변 환경', s.env, h.envN ? '20m 칸 ' + h.envN + '개 · 취약도 ' + h.vuln.toFixed(1) + ' · 수목 ' + Math.round(h.tree * 100) + '%' : '격자 밖 · 기본값') +
-      '</div>' +
+      '</div>' + (h.envN ? twinHTML(h) : '') +
       '<svg class="spark" viewBox="0 0 100 62" preserveAspectRatio="none" role="img" aria-label="' + h.name + ' 시간대별 예상 만족도">' + bars + '<line x1="0" x2="100" y1="' + cutY.toFixed(1) + '" y2="' + cutY.toFixed(1) + '" stroke="#f1f7f3" stroke-opacity=".6" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>' +
       '<div class="note">6시~22시 예상 만족도 흐름 · 짙은 막대 = ' + S.hour + '시 · 점선 = 관리 기준(' + CUT + '점). 막대를 누르면 그 시각으로 옮깁니다.</div>' +
       (facts ? '<div class="facts">' + facts + '</div>' : '');
   }
   function select(id) {
-    var ch = S.sel !== (id || null); S.sel = id || null; side();
+    var ch = S.sel !== (id || null);
+    S.sel = id || null; side();
     if (ch) go(); else paint();
     if (ch && S.sel) {
       var sd = $('side'); sd.classList.remove('fresh'); void sd.offsetWidth; sd.classList.add('fresh'); sd.scrollTop = 0;
@@ -915,6 +929,44 @@ body{overflow:auto}
     var r = e.target.closest('[data-h]'); if (r) { S.hour = +r.getAttribute('data-h'); $('hour').value = S.hour; recompute(); }
   });
   addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.sel) select(null); });
+
+  // ---------- 디지털트윈 개선 시뮬레이션 (관리자) ----------
+  // 「디지털트윈에서 개선안 만들기」를 누르면 2D 지도를 흐리게 하고 하늘 1300m에서 거점으로 내려가며 전체 화면 3D(sim3d.js)를 띄운다.
+  // sim3d.js가 시설을 반영해 칸 점수를 다시 셈하면, 여기 predict()가 같은 sat·envScore(80m)로 거점 예측 만족도를 낸다(시설은 「주변 환경」만 바꿈).
+  var TW = null;
+  function toLL(x, y) { return [+(LON0 + x / KX).toFixed(6), +(LAT0 + y / KY).toFixed(6)]; }
+  function predict(changed, score, hr) {
+    var w = S.wx && S.wx[hr], mod = CELLS, out = {}, pb = 0, pa = 0, pn = 0;
+    if (changed.length) { mod = CELLS.slice(); changed.forEach(function (i) { mod[i] = Object.assign({}, CELLS[i], { score: score[i] }); }); }
+    S.hubs.forEach(function (h) {
+      var c = crowd(h, S.dow, hr, w), e1 = changed.length ? envScore(Object.assign({}, h), mod) : h.env0;
+      var b = sat(Object.assign({}, h, { env: h.env0 }), c.ratio, w).raw, a = sat(Object.assign({}, h, { env: e1 }), c.ratio, w).raw, p = Math.max(1, c.people);
+      out[h.id] = { before: b, after: a, envBefore: h.env0, envAfter: e1 }; pb += b * p; pa += a * p; pn += p;
+    });
+    return { hubs: out, parkBefore: pn ? pb / pn : 0, parkAfter: pn ? pa / pn : 0 };
+  }
+  function twinOpen(h, auto) {
+    if (TW || !h) return; TW = { err: '' };
+    document.body.classList.add('tw-go'); $('tip').style.opacity = 0;
+    var hr0 = S.hour >= 7 && S.hour <= 19 ? S.hour : 14, coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+    import('./sim3d.js?v=10').then(function (m) {
+      return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto,
+        mobile: W < 760 || coarse, low: W < 760 || coarse || (navigator.hardwareConcurrency || 8) <= 4,
+        onReady: function () { document.body.classList.add('tw-full'); },
+        onLeave: function () { document.body.classList.remove('tw-go', 'tw-full'); },
+        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); } });
+    }).catch(function (e) { TW = null; document.body.classList.remove('tw-go'); twinOpen.err = '디지털트윈을 띄우지 못했어요 (' + ((e && e.message) || e) + ')'; side(); left(); });
+  }
+  function twinHTML(h) {
+    var err = twinOpen.err ? '<div class="note" style="color:var(--bad)">' + esc(twinOpen.err) + '</div>' : '';
+    return '<section class="tw-entry">' + err + '<button type="button" class="tw-open" data-tw="' + h.id + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 방문객 평가와 칸 점수로 고른 최선의 시설 조합을 3D로 확인</small></button></section>';
+  }
+  // 개요 화면: 평가가 낮은 곳을 3D에서 고르므로, 예상 점수가 가장 낮은 격자 안 거점으로 들어간다
+  function twinDefault() { return S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; })[0] || S.hubs[0]; }
+  $('side').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-tw]'); if (!t) return; e.stopPropagation();
+    var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, id === 'auto');
+  }, true);
 
   // ---------- 계산·갱신 ----------
   function recompute() {
@@ -981,10 +1033,10 @@ body{overflow:auto}
   Promise.all([J(D + 'park.geojson'), J(D + 'features.geojson'), J(D + 'network.json'), J(D + 'team.json'), J(D + 'hubs.json'), J(D + 'city3d.json').catch(function () { return null; }), J(D + 'legal.json').catch(function () { return null; }), J('../needs/data/photos.json').catch(function () { return null; })]).then(function (r) {
     RINGS = r[0].features[0].geometry.coordinates.map(function (poly) { return poly[0].map(function (q) { return xy(q[0], q[1]); }); });
     FEAT = r[1]; NET = r[2]; NET.xy = NET.nodes.map(function (q) { return xy(q[0], q[1]); });
-    var cells = r[3].grid.features.map(function (f) { var c = f.geometry.coordinates[0], lo = 0, la = 0; for (var i = 0; i < 4; i++) { lo += c[i][0]; la += c[i][1]; } var p = xy(lo / 4, la / 4); return { x: p[0], y: p[1], score: f.properties.score, tree: f.properties.tree || 0, id: f.properties.id }; });
+    var cells = r[3].grid.features.map(function (f) { var c = f.geometry.coordinates[0], lo = 0, la = 0, q = f.properties; for (var i = 0; i < 4; i++) { lo += c[i][0]; la += c[i][1]; } var p = xy(lo / 4, la / 4); return { x: p[0], y: p[1], score: q.score, tree: q.tree || 0, id: q.id }; });
     CELLS = cells; LEGAL = r[6]; PHOTOS = r[7];
     if (LEGAL) ZONES = LEGAL.shapes.features.map(function (f) { var g = f.geometry; return { zone: f.properties.zone, polys: (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(function (pg) { return pg.map(function (ring) { return ring.map(function (q) { return xy(q[0], q[1]); }); }); }) }; });
-    S.hubs = r[4].concat(EXTRA.map(function (h) { h.extra = true; return h; })).filter(function (h) { return h.type !== 'gate' && h.capacity; }).map(function (h) { var p = xy(h.lon, h.lat); h.x = p[0]; h.y = p[1]; h.env = envScore(h, cells); h.legal = LEGAL ? LEGAL.hubs[h.id] || zoneAt(h.x, h.y) : null; return h; });
+    S.hubs = r[4].concat(EXTRA.map(function (h) { h.extra = true; return h; })).filter(function (h) { return h.type !== 'gate' && h.capacity; }).map(function (h) { var p = xy(h.lon, h.lat); h.x = p[0]; h.y = p[1]; h.env = h.env0 = envScore(h, cells); h.legal = LEGAL ? LEGAL.hubs[h.id] || zoneAt(h.x, h.y) : null; return h; });
     CITY = r[5]; if (CITY) CITY.rings = waterRings(CITY.water);
     makeGrid();
     return wxP;

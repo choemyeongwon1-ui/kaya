@@ -81,7 +81,19 @@ Deno.serve(async req => {
     const cond: Record<string, ReturnType<typeof cell>> = { hot: cell(), notHot: cell(), dust: cell(), clean: cell(), crowded: cell(), calm: cell() };
     const company: Record<string, ReturnType<typeof cell>> = {};
     const all = cell();
+    // 까닭 검증용: 평가 당시 실시간 혼잡 단계(0 여유~3 붐빔, 서울시 실시간 도시데이터)·체감온도(5℃ 구간)별로
+    // 몇 건이었고 그중 '붐볐어요'·'덥거나 추웠어요'가 몇 건인지(합계만). 공원 전체 + 장소별
+    type Bin = { n: number; crowded: number; weather: number };
+    type Chk = { crowd: Record<number, Bin>; feels: Record<number, Bin> };
+    const chkNew = (): Chk => ({ crowd: {}, feels: {} });
+    const check = { total: chkNew(), places: {} as Record<string, Chk> };
+    const tally = (c: Chk, v: { crowd: number | null; feels: number | null; reasons: string[] }) => {
+      const hit = (b: Bin) => { b.n++; if (v.reasons?.includes('crowded')) b.crowded++; if (v.reasons?.includes('weather')) b.weather++; };
+      if (v.crowd != null) hit(c.crowd[v.crowd] ??= { n: 0, crowded: 0, weather: 0 });
+      if (v.feels != null) hit(c.feels[Math.floor(v.feels / 5) * 5] ??= { n: 0, crowded: 0, weather: 0 });
+    };
     for (const v of rows) {
+      tally(check.total, v); tally(check.places[v.place] ??= chkNew(), v);
       add(all, v.face);
       const p = (places[v.place] ??= { ...cell(), reasons: {} });
       add(p, v.face);
@@ -109,7 +121,7 @@ Deno.serve(async req => {
         for (const x of v.reasons ?? []) leg.reasons[x] = (leg.reasons[x] ?? 0) + 1;
       }
     }
-    const body = JSON.stringify({ since, days, total: all, places, byHour, cond, company, courses, checked: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') });
+    const body = JSON.stringify({ since, days, total: all, places, byHour, cond, company, courses, check, checked: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') });
     cache = { at: Date.now(), key, body };
     return new Response(body, { headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8' } });
   } catch (e) {
