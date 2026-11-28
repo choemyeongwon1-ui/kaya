@@ -16,6 +16,7 @@ import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
+import { mountBasics } from './basics.js?v=1';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -1770,7 +1771,7 @@ let endNodes = null, endInfo = null;
 function exitWalk(ex) {
   ex.show();
   const { last, kiosk, meters, min, wc } = ex;
-  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye, ...rcLock() }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
+  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
   mount('tr-s-exit', [
     h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '영수증 기계로')),
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '다른 기계 고르기')),
@@ -1778,7 +1779,6 @@ function exitWalk(ex) {
     h('p', { class: 'tr-exit-lead' }, `지도의 노란 길을 따라 걸어서 ${min}분(${fmtM(meters)})이에요.`),
     Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가까운 화장실 · ${fmtM(Math.round(wc))}`) : null,
     h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 영수증을 뽑을 때 카페·주차장·동네 가게 중 받을 쿠폰을 골라요.'),
-    rcHint(),
     cta,
   ]);
 }
@@ -1800,7 +1800,7 @@ function goodbye() {
       info.places ? h('p', null, `서울숲에서 ${info.places}곳, ${Math.round(info.walkMin)}분을 걸었어요.`) : null,
       info.later ? h('p', { class: 'tr-bye-later' }, icon('clock', 13), `다음에 오기 좋은 때 · ${info.later}`) : null,
       h('small', null, '남겨 주신 표정은 이름·위치 없이 공원 길과 쉼터를 고치는 데 써요.')),
-    info.receipt ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null, onclick: rcGo, ...rcLock() },
+    info.receipt && surveyDone ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null, onclick: flushCourse },
       h('span', { class: 'tr-bye-rc-t' }, h('b', null, '오늘 산책, 영수증으로 받기'), h('small', null, '걸은 길이 찍힌 한 장 · 방명록에도 남길 수 있어요')),
       h('span', { class: 'tr-cta-arrow' }, '→')) : null,
     h('button', { type: 'button', class: 'tr-ghost tr-bye-home', onclick: restart }, '처음 화면으로'),
@@ -1813,8 +1813,13 @@ const RECEIPT_KEY = 'sf-receipt';
 // 만족도(코스 표정)를 남기기 전에는 영수증으로 넘어가는 버튼·링크를 잠금(누를 수 없음). 쿠폰은 영수증 페이지 폰 화면에서 고름
 let surveyDone = false;
 const rcLock = () => (surveyDone ? { 'data-rc': '1' } : { 'data-rc': '1', 'aria-disabled': 'true', tabindex: '-1', disabled: true });
-const rcHint = () => (surveyDone ? null : h('p', { class: 'tr-rc-hint' }, '먼저 위에서 오늘 코스 만족도(표정)를 남겨 주세요. 그래야 영수증을 받을 수 있어요.'));
+const rcHint = () => (surveyDone ? null : h('p', { class: 'tr-rc-hint' }, '위에서 오늘 코스 표정을 먼저 눌러 주세요. 그래야 영수증 기계로 갈 수 있어요.'));
 function rcGo(e) { if (!surveyDone) { e.preventDefault(); e.stopImmediatePropagation(); return; } flushCourse(); }
+function nudgeSurvey() {   // 잠긴 채로 지도 기계를 눌렀을 때: 표정 칸으로 데려가 살짝 흔들기
+  const f = document.querySelector('.tr-flow'); if (!f) return;
+  f.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  f.classList.remove('tr-nudge'); void f.offsetWidth; f.classList.add('tr-nudge');
+}
 function unlockReceipt() {
   surveyDone = true;
   document.querySelectorAll('[data-rc]').forEach(el => { el.removeAttribute('aria-disabled'); el.removeAttribute('tabindex'); if ('disabled' in el) el.disabled = false; });
@@ -1969,7 +1974,7 @@ function exitBox() {
       flyBounds(L.latLngBounds(coords), { ...padding(), maxZoom: 17.4 }, .8);
     },
   });
-  const go = o => exitWalk(exOf(o));
+  const go = o => { if (!surveyDone) { nudgeSurvey(); return; } exitWalk(exOf(o)); };   // 표정(만족도)을 남겨야 기계로 넘어감
   // 산책 끝 화면: 기계 전부와 오늘 걸은 길이 한눈에 들어오게
   setTimeout(() => {
     drawKiosks(opts, best.k.id, go);
@@ -1980,10 +1985,11 @@ function exitBox() {
     h('div', { class: 'tr-exit-row' },
       h('span', { class: 'tr-exit-ico' }, '🧾'),
       h('div', null, h('b', null, `가장 가까운 영수증 기계 · ${best.k.at}`), h('p', null, `걸어서 ${best.min}분(${fmtM(best.meters)}) · 공원 곳곳 ${opts.length}곳 어디서든 뽑을 수 있어요`))),
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => go(best) }, '가장 가까운 기계로 길 안내', h('span', { class: 'tr-cta-arrow' }, '→')),
+    rcHint(),
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => go(best), ...rcLock() }, '가장 가까운 기계로 길 안내', h('span', { class: 'tr-cta-arrow' }, '→')),
     h('details', { class: 'tr-kiosk-list' },
       h('summary', null, '다른 기계로 가기'),
-      h('div', { class: 'tr-kiosk-chips' }, opts.slice(1).map(o => h('button', { type: 'button', class: 'rv-chip', onclick: () => go(o) }, `${o.k.at} · ${o.min}분`)))),
+      h('div', { class: 'tr-kiosk-chips' }, opts.slice(1).map(o => h('button', { type: 'button', class: 'rv-chip', onclick: () => go(o), ...rcLock() }, `${o.k.at} · ${o.min}분`)))),
     h('button', { type: 'button', class: 'tr-textbtn', onclick: goodbye }, '안내 없이 산책 마치기'));
 }
 function countUp(v, digits = 0) {
@@ -2049,6 +2055,9 @@ async function boot() {
   // 이미 위치 권한을 준 기기면 바로 내 위치를 띄웁니다(묻는 창은 띄우지 않음)
   navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') watchMe(); }).catch(() => {});
   await sleep(Math.max(0, T(700) - (performance.now() - t0)));
+  // 지도 기본 정보: 화장실·매점·쉼터 등과 정원 꽃을 버튼으로 켜고 끔(js/basics.js)
+  mountBasics({ map, L, root, mapEl: el.map, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
+    gardens: () => gardenList().map(g => { const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place]; return hub ? { lat: hub.lat, lon: hub.lon, name: g.name, g: { ...g, hub } } : null; }).filter(Boolean) });
   window.__tour = { app, st, me, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
   arrive();
 }

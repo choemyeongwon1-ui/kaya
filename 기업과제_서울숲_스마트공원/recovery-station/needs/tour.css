@@ -694,6 +694,8 @@ html,body.tour-body{margin:0;height:100%;overflow:hidden;background:var(--bg);co
 .tr-kiosk-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:4px 0 6px}
 .tr-cta:disabled,[data-rc][aria-disabled="true"]{opacity:.38;filter:grayscale(.7);pointer-events:none;cursor:not-allowed;animation:none;box-shadow:none}
 .tr-rc-hint{margin:2px 0 10px;font-size:12px;line-height:1.5;color:var(--mint)}
+.tr-flow.tr-nudge{animation:trNudge .55s cubic-bezier(.3,1.5,.5,1)}
+@keyframes trNudge{0%,100%{transform:none}25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 .tr-gift{display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 11px;border-radius:12px;border:1px dashed var(--mint);background:var(--mint-soft);font-size:12px;line-height:1.4;color:var(--ink)}
 .tr-gift b{flex:none;font-size:11.5px;color:var(--mint-ink);background:var(--mint);padding:3px 8px;border-radius:999px}
 .tr-gift.on{border-style:solid;animation:trGift .5s var(--ease)}
