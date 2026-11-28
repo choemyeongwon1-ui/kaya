@@ -16,7 +16,7 @@ import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
-import { mountBasics } from './basics.js?v=1';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
+import { mountBasics } from './basics.js?v=2';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -305,7 +305,8 @@ function seasonImagery() {
 function makeMap() {
   map = L.map(el.map, { zoomControl: false, attributionControl: true, zoomSnap: 0, minZoom: 10, maxZoom: 19 });
   map.attributionControl.setPrefix(false);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20, className: 'tr-base', attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 기여자 © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+  // 바탕 지도: Esri World Dark Gray(키 없이 무료, 출처 표기). CARTO는 2026-11 이후 키 없으면 'API KEY REQUIRED' 그림을 줌
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20, maxNativeZoom: 16, className: 'tr-base', attribution: '바탕 지도 © Esri, HERE, Garmin, © OpenStreetMap 기여자' }).addTo(map);
   const sat = seasonImagery();
   L.tileLayer(sat.url, { maxZoom: 19, maxNativeZoom: sat.native, className: 'tr-sat', keepBuffer: 4, attribution: `위성 사진(${sat.label}) © Esri, Maxar, Earthstar Geographics` }).addTo(map);
   // 모바일 화면에서 돌아온 경우: 지난번 공원 화면 자리에서 바로 시작(위성 사진도 받아 둔 것 그대로) → 멀리서 다시 불러오지 않음

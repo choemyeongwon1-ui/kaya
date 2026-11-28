@@ -75,7 +75,7 @@ export function mountBasics(o) {
   }
   function popHtml(p) {
     const k = KIND[p.kind], extra = [p.brand && p.brand !== p.name ? p.brand : null, p.fee === 'no' ? '무료' : p.fee === 'yes' ? '유료' : null, p.hours ? `운영 ${p.hours}` : null].filter(Boolean);
-    return `<div class="tr-bx-pop"><small>${esc(k.label)}</small><b>${esc(p.name || k.label)}</b>${extra.length ? `<p>${esc(extra.join(' · '))}</p>` : ''}<em>OpenStreetMap 기준 · 현장과 다를 수 있어요</em></div>`;
+    return `<div class="tr-bx-pop"><small>${esc(k.label)}</small><b>${esc(p.name || k.label)}</b>${extra.length ? `<p>${esc(extra.join(' · '))}</p>` : ''}<em>${p.src ? esc(p.src) : 'OpenStreetMap 기준'} · 현장과 다를 수 있어요</em></div>`;
   }
   function draw() {
     layer.clearLayers();

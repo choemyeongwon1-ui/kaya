@@ -2,13 +2,13 @@
  "source": "OpenStreetMap (Overpass API) · ODbL",
  "fetched": "2026-11-28",
  "area": "서울숲 경계(data/park.geojson) 안 · 화장실·쉼터 등은 경계 25m 안까지, 매점·카페는 경계 안만",
- "note": "OSM에 등록된 것만 있어 실제보다 적을 수 있어요(특히 벤치·매점). 현장 확인으로 보완해야 합니다.",
+ "note": "OSM에 등록된 것 + 출처를 확인한 시설(src 표시). 실제보다 적을 수 있어요(특히 벤치·매점). 공공데이터(공중화장실 표준데이터·상가정보) 활용신청 뒤 보완 예정.",
  "counts": {
   "shelter": 4,
   "water": 1,
   "toilet": 10,
-  "info": 1,
-  "shop": 2,
+  "info": 2,
+  "shop": 3,
   "bike": 3,
   "bench": 3,
   "parking": 2,
@@ -196,6 +196,24 @@
    "name": "서울숲 수변휴게실 커뮤니티센터",
    "lat": 37.544701,
    "lon": 127.037938
+  },
+  {
+   "id": "add-cafe-lake",
+   "kind": "shop",
+   "name": "커피에 꽃을 담다 (수변 커뮤니티센터 1층 카페)",
+   "lat": 37.544701,
+   "lon": 127.037938,
+   "hours": "09:00~20:00 (기사 기준)",
+   "src": "서울시 미디어허브 「서울숲 호수 바라보며 물멍 한잔」 · 자리는 커뮤니티센터 건물(OSM)"
+  },
+  {
+   "id": "add-visitor",
+   "kind": "info",
+   "name": "서울숲 방문자센터",
+   "lat": 37.54307,
+   "lon": 127.0418,
+   "src": "팀 거점 자료(data/hubs.json)"
   }
- ]
+ ],
+ "added": "2026-11-28: 수변 카페(서울시 미디어허브 https://mediahub.seoul.go.kr/archives/2017341), 방문자센터(hubs.json)"
 }
