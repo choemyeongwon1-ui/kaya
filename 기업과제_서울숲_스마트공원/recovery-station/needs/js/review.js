@@ -5,13 +5,15 @@ import { COMFORT_URL } from './config.js';
 
 export const REVIEW_KEY = 'sf-needs-ratings';
 const SENT_KEY = 'sf-comfort-sent';
+// 소개 화면의 미리보기(tour.html?preview=1)에서 누른 표정은 통계로 보내지 않음
+const PREVIEW = (() => { try { return new URLSearchParams(location.search).has('preview'); } catch { return false; } })();
 
 const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
 /** 표정 한 건을 익명으로 보냄. 같은 곳은 30분에 한 번만(여러 번 눌러 통계가 쏠리지 않게). 실패해도 화면은 그대로 */
 export function sendComfort(vote) {
-  if (!COMFORT_URL || !vote?.place) return;
+  if (PREVIEW || !COMFORT_URL || !vote?.place) return;
   const sent = read(SENT_KEY, {}), now = Date.now();
   for (const k of Object.keys(sent)) if (now - sent[k] > 1800e3) delete sent[k];
   if (sent[vote.place]) return;
@@ -21,7 +23,7 @@ export function sendComfort(vote) {
 }
 /** 코스 전체 평가 한 건(마침 화면). 같은 산책(id)은 한 번만 */
 export function sendCourse(vote, tripId) {
-  if (!COMFORT_URL || !vote?.stops?.length || !tripId) return;
+  if (PREVIEW || !COMFORT_URL || !vote?.stops?.length || !tripId) return;
   const sent = read(SENT_KEY + '-course', []);
   if (sent.includes(tripId)) return;
   write(SENT_KEY + '-course', [...sent, tripId].slice(-50));
