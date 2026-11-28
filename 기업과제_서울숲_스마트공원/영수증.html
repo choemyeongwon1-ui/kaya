@@ -350,34 +350,43 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .s-note{min-height:20px;margin-top:10px;font-size:12.5px;color:#cfe8d9}
 .s-close{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:61}
 /* 스토리 카드(1080×1920으로 저장되는 그림) */
-.sc{position:relative;width:360px;height:640px;box-sizing:border-box;padding:68px 26px 22px;overflow:hidden;font-family:var(--font);color:#fff;
-  background:radial-gradient(120% 70% at 85% 0%,#3d7a5b 0%,transparent 60%),radial-gradient(90% 60% at 0% 100%,#2c5e46 0%,transparent 65%),linear-gradient(170deg,#173326,#0f2219)}
-.sc-top{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:#bfe3cd}
-.sc-title{margin:4px 0 10px;font-size:24px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
-.sc-title em{font-style:normal;color:#c6f36b}
-.sc-photo{position:relative;margin:0 auto;width:232px;padding:8px 8px 24px;background:#faf8f1;border-radius:3px;transform:rotate(-2.2deg);box-shadow:0 18px 30px -14px rgba(0,0,0,.6)}
-.sc-photo canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
-.sc-photo .cap{position:absolute;left:10px;right:10px;bottom:6px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:#2b2a27}
-.sc-quote{margin:6px 0 4px;padding:18px 18px;border-radius:14px;background:rgba(255,255,255,.08);font-family:"Nanum Pen Script",var(--font);font-size:27px;line-height:1.25;color:#f4f1e6}
-.sc-paper{position:relative;display:flex;gap:10px;margin:12px -4px 0;padding:12px 12px 12px 8px;background:#faf8f1;color:#2b2a27;font-family:var(--mono);border-radius:2px;transform:rotate(1deg);box-shadow:0 18px 30px -16px rgba(0,0,0,.6)}
-.sc-paper .rc-map{flex:none;width:104px;height:auto}
-.sc-paper.big .rc-map{width:132px}
-.sc-list{flex:1;min-width:0;font-size:11.5px;line-height:1.5}
-.sc-list .sec{font-size:9.5px;letter-spacing:.12em;opacity:.7;margin-bottom:3px}
-.sc-list .st{display:flex;align-items:baseline;gap:5px;white-space:nowrap}
-.sc-list .st i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#2b2a27;color:#faf8f1;font-size:9px;flex:none}
+.sc{position:relative;width:360px;height:640px;box-sizing:border-box;padding:68px 28px 62px;overflow:hidden;display:flex;flex-direction:column;font-family:var(--font);color:#16352a;
+  background:radial-gradient(140% 55% at 50% 0%,#f8f5ee 0%,transparent 70%),linear-gradient(180deg,#f3efe6,#ebe5d8)}
+.sc>*{flex-shrink:0}
+.sc::before{content:"";position:absolute;inset:12px;border:1px solid rgba(22,53,42,.18);border-radius:22px;pointer-events:none}
+.sc::after{content:"";position:absolute;left:28px;right:28px;top:88px;height:1px;background:rgba(22,53,42,.16)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;height:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:#6f7d73}
+.sc-title{margin:10px 0 10px;font-size:24px;font-weight:800;letter-spacing:-.045em;line-height:1.18}
+.sc-title em{font-style:normal;color:#24704b;background:linear-gradient(transparent 64%,#dcef9f 64%,#dcef9f 92%,transparent 92%)}
+.sc-photo{position:relative;margin:4px 0 2px;border-radius:16px;overflow:hidden;background:#fbf9f3;box-shadow:0 0 0 1px rgba(22,53,42,.1),0 14px 26px -18px rgba(22,53,42,.55)}
+.sc-photo canvas{display:block;width:100%;height:140px;object-fit:cover;object-position:50% 50%;image-rendering:pixelated}
+.sc-photo .cap{display:flex;justify-content:space-between;padding:7px 12px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#5d6b62;border-top:1px solid rgba(22,53,42,.08)}
+.sc-quote{position:relative;margin:2px 0 4px;padding:4px 0 6px 18px;border-left:3px solid #24704b;font-family:"Nanum Pen Script",var(--font);font-size:30px;line-height:1.18;color:#1f4535;text-wrap:balance;word-break:keep-all}
+.sc-paper{position:relative;display:flex;gap:12px;margin:10px 0 0;padding:11px 14px 10px 10px;background:#fffdf8;color:#24302a;font-family:var(--mono);border-radius:16px;box-shadow:0 0 0 1px rgba(22,53,42,.1),0 14px 26px -18px rgba(22,53,42,.55)}
+.sc-paper .rc-map{flex:none;width:100px;height:auto}
+.sc-paper.big .rc-map{width:128px}
+.sc-list{flex:1;min-width:0;font-size:11.5px;line-height:1.55}
+.sc-list .sec{font-size:9px;letter-spacing:.14em;color:#6f7d73;margin-bottom:4px}
+.sc-list .st{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.sc-list .st i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#16352a;color:#f3efe6;font-size:8.5px;flex:none}
 .sc-list .st span{overflow:hidden;text-overflow:ellipsis}
-.sc-list .st.best span{font-weight:700}
-.sc-stats{display:flex;gap:8px;margin-top:8px;padding-top:7px;border-top:1px dashed rgba(43,42,39,.4)}
+.sc-list .st.best span{font-weight:700;color:#16352a}
+.sc-list .st.best i{background:#24704b}
+.sc-stats{display:flex;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(22,53,42,.12)}
 .sc-stats div{flex:1}
-.sc-stats b{display:block;font-size:12.5px}
-.sc-stats small{font-size:9px;opacity:.7}
-.sc-best{margin-top:10px;font-size:12px;color:#d9eadf}
-.sc-best b{display:block;margin-top:1px;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.03em}
-.sc-best b em{font-style:normal;color:#c6f36b}
-.sc-tags{margin-top:4px;font-size:12px;color:#bfe3cd}
-.sc-loc{position:absolute;right:20px;top:140px;padding:6px 11px;border-radius:9px;background:#fff;color:#1d4d3a;font-size:12.5px;font-weight:800;transform:rotate(6deg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
-.sc-foot{position:absolute;left:26px;right:26px;bottom:18px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:#9cc7ad;letter-spacing:.06em}
+.sc-stats b{display:block;font-size:13px;color:#16352a}
+.sc-stats small{font-size:8.5px;letter-spacing:.06em;color:#7a867e}
+.sc-best{margin-top:auto;padding-top:8px;font-size:11px;letter-spacing:.02em;color:#6f7d73}
+.sc-best b{display:flex;align-items:center;gap:6px;margin-top:1px;font-size:18px;font-weight:800;color:#16352a;letter-spacing:-.035em}
+.sc-best b em{font-style:normal;font-size:16px;color:#e0a63a}
+.sc-tags{margin-top:4px;font-size:11.5px;font-weight:600;color:#24704b}
+.sc-loc{position:absolute;right:24px;top:112px;padding:6px 11px 6px 9px;border-radius:999px;background:#16352a;color:#f3efe6;font-size:11.5px;font-weight:700;letter-spacing:-.01em;transform:rotate(4deg);box-shadow:0 8px 16px -10px rgba(22,53,42,.8)}
+.sc-foot{position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:#8b968e;letter-spacing:.08em}
+/* 미리보기의 인스타 글자(흰색)가 밝은 카드 위에서도 보이게, 실제 스토리처럼 위아래를 살짝 어둡게 */
+.s-ui::before,.s-ui::after{content:"";position:absolute;left:0;right:0;pointer-events:none}
+.s-ui::before{top:0;height:78px;background:linear-gradient(rgba(10,20,15,.38),transparent)}
+.s-ui::after{bottom:0;height:72px;background:linear-gradient(transparent,rgba(10,20,15,.42))}
+.s-bars,.s-head,.s-foot{z-index:1}
 @media (max-width:700px){.s-side{text-align:center}}
 /* 폰 화면(좁은 화면): 폰 틀 없이 실제 스토리처럼 화면을 채우고, 버튼은 아래 두 칸 */
 @media (max-width:640px){
