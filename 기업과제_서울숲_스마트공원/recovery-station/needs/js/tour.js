@@ -687,35 +687,35 @@ function accessBar() {
 // 범례에서 한 종류만 고를 때만 그 종류를 캔버스에 덧그림. 필지·건물 원자료는 마우스를 올릴 때 처음 받음(이름·번지 보기용)
 const ZONE_GROUPS = [
   { key: 'r', t: '주거지역', items: [
-    ['r1x', '제1종전용주거지역', '#fbeeea', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#f7e2dc', '공동주택 중심 조용한 동네'],
-    ['r1', '제1종일반주거지역', '#f4dcd5', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#ecc4bb', '중간 높이 주택 중심'],
-    ['r3', '제3종일반주거지역', '#dfa89d', '높은 아파트 중심'], ['rq', '준주거지역', '#d48f84', '집 + 가게·사무실'] ] },
+    ['r1x', '제1종전용주거지역', '#ffb3b3', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#ff9999', '공동주택 중심 조용한 동네'],
+    ['r1', '제1종일반주거지역', '#ff7a7a', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#f04848', '중간 높이 주택 중심'],
+    ['r3', '제3종일반주거지역', '#d62828', '높은 아파트 중심'], ['rq', '준주거지역', '#a51616', '집 + 가게·사무실'] ] },
   { key: 'c', t: '상업지역', items: [
-    ['cc', '중심상업지역', '#a4504a', '도심·큰 중심가'], ['cm', '일반상업지역', '#c06a62', '일반 상가·사무실'],
-    ['cn', '근린상업지역', '#d99d94', '동네 생활 상가'], ['cd', '유통상업지역', '#b07a72', '시장·물류'] ] },
+    ['cc', '중심상업지역', '#6a1b9a', '도심·큰 중심가'], ['cm', '일반상업지역', '#9c27b0', '일반 상가·사무실'],
+    ['cn', '근린상업지역', '#ce6ad8', '동네 생활 상가'], ['cd', '유통상업지역', '#7e57c2', '시장·물류'] ] },
   { key: 'i', t: '공업지역', items: [
-    ['ix', '전용공업지역', '#3f5a5e', '중화학 공장'], ['ig', '일반공업지역', '#6f8b91', '일반 공장'],
-    ['iq', '준공업지역', '#aebfc3', '공장 + 집·가게·사무실'] ] },
+    ['ix', '전용공업지역', '#0d3b9e', '중화학 공장'], ['ig', '일반공업지역', '#1e63d6', '일반 공장'],
+    ['iq', '준공업지역', '#4a90ff', '공장 + 집·가게·사무실'] ] },
   { key: 'g', t: '녹지지역', items: [
-    ['gp', '보전녹지지역', '#5e6b45', '자연을 그대로 지킴'], ['ga', '생산녹지지역', '#c0b17f', '농사 짓는 땅'],
-    ['gn', '자연녹지지역', '#b5bc98', '녹지를 지키며 조금만 개발'] ] },
+    ['gp', '보전녹지지역', '#0b6e2e', '자연을 그대로 지킴'], ['ga', '생산녹지지역', '#8bc34a', '농사 짓는 땅'],
+    ['gn', '자연녹지지역', '#2e9e48', '녹지를 지키며 조금만 개발'] ] },
 ];
 // 용도지역과 상관없이 지목으로 칠하는 땅(도로·물·공원)
 const INFRA = { road: { t: '도로·철도', c: '#dcdcd8', d: '지목 도로·철도용지' }, water: { t: '하천·물길', c: '#c3d3d7', d: '지목 하천·구거·유지·제방' }, park: { t: '공원', c: '#a9b48d', d: '지목 공원' } };
 const infraOf = jm => !jm ? null : '도철'.includes(jm) ? 'road' : '천구유제'.includes(jm) ? 'water' : null;
 const BLDG_GROUPS = [
-  { key: 'h', t: '주거', items: [['01', '단독주택', '#efe0c8', '단독·다가구'], ['02', '공동주택', '#d8b49c', '아파트·연립·다세대']] },
-  { key: 's', t: '가게·생활', items: [['03', '제1종근린생활시설', '#e8a59b', '동네 가게·의원'], ['04', '제2종근린생활시설', '#d27b70', '음식점·카페·작은 사무소'],
-    ['07', '판매시설', '#c46a62', '시장·큰 상점'], ['15', '숙박시설', '#b78a9e', '호텔·모텔'], ['16', '위락시설', '#a07689', '유흥']] },
-  { key: 'o', t: '업무', items: [['14', '업무시설', '#9fb3b8', '사무실·오피스텔']] },
-  { key: 'i', t: '공장·창고', items: [['17', '공장', '#6f8b91', '만드는 곳'], ['18', '창고시설', '#8a8f7a', '물류·보관'],
-    ['20', '자동차관련시설', '#b3b8a8', '정비·세차·주차'], ['19', '위험물저장시설', '#5e6b6d', '주유소·가스']] },
-  { key: 'p', t: '공공·교육·문화', items: [['10', '교육연구시설', '#b9bf9b', '학교·학원'], ['05', '문화및집회시설', '#a6ad83', '공연·전시·예식'],
-    ['06', '종교시설', '#c0b17f', '교회·절'], ['09', '의료시설', '#cdd4b4', '병원'], ['11', '노유자시설', '#d3d8bd', '어린이집·경로당'],
-    ['13', '운동시설', '#c5cba6', '체육관'], ['12', '수련시설', '#8e9670', '수련원']] },
-  { key: 'e', t: '기타', items: [['08', '운수시설', '#cfccc4', '터미널·역'], ['21', '동물및식물관련시설', '#cfccc4', ''], ['22', '자원순환관련시설', '#cfccc4', ''],
-    ['23', '교정및군사시설', '#cfccc4', ''], ['24', '방송통신시설', '#cfccc4', ''], ['25', '발전시설', '#cfccc4', ''], ['26', '묘지관련시설', '#cfccc4', ''],
-    ['27', '관광휴게시설', '#cfccc4', ''], ['28', '장례시설', '#cfccc4', ''], ['29', '야영장시설', '#cfccc4', ''], ['Z3', '기타 용도', '#cfccc4', '대장 코드 Z3'], ['', '용도 정보 없음', '#dcdad0', '대장에 용도가 비어 있음']] },
+  { key: 'h', t: '주거', items: [['01', '단독주택', '#ff8a8a', '단독·다가구'], ['02', '공동주택', '#e53935', '아파트·연립·다세대']] },
+  { key: 's', t: '가게·생활', items: [['03', '제1종근린생활시설', '#ce6ad8', '동네 가게·의원'], ['04', '제2종근린생활시설', '#ab47bc', '음식점·카페·작은 사무소'],
+    ['07', '판매시설', '#8e24aa', '시장·큰 상점'], ['15', '숙박시설', '#d81b9a', '호텔·모텔'], ['16', '위락시설', '#ad1457', '유흥']] },
+  { key: 'o', t: '업무', items: [['14', '업무시설', '#4a90ff', '사무실·오피스텔']] },
+  { key: 'i', t: '공장·창고', items: [['17', '공장', '#1e63d6', '만드는 곳'], ['18', '창고시설', '#3949ab', '물류·보관'],
+    ['20', '자동차관련시설', '#7fa8e8', '정비·세차·주차'], ['19', '위험물저장시설', '#0d3b9e', '주유소·가스']] },
+  { key: 'p', t: '공공·교육·문화', items: [['10', '교육연구시설', '#2e9e48', '학교·학원'], ['05', '문화및집회시설', '#43a047', '공연·전시·예식'],
+    ['06', '종교시설', '#66bb6a', '교회·절'], ['09', '의료시설', '#26a69a', '병원'], ['11', '노유자시설', '#81c784', '어린이집·경로당'],
+    ['13', '운동시설', '#9ccc65', '체육관'], ['12', '수련시설', '#1b7a3a', '수련원']] },
+  { key: 'e', t: '기타', items: [['08', '운수시설', '#9e9e9e', '터미널·역'], ['21', '동물및식물관련시설', '#9e9e9e', ''], ['22', '자원순환관련시설', '#9e9e9e', ''],
+    ['23', '교정및군사시설', '#9e9e9e', ''], ['24', '방송통신시설', '#9e9e9e', ''], ['25', '발전시설', '#9e9e9e', ''], ['26', '묘지관련시설', '#9e9e9e', ''],
+    ['27', '관광휴게시설', '#9e9e9e', ''], ['28', '장례시설', '#9e9e9e', ''], ['29', '야영장시설', '#9e9e9e', ''], ['Z3', '기타 용도', '#9e9e9e', '대장 코드 Z3'], ['', '용도 정보 없음', '#bdbdbd', '대장에 용도가 비어 있음']] },
 ];
 const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const BLDG_OF = Object.fromEntries(BLDG_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
@@ -846,7 +846,7 @@ function zoneHover(e) {
   hit.hl = it;
   if (!it) { zoneHl?.remove(); zoneHl = null; zoneTip?.remove(); zoneTip = null; return; }
   const ll = itemLatLngs(it);
-  if (!zoneHl) zoneHl = L.polygon(ll, { pane: 'zone', interactive: false, fill: false, color: '#2b2a27', weight: 2.4, opacity: 1 }).addTo(map);
+  if (!zoneHl) zoneHl = L.polygon(ll, { pane: 'zone', interactive: false, fill: false, color: '#ffffff', weight: 2.6, opacity: 1 }).addTo(map);
   else zoneHl.setLatLngs(ll);
   let html;
   if (it.kind === 'b') {
@@ -894,7 +894,7 @@ function zoneBar() {
   const sh = isB ? ZONES.bshare ?? {} : ZONES.share ?? {};
   const OF = isB ? BLDG_OF : ZONE_OF, G = isB ? BLDG_GROUPS : ZONE_GROUPS;
   const grp = k => Object.entries(sh).filter(([c]) => OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
-  const tone = isB ? { h: '#d8b49c', s: '#d27b70', o: '#9fb3b8', i: '#6f8b91', p: '#b9bf9b', e: '#cfccc4' } : { r: '#dfa89d', c: '#c06a62', i: '#aebfc3', g: '#b5bc98' };
+  const tone = isB ? { h: '#e53935', s: '#ab47bc', o: '#4a90ff', i: '#1e63d6', p: '#2e9e48', e: '#9e9e9e' } : { r: '#f04848', c: '#9c27b0', i: '#1e63d6', g: '#2e9e48' };
   const chips = G.map(g => [g, grp(g.key)]).filter(([, p]) => p >= .01).slice(0, 4)
     .map(([g, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${tone[g.key]}` }), g.t.replace('지역', ''), h('b', null, pctTxt(p))));
   const setMode = m => { if (zoneMode === m) return; zoneMode = m; zoneOnly = null; zoneOut(); zonePaint(); document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); };
@@ -947,7 +947,7 @@ function zonePaint(fly = false) {
   map.on('mousemove click', zoneMove); map.on('mouseout', zoneOut);
   zoneFilter();
   // 동 경계(점선) + 동 이름. 서울숲에 붙은 4개 동만 진하게
-  L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: f => ({ fill: false, color: '#4a4740', weight: f.properties.near ? 1.7 : 1, opacity: f.properties.near ? .85 : .4, dashArray: '2 5', lineCap: 'round' }) }).addTo(layers.zone);
+  L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: f => ({ fill: false, color: '#ffffff', weight: f.properties.near ? 1.8 : 1.1, opacity: f.properties.near ? .95 : .5, dashArray: '2 5', lineCap: 'round' }) }).addTo(layers.zone);
   for (const f of ZONES.dongs.features)
     L.marker(f.properties.at, { interactive: false, zIndexOffset: 800, icon: L.divIcon({ className: '', html: `<div class="tr-zone-dong${f.properties.near ? ' near' : ''}">${esc(f.properties.n)}</div>`, iconSize: [0, 0] }) }).addTo(layers.zone);
   if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#3f5a5e', weight: 2, opacity: .9, dashArray: '8 5' },

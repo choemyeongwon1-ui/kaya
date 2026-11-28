@@ -1017,9 +1017,9 @@ div.tr-status-line{cursor:default}
 .tr-gl-img{flex:none;width:52px;height:52px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.05)}
 
 /* 주변 땅(용도지역) */
-/* 주변 땅을 펼치면 위성 사진을 밝은 흑백으로(도면 바탕처럼) 낮추고 그 위에 반투명 용도 색 */
+/* 주변 땅을 펼치면 위성 사진을 흑백으로 바꾸고 그 위에 선명한 반투명 용도 색 */
 .tr-map.tr-zonemap .tr-sat{opacity:1!important}
-.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(1) brightness(1.25) contrast(.62)}
+.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(1) brightness(.9) contrast(1.05)}
 .tr-map.tr-zonemap .tr-fade{display:none}
 .tr-zone-chip{display:inline-flex;align-items:center;gap:5px}
 .tr-zone-chip i{flex:none;width:9px;height:9px;border-radius:3px}
