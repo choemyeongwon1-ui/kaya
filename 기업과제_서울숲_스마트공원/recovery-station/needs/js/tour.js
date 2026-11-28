@@ -960,56 +960,6 @@ function zoneBar() {
     h('small', null, isB ? '건물 용도' : '주변 땅'), h('div', { class: 'tr-status-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
   return h('section', { class: 'tr-status tr-zone' }, line, more);
 }
-// ── 이 길에서 만나는 나무(추정): 길이 지나는 20m 칸의 위성 나무 비율로 그루 수를, 이름난 나무 장소와의 거리로 수종을 유추 ──
-// 알고리즘으로 유추한 값이라 실제 수종·그루 수는 현장 매목조사로 확인해야 함(화면에 그대로 적음)
-let TREES = null;
-const TREE_SPOT_HUB = { '메타세쿼이아 산책길': 'mirror-pond', '벚나무길': 'cherry-tree-path', '은행나무숲': 'ginkgo-forest' };
-const CANOPY_M2 = 64;   // 다 자란 나무 한 그루가 덮는 넓이(폭 약 9m)
-function routeTrees(legs) {
-  const m = app?.model;
-  if (!m?.cellAt || !TREES) return null;
-  const pts = legs.flatMap(s => s.coords ?? []);
-  if (pts.length < 2) return null;
-  const mPer = (a, b) => Math.hypot((b[0] - a[0]) * 111320, (b[1] - a[1]) * 111320 * Math.cos(a[0] * Math.PI / 180));
-  const seen = new Map();
-  let shadeLen = 0, len = 0;
-  for (let i = 1; i < pts.length; i++) {
-    const a = pts[i - 1], b = pts[i], d = mPer(a, b), n = Math.max(1, Math.ceil(d / 5));
-    for (let k = 0; k < n; k++) {
-      const t = (k + .5) / n, lat = a[0] + (b[0] - a[0]) * t, lon = a[1] + (b[1] - a[1]) * t;
-      const c = m.cellAt(lon, lat);
-      if (!c || c.hold) continue;
-      const tr = Math.min(1, Math.max(0, c.p.tree ?? 0));
-      seen.set(c.id, tr); shadeLen += tr * d / n; len += d / n;
-    }
-  }
-  if (len < 50) return null;
-  const count = Math.round([...seen.values()].reduce((s, v) => s + v * 400 / CANOPY_M2, 0) / 10) * 10;
-  const placeOf = id => m.places?.find(p => p.id === id) ?? m.hubById?.[id];
-  const stopIds = new Set(legs.map(s => s.r?.place?.id));
-  const spots = (TREES.spots ?? []).map(sp => {
-    const p = placeOf(TREE_SPOT_HUB[sp.name]);
-    if (!p) return null;
-    const near = stopIds.has(p.id) || pts.some(q => mPer(q, [p.lat, p.lon]) <= GARDEN_NEAR);
-    return near ? { ...sp, p } : null;
-  }).filter(Boolean);
-  const top = Object.entries(TREES.count ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k);
-  return { count, shade: Math.round(100 * shadeLen / len), spots, top };
-}
-function treeStrip(legs) {
-  const R = routeTrees(legs);
-  if (!R) return null;
-  const others = R.top.filter(t => !R.spots.some(s => s.trees.includes(t)));
-  return h('section', { class: 'tr-trs' },
-    h('div', { class: 'tr-gls-head' }, icon('tree', 13), h('b', null, '이 길에서 만나는 나무'), h('small', null, '추정')),
-    h('p', { class: 'tr-trs-main' }, '길 옆 나무 ', h('b', null, `약 ${R.count.toLocaleString()}그루`), ` · 나무 그늘 ${R.shade}%`),
-    R.spots.length ? h('div', { class: 'tr-trs-spots' }, R.spots.map(s => h('button', { type: 'button', onclick: () => flyTo(s.p) },
-      h('b', null, s.trees[0]), h('small', null, s.name)))) : null,
-    others.length ? h('p', { class: 'tr-trs-sub' }, `그 밖엔 서울숲에 가장 많은 ${others.join('·')}일 가능성이 커요.`) : null,
-    h('p', { class: 'tr-trs-warn' }, '위성 사진과 2020년 서울시 조사로 유추한 값이에요. 실제 나무 종류와 그루 수는 현장 조사(매목조사)가 필요해요.'));
-}
-const flyTo = p => { if (map && p) map.flyTo([p.lat, p.lon], Math.max(map.getZoom(), 17), { duration: .6 }); };
-
 function zonePaint(fly = false) {
   if (!layers?.zone) return;
   layers.zone.clearLayers(); zoneOut();
@@ -1688,7 +1638,6 @@ function renderPlan() {
       h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
     h('p', { class: 'tr-kcal-note' }, `칼로리는 ${KCAL_NOTE}`),
     planNotes(legs),
-    treeStrip(legs),
     criteriaBox(legs),
     startRow(),
     h('ol', { class: 'tr-tl' }, legs.map((s, i) => tlItem(s, i))),
@@ -2398,7 +2347,6 @@ async function boot() {
   flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
-  loadJson('./data/trees.json').then(t => { TREES = t; }).catch(() => {});
   loadJson('./data/zoning.json').then(z => { ZONES = z; document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); }).catch(() => {});
   try {
     const wxLive = fetchWeather().catch(() => null);

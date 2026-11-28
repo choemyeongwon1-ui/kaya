@@ -1064,15 +1064,3 @@ div.tr-status-line{cursor:default}
 .leaflet-container .tr-zone-tiles img.leaflet-tile{mix-blend-mode:normal;filter:none}
 .tr-map.tr-zonemap .leaflet-tr-mask-pane{display:none}
 
-/* 이 길에서 만나는 나무(추정) */
-.tr-trs{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--glass-2)}
-.tr-trs .tr-gls-head small{margin-left:auto;font-size:10.5px;padding:1px 6px;border-radius:6px;background:rgba(233,192,99,.15);color:#e9c063}
-.tr-trs-main{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
-.tr-trs-main b{color:var(--mint);font-size:15px}
-.tr-trs-spots{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tr-trs-spots button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:none;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
-.tr-trs-spots button:hover{border-color:var(--mint)}
-.tr-trs-spots b{font-size:12.5px}
-.tr-trs-spots small{font-size:10.5px;color:var(--mute)}
-.tr-trs-sub{margin:8px 0 0;font-size:12px;color:var(--ink-2)}
-.tr-trs-warn{margin:6px 0 0;font-size:10.5px;line-height:1.45;color:var(--mute)}
