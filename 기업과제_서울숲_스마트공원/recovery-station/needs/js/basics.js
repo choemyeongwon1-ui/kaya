@@ -2,7 +2,7 @@
 // 자료: data/basics.json (OpenStreetMap, 서울숲 경계 안). OSM에 올라간 것만 있어 실제보다 적을 수 있음 → 눌렀을 때 그렇게 알려 줌
 import { h } from './ui.js';
 
-document.head.append(h('link', { rel: 'stylesheet', href: new URL('../basics.css?v=1', import.meta.url).href }));
+document.head.append(h('link', { rel: 'stylesheet', href: new URL('../basics.css?v=2', import.meta.url).href }));
 
 // 아이콘(24칸 선 그림)
 const P = {
@@ -19,9 +19,9 @@ const svg = (k, s = 14) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" 
 
 // 버튼 묶음(자료의 kind → 버튼)
 const GROUPS = [
-  { key: 'toilet', label: '화장실', kinds: ['toilet'], on: true },
-  { key: 'shop', label: '매점', kinds: ['shop'], on: true },
-  { key: 'rest', label: '쉼터', kinds: ['shelter', 'indoor', 'bench'], on: true },
+  { key: 'toilet', label: '화장실', kinds: ['toilet'], on: false },
+  { key: 'shop', label: '매점', kinds: ['shop'], on: false },
+  { key: 'rest', label: '쉼터', kinds: ['shelter', 'indoor', 'bench'], on: false },
   { key: 'water', label: '음수대·안내', kinds: ['water', 'info'], on: false },
   { key: 'bike', label: '따릉이·주차', kinds: ['bike', 'parking'], on: false },
 ];
@@ -37,7 +37,7 @@ const KIND = {
   parking: { g: 'bike', ico: 'parking', label: '주차장' },
 };
 const MIN_ZOOM = 15;   // 공원이 보일 만큼 다가가야 점을 보여 줌(멀리선 겹쳐서 안 보임)
-const SAVE = 'sf-tour-basics';
+const SAVE = 'sf-tour-basics2', SEEN = 'sf-tour-basics-seen';   // 2: 처음엔 모두 꺼짐으로 바꾸며 예전 저장값을 버림
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 /**
@@ -55,22 +55,26 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 export function mountBasics(o) {
   const { map, L } = o;
   let saved = {}; try { saved = JSON.parse(localStorage.getItem(SAVE) || '{}') || {}; } catch { saved = {}; }
-  const st = Object.fromEntries(GROUPS.map(g => [g.key, saved[g.key] ?? g.on]).concat([['garden', saved.garden ?? true]]));
+  const st = Object.fromEntries(GROUPS.map(g => [g.key, saved[g.key] ?? g.on]).concat([['garden', saved.garden ?? false]]));
   const save = () => { try { localStorage.setItem(SAVE, JSON.stringify(st)); } catch {} };
 
   if (!map.getPane('tr-basic')) { const p = map.createPane('tr-basic'); p.style.zIndex = 590; }
   const layer = L.layerGroup().addTo(map), gLayer = L.layerGroup().addTo(map);
   let points = [], meta = null;
 
-  const bar = h('div', { class: 'tr-bx', role: 'group', 'aria-label': '지도에 보일 것' });
+  let seen = false; try { seen = localStorage.getItem(SEEN) === '1'; } catch {}
+  // 처음 보는 사람에게만: 버튼이 하나씩 올라오고 아이콘 둘레가 은은하게 번짐 → 한 번 누르면 멈추고 다시 안 나옴
+  const bar = h('div', { class: `tr-bx${seen ? '' : ' hint'}`, role: 'group', 'aria-label': '지도에 보일 것' });
   const btn = (key, label, ico) => { const i = h('i'); i.innerHTML = svg(ico, 13);
     return h('button', { type: 'button', class: `tr-bx-b k-${key}`, 'data-k': key, 'aria-pressed': String(!!st[key]), onclick: () => flip(key) }, i, label, h('small', { class: 'n' })); };
   GROUPS.forEach(g => bar.append(btn(g.key, g.label, g.key)));
   bar.append(btn('garden', '정원', 'garden'));
+  [...bar.children].forEach((b, i) => b.style.setProperty('--i', i));
   o.root.append(bar);
 
   function flip(key) {
     st[key] = !st[key]; save();
+    if (!seen) { seen = true; bar.classList.remove('hint'); try { localStorage.setItem(SEEN, '1'); } catch {} }
     bar.querySelector(`[data-k="${key}"]`).setAttribute('aria-pressed', String(st[key]));
     if (key === 'garden') syncGarden(); else draw();
   }
