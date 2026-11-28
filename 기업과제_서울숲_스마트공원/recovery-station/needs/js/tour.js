@@ -784,7 +784,8 @@ function bldgLook(r) {   // 한 용도가 절반이 안 되는 섞인 블록은 
 }
 // 이 줌부터는 미리 그린 타일을 늘리지 않고 캔버스로 경계를 또렷하게 직접 그림
 const ZONE_HI = 17.3;
-const darkHex = (c, f = .62) => `rgb(${[1, 3, 5].map(i => Math.round(parseInt(c.slice(i, i + 2), 16) * f)).join(',')})`;
+// 경계선: 칠한 색을 흰색 쪽으로 밝힌 가는 선(어두운 위성 바탕에서도 보이게)
+const lightHex = (c, w = .5) => `rgb(${[1, 3, 5].map(i => Math.round(parseInt(c.slice(i, i + 2), 16) * (1 - w) + 255 * w)).join(',')})`;
 
 const ZoneCanvas = L.Layer.extend({
   onAdd(map) {
@@ -824,7 +825,7 @@ const ZoneCanvas = L.Layer.extend({
         ctx.beginPath();
         for (const p of g.list) { ctx.moveTo(p[0] * s - o.x, p[1] * s - o.y); for (let j = 2; j < p.length; j += 2) ctx.lineTo(p[j] * s - o.x, p[j + 1] * s - o.y); ctx.closePath(); }
         ctx.globalAlpha = alpha * g.a; ctx.fillStyle = g.c; ctx.fill();
-        if (strokeA) { ctx.globalAlpha = strokeA; ctx.strokeStyle = darkHex(g.c); ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.stroke(); }   // 같은 색 계열의 진한 가는 선
+        if (strokeA) { ctx.globalAlpha = strokeA; ctx.strokeStyle = lightHex(g.c); ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.stroke(); }
       }
     };
     // 범례에서 고른 한 종류만 진하게(나머지는 타일을 흐리게), 아주 가까우면 전부를 타일 대신 캔버스로
@@ -840,9 +841,9 @@ const ZoneCanvas = L.Layer.extend({
         for (const it of ZP.items) { if (!inView(it.bb) || infraOf(it.r[1]) || (zoneOnly && zoneOnly !== it.r[0])) continue; ring(it.p); }
         ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(225,225,225,.2)'; ctx.lineWidth = .8; ctx.stroke();
       }
-      for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = .85; ctx.strokeStyle = darkHex(c, .6); ctx.lineWidth = hi ? 1.4 : 1.1; ctx.lineJoin = 'round'; ctx.stroke(); }
+      for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = .95; ctx.strokeStyle = lightHex(c); ctx.lineWidth = hi ? 1.5 : 1.2; ctx.lineJoin = 'round'; ctx.stroke(); }
     }
-    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .45 : .7, 0, z >= 14 ? .8 : 0, hi ? 1.2 : 1);
+    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .45 : .7, 0, .95, hi ? 1.3 : 1);
     this.ms = Math.round(performance.now() - t0);
   },
 });
