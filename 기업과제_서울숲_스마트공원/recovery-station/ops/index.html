@@ -194,6 +194,71 @@ body{overflow:auto}
 body>*:not(.tw){transition:filter .9s var(--ease),opacity .9s var(--ease)}
 body.tw-go>*:not(.tw){filter:blur(10px) saturate(.8);opacity:.55;pointer-events:none}
 body.tw-full>*:not(.tw){visibility:hidden}
+.abc{margin-top:14px;padding:13px 13px 12px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
+.abc h4{margin:0 0 9px;font-size:13px;font-weight:700}.abc h4 small{display:block;margin-top:3px;font-size:10.5px;font-weight:500;color:var(--mute);line-height:1.45}
+.abc-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.abc-c{position:relative;display:grid;gap:4px;align-content:start;text-align:left;padding:9px 9px 8px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:inherit;cursor:pointer;transition:border-color .15s,transform .15s}
+.abc-c:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.abc-c.rec{border-color:rgba(106,245,176,.65);background:var(--mint-soft)}
+.abc-c .k{font-size:18px;font-weight:900;line-height:1;color:var(--mint)}
+.abc-c>b{font-size:12.5px}
+.abc-c em{position:absolute;top:7px;right:7px;font-style:normal;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;background:var(--mint);color:var(--mint-ink)}
+.abc-c .d{font-size:10.5px;color:var(--ink-2);line-height:1.4}
+.abc-c .g{display:grid;grid-template-columns:auto 1fr;gap:1px 6px;font-size:10.5px}.abc-c .g i{font-style:normal;color:var(--mute)}.abc-c .g b{font-weight:800;color:var(--ink-2)}.abc-c .g b.up{color:var(--mint)}
+.abc-c .m{font-size:10px;color:var(--mute);line-height:1.4}
+.abc-tree{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.abc-tree h5{margin:0 0 6px;font-size:12.5px;font-weight:700}.abc-tree h5 em{font-style:normal;font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,201,120,.16);color:var(--warn);margin-left:4px}
+.abc-tree p{margin:0 0 5px;font-size:11.5px;line-height:1.5;color:var(--ink-2)}.abc-tree p b{color:var(--ink)}
+.abc-tree .pet{font-size:10px;color:var(--warn)}
+.abc-tree .warn{padding:6px 8px;border-radius:8px;background:rgba(255,201,120,.12);color:var(--warn);font-weight:700}
+.abc-tree small{display:block;font-size:10px;color:var(--mute);line-height:1.45}
+.abc-b{display:inline-block;font-style:normal;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;margin-top:2px}
+.abc-b.kA{background:rgba(159,216,255,.14);color:#9fd8ff}.abc-b.kB{background:rgba(245,213,138,.16);color:var(--gold)}.abc-b.kC{background:var(--mint-soft);color:var(--mint)}.abc-b.none,.abc-b.wait{background:var(--glass-3);color:var(--mute)}
+.abc-r{display:grid;grid-template-columns:112px 34px minmax(0,1fr);gap:6px;align-items:center;padding:5px 0;font-size:12px}.abc-r b{text-align:right}.abc-r small{font-size:10.5px;color:var(--mute);line-height:1.4}
+.abc-grade{margin:0 0 9px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.abc-grade b{display:block;font-size:12px}.abc-grade>span{display:block;font-size:10.5px;color:var(--ink-2);margin-top:2px;line-height:1.45}
+.abc-grade ul{margin:5px 0 0;padding-left:14px;font-size:10.5px;line-height:1.5;color:var(--mute)}
+.abc-grade.g-conf{border-color:rgba(255,155,138,.5);background:rgba(255,155,138,.07)}.abc-grade.g-conf b{color:var(--bad)}
+.abc-grade.g-susp b,.abc-grade.g-few b{color:var(--gold)}.abc-grade.g-perc b{color:#9fd8ff}.abc-grade.g-ok b{color:var(--mint)}.abc-grade.g-lat b{color:var(--warn)}
+.abc-c .weak{font-size:9.5px;font-weight:800;color:var(--gold)}
+.abc-b.gr{background:var(--glass-3);color:var(--ink-2)}.abc-b.gr.g-conf{background:rgba(255,155,138,.16);color:var(--bad)}.abc-b.gr.g-susp,.abc-b.gr.g-few{background:rgba(245,213,138,.14);color:var(--gold)}.abc-b.gr.g-perc{background:rgba(159,216,255,.14);color:#9fd8ff}.abc-b.gr.g-ok{background:var(--mint-soft);color:var(--mint)}.abc-b.gr.g-lat{background:rgba(255,201,120,.16);color:var(--warn)}
+
+/* 세 안 한눈에(장단점 카드) */
+.gl-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:6px}
+.gl-c{display:flex;flex-direction:column;gap:5px;padding:9px 9px 10px;border-radius:12px;border:1px solid rgba(241,247,243,.14);background:rgba(255,255,255,.03);border-top:3px solid #9fd8ff;min-width:0}
+.gl-c.gl-B{border-top-color:#f5d58a}.gl-c.gl-C{border-top-color:#6af5b0}
+.gl-h{display:flex;align-items:baseline;gap:6px}.gl-h .k{font-size:20px;font-weight:900;line-height:1}.gl-A .k{color:#9fd8ff}.gl-B .k{color:#f5d58a}.gl-C .k{color:#6af5b0}.gl-h b{font-size:12.5px}
+.gl-bd{display:flex;flex-wrap:wrap;gap:3px;min-height:16px}.gl-bd em{font-style:normal;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;background:rgba(106,245,176,.16);color:#6af5b0}
+.gl-n b{font-size:20px;font-weight:900}.gl-n small{display:block;font-size:9.5px;color:rgba(241,247,243,.55);line-height:1.3}
+.gl-b{display:grid;grid-template-columns:52px 1fr 34px;gap:4px;align-items:center;font-size:10px;color:rgba(241,247,243,.6)}.gl-b i{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.gl-b i b{display:block;height:100%;background:currentColor}.gl-A .gl-b i b{background:#9fd8ff}.gl-B .gl-b i b{background:#f5d58a}.gl-C .gl-b i b{background:#6af5b0}.gl-b em{font-style:normal;font-weight:800;text-align:right;color:#f1f7f3}
+.gl-m{display:flex;flex-direction:column;gap:1px;font-size:10px;color:rgba(241,247,243,.7)}
+.gl-d{margin:0;font-size:10px;color:rgba(241,247,243,.5);line-height:1.35}
+.gl-p,.gl-x{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:10.5px;line-height:1.35}
+.gl-p li::before{content:'✔ ';color:#6af5b0;font-weight:900}.gl-x li::before{content:'✖ ';color:#ff9d5c;font-weight:900}
+.gl-p li{color:rgba(241,247,243,.88)}.gl-x li{color:rgba(241,247,243,.66)}
+.gl-w{margin:2px 0 0;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.05);font-size:10.5px;line-height:1.4;color:#f1f7f3}.gl-w b{display:block;font-size:9.5px;color:rgba(241,247,243,.55);margin-bottom:1px}
+.abc-gl{margin-top:9px}.abc-gl summary{cursor:pointer;font-size:12px;font-weight:700}
+
+/* 세로 비교(패널) */
+.ro{display:grid;gap:8px;margin-top:8px}
+.ro-r{display:grid;grid-template-columns:30px 1fr auto;gap:4px 10px;align-items:center;width:100%;text-align:left;padding:11px 12px;border-radius:12px;border:1px solid rgba(241,247,243,.14);border-left:4px solid #9fd8ff;background:rgba(255,255,255,.035);color:#f1f7f3;font:inherit;cursor:pointer}
+.ro-r.ro-B{border-left-color:#f5d58a}.ro-r.ro-C{border-left-color:#6af5b0}
+.ro-r:hover{background:rgba(255,255,255,.06)}.ro-r.on{background:rgba(106,245,176,.1);border-color:rgba(106,245,176,.55)}
+.ro-k{grid-row:1;font-size:24px;font-weight:900;line-height:1}.ro-A .ro-k{color:#9fd8ff}.ro-B .ro-k{color:#f5d58a}.ro-C .ro-k{color:#6af5b0}
+.ro-t{display:flex;flex-wrap:wrap;align-items:center;gap:5px}.ro-t b{font-size:14px}.ro-t em{font-style:normal;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(106,245,176,.15);color:#6af5b0}
+.ro-n{font-size:22px;font-weight:900;white-space:nowrap}.ro-n small{font-size:12px;margin-left:1px;color:rgba(241,247,243,.6)}
+.ro-bs,.ro-m,.ro-p,.ro-x,.ro-w{grid-column:2/4}
+.ro-bs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ro-b{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;font-size:11.5px}.ro-b i{font-style:normal;color:rgba(241,247,243,.6)}.ro-b s{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;text-decoration:none}.ro-b s b{display:block;height:100%}.ro-A .ro-b s b{background:#9fd8ff}.ro-B .ro-b s b{background:#f5d58a}.ro-C .ro-b s b{background:#6af5b0}.ro-b em{font-style:normal;font-weight:800}
+.ro-m{font-size:12px;color:rgba(241,247,243,.75)}
+.ro-p,.ro-x{display:grid;gap:3px;font-size:12.5px;line-height:1.45}.ro-p span{color:#d8fbe9}.ro-x span{color:#ffc9a6}
+.ro-w{margin-top:2px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.06);font-size:12px;line-height:1.45;color:#f1f7f3}
+.abc-grade{display:block}.abc-grade summary{cursor:pointer;list-style:none}.abc-grade summary::-webkit-details-marker{display:none}
+.abc-grade summary b{display:block;font-size:12.5px}.abc-grade summary span{display:block;font-size:12px;color:var(--ink-2);margin-top:2px;line-height:1.45}
+.abc-grade summary::after{content:'근거 자세히 ▾';display:block;font-size:10.5px;color:var(--mute);margin-top:3px}.abc-grade[open] summary::after{content:'접기 ▴'}
+.abc-grade p{margin:6px 0 0;font-size:11.5px;color:var(--ink-2)}
+.act .c.two{color:var(--ink-2);font-weight:700}
+.howto{margin-top:14px;font-size:12.5px;color:var(--mute)}.howto>summary{cursor:pointer;font-weight:700;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -229,7 +294,9 @@ body.tw-full>*:not(.tw){visibility:hidden}
       <h3>거점별 만족도 <span class="n" id="listN">예상 점수 · 낮은 순</span></h3>
       <div class="hubs" id="hubs"></div>
     </section>
+    <details class="howto"><summary>지도 읽는 법</summary>
     <p class="src">색 띠 = 2.5점 간격, 흰 선 = 등고선(5점마다 숫자), 흰 점선 = 관리 기준 60점 · ● = 거점(점수), 누르면 지도가 그 거점으로 당겨지고 요인별 점수 고리가 열립니다. 거점 점수를 거리 가중(가우스, 약 80m)으로 공원 전체에 펼친 추정 분포이며, 이용자 설문이 모이면 설문 지점 값으로 바꿔 그립니다. 만족도 = 밀도·날씨·주변 환경(팀 20m 격자) 가중 평균, 주신하(2008) 공원 평가 요인 기반 · 가중치와 등급 기준은 가정값. 「추가」 거점 4곳은 위치만 OpenStreetMap에서 가져왔고 수용 인원·끌림은 가정값입니다. 법적 지정은 팀이 토지이음에서 조회한 자료로 법적 효력이 없으며, 설치 전 토지이용계획확인서로 확인해야 합니다. 거점 카드의 작은 사진은 이용자 화면과 같은 위키미디어 공용의 자유 라이선스 사진입니다. 배경: 위성 사진 © Esri, Maxar, Earthstar Geographics · 지도 © OpenStreetMap 기여자(ODbL).</p>
+    </details>
   </aside>
 </div>
 
@@ -807,15 +874,19 @@ body.tw-full>*:not(.tw){visibility:hidden}
   function bar(v) { return '<span class="bar"><i style="width:' + v + '%;background:' + satTone(v)[0] + '"></i></span>'; }
   function left() {
     var el = $('left'); if (!el || !S.hubs[0].s) return;
-    var w = S.wx && S.wx[S.hour], low = S.hubs.filter(function (h) { return h.s.all < CUT; }).sort(function (a, b) { return a.s.all - b.s.all; });
-    var html = '<section class="tw-entry" style="margin:0 0 14px"><button type="button" class="tw-open" data-tw="auto"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 평가가 낮은 곳마다 최선의 개선안을 3D로 확인</small></button></section>';
+    var GR = { confirmed: 0, perception: 0, suspect: 1, latent: 1, few: 2, ok: 3 }, gk = function (h) { return ENG ? ENG.gradeOf(h.id).key : 'few'; };
+    var w = S.wx && S.wx[S.hour], low = S.hubs.filter(function (h) { return h.s.all < CUT && gk(h) !== 'ok'; }).sort(function (a, b) { return GR[gk(a)] - GR[gk(b)] || a.s.all - b.s.all; });
+    left.low = low;
+    var html = '<section class="tw-entry" style="margin:0 0 14px"><button type="button" class="tw-open" data-tw="auto"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈 대안 검토</b><small>관리자 · 만족도 하위 거점별 대안 A·B·C 수립 및 제안서 생성</small></button></section>';
     html += '<section><h3>지금 조치할 곳 <span class="n' + (low.length ? '' : ' ok') + '">' + (low.length ? low.length + '곳' : '없음') + '</span></h3>';
     html += low.length ? low.slice(0, 3).map(function (h) {
-      var a = action(h, w), t = satTone(h.s.all);
-      return '<button type="button" class="act" data-id="' + h.id + '"><span class="h">' + h.name + '<b style="color:' + t[2] + '">' + h.s.all + '</b></span><span class="c"><i>' + FAC[a[0]] + ' ' + h.s[a[0]] + '점</i>이 가장 낮음 → ' + a[1] + '</span></button>';
+      var a = action(h, w), t = satTone(h.s.all), set = h.envN ? abcOf(h.id) : null;
+      if (set) a = [a[0], '대안 3건 수립 — 구청 선택'];
+      var pv = ENG && ENG.places ? ENG.places[h.id] : null, real = pv && pv.n ? Math.round((pv.good + .5 * pv.mid) / pv.n * 100) : null;
+      return '<button type="button" class="act" data-id="' + h.id + '"><span class="h">' + h.name + '<b style="color:' + t[2] + '">' + h.s.all + '</b></span><span class="c two">예상 ' + h.s.all + '점 · ' + (real == null ? '실제 평가 없음' : '실제 평가 ' + real + '점(' + pv.n + '건)') + '</span><span class="c"><i>' + FAC[a[0]] + ' ' + h.s[a[0]] + '점</i>이 가장 낮음 → ' + a[1] + '</span>' + (h.envN ? '<span class="c">' + abcBadge(h.id) + '</span>' : '') + '</button>';
     }).join('') + (low.length > 3 ? '<div class="note">외 ' + (low.length - 3) + '곳은 아래 거점별 만족도 목록에 있습니다.</div>' : '')
       : '<div class="note">모든 거점이 관리 기준(' + CUT + '점) 이상입니다.</div>';
-    html += '</section>';
+    html += '</section>' + abcSummary();
     var avg = {}, ws = 0; ['dens', 'wx', 'env'].forEach(function (k) { avg[k] = 0; });
     S.hubs.forEach(function (h) { var p = Math.max(1, h.people); ws += p; ['dens', 'wx', 'env'].forEach(function (k) { avg[k] += h.s[k] * p; }); });
     html += '<section><h3>요인별 공원 평균</h3><div class="fac">' + [['dens', '밀도 쾌적'], ['wx', '날씨 쾌적'], ['env', '주변 환경']].map(function (f) { var v = Math.round(avg[f[0]] / ws); return '<span>' + f[1] + '</span>' + bar(v) + '<b>' + v + '</b>'; }).join('') +
@@ -862,7 +933,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   }
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
   function zoneRow(z) { var g = legalOf(z); return g ? '<div><span>법적 지정</span><p><b>' + g.label + '</b><small>' + g.rule + (g.law && g.law !== '—' ? ' · ' + g.law : '') + '</small></p></div>' : ''; }
-  function photoOf(id) { var key = PHOTOS && PHOTOS.places && PHOTOS.places[id]; return key && PHOTOS.files ? PHOTOS.files[key] : null; }
+  function photoOf(id) { var key = PHOTOS && PHOTOS.places && PHOTOS.places[id], f = key && PHOTOS.files ? PHOTOS.files[key] : null; return f && !f.similar ? f : null; }   // 서울숲이 아닌 비슷한 사진(similar)은 빼고 아이콘만
   // 거점 카드: 지금 시각의 종합 점수와 세 요인(바깥=밀도, 가운데=날씨, 안=환경)을 고리 게이지로.
   // 가장 낮은 요인은 점수를 끌어내리는 몫(25%)이 있어 따로 짚는다. 팀이 이용자 화면에 쓰는 사진(위키미디어 공용)이 있는 거점은 캡션 옆에 작게 붙인다.
   function heroHTML(h, anim) {
@@ -908,14 +979,14 @@ body.tw-full>*:not(.tw){visibility:hidden}
       cb('밀도 쾌적', s.dens, h.people.toLocaleString() + ' / ' + h.capacity.toLocaleString() + '명 (' + crowdTone(h.ratio) + ' ' + Math.round(h.ratio * 100) + '%)' + (h.extra ? ' · 가정' : '')) +
       cb('날씨 쾌적', s.wx, wxWhyText(h, w)) +
       cb('주변 환경', s.env, h.envN ? '20m 칸 ' + h.envN + '개 · 취약도 ' + h.vuln.toFixed(1) + ' · 수목 ' + Math.round(h.tree * 100) + '%' : '격자 밖 · 기본값') +
-      '</div>' + (h.envN ? twinHTML(h) : '') +
+      '</div>' + (h.envN ? abcHTML(h) + twinHTML(h) : '') +
       '<svg class="spark" viewBox="0 0 100 62" preserveAspectRatio="none" role="img" aria-label="' + h.name + ' 시간대별 예상 만족도">' + bars + '<line x1="0" x2="100" y1="' + cutY.toFixed(1) + '" y2="' + cutY.toFixed(1) + '" stroke="#f1f7f3" stroke-opacity=".6" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>' +
       '<div class="note">6시~22시 예상 만족도 흐름 · 짙은 막대 = ' + S.hour + '시 · 점선 = 관리 기준(' + CUT + '점). 막대를 누르면 그 시각으로 옮깁니다.</div>' +
       (facts ? '<div class="facts">' + facts + '</div>' : '');
   }
   function select(id) {
     var ch = S.sel !== (id || null);
-    S.sel = id || null; side();
+    S.sel = id || null; side(); if (ch && S.sel) engNext();
     if (ch) go(); else paint();
     if (ch && S.sel) {
       var sd = $('side'); sd.classList.remove('fresh'); void sd.offsetWidth; sd.classList.add('fresh'); sd.scrollTop = 0;
@@ -945,29 +1016,103 @@ body.tw-full>*:not(.tw){visibility:hidden}
     });
     return { hubs: out, parkBefore: pn ? pb / pn : 0, parkAfter: pn ? pa / pn : 0 };
   }
-  function twinOpen(h, auto) {
+  function twinOpen(h, auto, alt, review) {
     if (TW || !h) return; TW = { err: '' };
+    // 구청 검토 화면은 주소에 ?review=거점id 를 붙여, 그대로 복사해 보낼 수 있게 함(나가면 원래 주소로)
+    var base = location.pathname; if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(h.id));
     document.body.classList.add('tw-go'); $('tip').style.opacity = 0;
     var hr0 = S.hour >= 7 && S.hour <= 19 ? S.hour : 14, coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=12').then(function (m) {
-      return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto,
+    import('./sim3d.js?v=37').then(function (m) {
+      return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto, alt: alt, review: !!review,
         model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat },
         mobile: W < 760 || coarse, low: W < 760 || coarse || (navigator.hardwareConcurrency || 8) <= 4,
         onReady: function () { document.body.classList.add('tw-full'); },
         onLeave: function () { document.body.classList.remove('tw-go', 'tw-full'); },
-        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); } });
-    }).catch(function (e) { TW = null; document.body.classList.remove('tw-go'); twinOpen.err = '디지털트윈을 띄우지 못했어요 (' + ((e && e.message) || e) + ')'; side(); left(); });
+        onHub: function (id) { if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(id)); },
+        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); if (review && history.replaceState) history.replaceState(null, '', base); if (ENG) { ENG.reset(); ENG.done = {}; engNext(); left(); side(); } } });
+    }).catch(function (e) { TW = null; document.body.classList.remove('tw-go'); twinOpen.err = '디지털트윈 실행 실패 (' + ((e && e.message) || e) + ')'; side(); left(); });
   }
   function twinHTML(h) {
     var err = twinOpen.err ? '<div class="note" style="color:var(--bad)">' + esc(twinOpen.err) + '</div>' : '';
-    return '<section class="tw-entry">' + err + '<button type="button" class="tw-open" data-tw="' + h.id + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 방문객 평가와 칸 점수로 고른 최선의 시설 조합을 3D로 확인</small></button></section>';
+    return '<section class="tw-entry">' + err + '<button type="button" class="tw-open" data-tw="' + h.id + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈 대안 검토 · 제안서 생성</b><small>관리자 · 현황/대안 3D 비교, 구청 제출용 제안서(공문·본문 ①~⑥·비교도·개략설계도·선택 회신서)</small></button></section>';
   }
   // 개요 화면: 평가가 낮은 곳을 3D에서 고르므로, 예상 점수가 가장 낮은 격자 안 거점으로 들어간다
-  function twinDefault() { return S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; })[0] || S.hubs[0]; }
+  function twinDefault() { var L = (left.low || []).filter(function (h) { return h.envN; }); return L[0] || S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; })[0] || S.hubs[0]; }
   $('side').addEventListener('click', function (e) {
     var t = e.target.closest('[data-tw]'); if (!t) return; e.stopPropagation();
-    var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, id === 'auto');
+    var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, false, t.dataset.alt, true);   // 디지털트윈 = 구청 검토 화면(A·B·C)
   }, true);
+
+  // ---------- A·B·C안 (디지털트윈과 같은 계산을 3D 없이 돌림: sim3d.js headless) ----------
+  // 같은 자료·같은 식이라 2D 화면과 3D 화면의 A/B/C 숫자가 같다. 거점마다 세 안을 차례로 계산해 채운다(무거우니 쉬는 틈에).
+  var ENG = null, ENGERR = '', ENGQ = [];
+  function engStart() {
+    if (ENG || engStart.busy) return; engStart.busy = true;
+    var coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+    import('./sim3d.js?v=37').then(function (m) {
+      return m.openTwin({ headless: true, hub: S.hubs[0], hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: 14, predict: predict, model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat }, low: true, mobile: W < 760 || coarse });
+    }).then(function (e) {
+      ENG = e; ENG.done = {};
+      ENGQ = S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; });
+      engNext();
+    }).catch(function (e) { ENGERR = '대안 산정 실패 (' + ((e && e.message) || e) + ')'; left(); side(); });
+  }
+  function engNext() {
+    if (!ENG || engNext.run) return;
+    var todo = ENGQ.filter(function (x) { return !(x.id in ENG.done); }), h = todo.filter(function (x) { return x.id === S.sel; })[0] || todo[0];
+    if (!h) return;
+    engNext.run = true;
+    setTimeout(function () { engNext.run = false; try { ENG.done[h.id] = ENG.setOf(h.id) || null; } catch (e) { ENG.done[h.id] = null; console.warn('[A·B·C]', h.id, e); } if (h.id === S.sel) side(); left(); engNext(); }, 30);
+  }
+  function abcOf(id) { return ENG && ENG.done && id in ENG.done ? ENG.done[id] : undefined; }
+  function f1s(v) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1); }
+  function abcBadge(id) {
+    var set = abcOf(id); if (set === undefined) return ENG ? '<em class="abc-b wait">A·B·C 계산 중</em>' : ''; if (!set) return '';
+    var gr = ENG.gradeOf(id);
+    return '<em class="abc-b gr ' + gr.cls + '">' + gr.label + '</em> ' + ['A', 'B', 'C'].map(function (k) { return '<em class="abc-b k' + k + '">' + k + ' ' + f1s(ENG.gainOf(set[k])) + '</em>'; }).join(' ');
+  }
+  // 개요: 격자 안 거점의 추천안 분포와 개략 비용
+  function abcSummary() {
+    if (ENGERR) return '<section><h3>A·B·C안 추천</h3><div class="note" style="color:var(--bad)">' + esc(ENGERR) + '</div></section>';
+    if (!ENG) return '<section><h3>A·B·C안 추천</h3><div class="note">디지털트윈 산정 모듈 로딩 중…</div></section>';
+    var all = S.hubs.filter(function (h) { return h.envN; }), done = all.filter(function (h) { return abcOf(h.id) !== undefined; }), cnt = { A: [], B: [], C: [], none: [] }, lo = 0, hi = 0, unk = 0, gc = {}, model = 0;
+    done.forEach(function (h) { var set = abcOf(h.id); if (!set) return; var gr = ENG.gradeOf(h.id); (gc[gr.key] = gc[gr.key] || []).push(h.name); var k = ENG.gainOf(set.C) < .5 ? 'none' : ENG.finalAlt(set, h.id); if (k !== 'none' && ENG.recAlt(set) !== k) model++; cnt[k].push(h.name); if (k !== 'none') { var c = ENG.costOf(set[k]); lo += c.lo; hi += c.hi; unk += c.unknown; } });
+    var gtab = ['confirmed', 'perception', 'suspect', 'latent', 'ok', 'few'].filter(function (k) { return gc[k]; }).map(function (k) { return '<div class="abc-r"><span class="abc-b gr ' + ENG.GRADE[k].cls + '">' + ENG.GRADE[k].label + '</span><b>' + gc[k].length + '곳</b><small>' + esc(gc[k].join(' · ')) + '</small></div>'; }).join('');
+    var tot = { A: [0, 0, 0, 0], B: [0, 0, 0, 0], C: [0, 0, 0, 0] }, nset = 0;
+    done.forEach(function (h) { var set = abcOf(h.id); if (!set) return; nset++; ['A', 'B', 'C'].forEach(function (k) { var c = ENG.costOf(set[k]); tot[k][0] += ENG.gainOf(set[k]); tot[k][1] += c.lo; tot[k][2] += c.hi; tot[k][3] += c.unknown; }); });
+    var man = function (v) { return Math.round(v / 1e4).toLocaleString(); };
+    var row2 = function (k, lab) { var t = tot[k]; return '<div class="abc-r"><span class="abc-b k' + k + '">' + lab + '</span><b>' + (nset ? f1s(t[0] / nset) : '—') + '</b><small>전 거점 적용 시 개략 ' + (t[1] ? man(t[1]) + (t[2] > t[1] ? '~' + man(t[2]) : '') + '만원' : '확인된 단가 없음') + (t[3] ? ' + 견적 ' + t[3] + '건' : '') + ' · ' + esc(ENG.ALT[k].period) + '</small></div>'; };
+    return '<section><h3>객관 근거 판정 <span class="n ok">만족도 + 3단 확인</span></h3>' + gtab +
+      '<div class="note">① 만족도 95% 신뢰구간 위쪽 끝도 60점 아래(평가 5건 이상) ② 불만이 평가 시각 실시간 측정과 일치(공원 전체 Fisher) ③ 공인 기준(혼잡 「약간 붐빔」↑·체감 35℃↑) 초과 상황의 불만 2건↑. 판정은 구청 검토 참고용.</div></section>' +
+      '<section><h3>대안 수립 현황 <span class="n ok">' + done.length + '/' + all.length + '곳 계산</span></h3>' +
+      row2('A', 'A 운영 개선') + row2('B', 'B 시설 보강') + row2('C', 'C 공간 재조성') +
+      '<div class="note">거점별 3개 대안 일괄 제출, 선택 주체는 구청. 수치는 평균 효과(붐비는 날·더운 날 14시 모형 예상 점수, 거점 평균)와 출처 있는 단가만 더한 개략 비용' + (ENG.demo ? ' · 방문객 평가는 시연용 가상 데이터' : '') + '.</div></section>';
+  }
+  // 거점 상세: A/B/C 카드 + 나무 현황(추정)
+  function abcHTML(h) {
+    var set = abcOf(h.id);
+    if (ENGERR) return '<section class="abc"><h4>개선안 A·B·C</h4><div class="note" style="color:var(--bad)">' + esc(ENGERR) + '</div></section>';
+    if (set === undefined) return '<section class="abc"><h4>개선안 A·B·C</h4><div class="note">디지털트윈 동일 산정식으로 대안 산정 중…</div></section>';
+    if (!set) return '';
+    var gC = ENG.gainOf(set.C), gr = ENG.gradeOf(h.id);
+    var card = function (k) {
+      var pl = set[k], a = ENG.ALT[k], d = pl.d14, c = ENG.costOf(pl);
+      return '<button type="button" class="abc-c" data-tw="' + h.id + '" data-alt="' + k + '"><span class="k">' + k + '</span><b>' + a.short + '</b>' +
+        '<span class="d">' + esc(ENG.doesTxt(pl)) + '</span>' +
+        '<span class="g"><i>붐비는 날</i><b class="' + (d.crowd.a.raw - d.crowd.b.raw > .5 ? 'up' : '') + '">' + f1s(d.crowd.a.raw - d.crowd.b.raw) + '점</b><i>더운 날</i><b class="' + (d.heat.a.raw - d.heat.b.raw > .5 ? 'up' : '') + '">' + f1s(d.heat.a.raw - d.heat.b.raw) + '점</b></span>' +
+        (function () { var sv = ENG.sensOf(pl); return '<span class="m">평균 ' + f1s(sv.g0) + '점 · 가정 바꾸면 ' + f1s(sv.lo) + '~' + f1s(sv.hi) + '</span>'; })() +
+        '<span class="m">' + esc(ENG.costTxt(c)) + ' · ' + esc(a.period) + '</span></button>';
+    };
+    var ti = ENG.treeInfo(h), sp = ENG.shadeSpecies(), nt = set.C.shade.filter(function (t) { return t.k === 'tree'; }).length;
+    var tree = ti ? '<div class="abc-tree"><h5>반경 80m 수목 현황 <em>추정</em></h5><p>수관 비율 <b>' + Math.round(ti.cover * 100) + '%</b> · 수관 면적 환산 교목 <b>' + ti.est.toLocaleString() + '주</b>(수관폭 9m 기준)</p>' +
+      '<p>추정 주요 수종: ' + ti.top.map(function (t) { return '<b>' + esc(t.name) + '</b> ' + Math.round(t.share * 100) + '%' + (t.spot ? '(' + esc(t.spot.name) + ')' : '') + (ENG.PET.has(t.name) ? ' <span class="pet">반려동물 유의</span>' : ''); }).join(' · ') + '</p>' +
+      (nt && sp ? '<p>C안 녹음수 ' + nt + '주 권장 수종: <b>' + sp + '</b>(서울숲 기존 식재 수종)</p>' : '') +
+      '<p class="warn">⚠ ' + esc(ENG.TREE_NOTE) + '</p><small>위성 수목 피복(ESA WorldCover 10m) × 400㎡ ÷ 주당 수관 64㎡(가정) · 수종은 서울시 2020 서울숲 수종 집계 비율 + 인근 명소 기록. 위성 자료로 수종 직접 판별 불가.</small></div>' : '';
+    return '<section class="abc"><h4>대안 비교(A·B·C) — 선택 주체: 구청 <small>항목 선택 시 3D 표시 · 14시 모형 예측치</small></h4>' +
+      ENG.gradeBox(gr, 'abc-grade') +
+      ENG.rowsHTML(set, '2d', h.id) +
+      '<div class="note">' + (gC < .5 ? 'C안 적용 시에도 0.5점 미만 — 개선 효과 미미. ' : '') + '3개 대안 일괄 제출, 선택 주체는 구청 · 비용은 출처 있는 단가만 더한 개략값(빈칸은 견적 필요) · 기간은 가정 · 점수 범위는 분산 비율·쉼터 사용률·그늘 효과·환경 계수·가중치 가정을 바꿔 본 결과(3D 「점수 상승 근거」에 단계별 근거) · 3D 화면에서 제안서·개략설계도 생성</div>' + tree + '</section>';
+  }
 
   // ---------- 계산·갱신 ----------
   function recompute() {
@@ -1044,6 +1189,9 @@ body.tw-full>*:not(.tw){visibility:hidden}
   }).then(function () {
     document.body.classList.add('intro'); setTimeout(function () { document.body.classList.remove('intro'); }, 2200);
     recompute(); fit(); scale();
+    // 구청 검토 링크(?review=거점id): 지도를 건너뛰고 그 거점의 A·B·C안 검토 화면을 바로 띄움
+    var rvId = new URLSearchParams(location.search).get('review'); if (rvId) { var rvH = S.hubs.filter(function (o) { return o.id === rvId; })[0]; if (rvH) twinOpen(rvH, false, null, true); }
+    setTimeout(engStart, 600);
     if (window.ResizeObserver) new ResizeObserver(function () { fit(); scale(); timeline(); }).observe($('map')); else addEventListener('resize', function () { fit(); scale(); timeline(); });
   }).catch(function (e) { $('stat').textContent = '자료를 불러오지 못했습니다: ' + e.message; });
 })();
