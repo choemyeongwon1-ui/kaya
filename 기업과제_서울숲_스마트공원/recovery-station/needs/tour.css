@@ -1104,3 +1104,47 @@ path.tr-sunseg,path.tr-alt{transition:opacity .2s}
 .tr-rc-hl{filter:drop-shadow(0 0 6px rgba(255,255,255,.35))}
 .tr-flash{animation:trFlash .7s var(--ease)}
 @keyframes trFlash{0%{color:var(--mint)}100%{color:inherit}}
+/* 길 고르기 3: 목적별 길 카드(기준점 없이 여러 기준) + 추천 이유 */
+.tr-rc-lead{margin:2px 0 9px;font-size:11.5px;line-height:1.55;color:var(--ink-2)}
+.tr-rc-whyd{margin:0 0 10px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.02)}
+.tr-rc-whyd>summary{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;list-style:none;font-size:12px}
+.tr-rc-whyd>summary::-webkit-details-marker{display:none}
+.tr-rc-whyd>summary b{color:var(--mint)}
+.tr-rc-whyd>summary small{margin-left:auto;color:var(--mute);font-size:11px}
+.tr-rc-whyd>summary::after{content:'▾';color:var(--mute);font-size:10px;transition:transform .2s}
+.tr-rc-whyd[open]>summary::after{transform:rotate(180deg)}
+ul.tr-rc-why{list-style:none;margin:0;padding:0 11px 9px;display:grid;gap:8px}
+ul.tr-rc-why li{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45}
+ul.tr-rc-why li>svg{flex:none;margin-top:2px;color:var(--mint)}
+ul.tr-rc-why li span b{display:inline-block;margin-right:6px;font-size:10.5px;font-weight:700;color:var(--mint-2)}
+ul.tr-rc-why li small{display:block;margin-top:2px;font-size:10.5px;color:var(--mute);line-height:1.45}
+ul.tr-rc-why li small em{font-style:normal;font-size:9.5px;font-weight:700;padding:1px 6px;margin-right:5px;border-radius:999px}
+ul.tr-rc-why li small em.ok{background:rgba(94,242,166,.14);color:var(--mint)}
+ul.tr-rc-why li small em.mid{background:rgba(255,210,122,.14);color:#ffd27a}
+.tr-rc-os{display:grid;gap:7px}
+.tr-rc-o{padding:10px 11px 9px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);cursor:pointer;transition:border-color .2s,background .2s}
+.tr-rc-o:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04)}
+.tr-rc-o.on{border-color:rgba(106,245,176,.55);background:var(--mint-soft)}
+.tr-rc-o:focus-visible{outline:1.5px solid var(--mint);outline-offset:1px}
+.tr-rc-oh{display:flex;align-items:center;gap:8px}
+.tr-rc-oh>div{flex:1;min-width:0}
+.tr-rc-oh b{display:block;font-size:13px;font-weight:700}
+.tr-rc-oh small{display:block;font-size:10.5px;color:var(--mute);margin-top:1px}
+.tr-rc-oh .tr-rc-sw{margin-right:0}
+.tr-rc-min{font-size:19px;font-weight:300;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.tr-rc-min small{font-size:10.5px;color:var(--mute);margin-left:1px;letter-spacing:0}
+.tr-rc-min.best{color:var(--mint)}
+.tr-rc-o .tr-rc-strip{margin:7px 0 2px 22px}
+.tr-rc-o:not(.on) .tr-rc-strip{opacity:.55}
+.tr-rc-ms{display:grid;gap:3px;margin:6px 0 0 22px}
+.tr-rc-mg{display:flex;flex-wrap:wrap;align-items:center;gap:3px 9px;font-size:11.5px;color:var(--ink-2)}
+.tr-rc-mg em{flex:0 0 52px;font-style:normal;font-size:10px;font-weight:600;color:var(--mute)}
+.tr-rc-mg span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.tr-rc-mg span svg{opacity:.6}
+.tr-rc-mg span.best{color:var(--mint);font-weight:650}
+.tr-rc-mg span.best svg{opacity:1}
+.tr-rc-min{white-space:nowrap}
+.tr-rc-common{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:8px 0 0;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.03);font-size:11.5px;color:var(--ink-2)}
+.tr-rc-common em{font-style:normal;font-size:10px;font-weight:600;color:var(--mute);margin-right:2px}
+.tr-rc-common span{display:inline-flex;align-items:center;gap:3px}.tr-rc-common svg{opacity:.6}
+.tr-rc-oh .tr-rc-min{flex:none;display:inline-flex;align-items:baseline;gap:1px}

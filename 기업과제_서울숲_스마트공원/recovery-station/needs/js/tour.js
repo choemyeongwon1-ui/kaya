@@ -1446,10 +1446,14 @@ function enjoyRoute(m, from, place, prefs, env, speed, short) {
 const SIGHT_NEAR = 45;   // 길에서 이 거리(m) 안의 명소는 '지나는 볼거리'
 /** 길이 지나는 정원·명소 이름(도착지·출발지 제외) */
 function sightsOf(x, destId, from) {
-  const out = new Set(gardensNear(x.coords, destId).filter(g => !g.dest).map(g => g.spot ?? g.name));
-  const pts = x.coords.map(c => L.latLng(c[0], c[1]));
+  const out = new Set(), pts = x.coords.map(c => L.latLng(c[0], c[1]));
+  const near = (lat, lon) => { const q = L.latLng(lat, lon); return pts.some(c => c.distanceTo(q) <= SIGHT_NEAR); };
+  for (const g of gardenList()) {   // 정원: 길에서 SIGHT_NEAR m 안(박람회 정원 묶음은 한 곳으로)
+    const hub = g.pos ? { lat: g.pos[0], lon: g.pos[1] } : app.model.hubById[g.place];
+    if (hub && g.place !== destId && near(hub.lat, hub.lon)) out.add(g.spot ?? g.name);
+  }
   for (const p of app.model.places) {
-    if (p.id === destId || p.node === from?.node) continue;
+    if (p.id === destId || curPicks.has(p.id) || p.node === from?.node) continue;
     const q = L.latLng(p.lat, p.lon);
     if (pts.some(c => c.distanceTo(q) <= SIGHT_NEAR)) out.add(p.name);
   }
@@ -1560,6 +1564,13 @@ function routeCompare(legs) {
       o.maxGap ? ['bench', `쉴 곳 사이 최대 ${fmtM(o.maxGap)}`, o.maxGap === B.gap] : null,
       ['users', crowdWord(o), crowdWord(o) === '한산']]],
   ].map(([g, items]) => [g, items.filter(Boolean)]).filter(([, items]) => items.length);
+  // 모든 길에서 똑같은 항목은 '모든 길 공통'으로 빼고, 카드엔 길마다 다른 것만 남김(차이가 눈에 띄게)
+  const M = new Map(opts.map(o => [o, metrics(o)]));
+  const texts = new Map();
+  for (const ms of M.values()) for (const [, items] of ms) for (const it of items) texts.set(it[1], (texts.get(it[1]) ?? 0) + 1);
+  const isCommon = it => texts.get(it[1]) === opts.length;
+  const common = []; for (const [, items] of M.get(opts[0])) for (const it of items) if (isCommon(it)) common.push(it);
+  const diffOf = o => M.get(o).map(([g, items]) => [g, items.filter(it => !isCommon(it))]).filter(([, items]) => items.length);
   const strip = o => sun && o.runs.length ? h('div', { class: 'tr-rc-strip', title: '출발 → 도착, 길 위 그늘 정도' }, o.runs.map(r => h('i', { style: `flex:${Math.max(1, Math.round(r.len))} 1 0;background:${SUNC[r.c]}` }))) : null;
   const card = o => {
     const on = o === cur, col = optColor(o), k0 = o.keys[0];
@@ -1571,7 +1582,7 @@ function routeCompare(legs) {
         h('div', null, h('b', null, o.keys.map(k => RNAME[k]).join(' · ')), h('small', null, sub)),
         h('span', { class: `tr-rc-min${o.min === B.min ? ' best' : ''}` }, o.min, h('small', null, '분'))),
       strip(o),
-      h('div', { class: 'tr-rc-ms' }, metrics(o).map(([g, items]) => h('div', { class: 'tr-rc-mg' }, h('em', null, g),
+      h('div', { class: 'tr-rc-ms' }, diffOf(o).map(([g, items]) => h('div', { class: 'tr-rc-mg' }, h('em', null, g),
         items.map(([ic, t, isBest, tip]) => h('span', { class: isBest ? 'best' : '', title: tip ?? null }, icon(ic, 11), t))))));
   };
   const reasons = routeReasons(ro);
@@ -1583,6 +1594,7 @@ function routeCompare(legs) {
       h('ul', { class: 'tr-rc-why' }, reasons.map(([ic, cat, t, kind, src]) => h('li', null, icon(ic, 12),
         h('div', null, h('span', null, h('b', null, cat), t), h('small', null, h('em', { class: kind === '팀 값' ? 'mid' : kind.includes('팀') ? 'mid' : 'ok' }, kind), src)))))),
     h('div', { class: 'tr-rc-os' }, opts.map(card)),
+    common.length ? h('div', { class: 'tr-rc-common' }, h('em', null, '모든 길 공통'), common.map(([ic, t, , tip]) => h('span', { title: tip ?? null }, icon(ic, 11), t))) : null,
     sun ? h('div', { class: 'tr-rc-lg' }, ['g', 'm', 's', 'u'].map(c => h('span', null, h('i', { style: `background:${SUNC[c]}` }), SUNW[c])), h('small', null, '띠 = 출발 → 도착의 그늘 정도 · 지도의 고른 길도 같은 색 · 초록 글씨 = 그 기준에서 가장 나은 길')) : null,
     h('p', { class: 'tr-rc-src' }, h('em', null, '측정 자료'), `${sun ? '햇볕·숲길: 길 위 나무 그늘 비율(팀 20m 격자) · ' : ''}${hot ? '땅 온도: 여름 맑은 날 위성으로 잰 길바닥 온도(Landsat 8, 2026년 6·9월) · ' : ''}볼거리: 길에서 ${SIGHT_NEAR}m 안의 정원·명소 · 계단·흙길: OpenStreetMap · 붐빔: 보행 밀도 추정`));
 }
