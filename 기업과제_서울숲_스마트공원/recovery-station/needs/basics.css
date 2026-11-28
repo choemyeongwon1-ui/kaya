@@ -1,0 +1,30 @@
+/* 지도 기본 정보 켜고 끄기(js/basics.js) */
+.tr-bx{position:absolute;z-index:1040;left:200px;bottom:30px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - min(440px,40vw) - 280px)}
+.tr-bx-b{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 10px;border-radius:999px;border:1px solid var(--line-2,rgba(255,255,255,.15));background:var(--glass,rgba(10,18,14,.72));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--mute,rgba(241,247,243,.46));font:600 12px/1 inherit;font-family:inherit;cursor:pointer;transition:color .2s,background .2s,border-color .2s;white-space:nowrap}
+.tr-bx-b i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.06)}
+.tr-bx-b .n{font-size:10.5px;font-weight:700;opacity:.7}
+.tr-bx-b .n:empty{display:none}
+.tr-bx-b:hover{color:var(--ink,#f1f7f3)}
+.tr-bx-b[aria-pressed="true"]{color:var(--ink,#f1f7f3);border-color:rgba(255,255,255,.28);background:rgba(16,28,22,.9)}
+.tr-bx-b[aria-pressed="true"] i{color:#08130d;background:var(--c)}
+.tr-bx-b:disabled{opacity:.4;cursor:default}
+.tr-bx.far::after{content:'공원 쪽으로 다가가면 보여요';align-self:center;font-size:11px;color:var(--mute,rgba(241,247,243,.46));padding:0 4px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.k-toilet{--c:#7db9ff}.k-shop{--c:#ffc861}.k-rest{--c:#6af5b0}.k-water{--c:#8fe3f0}.k-bike{--c:#c9a6ff}.k-garden{--c:#ffb6ce}
+.tr-bx-pin{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#08130d;border:1.5px solid rgba(5,11,8,.85);box-shadow:0 1px 4px rgba(0,0,0,.55);cursor:pointer;transition:transform .15s}
+.tr-bx-pin:hover{transform:scale(1.2)}
+.tr-bx-popw .leaflet-popup-content-wrapper{background:rgba(10,18,14,.94);color:#f1f7f3;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.tr-bx-popw .leaflet-popup-tip{background:rgba(10,18,14,.94)}
+.tr-bx-popw .leaflet-popup-content{margin:10px 12px}
+.tr-bx-pop{display:grid;gap:3px;min-width:150px}
+.tr-bx-pop small{font-size:10.5px;color:rgba(241,247,243,.6)}
+.tr-bx-pop b{font-size:13px}
+.tr-bx-pop p{margin:0;font-size:11.5px;color:rgba(241,247,243,.8)}
+.tr-bx-pop em{font-style:normal;font-size:10px;color:rgba(241,247,243,.45);margin-top:2px}
+/* 정원 꽃 끄기 */
+.tr-nogarden .tr-flower{display:none}
+@media(max-width:899px){
+  .tr-bx{left:12px;right:60px;top:64px;bottom:auto;max-width:none;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .tr-bx::-webkit-scrollbar{display:none}
+  .tr-bx-b{height:32px;padding:0 10px 0 7px;font-size:11.5px;flex:none}
+  .tr-bx.far::after{display:none}
+}
