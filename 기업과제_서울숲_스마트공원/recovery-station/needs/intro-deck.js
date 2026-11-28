@@ -62,8 +62,8 @@
 
   // 마지막 장 카드 아래 움직이는 그림(값은 위 출처 그대로)
   var VIZ = {
-    waffle: function () { var h = ''; for (var i = 0; i < 100; i++) h += '<i' + (i < 73 ? ' class="on" style="--d:' + (0.9 + i * 0.016).toFixed(3) + 's"' : '') + '></i>'; return '<div class="vz"><div class="waf" aria-hidden="true">' + h + '</div><p><b>100명 중 73명</b>은 동네 밖에서 와요</p></div>'; },
-    bars: function () { return '<div class="vz"><div class="bars2" aria-hidden="true"><div class="bc"><b>8,864명</b><u><i style="--h:100%"></i></u><span>5월</span></div><div class="bc hot"><b>4,557명</b><u><i style="--h:51.4%"></i></u><span>8월 ☀️</span></div><em>−48.6%</em></div><p>서울숲역에서 낮에 내리는 사람</p></div>'; },
+    waffle: function () { var h = ''; for (var i = 0; i < 100; i++) h += '<i' + (i < 73 ? ' class="on" style="--d:' + (0.9 + i * 0.016).toFixed(3) + 's"' : '') + '></i>'; return '<div class="vz"><div class="waf" aria-hidden="true">' + h + '</div><p>100명 중 <b>73명</b></p></div>'; },
+    bars: function () { return '<div class="vz"><div class="bars2" aria-hidden="true"><div class="bc"><b>8,864명</b><u><i style="--h:100%"></i></u><span>5월</span></div><div class="bc hot"><b>4,557명</b><u><i style="--h:51.4%"></i></u><span>8월 ☀️</span></div></div><p>서울숲역 낮 시간 내리는 사람</p></div>'; },
   };
   VIZ.paths = function () {
     return '<div class="vz"><svg class="pth" viewBox="0 0 300 96" aria-hidden="true">' +
@@ -71,8 +71,16 @@
       '<g class="p-tree"><circle cx="92" cy="30" r="8"/><circle cx="132" cy="27" r="10"/><circle cx="212" cy="42" r="8"/></g>' +
       '<circle cx="20" cy="70" r="6" fill="#fff"/><circle cx="280" cy="70" r="6" fill="#fff"/>' +
       '<text x="150" y="90" class="t-short">가장 짧은 길 · 차 소리</text><text x="150" y="10" class="t-quiet">12% 더 길어도 조용한 길 🌳</text></svg>' +
-      '<p>사람들은 <b>조금 돌아가도 조용하고 보기 좋은 길</b>을 골라요</p></div>';
+      '</div>';
   };
+  VIZ.thermo = function () { return '<div class="vz"><div class="thm2" aria-hidden="true"><div class="tb hot"><i style="--h:88%"></i><span>바깥 도로<br><b>33℃ 넘을 때</b></span></div><div class="tb"><i style="--h:45%"></i><span>공원 안<br><b>더 시원</b></span></div></div></div>'; };
+  var STATS = [
+    { k: '누가 오나요', n: '73.4%', t: '동네 밖에서 찾아와요', s: '처음이라 길을 모르는 사람이 많아요', viz: 'waffle', src: '서울시 실시간 인구데이터(2026-11-19)' },
+    { k: '여름엔', n: '−48.6%', t: '한여름엔 발길이 절반으로', s: '5월 8,864명 → 8월 4,557명', viz: 'bars', hot: true, src: '서울 열린데이터광장 OA-12252(2026)' },
+    { k: '그늘의 힘', n: '5.5~7.4℃', t: '공원 안이 도로보다 시원해요', s: '33℃가 넘는 한낮 기준', viz: 'thermo', src: '조현민·권태경(2022)' },
+    { k: '사람들은', n: '12%', t: '조용한 길이면 더 걸어도 좋아해요', s: '조금 돌아가도 보기 좋은 길', viz: 'paths', src: 'Quercia 외(2014)' },
+  ];
+  var FLOW = ['날씨·붐빔·함께 온 사람', '그늘지고 한산한 길 찾기', '나만의 코스', '장소마다 표정 남기기', '다음 추천과 공원 관리에 반영'];
   var THERMO = '<div class="thm" aria-hidden="true"><div class="tb hot"><i style="--h:87%"></i><span>도로</span></div><div class="tb"><i style="--h:42%"></i><span>공원</span></div></div>';
 
   var E = 'cubic-bezier(.16,1,.3,1)', B = 'cubic-bezier(.3,1.6,.5,1)';
@@ -226,6 +234,28 @@
     '.dk-btn span{transition:transform .3s}.dk-btn:hover span{transform:translate(3px,-3px)}',
     /* 만든 이유(마지막 장) */
     '.dk-slide.full .dk-copy{max-width:1680px;width:100%}',
+    '.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}',
+    '.dk-stats section{display:flex;flex-direction:column;padding:20px 22px 16px;border-radius:18px;background:var(--gl);border:1px solid var(--ln);border-top:3px solid var(--m);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;transform:translateY(40px);transition:opacity .8s,transform 1.1s ' + E + '}',
+    '.dk-stats section.hot{border-top-color:var(--hot)}',
+    '.dk-slide.on .dk-stats section{opacity:1;transform:none;transition-delay:calc(.45s + var(--i) * .14s)}',
+    '.dk-stats h4{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--mu)}',
+    '.dk-stats .big{display:block;font-size:clamp(40px,3.6vw,58px);line-height:1.05;font-weight:700;letter-spacing:-.04em;color:var(--m);font-variant-numeric:tabular-nums;white-space:nowrap}',
+    '.dk-stats .hot .big{color:var(--hot)}',
+    '.dk-stats h5{margin:10px 0 4px;font-size:18px;line-height:1.35;font-weight:700;color:#fff;letter-spacing:-.02em;word-break:keep-all}',
+    '.dk-stats .sub{margin:0;font-size:13.5px;color:var(--mu);word-break:keep-all}',
+    '.dk-stats .vz{border-top:0;padding-top:18px;min-height:108px;display:flex;flex-direction:column;justify-content:flex-end}',
+    '.dk-stats cite{margin-top:12px;font-size:11px;font-style:normal;color:rgba(241,247,243,.4)}',
+    '.thm2{display:flex;gap:26px;align-items:flex-end}',
+    '.thm2 .tb{flex-direction:row;align-items:flex-end;gap:10px}',
+    '.thm2 .tb i{width:16px;height:96px;border-radius:8px}',
+    '.thm2 .tb span{font-size:12px;line-height:1.4;color:var(--mu)}.thm2 .tb span b{color:#fff;font-size:13px}',
+    '.dk-flow{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:16px;background:var(--gl);border:1px solid var(--ln);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}',
+    '.dk-flow > b{flex:none;font-size:14px;color:var(--m)}',
+    '.dk-flow ol{flex:1;display:flex;gap:26px;list-style:none;margin:0;padding:0}',
+    '.dk-flow li{position:relative;flex:1;text-align:center;padding:10px 8px;border-radius:10px;background:rgba(106,245,176,.07);border:1px solid rgba(106,245,176,.16);font-size:13.5px;font-weight:600;word-break:keep-all}',
+    '.dk-flow li:not(:last-child):after{content:"→";position:absolute;right:-20px;top:50%;transform:translateY(-50%);color:var(--m);font-weight:700}',
+    '.dk-slide.on .dk-flow li{animation:dkStep 6s ease infinite;animation-delay:calc(2s + var(--i) * 1.2s)}',
+    '.dk-flow .lp{flex:none;font-size:24px;color:var(--m);display:inline-block}.dk-slide.on .dk-flow .lp{animation:dkSpin 2.5s linear infinite}',
     '.dk-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px}.dk-head .dk-title{margin:0 !important}',
     '.vz{margin-top:auto;padding-top:16px;border-top:1px solid var(--ln)}',
     '.vz p{margin:10px 0 0;font-size:13px;color:var(--mu)}.vz p b{color:#fff}',
@@ -295,13 +325,13 @@
     '.dk-arrow:hover{background:rgba(255,255,255,.14);transform:scale(1.06)}',
     '.dk-arrow:disabled{opacity:.25;cursor:default;transform:none}',
     '.dk-arrow.next:not(:disabled){background:#fff;color:#0a0f0d;border-color:#fff}',
-    '@media (max-width:1100px){.dk-slide{padding:100px 32px 120px 36px}.dk-nav{left:36px;right:32px}.dk-copy{max-width:420px}.dk-hud{right:28px;width:290px}.dk-res{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '@media (max-width:1100px){.dk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dk-slide.full{overflow-y:auto;pointer-events:auto;align-items:flex-start}.dk-slide{padding:100px 32px 120px 36px}.dk-nav{left:36px;right:32px}.dk-copy{max-width:420px}.dk-hud{right:28px;width:290px}.dk-res{grid-template-columns:repeat(2,minmax(0,1fr))}}',
     '@media (max-width:820px){html.dk-page .topbar-inner{padding:10px 16px}',
     '  .dk-slide{align-items:flex-end;padding:0 20px 92px}.dk-slide.full{align-items:flex-start;padding:110px 20px 100px;overflow-y:auto;pointer-events:auto}',
     '  .dk-copy{max-width:none}.dk-en{margin-bottom:14px;font-size:11px}.dk-title{font-size:30px;margin-bottom:12px}.dk-body{font-size:15px;line-height:1.6;margin-bottom:18px}.dk-note{margin:-8px 0 14px}',
     '  .dk-shade{background:linear-gradient(0deg,rgba(4,9,10,.97) 0%,rgba(4,9,10,.9) 36%,rgba(4,9,10,0) 62%),linear-gradient(180deg,rgba(4,9,10,.7),transparent 16%)}',
     '  .dk-hud{right:10px;top:118px;width:300px;transform:scale(.6);transform-origin:top right}',
-    '  .dk-head{flex-direction:column;align-items:flex-start;gap:16px}.dk-res{grid-template-columns:1fr}.dk-nav{left:20px;right:20px;bottom:18px;gap:12px}.dk-steps{gap:5px}.dk-steps button{font-size:0}.dk-arrow{width:42px;height:42px}}',
+    '  .dk-stats{grid-template-columns:1fr}.dk-flow{flex-direction:column;align-items:stretch}.dk-flow ol{flex-direction:column;gap:18px}.dk-flow li:not(:last-child):after{content:"↓";right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%)}.dk-head{flex-direction:column;align-items:flex-start;gap:16px}.dk-res{grid-template-columns:1fr}.dk-nav{left:20px;right:20px;bottom:18px;gap:12px}.dk-steps{gap:5px}.dk-steps button{font-size:0}.dk-arrow{width:42px;height:42px}}',
     '@media (prefers-reduced-motion:reduce){.dk *,.dk *:before,.dk *:after{transition-duration:.01s !important;animation-duration:.01s !important;animation-delay:0s !important}}',
   ].join('\n');
 
@@ -411,7 +441,10 @@
     if (s.note) h += '<p' + fade('dk-note') + '>' + esc(s.note) + '</p>';
     if (s.research) {
       h = h.replace('<h2', '<div class="dk-head"><h2').replace('</h2>', '</h2><div class="dk-fade dk-cta" style="--i:0"><a class="dk-btn" href="' + TOUR + '">코스 찾기 시작 <span>↗</span></a></div></div>');
-      h += '<div class="dk-res">' + RESEARCH.map(function (c, ci) {
+      h += '<div class="dk-stats">' + STATS.map(function (c, ci) {
+        return '<section class="' + (c.hot ? 'hot' : '') + '" style="--i:' + ci + '"><h4>' + c.k + '</h4><b class="big" data-n="' + esc(c.n) + '">' + esc(c.n) + '</b><h5>' + esc(c.t) + '</h5><p class="sub">' + esc(c.s) + '</p>' + VIZ[c.viz]() + '<cite>' + esc(c.src) + '</cite></section>';
+      }).join('') + '</div><div class="dk-flow dk-fade" style="--i:2"><b>그래서 이렇게 만들었어요</b><ol>' + FLOW.map(function (f, k) { return '<li style="--i:' + k + '">' + f + '</li>'; }).join('') + '</ol><span class="lp" title="다시 처음으로">↺</span></div>';
+      if (0) h += '<div class="dk-res">' + RESEARCH.map(function (c, ci) {
         var inner = c.flow ? '<ol>' + c.flow.map(function (f, k) { return '<li style="--i:' + k + '">' + f + '</li>'; }).join('') + '</ol><div class="loopback"><span>↺</span> 다음에 올 땐 더 잘 맞춰 드려요</div>'
           : c.rows.map(function (r) { return '<div class="r' + (c.thermo && r[0].indexOf('℃') > 0 ? ' th' : '') + '">' + (c.thermo && r[0].indexOf('℃') > 0 ? THERMO : '') + '<b data-n="' + esc(r[0]) + '">' + esc(r[0]) + '</b><p>' + esc(r[1]) + '</p><cite>' + esc(r[2]) + '</cite></div>'; }).join('');
         return '<section style="--i:' + ci + '"><h4>' + c.h + '</h4><h5>' + esc(c.t) + '</h5>' + inner + (c.viz ? VIZ[c.viz]() : '') + '</section>';
@@ -422,7 +455,7 @@
   }
 
   function countUp(root) {
-    Array.prototype.forEach.call(root.querySelectorAll('.dk-res .r b[data-n]'), function (b) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-n]'), function (b) {
       var orig = b.dataset.n, m = /(\d+(?:\.\d+)?)/.exec(orig);
       if (!m) return;
       var v = parseFloat(m[1]), dec = (m[1].split('.')[1] || '').length, t0 = performance.now();
