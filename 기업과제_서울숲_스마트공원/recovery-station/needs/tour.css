@@ -1045,5 +1045,6 @@ div.tr-status-line{cursor:default}
 .tr-zone-tip::before{display:none}
 .tr-zone-tip b{display:block}
 .tr-zone-tip small{font-size:10.5px;opacity:.7}
+.tr-zone-dong:not(.near){opacity:.72;font-size:10.5px;font-weight:600;border-style:solid;border-color:rgba(255,255,255,.18)}
 .tr-zone-dong{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;padding:3px 10px;border-radius:999px;background:rgba(10,16,13,.78);border:1px dashed rgba(255,255,255,.55);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:-.01em;pointer-events:none}
 
