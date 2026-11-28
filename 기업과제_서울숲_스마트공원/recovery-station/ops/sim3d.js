@@ -307,7 +307,7 @@ function glowTex() {
 export async function openTwin(o) {
   applyAltEdits(loadAltEdits());
   const xy = o.xy, low = !!o.low, M = o.model;
-  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=53'; document.head.appendChild(l); }
+  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=55'; document.head.appendChild(l); }
   const root = document.createElement('div'); root.className = 'tw'; root.innerHTML = '<div class="tw-load"><i></i><span>디지털트윈을 불러오는 중…</span></div>'; if (!o.headless) document.body.appendChild(root);
   if (!M || !M.sat) { root.remove(); throw new Error('만족도 모형(model) 수신 실패'); }
 

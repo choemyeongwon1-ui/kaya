@@ -638,3 +638,8 @@
 
 /* 글씨체 통일: 검토서·붙임·도면 모두 맑은 고딕 */
 .tw-sheet.fm-on,.tw-sheet.fm-on *{font-family:'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif!important}
+
+/* 검토서 버튼 줄: 종이 폭(좌우 여백 60px)에 맞추고 넘치면 줄바꿈 */
+.tw-sheet.fm-on .tw-rabar{margin:18px -60px -40px;bottom:-40px;flex-wrap:wrap;row-gap:6px;padding:12px 24px}
+@media(max-width:899px){.tw-sheet.fm-on .tw-rabar{margin:18px -18px -22px;bottom:-22px;padding:10px 12px}}
+.tw-sheet.fm-on .tw-rabar{gap:5px;padding:12px 20px}.tw-sheet.fm-on .tw-rabar button{padding:7px 10px;font-size:12px}.tw-sheet.fm-on .tw-rabar button.pri{padding:9px 14px;font-size:13px}
