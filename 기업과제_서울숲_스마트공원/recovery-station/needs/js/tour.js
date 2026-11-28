@@ -1757,7 +1757,7 @@ function renderEnd() {
     next,
     h('div', { class: 'tr-end-links' },
       h('button', { type: 'button', class: 'tr-textbtn', onclick: restart }, '다른 코스 고르기'),
-      endInfo.receipt ? h('a', { class: 'tr-textbtn', href: receiptHref(), target: inFrame ? '_top' : null, onclick: flushCourse }, '영수증으로 남기기') : null,
+      endInfo.receipt ? h('a', { class: 'tr-textbtn', href: receiptHref(), target: inFrame ? '_top' : null, onclick: rcGo, ...rcLock() }, '영수증으로 남기기') : null,
       h('a', { class: 'tr-textbtn', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
     h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ];
@@ -1770,41 +1770,17 @@ let endNodes = null, endInfo = null;
 function exitWalk(ex) {
   ex.show();
   const { last, kiosk, meters, min, wc } = ex;
-  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
+  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye, ...rcLock() }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
   mount('tr-s-exit', [
     h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '영수증 기계로')),
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '다른 기계 고르기')),
     h('h2', { class: 'tr-q' }, kiosk.at),
     h('p', { class: 'tr-exit-lead' }, `지도의 노란 길을 따라 걸어서 ${min}분(${fmtM(meters)})이에요.`),
     Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가까운 화장실 · ${fmtM(Math.round(wc))}`) : null,
-    couponPicker(cta),
+    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 영수증을 뽑을 때 카페·주차장·동네 가게 중 받을 쿠폰을 골라요.'),
+    rcHint(),
     cta,
   ]);
-}
-
-// 영수증과 함께 나올 쿠폰: 기계에서 뽑기 전에 폰에서 미리 하나 고름 (밥·커피를 이미 마친 사람도 쓸 수 있게). 제휴처는 모두 예시
-const GIFT_OPTS = [
-  { k: 'cafe', ico: '☕', t: '동네 카페', s: '10% 할인' },
-  { k: 'park', ico: '🅿️', t: '주변 주차장', s: '1시간 무료' },
-  { k: 'shop', ico: '🛍️', t: '동네 가게', s: '10% 할인' },
-];
-let giftPick = null;
-function couponPicker(cta) {
-  const sync = () => {
-    box.querySelectorAll('.tr-coupon-opt').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === giftPick)));
-    cta.disabled = !giftPick;
-    note.textContent = giftPick ? '이 쿠폰이 영수증 맨 아래에 같이 나와요.' : '하나를 고르면 영수증을 뽑을 수 있어요.';
-  };
-  const note = h('small', { class: 'tr-coupon-note' });
-  const box = h('div', { class: 'tr-coupon' },
-    h('b', null, '🎁 영수증과 함께 받을 쿠폰을 골라 주세요'),
-    h('div', { class: 'tr-coupon-opts' }, GIFT_OPTS.map(o => h('button', { type: 'button', class: 'tr-coupon-opt', 'data-k': o.k, 'aria-pressed': 'false', onclick: () => {
-      giftPick = o.k; sync();
-      try { const d = JSON.parse(localStorage.getItem(RECEIPT_KEY) || 'null'); if (d) { d.gift = o.k; localStorage.setItem(RECEIPT_KEY, JSON.stringify(d)); } } catch { /* 저장 안 돼도 영수증 페이지에서 다시 고름 */ }
-    } }, h('em', null, o.ico), h('span', null, o.t), h('small', null, o.s)))),
-    note);
-  sync();
-  return box;
 }
 
 // ── 마무리 5. 작별 화면: 코스 평가를 보내고, 다음에 오기 좋은 때를 알려 주고 끝 ──
@@ -1824,7 +1800,7 @@ function goodbye() {
       info.places ? h('p', null, `서울숲에서 ${info.places}곳, ${Math.round(info.walkMin)}분을 걸었어요.`) : null,
       info.later ? h('p', { class: 'tr-bye-later' }, icon('clock', 13), `다음에 오기 좋은 때 · ${info.later}`) : null,
       h('small', null, '남겨 주신 표정은 이름·위치 없이 공원 길과 쉼터를 고치는 데 써요.')),
-    info.receipt ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null },
+    info.receipt ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null, onclick: rcGo, ...rcLock() },
       h('span', { class: 'tr-bye-rc-t' }, h('b', null, '오늘 산책, 영수증으로 받기'), h('small', null, '걸은 길이 찍힌 한 장 · 방명록에도 남길 수 있어요')),
       h('span', { class: 'tr-cta-arrow' }, '→')) : null,
     h('button', { type: 'button', class: 'tr-ghost tr-bye-home', onclick: restart }, '처음 화면으로'),
@@ -1834,12 +1810,22 @@ function goodbye() {
 // ── 마무리 6. 숲 영수증(../../영수증.html)으로 이어 주기 ──
 // 오늘 걸은 기록을 이 기기(localStorage)에만 잠깐 두고, 영수증 페이지가 읽어서 내 영수증·지도에 찍습니다. 서버로 보내지 않음.
 const RECEIPT_KEY = 'sf-receipt';
+// 만족도(코스 표정)를 남기기 전에는 영수증으로 넘어가는 버튼·링크를 잠금(누를 수 없음). 쿠폰은 영수증 페이지 폰 화면에서 고름
+let surveyDone = false;
+const rcLock = () => (surveyDone ? { 'data-rc': '1' } : { 'data-rc': '1', 'aria-disabled': 'true', tabindex: '-1', disabled: true });
+const rcHint = () => (surveyDone ? null : h('p', { class: 'tr-rc-hint' }, '먼저 위에서 오늘 코스 만족도(표정)를 남겨 주세요. 그래야 영수증을 받을 수 있어요.'));
+function rcGo(e) { if (!surveyDone) { e.preventDefault(); e.stopImmediatePropagation(); return; } flushCourse(); }
+function unlockReceipt() {
+  surveyDone = true;
+  document.querySelectorAll('[data-rc]').forEach(el => { el.removeAttribute('aria-disabled'); el.removeAttribute('tabindex'); if ('disabled' in el) el.disabled = false; });
+  document.querySelectorAll('.tr-rc-hint').forEach(el => el.remove());
+}
 const inFrame = (() => { try { return window.top !== window.self; } catch { return true; } })();   // 모바일 화면(mobile.html) 폰 틀 안이면 틀 밖으로 열기
 const receiptHref = () => `../../영수증.html?from=${inFrame ? 'mobile' : 'tour'}`;
 const WHO_OF = { alone: '혼자', couple: '연인', friends: '친구', kids: '가족', elders: '어르신과', pet: '반려견과' };
 function saveReceipt(walkMin, meters) {
   if (!trip?.stops.length) return false;
-  giftPick = null;   // 새 산책마다 쿠폰은 다시 고름
+  surveyDone = false;   // 새 산책마다 만족도부터 다시
   const h0 = app.wx.hourly[0] ?? {};
   const sky = h0.pty === 3 ? '눈' : h0.pty > 0 ? '비' : (h0.sky ?? 1) >= 4 ? '흐림' : h0.sky === 3 ? '구름' : '맑음';
   const short = n => n.replace(/\(.*?\)/g, '').split('·')[0].trim();
@@ -1875,8 +1861,8 @@ function courseAsk(walkMin, meters) {
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
   // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 카페 할인·주차 1시간 무료·동네 가게 할인 중 고른 쿠폰이 함께 나옴
-  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 혜택 쿠폰'), h('span', null, '표정을 남기면 나가는 길에 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라 영수증과 함께 받아요. 어떤 표정이든 괜찮아요.'));
-  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 쿠폰 준비 완료'), h('span', null, '나가는 길에 쿠폰을 고르고, 🧾 영수증 기계 어디서든 받아 가세요.')); };
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🧾 영수증 열기'), h('span', null, '표정을 남기면 영수증을 받을 수 있어요. 영수증에서 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라요. 어떤 표정이든 괜찮아요.'));
+  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🧾 영수증 열림'), h('span', null, '이제 🧾 영수증 기계 어디서든 영수증과 쿠폰을 받을 수 있어요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
     on ? api.tags.add(x.key) : api.tags.delete(x.key);
@@ -1888,7 +1874,7 @@ function courseAsk(walkMin, meters) {
     api.face = v;
     word.textContent = { 5: '좋았어요', 3: '그저 그랬어요', 1: '별로였어요' }[v]; word.classList.add('on'); word.dataset.f = v >= 4 ? 'good' : v === 3 ? 'mid' : 'bad';
     if (flip) { api.tags.clear(); paintChips(v >= 4); }
-    giftDone(); arm(); api.onChange?.();
+    giftDone(); unlockReceipt(); arm(); api.onChange?.();
   }, '오늘 코스 흐름');
   api.el = h('section', { class: 'tr-rate tr-flow' },
     h('div', { class: 'tr-rate-h' }, h('b', null, stops.length > 1 ? '오늘 코스, 이어지는 흐름은 어땠어요?' : '오늘 산책, 어땠어요?'), word), gift, pick, chips,

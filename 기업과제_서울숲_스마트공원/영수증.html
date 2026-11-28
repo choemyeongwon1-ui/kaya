@@ -821,7 +821,6 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     var steps = Math.round(TOUR.meters / 0.7);   // 보폭 70cm 가정
     var WITH_T = { 가족: '가족', 연인: '연인 2명', 친구: '친구', 혼자: '혼자', 어르신과: '어르신과', 반려견과: '반려견과' };
     state.course = 'tour';
-    if (TOUR.gift) state.gift = TOUR.gift;   // 이용자 화면에서 뽑기 전에 미리 고른 쿠폰
     state.d = {
       stay: hm(TOUR.stay), steps: steps.toLocaleString('ko-KR'), shade: TOUR.shade ? (TOUR.shade >= 1000 ? (TOUR.shade / 1000).toFixed(1) + 'km' : TOUR.shade + 'm') : '–',
       with: WITH_T[TOUR.who] || DATA.with, weather: TOUR.wx || DATA.weather,
@@ -1024,7 +1023,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     };
   });
   $('#memo').oninput = function () { state.memo = this.value.trim(); $('#memoN').textContent = this.value.length; };
-  $('#bRate').onclick = function () { view(TOUR && TOUR.gift && state.gift ? 'photo' : 'gift'); };   // 폰에서 이미 골랐으면 건너뜀
+  $('#bRate').onclick = function () { view('gift'); };
   // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
   var GIFTS = {
     cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페(예시) · 발급일부터 7일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
