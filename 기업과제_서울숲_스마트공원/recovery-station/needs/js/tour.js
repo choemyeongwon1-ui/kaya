@@ -687,12 +687,12 @@ function accessBar() {
 // 범례에서 한 종류만 고를 때만 그 종류를 캔버스에 덧그림. 필지·건물 원자료는 마우스를 올릴 때 처음 받음(이름·번지 보기용)
 const ZONE_GROUPS = [
   { key: 'r', t: '주거지역', items: [
-    ['r1x', '제1종전용주거지역', '#ffb3b3', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#ff9999', '공동주택 중심 조용한 동네'],
-    ['r1', '제1종일반주거지역', '#ff7a7a', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#f04848', '중간 높이 주택 중심'],
-    ['r3', '제3종일반주거지역', '#d62828', '높은 아파트 중심'], ['rq', '준주거지역', '#a51616', '집 + 가게·사무실'] ] },
+    ['r1x', '제1종전용주거지역', '#fff1b8', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#ffe38a', '공동주택 중심 조용한 동네'],
+    ['r1', '제1종일반주거지역', '#fcd462', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#f5bf3f', '중간 높이 주택 중심'],
+    ['r3', '제3종일반주거지역', '#eaa52a', '높은 아파트 중심'], ['rq', '준주거지역', '#db8a22', '집 + 가게·사무실'] ] },
   { key: 'c', t: '상업지역', items: [
-    ['cc', '중심상업지역', '#6a1b9a', '도심·큰 중심가'], ['cm', '일반상업지역', '#9c27b0', '일반 상가·사무실'],
-    ['cn', '근린상업지역', '#ce6ad8', '동네 생활 상가'], ['cd', '유통상업지역', '#7e57c2', '시장·물류'] ] },
+    ['cc', '중심상업지역', '#a3172f', '도심·큰 중심가'], ['cm', '일반상업지역', '#d32f2f', '일반 상가·사무실'],
+    ['cn', '근린상업지역', '#ef6c5a', '동네 생활 상가'], ['cd', '유통상업지역', '#c2185b', '시장·물류'] ] },
   { key: 'i', t: '공업지역', items: [
     ['ix', '전용공업지역', '#0d3b9e', '중화학 공장'], ['ig', '일반공업지역', '#1e63d6', '일반 공장'],
     ['iq', '준공업지역', '#4a90ff', '공장 + 집·가게·사무실'] ] },
@@ -707,7 +707,7 @@ const infraOf = jm => !jm ? null : '도철'.includes(jm) ? 'road' : '천구유�
 const BLDG_G6 = { '01': 'h', '02': 'h', '03': 's', '04': 's', '07': 's', '15': 's', '16': 's', '14': 'o', '17': 'i', '18': 'i', '19': 'i', '20': 'i',
   '10': 'p', '05': 'p', '06': 'p', '09': 'p', '11': 'p', '13': 'p', '12': 'p', '08': 'p' };
 const BLDG_GROUPS = [{ key: 'all', t: '블록의 주용도', items: [
-  ['h', '주거', '#e53935', '단독·아파트·연립'], ['s', '상업', '#9c27b0', '가게·음식점·판매·숙박'], ['o', '업무', '#fb8c00', '사무실·오피스텔'],
+  ['h', '주거', '#f2b632', '단독·아파트·연립'], ['s', '상업', '#d32f2f', '가게·음식점·판매·숙박'], ['o', '업무', '#8e5cc8', '사무실·오피스텔'],
   ['i', '공업', '#1e63d6', '공장·창고·자동차시설'], ['p', '공공', '#2e9e48', '학교·문화·종교·의료·복지'], ['e', '기타', '#8d8d8d', '그 밖의 용도']] }];
 const bshare6 = () => { const o = {}; for (const [c, p] of Object.entries(ZONES?.bshare ?? {})) { const g = BLDG_G6[c] ?? 'e'; o[g] = (o[g] ?? 0) + p; }
   return Object.fromEntries(Object.entries(o).sort((a, b) => b[1] - a[1])); };
@@ -891,7 +891,7 @@ function zoneBar() {
   const sh = isB ? bshare6() : ZONES.share ?? {};
   const OF = isB ? BLDG_OF : ZONE_OF, G = isB ? BLDG_GROUPS : ZONE_GROUPS;
   const grp = k => Object.entries(sh).filter(([c]) => OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
-  const tone = { r: '#f04848', c: '#9c27b0', i: '#1e63d6', g: '#2e9e48' };
+  const tone = { r: '#f5bf3f', c: '#d32f2f', i: '#1e63d6', g: '#2e9e48' };
   const chips = (isB ? Object.entries(sh).map(([k, p]) => [BLDG_OF[k]?.t ?? k, BLDG_OF[k]?.c, p]) : G.map(g => [g.t.replace('지역', ''), tone[g.key], grp(g.key)]))
     .filter(([, , p]) => p >= .01).slice(0, 4)
     .map(([t, c, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${c}` }), t, h('b', null, pctTxt(p))));
@@ -939,8 +939,8 @@ function zonePaint(fly = false) {
   // 미리 그린 도면풍 타일: 전체 범위는 줌 16까지, 서울숲 둘레만 줌 17까지
   const url = `./data/zoning_tiles/${zoneMode}/{z}/{x}/{y}.png`, blank = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
   zoneTiles = L.layerGroup([
-    L.tileLayer(url, { pane: 'zone', minNativeZoom: 13, maxNativeZoom: 16, maxZoom: 20, keepBuffer: 3, bounds: L.latLngBounds([bb[1], bb[0]], [bb[3], bb[2]]), className: 'tr-zone-tiles', errorTileUrl: blank }),
-    L.tileLayer(url, { pane: 'zone', minZoom: 16.5, minNativeZoom: 17, maxNativeZoom: 17, maxZoom: 20, keepBuffer: 3, bounds: L.latLngBounds([37.528, 127.024], [37.562, 127.064]), className: 'tr-zone-tiles', errorTileUrl: blank }),
+    L.tileLayer(url, { pane: 'zone', minNativeZoom: 13, maxNativeZoom: 16, maxZoom: 20, keepBuffer: 1, bounds: L.latLngBounds([bb[1], bb[0]], [bb[3], bb[2]]), className: 'tr-zone-tiles', errorTileUrl: blank }),
+    L.tileLayer(url, { pane: 'zone', minZoom: 16.5, minNativeZoom: 17, maxNativeZoom: 17, maxZoom: 20, keepBuffer: 1, bounds: L.latLngBounds([37.528, 127.024], [37.562, 127.064]), className: 'tr-zone-tiles', errorTileUrl: blank }),
   ]).addTo(map);
   map.on('mousemove click', zoneMove); map.on('mouseout', zoneOut);
   zoneFilter();
@@ -1393,6 +1393,21 @@ function legView(s, key) {
 const RKEYS = ['pick', 'short', 'cool', 'quiet'];
 const RNAME = { pick: '추천 길', short: '가장 짧은 길', cool: '그늘 많은 길', quiet: '한산한 길' };
 const RCOLOR = { short: '#c9d6cf', cool: '#7cc7ff', quiet: '#ffd27a' };
+// 그늘 정도: 길 위 볕 노출(1 − 나무 비율, 팀 20m 격자) — 지도 선 색과 표의 띠 색을 같게 씀
+const SUNC = { g: '#4fd18b', m: '#d9d26a', s: '#ff8f4d', u: '#6f7d76' };
+const SUNW = { g: '그늘', m: '반그늘', s: '햇볕', u: '정보 없음' };
+const sunCls = e => e.sun == null ? 'u' : e.sun < .4 ? 'g' : e.sun < .7 ? 'm' : 's';
+/** 길을 그늘 정도가 같은 구간끼리 묶음: [{c, len, pts}] */
+function sunRuns(x) {
+  const out = [];
+  x.edges.forEach((e, i) => {
+    const a = x.coords[i], b = x.coords[i + 1]; if (!a || !b) return;
+    const c = sunCls(e), last = out[out.length - 1];
+    if (last && last.c === c) { last.len += e.len; last.pts.push(b); } else out.push({ c, len: e.len, pts: [a, b] });
+  });
+  return out;
+}
+const optColor = o => RCOLOR[o.keys.find(k => RCOLOR[k])] ?? MINT;
 function routeOpts(legs) {
   const live = legs.filter(s => s.R && !s.walking && !s.walked);
   if (!live.length) return null;
@@ -1400,10 +1415,10 @@ function routeOpts(legs) {
   const opts = [];
   for (const k of RKEYS) {
     if (k !== 'pick' && !live.some(s => s.R[k])) continue;
-    const o = { keys: [k], m: 0, sun: 0, sunK: 0, lst: 0, lstK: 0, crowd: 0, stairs: 0, sig: '' };
+    const o = { keys: [k], m: 0, sun: 0, sunK: 0, lst: 0, lstK: 0, crowd: 0, stairs: 0, sig: '', runs: [] };
     for (const s of live) {
       const x = s.R[k] ?? s.R.pick; if (!x) continue;
-      o.m += x.meters + s.offM; o.stairs += x.stairs; o.crowd += x.crowd * x.meters;
+      o.m += x.meters + s.offM; o.stairs += x.stairs; o.crowd += x.crowd * x.meters; o.runs.push(...sunRuns(x));
       for (const e of x.edges) { if (e.sun != null) { o.sun += e.sun * e.len; o.sunK += e.len; } if (e.lst != null) { o.lst += e.lst * e.len; o.lstK += e.len; } }
       o.sig += x.edges.map(e => e.id).join(',') + '|';
     }
@@ -1415,12 +1430,42 @@ function routeOpts(legs) {
     if (same) same.keys.push(k); else opts.push(o);
   }
   if (sunMode === 'sun') RNAME.cool = '볕 드는 길'; else RNAME.cool = '그늘 많은 길';
-  return { opts, sunMode, sel: live[0].rkey ?? 'pick' };
+  return { opts, sunMode, sel: live[0].rkey ?? 'pick', prefs: live[0].prefs };
 }
+/** 길 고르기: 패널을 다시 그리지 않고 바뀌는 값만 그 자리에서 바꿈 + 지도에서 고른 길을 잠깐 강조 */
 function selectRoute(k) {
+  if (trip.rkey === k) return;
   trip.rkey = k;
   trip.stops.forEach(s => { if (s.R && !s.walking && !s.walked) Object.assign(s, legView(s, k)); });
-  drawCourse(); renderPlan();
+  previewRoute(null);
+  drawPlanLines(); patchPlan(trip.stops);
+  const o = routeOpts(trip.stops)?.opts.find(p => p.keys.includes(k));
+  if (o) { previewRoute(k, optColor(o)); clearTimeout(selectRoute.t); selectRoute.t = setTimeout(() => previewRoute(null), 1200); }
+}
+function patchPlan(legs) {
+  const oldRc = document.querySelector('.tr-rc'); if (!oldRc) return renderPlan();
+  const root = oldRc.parentElement, swap = (old, nu) => { if (old && nu) old.replaceWith(nu); else if (old) old.remove(); return nu; };
+  const st4 = root.querySelector('.tr-stats.four'), ns = planStats(legs); swap(st4, ns);
+  ns.querySelectorAll('b').forEach(b => b.classList.add('tr-flash'));
+  const on = root.querySelector('.tr-notes'), nn = planNotes(legs);
+  if (on) swap(on, nn); else if (nn) oldRc.before(nn);
+  const oc = root.querySelector('.tr-crit'), nc = criteriaBox(legs); if (oc && nc) nc.open = oc.open; swap(oc, nc);
+  const nr = routeCompare(legs); swap(oldRc, nr);
+  root.querySelectorAll('.tr-tl > .tr-tl-i').forEach((li, i) => { const sp = li.querySelector('.tr-tl-meta span'); if (sp && legs[i]) sp.replaceChildren(icon('walk', 11), `${legs[i].walkMin}분`); });
+}
+let rcHov = null;
+/** 표의 줄에 손을 올리면 그 길을 지도에서 굵게 보여 주고 나머지는 흐리게 */
+function previewRoute(k, color = MINT) {
+  if (rcHov) { rcHov.remove(); rcHov = null; }
+  el.map.classList.toggle('tr-rc-hov', !!k);
+  if (!k) return;
+  rcHov = L.layerGroup().addTo(map);
+  trip.stops.forEach(s => {
+    if (!s.R || s.walking || s.walked) return;
+    const c = legView(s, k).coords; if (c.length < 2) return;
+    L.polyline(c, { interactive: false, color: '#03140b', weight: 11, opacity: .7, lineCap: 'round', lineJoin: 'round' }).addTo(rcHov);
+    L.polyline(c, { interactive: false, color, weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round', className: 'tr-rc-hl' }).addTo(rcHov);
+  });
 }
 function routeCompare(legs) {
   const ro = routeOpts(legs);
@@ -1443,22 +1488,31 @@ function routeCompare(legs) {
     trade = `가장 짧은 길보다 ${parts.join(' · ')}`;
   } else if (short) trade = '지금 고른 길이 가장 짧은 길이에요';
   const cell = (v, isBest, unit) => h('td', { class: isBest ? 'best' : '' }, v == null ? '–' : h('span', null, v, h('small', null, unit)));
+  // 추천 길에 넣은 조건(같이 온 사람·날씨에서 정해짐)
+  const p = ro.prefs ?? {}, conds = [p.shade ? (sunMode === 'sun' ? '볕 드는 길 우선' : '그늘 우선') : null, p.quiet ? '한산한 길 우선' : null, p.nostairs ? '계단·흙길 피함' : null, p.rest ? `쉴 곳 ${p.restGap ?? 200}m마다` : null].filter(Boolean);
+  const strip = o => sun && o.runs.length ? h('span', { class: 'tr-rc-strip', title: '출발 → 도착, 길 위 그늘 정도' }, o.runs.map(r => h('i', { style: `flex:${Math.max(1, Math.round(r.len))} 1 0;background:${SUNC[r.c]}` }))) : null;
+  const shareOf = o => { const t = o.runs.reduce((a, r) => a + r.len, 0) || 1; return c => Math.round(o.runs.filter(r => r.c === c).reduce((a, r) => a + r.len, 0) / t * 100); };
   return h('section', { class: 'tr-rc' },
-    h('div', { class: 'tr-rc-h' }, h('b', null, icon('walk', 13), '길 비교'), h('small', null, '눌러서 다른 길로 바꿀 수 있어요')),
+    h('div', { class: 'tr-rc-h' }, h('b', null, icon('walk', 13), '길 비교'), h('small', null, '줄에 손을 올리면 지도에 그 길이 보여요')),
+    h('p', { class: 'tr-rc-why' }, h('b', null, '추천 길'), conds.length ? ` = ${conds.join(' · ')} 조건을 넣고, 가장 짧은 길의 1.2배까지만 돌아가게 계산한 길` : ' = 오늘은 따로 넣을 조건이 없어 가장 짧은 길로 계산'),
     h('table', { class: 'tr-rc-t' },
       h('thead', null, h('tr', null, h('th', null, ''), h('th', null, '걷기'), sun ? h('th', null, sunMode === 'sun' ? '볕 아래' : '햇볕 아래') : null, hot ? h('th', null, '땅 온도') : null, anyStairs ? h('th', null, '계단') : null)),
       h('tbody', null, opts.map(o => {
         const on = o === cur, names = o.keys.map(k => RNAME[k]);
         const tags = [o.min === bMin ? '가장 빨라요' : null, Math.abs(o.crowdAvg - bCrowd) < .005 && opts.some(p => p.crowdAvg - o.crowdAvg >= .04) ? '가장 한산' : null].filter(Boolean);
-        return h('tr', { class: on ? 'on' : '', tabindex: 0, role: 'button', 'aria-pressed': String(on), onclick: () => selectRoute(o.keys[0]), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRoute(o.keys[0]); } } },
-          h('th', null, h('i', { class: 'tr-rc-sw', style: `--c:${o.keys.includes(sel) ? 'var(--mint)' : RCOLOR[o.keys.find(k => RCOLOR[k])] ?? '#c9d6cf'}` }), h('span', null, names.join(' · '), tags.length ? h('em', null, tags.join(' · ')) : null)),
+        const col = optColor(o), sh = shareOf(o);
+        return h('tr', { class: on ? 'on' : '', tabindex: 0, role: 'button', 'aria-pressed': String(on), title: sun ? `그늘 ${sh('g')}% · 반그늘 ${sh('m')}% · 햇볕 ${sh('s')}%` : null,
+          onclick: () => selectRoute(o.keys[0]), onmouseenter: () => previewRoute(o.keys[0], col), onmouseleave: () => previewRoute(null), onfocus: () => previewRoute(o.keys[0], col), onblur: () => previewRoute(null),
+          onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRoute(o.keys[0]); } } },
+          h('th', null, h('div', { class: 'tr-rc-nm' }, h('i', { class: `tr-rc-sw${on ? ' on' : ''}`, style: `--c:${col}` }), h('span', null, names.join(' · '), tags.length ? h('em', null, tags.join(' · ')) : null)), strip(o)),
           cell(o.min, o.min === bMin, '분'),
           sun ? cell(sunR(o.sunMin), o.sunMin != null && sunR(o.sunMin) === bSun, '분') : null,
           hot ? cell(o.temp == null ? null : o.temp.toFixed(1), o.temp != null && Math.round(o.temp * 10) === bTemp, '℃') : null,
           anyStairs ? cell(o.stairs, o.stairs === 0, '곳') : null);
       }))),
+    sun ? h('div', { class: 'tr-rc-lg' }, ['g', 'm', 's', 'u'].map(c => h('span', null, h('i', { style: `background:${SUNC[c]}` }), SUNW[c])), h('small', null, '띠 = 출발 → 도착 · 지도의 고른 길도 같은 색')) : null,
     trade ? h('p', { class: 'tr-rc-trade' }, trade) : null,
-    sun && h('p', { class: 'tr-rc-src' }, `${sun ? '햇볕 아래 시간: 길 위 나무 그늘 비율(팀 20m 격자)로 계산 · ' : ''}${hot ? '땅 온도: 여름 맑은 날 위성으로 잰 길바닥 온도(Landsat 8, 2026년 6·9월) · ' : ''}그늘진 길은 걷는 길 온도를 낮춰요(Lee & Park 2020)`));
+    sun && h('p', { class: 'tr-rc-src' }, h('em', null, '측정 자료'), `${sun ? '햇볕 아래 시간: 길 위 나무 그늘 비율(팀 20m 격자)로 계산 · ' : ''}${hot ? '땅 온도: 여름 맑은 날 위성으로 잰 길바닥 온도(Landsat 8, 2026년 6·9월) · ' : ''}그늘진 길은 걷는 길 온도를 낮춰요(Lee & Park 2020)`));
 }
 /** 계획 화면 지도: 고르지 않은 길을 옅게 그려 견주게 함(누르면 그 길로) */
 function drawAlts() {
@@ -1472,11 +1526,41 @@ function drawAlts() {
       if (!s.R) return;
       const v = legView(s, k);
       if (v.coords.length < 3 || (s.R[k] ?? s.R.pick) === (s.R[s.rkey] ?? s.R.pick)) return;
-      L.polyline(v.coords, { className: 'tr-alt', color, weight: 2.4, opacity: .7, dashArray: '6 6', lineCap: 'round' }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]));
+      L.polyline(v.coords, { className: 'tr-alt', color, weight: 2.4, opacity: .6, dashArray: '6 6', lineCap: 'round' }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]))
+        .on('mouseover', () => previewRoute(o.keys[0], color)).on('mouseout', () => previewRoute(null));
       if (!lab) lab = v.coords[Math.floor(v.coords.length / 2)];
     });
     if (lab) L.marker(lab, { icon: L.divIcon({ className: '', html: `<div class="tr-alt-tag" style="--c:${color}">${esc(RNAME[k])}</div>`, iconSize: [0, 0] }), zIndexOffset: 400 }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]));
   }
+}
+/** 계획 화면 지도: 고른 길을 그늘 정도 색으로 칠함(근거를 지도에서 바로 보이게) */
+function drawSunRoute() {
+  const live = trip.stops.filter(s => s.R && !s.walking && !s.walked);
+  if (!live.length || live[0].sunMode === 'none') return false;
+  for (const s of live) {
+    const x = s.R[s.rkey] ?? s.R.pick; if (!x || x.coords.length < 2) continue;
+    const ends = [[[s.from.lat, s.from.lon], x.coords[0]], [x.coords[x.coords.length - 1], [s.r.place.lat, s.r.place.lon]]];
+    for (const e of ends) L.polyline(e, { interactive: false, color: '#d8ffea', weight: 2, opacity: .7, dashArray: '1 6', lineCap: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
+    L.polyline(x.coords, { interactive: false, color: '#03140b', weight: 8, opacity: .6, lineCap: 'round', lineJoin: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
+    for (const r of sunRuns(x)) L.polyline(r.pts, { interactive: false, color: SUNC[r.c], weight: 4.5, opacity: .95, lineCap: 'round', lineJoin: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
+  }
+  return true;
+}
+/** 지도의 코스 선: 계획 화면에선 고른 길(그늘 색) + 다른 길(점선), 걷는 중엔 점선만 */
+function drawPlanLines(reveal = false) {
+  layers.plan.clearLayers();
+  const planning = trip.idx === 0 && !trip.stops.some(s => s.walking || s.walked);
+  if (planning) drawAlts();
+  const sunOn = planning && drawSunRoute();
+  trip.stops.forEach((s, i) => {
+    if (i < trip.idx || s.walking || s.walked) return;
+    const glow = L.polyline(s.coords, { interactive: false, className: 'tr-plan-glow', color: MINT, weight: 10, opacity: i === trip.idx ? .2 : .1, lineCap: 'round', lineJoin: 'round' }).addTo(layers.plan);
+    glow.bringToBack();
+    if (reveal) drawIn(glow, i * 200, 500);
+    if (sunOn) return;
+    const dash = L.polyline(s.coords, { interactive: false, className: `tr-plan${i === trip.idx ? ' next' : ''}`, color: '#d8ffea', weight: i === trip.idx ? 2.6 : 2, opacity: i === trip.idx ? .95 : .55, dashArray: '1 9', lineCap: 'round' }).addTo(layers.plan);
+    if (reveal) dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: i * 200 + 300, fill: 'backwards' });
+  });
 }
 /** 머물 시간을 넘지 않게 뒤에서부터 덜어 냅니다(담은 곳은 남기고, 빠진 자리 다음 구간은 다시 이어 그림) */
 function fitTime(legs, left) {
@@ -1657,14 +1741,10 @@ function pinIcon(s, i, extra = '') {
   return L.divIcon({ className: '', html: `<div class="tr-pin ${state}${low} ${extra}" style="--d:${i * 110}ms"><span>${i + 1}</span><em>${esc(s.r.place.name)}${tag}</em></div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
 }
 function drawCourse({ reveal = false, changed = new Set() } = {}) {
-  layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers();
+  layers.pins.clearLayers(); layers.garden.clearLayers();
+  previewRoute(null); drawPlanLines(reveal);
   const shown = new Set();
   trip.stops.forEach((s, i) => {
-    if (i >= trip.idx && !s.walking && !s.walked) {
-      const glow = L.polyline(s.coords, { interactive: false, className: 'tr-plan-glow', color: MINT, weight: 10, opacity: i === trip.idx ? .2 : .1, lineCap: 'round', lineJoin: 'round' }).addTo(layers.plan);
-      const dash = L.polyline(s.coords, { interactive: false, className: `tr-plan${i === trip.idx ? ' next' : ''}`, color: '#d8ffea', weight: i === trip.idx ? 2.6 : 2, opacity: i === trip.idx ? .95 : .55, dashArray: '1 9', lineCap: 'round' }).addTo(layers.plan);
-      if (reveal) { drawIn(glow, i * 200, 500); dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: i * 200 + 300, fill: 'backwards' }); }
-    }
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
@@ -1672,7 +1752,6 @@ function drawCourse({ reveal = false, changed = new Set() } = {}) {
         .addTo(layers.garden).on('click', () => gardenShot(g));
     }
   });
-  drawAlts();
 }
 
 // ── 패널: 추천 코스 ──
@@ -1693,16 +1772,20 @@ function startRow() {
       h('button', { type: 'button', class: 'tr-mini', onclick: () => { box.hidden = !box.hidden; } }, '바꾸기')),
     box);
 }
+function planStats(legs) {
+  const walk = sum(legs, s => s.walkMin), total = walk + dwell() * legs.length;
+  return h('div', { class: 'tr-stats four' },
+    h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
+    h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
+    h('div', { title: KCAL_NOTE }, h('b', null, legsKcal(legs), h('small', null, 'kcal')), h('span', null, '쓰는 칼로리')),
+    h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함')));
+}
 function renderPlan() {
-  const legs = trip.stops, walk = sum(legs, s => s.walkMin), total = walk + dwell() * legs.length;
+  const legs = trip.stops;
   mount('tr-s-result', [
     tripHead(),
     h('h2', { class: 'tr-q' }, trip.course ? trip.course : `${legs.length}곳을 걷는 코스`),
-    h('div', { class: 'tr-stats four' },
-      h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
-      h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
-      h('div', { title: KCAL_NOTE }, h('b', null, legsKcal(legs), h('small', null, 'kcal')), h('span', null, '쓰는 칼로리')),
-      h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
+    planStats(legs),
     h('p', { class: 'tr-kcal-note' }, `칼로리는 ${KCAL_NOTE}`),
     planNotes(legs),
     routeCompare(legs),
