@@ -1490,7 +1490,7 @@ function routeCompare(legs) {
   const cell = (v, isBest, unit) => h('td', { class: isBest ? 'best' : '' }, v == null ? '–' : h('span', null, v, h('small', null, unit)));
   // 추천 길에 넣은 조건(같이 온 사람·날씨에서 정해짐)
   const p = ro.prefs ?? {}, conds = [p.shade ? (sunMode === 'sun' ? '볕 드는 길 우선' : '그늘 우선') : null, p.quiet ? '한산한 길 우선' : null, p.nostairs ? '계단·흙길 피함' : null, p.rest ? `쉴 곳 ${p.restGap ?? 200}m마다` : null].filter(Boolean);
-  const strip = o => sun && o.runs.length ? h('span', { class: 'tr-rc-strip', title: '출발 → 도착, 길 위 그늘 정도' }, o.runs.map(r => h('i', { style: `flex:${Math.max(1, Math.round(r.len))} 1 0;background:${SUNC[r.c]}` }))) : null;
+  const strip = o => sun && o.runs.length ? h('div', { class: 'tr-rc-strip', title: '출발 → 도착, 길 위 그늘 정도' }, o.runs.map(r => h('i', { style: `flex:${Math.max(1, Math.round(r.len))} 1 0;background:${SUNC[r.c]}` }))) : null;
   const shareOf = o => { const t = o.runs.reduce((a, r) => a + r.len, 0) || 1; return c => Math.round(o.runs.filter(r => r.c === c).reduce((a, r) => a + r.len, 0) / t * 100); };
   return h('section', { class: 'tr-rc' },
     h('div', { class: 'tr-rc-h' }, h('b', null, icon('walk', 13), '길 비교'), h('small', null, '줄에 손을 올리면 지도에 그 길이 보여요')),
@@ -1518,6 +1518,7 @@ function routeCompare(legs) {
 function drawAlts() {
   if (trip.idx !== 0 || trip.stops.some(s => s.walking || s.walked)) return;
   const ro = routeOpts(trip.stops); if (!ro) return;
+  let nLab = 0;
   for (const o of ro.opts) {
     if (o.keys.includes(ro.sel)) continue;
     const k = o.keys.find(x => RCOLOR[x]) ?? o.keys[0], color = RCOLOR[k] ?? '#c9d6cf';
@@ -1528,9 +1529,10 @@ function drawAlts() {
       if (v.coords.length < 3 || (s.R[k] ?? s.R.pick) === (s.R[s.rkey] ?? s.R.pick)) return;
       L.polyline(v.coords, { className: 'tr-alt', color, weight: 2.4, opacity: .6, dashArray: '6 6', lineCap: 'round' }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]))
         .on('mouseover', () => previewRoute(o.keys[0], color)).on('mouseout', () => previewRoute(null));
-      if (!lab) lab = v.coords[Math.floor(v.coords.length / 2)];
+      if (!lab) lab = v.coords[Math.floor(v.coords.length * (.3 + .4 * (nLab % 2)))];   // 이름표끼리 겹치지 않게 번갈아 자리 잡기
     });
-    if (lab) L.marker(lab, { icon: L.divIcon({ className: '', html: `<div class="tr-alt-tag" style="--c:${color}">${esc(RNAME[k])}</div>`, iconSize: [0, 0] }), zIndexOffset: 400 }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]));
+    if (lab) nLab++;
+    if (lab) L.marker(lab, { icon: L.divIcon({ className: '', html: `<div class="tr-alt-tag" style="--c:${color}">${esc(RNAME[o.keys[0]])}</div>`, iconSize: [0, 0] }), zIndexOffset: 400 }).addTo(layers.plan).on('click', () => selectRoute(o.keys[0]));
   }
 }
 /** 계획 화면 지도: 고른 길을 그늘 정도 색으로 칠함(근거를 지도에서 바로 보이게) */
