@@ -312,8 +312,9 @@ function makeMap() {
   // 모바일 화면에서 돌아온 경우: 지난번 공원 화면 자리에서 바로 시작(위성 사진도 받아 둔 것 그대로) → 멀리서 다시 불러오지 않음
   let back = null; try { back = backFromMobile && JSON.parse(sessionStorage.getItem('sf-tour-view') || 'null'); } catch {}
   if (back?.c) map.setView(back.c, back.z, { animate: false }); else map.setView(PARK_CENTER, 12.4);
+  map.createPane('zone').style.zIndex = 350;   // 주변 땅 색: 공원·길 그림 아래
   layers = {
-    park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
+    zone: L.layerGroup().addTo(map), park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
     gshot: L.layerGroup().addTo(map), shot: L.layerGroup().addTo(map), prog: L.layerGroup().addTo(map),
     flow: L.layerGroup().addTo(map), access: L.layerGroup().addTo(map),
@@ -679,6 +680,60 @@ function accessBar() {
   return h('section', { class: 'tr-status tr-access' }, line, more);
 }
 
+// ── 주변 땅(용도지역) ──
+// 국토교통부 용도지역(도시지역) LT_C_UQ111을 브이월드 2D 데이터 API로 받음(2026-11-28) → data/zoning.json
+// 시민 화면이라 쉬운 이름을 앞에, 법정 이름은 작게. 설명은 국토계획법 시행령 제30조의 용도지역 목적을 풀어 씀
+const ZONE_INFO = {
+  gn: { c: '#5fbf6e', t: '숲·녹지', d: '자연을 지키려고 개발을 묶어 둔 땅' },
+  r1: { c: '#fff1a0', t: '낮은 집 동네', d: '낮은 주택 위주로 짓는 땅' },
+  r2: { c: '#f2d35a', t: '빌라·중간 높이 집', d: '중간 높이 주택 위주로 짓는 땅' },
+  r3: { c: '#dda33c', t: '아파트 동네', d: '높은 아파트까지 지을 수 있는 땅' },
+  rq: { c: '#f08a4b', t: '집+가게 섞인 땅', d: '집 위주에 가게·사무실이 섞이는 땅' },
+  cm: { c: '#e8607a', t: '가게·사무실 거리', d: '상가·사무실이 모이는 땅' },
+  iq: { c: '#a98ce0', t: '공장·사무실 동네', d: '공장·창고에 집·가게·사무실이 섞이는 땅' },
+};
+let ZONES = null, zoneOpen = false;
+function zoneRows() {
+  const cat = Object.fromEntries((ZONES?.features ?? []).map(f => [f.properties.zone, f.properties.cat]));
+  return Object.entries(ZONES?.share ?? {}).map(([zone, p]) => ({ zone, p, cat: cat[zone], ...ZONE_INFO[cat[zone]] })).filter(r => r.t);
+}
+function zoneBar() {
+  if (!ZONES) return null;
+  const rows = zoneRows(), pct = p => `${Math.round(p * 100)}%`;
+  const sum = re => rows.filter(r => re.test(r.cat)).reduce((s, r) => s + r.p, 0);
+  const chip = (c, label, p) => p > 0 ? h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${c}` }), label, h('b', null, pct(p))) : null;
+  const more = h('div', { class: 'tr-acc-more tr-zone-more', hidden: !zoneOpen },
+    h('p', { class: 'tr-zone-lead' }, '서울숲 둘레 약 1km 땅을 무엇에 쓰도록 정해 뒀는지 색으로 칠했어요.'),
+    h('div', { class: 'tr-zone-list' }, rows.map(r => h('div', { class: 'tr-zone-row' },
+      h('i', { style: `background:${r.c}` }),
+      h('span', null, h('b', null, r.t), h('small', null, `${r.d} · ${r.zone}`)),
+      h('em', null, pct(r.p))))),
+    h('p', { class: 'tr-zone-note' }, '초록은 거의 서울숲과 한강이에요. 둘레 동네는 집과 공장·사무실 땅이라, 쉴 만한 녹지는 서울숲에 모여 있어요.'),
+    h('p', { class: 'tr-lc-src' }, `국토교통부 용도지역 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 지도에 칠한 칸 기준`));
+  const label = () => zoneOpen ? '지도 닫기' : '지도로 보기';
+  const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(zoneOpen),
+    onclick: e => { zoneOpen = !zoneOpen; more.hidden = !zoneOpen; e.currentTarget.setAttribute('aria-expanded', String(zoneOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); zonePaint(true); } },
+    h('small', null, '주변 땅'),
+    h('div', { class: 'tr-status-chips' },
+      chip(ZONE_INFO.gn.c, '녹지', sum(/^gn$/)), chip(ZONE_INFO.r2.c, '집', sum(/^r[123q]$/)), chip(ZONE_INFO.iq.c, '공장·사무실', sum(/^iq$/)), chip(ZONE_INFO.cm.c, '가게', sum(/^cm$/))),
+    h('span', { class: 'tr-status-tog' }, label()));
+  return h('section', { class: 'tr-status tr-zone' }, line, more);
+}
+function zonePaint(fly = false) {
+  if (!layers?.zone) return;
+  layers.zone.clearLayers();
+  const on = !!ZONES && zoneOpen && st.step === 1 && !trip;
+  const was = el.panel.classList.contains('zonemap');
+  el.panel.classList.toggle('zonemap', on);
+  if (!on) { if (fly && was && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
+  // 휴대폰: 시트가 낮아진 뒤 주변 땅 칸이 시트 맨 위에 오게
+  if (!was && !desk()) setTimeout(() => { const sec = el.panel.querySelector('.tr-zone'); if (sec) el.panel.scrollTop += sec.getBoundingClientRect().top - el.panel.getBoundingClientRect().top - 12; }, 380);
+  L.geoJSON(ZONES, { pane: 'zone',
+    style: f => ({ fillColor: ZONE_INFO[f.properties.cat]?.c ?? '#999', fillOpacity: .55, color: '#fff', weight: .8, opacity: .55, className: 'tr-zone-poly' }),
+    onEachFeature: (f, l) => { const z = ZONE_INFO[f.properties.cat]; if (z) l.bindTooltip(`<b>${esc(z.t)}</b><small>${esc(f.properties.zone)}</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' }); } }).addTo(layers.zone);
+  if (fly) { const b = ZONES.bbox; flyBounds(L.latLngBounds([b[1], b[0]], [b[3], b[2]]), padding(), .8); }
+}
+
 // ── 오는 길 지도 핀 ──
 // 버스는 도착 시간이 있을 때만 처음부터 켬(정류장 위치만으론 지도를 어지럽힘). null = 아직 사용자가 안 건드림
 let accessShow = { park: true, sub: true, bus: null, event: true, bike: true, ev: true };
@@ -847,6 +902,7 @@ function go(step) {
     h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? ''),
     h('div', { class: 'tr-status-slot' }, statusBar() ?? ''),
     h('div', { class: 'tr-access-slot' }, accessBar() ?? ''),
+    h('div', { class: 'tr-zone-slot' }, zoneBar() ?? ''),
   ] : [];
   const side = step === 1 && desk();
   sideDesk = desk();
@@ -864,7 +920,8 @@ function go(step) {
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
   if (step !== 1 && accessOpen) accessOpen = false;
-  if (layers) accessPins();
+  if (step !== 1) zoneOpen = false;
+  if (layers) { accessPins(); zonePaint(); }
 }
 async function choose(key, value, btn) {
   watchMe();          // 첫 선택 때 위치를 물어봅니다(코스를 짤 때쯤 준비되도록)
@@ -1185,7 +1242,7 @@ function gardenStrip(s) {
 async function begin(course = null, avoid = []) {
   flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers(); layers.access.clearLayers();
-  accessOpen = false;
+  accessOpen = false; zoneOpen = false; zonePaint();
   clearTreePins();
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
@@ -2032,6 +2089,7 @@ async function boot() {
   flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+  loadJson('./data/zoning.json').then(z => { ZONES = z; document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); }).catch(() => {});
   try {
     const wxLive = fetchWeather().catch(() => null);
     const [data, raw, photos, gardens, seed, expo] = await Promise.all([loadData(loadJson), Promise.race([wxLive, sleep(1500).then(() => null)]),
