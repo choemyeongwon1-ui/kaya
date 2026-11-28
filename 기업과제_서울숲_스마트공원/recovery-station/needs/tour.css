@@ -1017,8 +1017,9 @@ div.tr-status-line{cursor:default}
 .tr-gl-img{flex:none;width:52px;height:52px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.05)}
 
 /* 주변 땅(용도지역) */
-/* 주변 땅을 펼치면 위성 사진을 걷고 어두운 단색 바탕 지도 위에(색이 탁해지지 않게) */
-.tr-map.tr-zonemap .tr-sat{opacity:0!important}
+/* 주변 땅을 펼치면 위성 사진을 흑백으로 바꾸고 그 위에 선명한 반투명 용도 색 */
+.tr-map.tr-zonemap .tr-sat{opacity:1!important}
+.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(1) brightness(1.12) contrast(.9)}
 .tr-map.tr-zonemap .tr-fade{display:none}
 .tr-zone-chip{display:inline-flex;align-items:center;gap:5px}
 .tr-zone-chip i{flex:none;width:9px;height:9px;border-radius:3px}
@@ -1081,17 +1082,3 @@ div.tr-status-line{cursor:default}
 .tr-tree-how p{margin:4px 0 0;color:var(--mute)}
 .tr-tree-warn{display:flex;gap:6px;align-items:flex-start;margin:8px 0 0;padding:8px 10px;border-radius:9px;background:rgba(233,192,99,.12);color:var(--ink);font-size:12px;line-height:1.45}
 .tr-tree-warn svg{flex:0 0 auto;margin-top:2px;color:#e9c063}
-
-/* 주변 땅: 결론 한 줄 + 접는 색 설명 */
-.tr-zone-head{display:flex;flex-direction:column;gap:3px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(95,158,110,.14)}
-.tr-zone-head b{font-size:14px;line-height:1.4;color:var(--ink)}
-.tr-zone-head span{font-size:12px;line-height:1.5;color:var(--ink-2)}
-.tr-zone-legend{margin:8px 0 6px}
-.tr-zone-legend summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);padding:6px 2px;list-style:none}
-.tr-zone-legend summary::before{content:'▸ ';color:var(--mute)}
-.tr-zone-legend[open] summary::before{content:'▾ '}
-.tr-zone-legend summary::-webkit-details-marker{display:none}
-.tr-zone-hatch{display:flex;align-items:center;gap:10px;padding:6px 4px;font-size:12px}
-.tr-zone-hatch i{flex:none;width:14px;height:14px;border-radius:3px;background:repeating-linear-gradient(-45deg,#e0989199 0 1.5px,transparent 1.5px 5px);outline:1px solid #e0989166}
-.tr-zone-hatch span{display:flex;flex-direction:column}
-.tr-zone-hatch small{color:var(--mute)}

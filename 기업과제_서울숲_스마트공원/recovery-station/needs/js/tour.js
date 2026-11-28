@@ -718,7 +718,7 @@ const mixTxt = s => [...(s ?? '').matchAll(/([a-z])(\d+)/g)].map(([, g, p]) => `
 const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const BLDG_OF = Object.fromEntries(BLDG_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const JIMOK = { 대: '대지', 전: '밭', 답: '논', 임: '임야', 잡: '잡종지', 학: '학교용지', 종: '종교용지', 창: '창고용지', 장: '공장용지', 차: '주차장', 주: '주유소용지', 체: '체육용지', 원: '유원지', 사: '사적지', 묘: '묘지', 목: '목장용지', 과: '과수원', 광: '광천지', 염: '염전', 양: '양어장', 도: '도로', 철: '철도용지', 천: '하천', 구: '구거', 유: '유지', 제: '제방', 수: '수도용지', 공: '공원' };
-let zoneLegend = false, ZONES = null, ZP = null, ZB = null, ZZ = null, zoneOpen = false, zoneOnly = null, zonePlans = false, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
+let ZONES = null, ZP = null, ZB = null, ZZ = null, zoneOpen = false, zoneOnly = null, zonePlans = false, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
 const pctTxt = p => p >= .995 ? '100%' : p >= .01 ? `${Math.round(p * 100)}%` : p > 0 ? '1% 미만' : '';
 
 // 위경도 → 줌 0 픽셀(웹 메르카토르)
@@ -742,19 +742,10 @@ function decodeRings(src) {   // 용도별로 합친 면(바깥 고리 + 구멍)
   const [ox, oy] = src.origin, k = src.scale;
   return src.z.map(([code, , rings]) => {
     const rr = rings.map(d => { const p = new Float64Array(d.length); let x = 0, y = 0; for (let j = 0; j < d.length; j += 2) { x += d[j]; y += d[j + 1]; p[j] = mx(ox + x / k); p[j + 1] = my(oy + y / k); } return p; });
-    const ll = rings.map(d => { const a = []; let x = 0, y = 0; for (let j = 0; j < d.length; j += 2) { x += d[j]; y += d[j + 1]; a.push([oy + y / k, ox + x / k]); } return a; });
     const e = rr[0]; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (let j = 0; j < e.length; j += 2) { if (e[j] < x0) x0 = e[j]; if (e[j] > x1) x1 = e[j]; if (e[j + 1] < y0) y0 = e[j + 1]; if (e[j + 1] > y1) y1 = e[j + 1]; }
-    return { kind: 'z', r: [code], rr, ll, p: e, bb: [x0, y0, x1, y1] };
+    return { r: [code], rr, bb: [x0, y0, x1, y1] };
   });
-}
-function pickZone(X, Y) {   // 용도지역 면 중 마우스 아래(구멍 안이면 건너뜀)
-  const g = ZZ?.grid; if (!g) return null;
-  for (const n of g.G.get(Math.floor(X / g.C) * 1e6 + Math.floor(Y / g.C)) ?? []) {
-    const it = g.items[n], b = it.bb;
-    if (X >= b[0] && X <= b[2] && Y >= b[1] && Y <= b[3] && inPoly(it.rr[0], X, Y) && !it.rr.slice(1).some(hh => inPoly(hh, X, Y))) return it;
-  }
-  return null;
 }
 function gridOf(items) {   // 마우스 아래 도형 찾기용 격자
   const G = new Map(), C = .0006;
@@ -842,7 +833,7 @@ const ZoneCanvas = L.Layer.extend({
     const inView = b => !(b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1) && (b[2] - b[0] >= minPx || b[3] - b[1] >= minPx);
     if ((zoneOnly || hi) && isZ && ZZ) {   // 용도별로 합친 면 + 용도 경계만 진하게 + 필지 선은 아주 옅게(타일과 같은 모양)
       const groups = new Map();
-      for (const it of ZZ.items) { if (!inView(it.bb) || (zoneOnly && zoneOnly !== it.r[0])) continue; const c = ZONE_OF[it.r[0]]?.c; if (!c) continue; let g = groups.get(c); if (!g) groups.set(c, g = []); g.push(it.rr); }
+      for (const it of ZZ) { if (!inView(it.bb) || (zoneOnly && zoneOnly !== it.r[0])) continue; const c = ZONE_OF[it.r[0]]?.c; if (!c) continue; let g = groups.get(c); if (!g) groups.set(c, g = []); g.push(it.rr); }
       const ring = p => { ctx.moveTo(p[0] * s - o.x, p[1] * s - o.y); for (let j = 2; j < p.length; j += 2) ctx.lineTo(p[j] * s - o.x, p[j + 1] * s - o.y); ctx.closePath(); };
       for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = zoneOnly ? .7 : .42; ctx.fillStyle = c; ctx.fill('evenodd'); }
       if (z >= 15 && ZP?.items) {
@@ -852,16 +843,7 @@ const ZoneCanvas = L.Layer.extend({
       }
       for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = .95; ctx.strokeStyle = lightHex(c); ctx.lineWidth = hi ? 1.5 : 1.2; ctx.lineJoin = 'round'; ctx.stroke(); }
     }
-    if ((zoneOnly || hi) && !isZ && ZB?.items) {
-      paint(ZB.items, bldgLook, hi ? .45 : .7, 0, .95, hi ? 1.3 : 1);
-      if (!zoneOnly || zoneOnly === 'b:s') {   // 주용도는 아니지만 가게 건물이 절반 넘는 블록 = 빗금
-        const pc = document.createElement('canvas'); pc.width = pc.height = 8;
-        const px = pc.getContext('2d'); px.strokeStyle = lightHex('#c25450', .25); px.lineWidth = 1.2; px.beginPath(); px.moveTo(0, 8); px.lineTo(8, 0); px.moveTo(-2, 2); px.lineTo(2, -2); px.moveTo(6, 10); px.lineTo(10, 6); px.stroke();
-        ctx.beginPath();
-        for (const it of ZB.items) { if (!inView(it.bb) || !(it.r[4] >= 50) || it.r[0] === 's' || !BLDG_OF[it.r[0]]) continue; const q = it.p; ctx.moveTo(q[0] * s - o.x, q[1] * s - o.y); for (let j = 2; j < q.length; j += 2) ctx.lineTo(q[j] * s - o.x, q[j + 1] * s - o.y); ctx.closePath(); }
-        ctx.save(); ctx.translate(-o.x % 8, -o.y % 8); ctx.globalAlpha = .9; ctx.fillStyle = ctx.createPattern(pc, 'repeat'); ctx.translate(o.x % 8, o.y % 8); ctx.fill(); ctx.restore();
-      }
-    }
+    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .45 : .7, 0, .95, hi ? 1.3 : 1);
     this.ms = Math.round(performance.now() - t0);
   },
 });
@@ -875,7 +857,7 @@ function zoneFilter() {
   zoneTiles.eachLayer(l => l.setOpacity(zoneOnly ? .25 : hi ? 0 : 1));
   if (zoneLayer?.remove) { map.removeLayer(zoneLayer); zoneLayer = null; }
   if (!zoneOnly && !hi) return;
-  if (zoneMode === 'zone') { if (!ZZ) zoneLoad('z'); if (hi && !ZP) zoneLoad('p'); } else if (!ZB) zoneLoad('b');
+  if (zoneMode === 'zone') { if (!ZZ) zoneLoad('z'); if (!ZP) zoneLoad('p'); } else if (!ZB) zoneLoad('b');
   zoneLayer = new ZoneCanvas().addTo(map);
 }
 function itemLatLngs(it) {   // 압축 좌표 → 위경도(테두리 강조용)
@@ -887,24 +869,24 @@ function itemLatLngs(it) {   // 압축 좌표 → 위경도(테두리 강조용)
 function zoneHover(e) {
   if (!zoneTiles) return;
   const isB = zoneMode === 'bldg';
-  if (isB ? !ZB : !ZZ) zoneLoad(isB ? 'b' : 'z');
+  if (isB ? !ZB : !ZP) zoneLoad(isB ? 'b' : 'p');
   const hit = zoneLayer ?? (zoneLayer = { hl: null });
   const X = mx(e.latlng.lng), Y = my(e.latlng.lat);
-  let it = isB ? pick(ZB?.grid, X, Y) : pickZone(X, Y);
-  if (it && (isB ? !BLDG_OF[it.r[0]] : !ZONE_OF[it.r[0]])) it = null;   // 칠하지 않은 땅은 아무것도 안 띄움
+  let it = pick(isB ? ZB?.grid : ZP?.grid, X, Y);
+  if (it && (isB ? !BLDG_OF[it.r[0]] : infraOf(it.r[1]))) it = null;   // 칠하지 않은 땅(도로·하천·건물 없는 블록)은 아무것도 안 띄움
   if (it === hit.hl) { if (it) zoneTip?.setLatLng(e.latlng); return; }
   hit.hl = it;
   if (!it) { zoneHl?.remove(); zoneHl = null; zoneTip?.remove(); zoneTip = null; return; }
-  const ll = it.kind === 'z' ? it.ll : itemLatLngs(it);
+  const ll = itemLatLngs(it);
   if (!zoneHl) zoneHl = L.polygon(ll, { pane: 'zone', interactive: false, fill: false, color: '#ffffff', weight: 2, opacity: 1 }).addTo(map);
   else zoneHl.setLatLngs(ll);
   let html;
   if (it.kind === 'b') {
-    const [g, n, mix, , shop] = it.r;
-    html = `<b>${esc(BLDG_OF[g].t)} 블록${shop >= 50 ? ' · 가게 골목' : ''}</b><small>${esc(mixTxt(mix))} · 건물 ${n}동${shop >= 40 ? ` · 가게 건물 ${shop}%` : ''}</small>`;
+    const [g, n, mix] = it.r;
+    html = `<b>${esc(BLDG_OF[g].t)} 블록</b><small>${esc(mixTxt(mix))} · 건물 ${n}동</small>`;
   } else {
-    const z = ZONE_OF[it.r[0]];
-    html = `<b>${esc(z.t)}</b><small>${esc(z.d)}</small>`;
+    const [c, jm, num] = it.r, z = ZONE_OF[c];
+    html = `<b>${esc(z ? z.t : '용도지역 정보 없음')}</b><small>${esc(num)}번지${JIMOK[jm] ? ` · 지목 ${JIMOK[jm]}` : ''}</small>`;
   }
   if (!zoneTip) zoneTip = L.tooltip({ direction: 'top', offset: [0, -10], className: 'tr-zone-tip', opacity: 1 }).setLatLng(e.latlng).setContent(html).addTo(map);
   else zoneTip.setLatLng(e.latlng).setContent(html);
@@ -917,7 +899,7 @@ function zoneLoad(which) {   // 무거운 파일은 처음 펼칠 때만 받음
   zoneLoading[which] = true;
   const url = which === 'p' ? './data/zoning_parcels.json' : which === 'z' ? './data/zoning_zonepoly.json' : './data/zoning_blocks.json';
   fetch(new URL(url, location.href)).then(r => r.json()).then(d => {
-    if (which === 'z') { const items = decodeRings(d); ZZ = { items, grid: gridOf(items) }; zoneLayer?.draw?.(); return; }
+    if (which === 'z') { ZZ = decodeRings(d); zoneLayer?.draw?.(); return; }
     const items = decodeItems(d, which === 'p' ? d.p : d.k, which);
     const pack = { items, grid: gridOf(items), origin: d.origin, scale: d.scale };
     if (which === 'p') ZP = pack; else ZB = pack;
@@ -950,29 +932,28 @@ function zoneBar() {
     .filter(([, , p]) => p >= .01).slice(0, 4)
     .map(([t, c, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${c}` }), t, h('b', null, pctTxt(p))));
   const setMode = m => { if (zoneMode === m) return; zoneMode = m; zoneOnly = null; zoneOut(); zonePaint(); document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); };
-  const nearG = grp('g'), so = (sh.i ?? 0) + (sh.o ?? 0);
-  const head = isB
-    ? [`서울숲 둘레 건물은 집이 ${pctTxt(sh.h ?? 0)}, 공장·사무실이 ${pctTxt(so)}예요`, '빗금 친 블록은 가게(카페·음식점 등)가 절반 넘는 골목이에요. 성수 카페거리가 여기에 많아요.']
-    : ['걸어서 갈 수 있는 큰 녹지는 서울숲뿐이에요', `서울숲에 붙은 4개 동 땅 중 녹지는 ${pctTxt(nearG)}뿐이고, 주거가 ${pctTxt(grp('r'))}, 공장·사무실(준공업)이 ${pctTxt(grp('i'))}예요.`];
-  const legend = h('details', { class: 'tr-zone-legend', open: zoneLegend, ontoggle: e => { zoneLegend = e.currentTarget.open; } },
-    h('summary', null, '색 설명 보기'),
-    h('p', { class: 'tr-zone-lead' }, isB
-      ? '도로로 나뉜 블록마다 건물 바닥면적이 가장 큰 용도로 칠했어요. 옅은 색은 여러 용도가 섞인 블록이에요. 줄을 누르면 그 블록만 남아요.'
-      : '법으로 정한 땅의 쓰임새(용도지역)예요. 줄을 누르면 그 땅만 남아요.'),
-    h('div', { class: 'tr-zone-groups' }, zoneRows(G, OF, sh, isB ? 'b:' : '', !isB)),
-    isB ? h('div', { class: 'tr-zone-hatch' }, h('i'), h('span', null, h('b', null, '가게 골목(빗금)'), h('small', null, '가게·판매 건물이 절반 넘는 블록'))) : null,
-    h('button', { type: 'button', class: 'tr-zone-plan', 'aria-pressed': String(zonePlans),
-      onclick: e => { zonePlans = !zonePlans; e.currentTarget.setAttribute('aria-pressed', String(zonePlans)); zonePaint(); } },
-      h('i'), '지구단위계획구역 경계', h('b', null, `${ZONES.plans?.features?.length ?? 0}곳`)));
+  const infraRows = h('div', { class: 'tr-zone-grp' }, h('div', { class: 'tr-zone-gh' }, h('b', null, '지목으로 칠한 땅'), h('span', null, '비율에서 뺌')),
+    Object.entries(INFRA).map(([k, v]) => h('button', { type: 'button', class: 'tr-zone-row', 'data-k': `i:${k}`, 'aria-pressed': String(zoneOnly === `i:${k}`),
+      onclick: e => { zoneOnly = zoneOnly === `i:${k}` ? null : `i:${k}`; e.currentTarget.closest('.tr-zone-more').querySelectorAll('.tr-zone-row').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === zoneOnly))); zoneFilter(); } },
+      h('i', { style: `background:${v.c}` }), h('span', null, h('b', null, v.t), h('small', null, v.d)), h('em'))));
+  const top = Object.entries(sh).slice(0, 3).map(([k, p]) => `${OF[k]?.t ?? k} ${pctTxt(p)}`).join(', ');
   const more = h('div', { class: 'tr-acc-more tr-zone-more', hidden: !zoneOpen },
-    h('div', { class: 'tr-zone-head' }, h('b', null, head[0]), h('span', null, head[1])),
     h('div', { class: 'tr-zone-mode', role: 'group', 'aria-label': '무엇으로 칠할까' },
       h('button', { type: 'button', 'aria-pressed': String(!isB), onclick: () => setMode('zone') }, h('b', null, '계획'), '용도지역'),
       h('button', { type: 'button', 'aria-pressed': String(isB), onclick: () => setMode('bldg') }, h('b', null, '현황'), '건물 용도')),
-    legend,
+    h('p', { class: 'tr-zone-lead' }, isB
+      ? `도로로 나뉜 블록마다 건물 연면적이 가장 큰 용도로 칠했어요. 옅은 색은 한 용도가 절반이 안 되는 섞인 블록이에요. 줄을 누르면 그 블록만 남아요.`
+      : `땅 ${ZONES.count.toLocaleString()}필지를 법으로 정한 쓰임새(용도지역)로 반투명하게 칠했어요. 도로·하천은 칠하지 않아 사진이 보여요. 줄을 누르면 그 땅만 남아요.`),
+    h('div', { class: 'tr-zone-groups' }, zoneRows(G, OF, sh, isB ? 'b:' : '', !isB)),
+    h('button', { type: 'button', class: 'tr-zone-plan', 'aria-pressed': String(zonePlans),
+      onclick: e => { zonePlans = !zonePlans; e.currentTarget.setAttribute('aria-pressed', String(zonePlans)); zonePaint(); } },
+      h('i'), '지구단위계획구역 경계', h('b', null, `${ZONES.plans?.features?.length ?? 0}곳`)),
+    h('p', { class: 'tr-zone-note' }, isB
+      ? `서울숲에 붙은 4개 동 건물 연면적은 ${top} 순이에요.`
+      : `서울숲에 붙은 4개 동 땅의 ${pctTxt(grp('i'))}가 준공업(공장·사무실), ${pctTxt(grp('r'))}가 주거예요. 녹지로 묶인 땅은 ${pctTxt(grp('g'))}뿐이라, 걸어갈 만한 큰 녹지는 서울숲이에요.`),
     h('p', { class: 'tr-lc-src' }, isB
-      ? `국토교통부 건축물정보·연속지적도 · 브이월드 · ${ZONES.fetched} 받음 · 블록은 도로·하천·공원 필지를 뺀 땅을 이어 붙여 나눔 · 비율은 ${ZONES.dongs_list.join('·')} 건물 ${ZONES.near_bcount.toLocaleString()}동의 연면적 기준`
-      : `국토교통부 용도지역(LT_C_UQ111)·연속지적도·지구단위계획 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 ${ZONES.dongs_list.join('·')} ${ZONES.near_count.toLocaleString()}필지 면적 기준(도로·하천·공원 제외)`));
+      ? `국토교통부 건축물정보·연속지적도 · 브이월드 · ${ZONES.fetched} 받음 · 블록은 도로·하천 필지를 뺀 땅을 이어 붙여 나눔 · 비율은 ${ZONES.dongs_list.join('·')} 건물 ${ZONES.near_bcount.toLocaleString()}동의 연면적 기준`
+      : `국토교통부 연속지적도·용도지역·지구단위계획 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 ${ZONES.dongs_list.join('·')} ${ZONES.near_count.toLocaleString()}필지 면적 기준(도로·하천·공원 제외)`));
   const label = () => zoneOpen ? '지도 닫기' : '지도로 보기';
   const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(zoneOpen),
     onclick: e => { zoneOpen = !zoneOpen; more.hidden = !zoneOpen; e.currentTarget.setAttribute('aria-expanded', String(zoneOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); zonePaint(true); } },
@@ -2453,7 +2434,7 @@ async function boot() {
   // 지도 기본 정보: 화장실·매점·쉼터 등과 정원 꽃을 버튼으로 켜고 끔(js/basics.js)
   basicsApi = mountBasics({ map, L, root, mapEl: el.map, park: app.model.data.park, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
     gardens: () => gardenList().map(g => { const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place]; return hub ? { lat: hub.lat, lon: hub.lon, name: g.name, g: { ...g, hub } } : null; }).filter(Boolean) });
-  window.__tour = { app, st, me, map, get zone() { return zoneLayer; }, zoneHover, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
+  window.__tour = { app, st, me, map, get zone() { return zoneLayer; }, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
   arrive();
 }
 boot();
