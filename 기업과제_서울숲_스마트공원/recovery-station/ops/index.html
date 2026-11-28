@@ -808,7 +808,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   function left() {
     var el = $('left'); if (!el || !S.hubs[0].s) return;
     var w = S.wx && S.wx[S.hour], low = S.hubs.filter(function (h) { return h.s.all < CUT; }).sort(function (a, b) { return a.s.all - b.s.all; });
-    var html = '<section class="tw-entry" style="margin:0 0 14px"><button type="button" class="tw-open" data-tw="auto"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 평가가 낮은 곳마다 최선의 개선안을 3D로 확인</small></button></section>';
+    var html = '<section class="tw-entry" style="margin:0 0 14px"><button type="button" class="tw-open" data-tw="auto"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>평가가 가장 낮은 곳의 개선안 세 가지(A·B·C)를 3D 전·후로 비교</small></button></section>';
     html += '<section><h3>지금 조치할 곳 <span class="n' + (low.length ? '' : ' ok') + '">' + (low.length ? low.length + '곳' : '없음') + '</span></h3>';
     html += low.length ? low.slice(0, 3).map(function (h) {
       var a = action(h, w), t = satTone(h.s.all);
@@ -945,28 +945,31 @@ body.tw-full>*:not(.tw){visibility:hidden}
     });
     return { hubs: out, parkBefore: pn ? pb / pn : 0, parkAfter: pn ? pa / pn : 0 };
   }
-  function twinOpen(h, auto) {
+  function twinOpen(h, auto, review) {
     if (TW || !h) return; TW = { err: '' };
+    // 구청 검토 화면은 주소에 ?review=거점id 를 붙여, 그대로 복사해 보낼 수 있게 함(나가면 원래 주소로)
+    var base = location.pathname; if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(h.id));
     document.body.classList.add('tw-go'); $('tip').style.opacity = 0;
     var hr0 = S.hour >= 7 && S.hour <= 19 ? S.hour : 14, coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=12').then(function (m) {
-      return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto,
+    import('./sim3d.js?v=31').then(function (m) {
+      return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto, review: !!review,
         model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat },
         mobile: W < 760 || coarse, low: W < 760 || coarse || (navigator.hardwareConcurrency || 8) <= 4,
         onReady: function () { document.body.classList.add('tw-full'); },
         onLeave: function () { document.body.classList.remove('tw-go', 'tw-full'); },
-        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); } });
+        onHub: function (id) { if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(id)); },
+        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); if (review && history.replaceState) history.replaceState(null, '', base); } });
     }).catch(function (e) { TW = null; document.body.classList.remove('tw-go'); twinOpen.err = '디지털트윈을 띄우지 못했어요 (' + ((e && e.message) || e) + ')'; side(); left(); });
   }
   function twinHTML(h) {
     var err = twinOpen.err ? '<div class="note" style="color:var(--bad)">' + esc(twinOpen.err) + '</div>' : '';
-    return '<section class="tw-entry">' + err + '<button type="button" class="tw-open" data-tw="' + h.id + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>관리자 · 방문객 평가와 칸 점수로 고른 최선의 시설 조합을 3D로 확인</small></button></section>';
+    return '<section class="tw-entry">' + err + '<button type="button" class="tw-open" data-tw="' + h.id + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span><b>디지털트윈에서 개선안 만들기</b><small>이곳의 개선안 세 가지(A·B·C)를 3D 전·후로 비교</small></button></section>';
   }
   // 개요 화면: 평가가 낮은 곳을 3D에서 고르므로, 예상 점수가 가장 낮은 격자 안 거점으로 들어간다
   function twinDefault() { return S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; })[0] || S.hubs[0]; }
   $('side').addEventListener('click', function (e) {
     var t = e.target.closest('[data-tw]'); if (!t) return; e.stopPropagation();
-    var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, id === 'auto');
+    var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, id === 'auto', true);   // 디지털트윈 = A·B·C 세 안 고르는 화면
   }, true);
 
   // ---------- 계산·갱신 ----------
@@ -1044,6 +1047,8 @@ body.tw-full>*:not(.tw){visibility:hidden}
   }).then(function () {
     document.body.classList.add('intro'); setTimeout(function () { document.body.classList.remove('intro'); }, 2200);
     recompute(); fit(); scale();
+    // 구청 검토 링크(?review=거점id): 지도를 건너뛰고 그 거점의 A·B·C안 검토 화면을 바로 띄움
+    var rvId = new URLSearchParams(location.search).get('review'); if (rvId) { var rvH = S.hubs.filter(function (o) { return o.id === rvId; })[0]; if (rvH) twinOpen(rvH, false, true); }
     if (window.ResizeObserver) new ResizeObserver(function () { fit(); scale(); timeline(); }).observe($('map')); else addEventListener('resize', function () { fit(); scale(); timeline(); });
   }).catch(function (e) { $('stat').textContent = '자료를 불러오지 못했습니다: ' + e.message; });
 })();

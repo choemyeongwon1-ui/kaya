@@ -31,6 +31,78 @@ const FAC = {
 };
 const BAD = { weather: '덥거나 추웠어요', crowded: '붐볐어요', far: '멀었어요', boring: '볼 게 별로였어요', facility: '쉴 곳·화장실 부족' };
 const REC = { weather: '그늘막·그늘나무', crowded: '쉼터 넓히기·분산 안내', far: '쉴 곳·화장실', boring: '계절 정원·포토존', facility: '쉴 곳·화장실' };
+// ---------- A·B·C안: 같은 진단(붐빔·더위·환경)에 시설 조합만 달리한 세 안 — 우리는 고르지 않고 세 안을 모두 구청에 보내고, 구청이 비교해 고른다 ----------
+// 특징·장단점의 근거(문헌은 docs/개선안_근거논문.md):
+//  · Middel 외(2016) Int J Biometeorol 60(12):1849–1861 — 그늘이 있으면 열 느낌이 약 1단계(9점 척도) 낮아짐, 나무 그늘과 인공 그늘의 체감 차이는 통계적으로 없음
+//  · Nam 외(2025) ICUC12-123 — 나무 아래가 그늘 구조물 아래보다 WBGT 0.8℃·기온 1.4℃ 낮음(증발산, 구조물 표면의 장파 복사)
+//  · Armson 외(2012) Urban For Urban Green 11(3):245–255 — 잔디는 지표면 최고온도를 최대 24℃, 나무 그늘은 19℃ 낮춤. 잔디는 흑구온도(몸이 느끼는 더위)엔 효과가 작고, 그늘은 5~7℃ 낮춤
+//  · Westendorff(2021, ASLA) — 심은 나무의 냉각 효과가 체감되기까지 10년 가까이 걸릴 수 있음
+//  · Arnberger 외(2010) — 붐빈다고 느끼면 다른 장소·시간으로 옮김 / Stokols(1972) — 밀도는 혼잡감의 필요조건(충분조건은 아님)
+//  · 이지연(2012) — 서울숲 이용자는 편의시설을 중요하게 보나 만족은 낮음(IPA) / Whyte(1980) The Social Life of Small Urban Spaces — 앉을 곳(Sitting Space)이 머무는 사람을 만듦
+//  · 서울시 그늘막 설치 가이드라인(2018) — 태풍 때 쉽게 접는 접이식 구조 / 산림청 — 경기 지역 봄 식재 적기 3월 하순~4월 하순
+// 장단점은 안마다 늘 2개 이상: 거점에 따라 시설이 빠져도 대신할 문장을 둔다. 각 항목 = [문장, 근거]
+const VARS = {
+  A: { key: 'A', tag: 'A안', title: '바로 하는 안', hint: '공사 없이 바로 놓는 안', name: 'A안 · 바로 하는 안', yard: false, kinds: ['sail'], extra: [], when: '설치하면 바로',
+    lead: '공사 없이 놓을 수 있는 그늘막·벤치·분산 안내로 먼저 고치는 안',
+    why: '그늘은 종류보다 「있느냐」가 체감에 더 중요하다는 연구를 바탕으로, 공사 없이 그늘과 앉을 곳부터 채워요.',
+    pros: pl => [
+      pl.shade.length ? ['그늘막 아래의 체감 쾌적도는 나무 그늘과 통계적으로 차이가 없었어요.', 'Middel 외 2016'] : ['이곳은 이미 그늘이 충분해 그늘막 없이 쉴 곳만 보강해요.', '팀 그늘 계산'],
+      ['앉을 곳을 늘리면 머무는 사람이 늘어요. 서울숲 이용자는 편의시설 만족이 낮았어요.', 'Whyte 1980 · 이지연 2012'],
+      ['공사가 없어 설치하면 바로 효과가 나고, 옮기거나 걷을 수 있어요.', '시설 특성']],
+    cons: pl => [
+      pl.shade.length ? ['인공 그늘막 아래는 나무 아래보다 WBGT 0.8℃, 기온 1.4℃ 높았어요. 증발산이 없고 막이 데워지기 때문이에요.', 'Nam 외 2025'] : ['나무를 심지 않아 공기를 식히는 증발산 효과가 없어요.', 'Nam 외 2025'],
+      pl.shift ? ['쉼터를 넓히지 않아 붐빔은 안내로 사람을 옮기는 만큼만 줄어요. 옮겨 가는 사람이 얼마나 될지는 행동에 달려 있어요.', 'Arnberger 외 2010'] : ['쉼터를 넓히지 않고, 옮겨 갈 여유 거점도 없어 붐빔은 거의 그대로예요.', '팀 혼잡 계산'],
+      pl.shade.length ? ['천 구조물이라 태풍·강풍 때 접어야 하고 점검이 필요해요.', '서울시 그늘막 가이드라인 2018'] : ['포장과 녹지를 바꾸지 않아 땅 온도는 거의 그대로예요.', 'Armson 외 2012']] },
+  B: { key: 'B', tag: 'B안', title: '균형안', hint: '쉼터 넓히기 + 그늘막·나무', name: 'B안 · 균형안', yard: true, kinds: ['sail', 'tree'], extra: ['garden', 'photo', 'toilet'], when: '그늘막·쉼터는 공사 뒤 바로, 나무 그늘은 자란 뒤',
+    lead: '쉼터를 넓히고, 그늘막과 그늘나무를 함께 쓰는 안',
+    why: '그늘막은 바로, 나무는 자라면서 그늘을 만들어요. 둘을 함께 써서 나무가 자라는 동안 생기는 그늘 공백을 막아요.',
+    pros: pl => [
+      pl.yards.length ? ['쉼터를 넓혀 같은 인원이 더 넓게 머물러 밀도가 낮아져요. 밀도는 혼잡감이 생기는 바탕이에요.', 'Stokols 1972'] : pl.shift ? ['붐비는 시간에 여유 있는 거점으로 사람을 나눠요.', 'Arnberger 외 2010'] : ['그늘막과 나무를 함께 써서 두 그늘의 장점을 합쳐요.', 'Middel 외 2016 · Nam 외 2025'],
+      ['그늘막은 설치 즉시 그늘을 만들고, 나무는 체감 효과까지 10년 가까이 걸리는 동안 그 공백을 메워요.', 'Westendorff 2021'],
+      ['나무 그늘은 지표면 온도를 최대 19℃ 낮추고, 그늘 아래 몸이 느끼는 더위도 5~7℃ 줄여요.', 'Armson 외 2012']],
+    cons: pl => [
+      pl.yards.length ? ['포장 광장을 데크·잔디 쉼터로 바꾸는 공사가 필요해 A안보다 기간과 사업비가 커요.', '시설 특성'] : ['그늘막과 나무를 함께 설치해 A안보다 사업비가 커요.', '시설 특성'],
+      ['그늘막(강풍 때 접기·점검)과 나무(심은 뒤 활착 관리)를 함께 관리해야 해요.', '서울시 그늘막 가이드라인 2018'],
+      pl.extra.some(t => t.k === 'toilet') ? ['화장실은 건축 공사라 사업비와 기간이 크게 늘어요.', '시설 특성'] : ['그늘막 부분은 나무 그늘보다 덜 시원해요(WBGT 0.8℃ 차이).', 'Nam 외 2025']] },
+  C: { key: 'C', tag: 'C안', title: '녹지 중심안', hint: '잔디 쉼터 + 그늘나무', name: 'C안 · 녹지 중심안', yard: true, lawn: true, kinds: ['tree'], extra: ['garden', 'toilet'], when: '나무가 자란 뒤(수관 지름 9m 기준)',
+    lead: '그늘막 없이 잔디 쉼터와 그늘나무로 바꾸는 안',
+    why: '나무는 증발산으로 공기를, 잔디는 땅을 식혀요. 설치물 없이 시간이 갈수록 좋아지는 환경을 만들어요.',
+    pros: pl => [
+      ['나무 아래는 그늘 구조물 아래보다 WBGT 0.8℃, 기온 1.4℃ 낮았어요.', 'Nam 외 2025'],
+      pl.yards.length ? ['포장을 잔디로 바꾸면 지표면 최고온도가 최대 24℃ 낮아져요.', 'Armson 외 2012'] : ['나무 그늘은 지표면 온도를 최대 19℃ 낮춰요.', 'Armson 외 2012'],
+      ['설치물이 아니라 살아 있는 나무라 해마다 그늘이 넓어지고, 철거·교체할 시설이 적어요.', '시설 특성']],
+    cons: pl => [
+      ['나무의 냉각 효과가 체감되기까지 10년 가까이 걸릴 수 있어요. 그 사이엔 그늘이 부족해요.', 'Westendorff 2021'],
+      pl.yards.length ? ['잔디는 땅은 식히지만 몸이 느끼는 더위(흑구온도)에는 효과가 작아요. 결국 그늘이 핵심이에요.', 'Armson 외 2012'] : ['쉼터를 넓히지 않아 붐빔은 거의 그대로예요.', '팀 혼잡 계산'],
+      ['나무 심는 때가 정해져 있어요(경기 지역 봄 적기 3월 하순~4월 하순). 잔디는 밟힘이 잦으면 쉬게 하는 관리가 필요해요.', '산림청']] }
+};
+const REFS = [
+  'Middel, A., Selover, N., Hagen, B., Chhetri, N. (2016). Impact of shade on outdoor thermal comfort — a seasonal field study in Tempe, Arizona. International Journal of Biometeorology 60(12), 1849–1861.',
+  'Nam, H., Lee, D., Park, B., Kim, S., Nam, Y. (2025). Comparative analysis of urban heat stress mitigation effects of trees and shade structures. ICUC12, ICUC12-123.',
+  'Armson, D., Stringer, P., Ennos, A. R. (2012). The effect of tree shade and grass on surface and globe temperatures in an urban area. Urban Forestry & Urban Greening 11(3), 245–255.',
+  'Westendorff, V. (2021). Urban trees: strategies for reducing urban heat island in cities. ASLA The Field.',
+  'Arnberger, A. 외 (2010). 도시 녹지 이용자의 혼잡 지각과 회피 행동(대시보드 이론적 근거와 같은 문헌).',
+  'Stokols, D. (1972). On the distinction between density and crowding. Psychological Review 79(3), 275–277.',
+  '이지연 (2012). 서울숲 이용자의 중요도-만족도(IPA) 분석(대시보드 이론적 근거와 같은 문헌).',
+  'Whyte, W. H. (1980). The Social Life of Small Urban Spaces. Conservation Foundation.',
+  '서울특별시 (2018). 그늘막 설치 가이드라인 · 산림청 봄철 나무심기 지역별 적기 안내.'
+];
+const listOf = (f, pl) => f(pl).filter(Boolean).map(x => Array.isArray(x) ? x[0] + (x[1] ? ' (' + x[1] + ')' : '') : x);   // 글자로(보고서·관리자 카드)
+const listHTML = (f, pl) => f(pl).filter(Boolean).map(x => '<li>' + esc(Array.isArray(x) ? x[0] : x) + (Array.isArray(x) && x[1] ? '<cite>' + esc(x[1]) + '</cite>' : '') + '</li>').join('');   // 화면(근거를 작게)
+const VK = ['A', 'B', 'C'];
+// 개략 사업비 단가(만 원) — 가정값. 개당 공개 단가를 찾지 못해 넣은 값이며, 화면에서 바꿀 수 있음(이 기기에만 저장). 제출 전 나라장터 계약 단가로 바꿔 넣기.
+// 참고: 느티나무 H4.5×R20 목대가격 최근 3년 평균 30만 원(한국농촌경제연구원 조경수 표본임가, 2014) — 식재비는 따로
+const COST0 = {
+  sign: { label: '혼잡 분산 안내(안내판·앱 알림)', unit: '식', p: 500 }, sail: { label: '대형 그늘막 8×8m', unit: '개', p: 1500 },
+  tree: { label: '그늘나무(느티나무 R20급) 식재', unit: '그루', p: 80 }, bench: { label: '벤치', unit: '개', p: 100 },
+  deck: { label: '그늘 데크 쉼터(앉음벽·벤치 포함)', unit: '㎡', p: 30 }, lawn: { label: '잔디 쉼터(앉음벽·벤치 포함)', unit: '㎡', p: 5 },
+  garden: { label: '계절 정원', unit: '곳', p: 1000 }, photo: { label: '포토존', unit: '곳', p: 500 }, toilet: { label: '화장실', unit: '동', p: 20000 }
+};
+const COST = JSON.parse(JSON.stringify(COST0));
+try { const s = JSON.parse(localStorage.getItem('twCost') || 'null'); if (s) Object.keys(s).forEach(k => { if (COST[k] && isFinite(s[k])) COST[k].p = +s[k]; }); } catch (e) { /* 저장소를 못 쓰면 가정값 그대로 */ }
+const saveCost = () => { try { const o = {}; Object.keys(COST).forEach(k => { o[k] = COST[k].p; }); localStorage.setItem('twCost', JSON.stringify(o)); } catch (e) { /* 무시 */ } };
+const won = m => m >= 10000 ? (Math.round(m / 100) / 100).toLocaleString() + '억 원' : Math.round(m).toLocaleString() + '만 원';
+const LAWS = ['도시공원 및 녹지 등에 관한 법률 제10조의2(공원녹지정보체계 구축·운영: 이용자 편의증진)', '같은 법 시행규칙 제9조 제3항(노약자·어린이가 쉽게 접근하도록 설치)', '스마트도시 조성 및 산업진흥 등에 관한 법률 제2조 제3호 다목(스마트도시의 관리·운영에 관한 시설)'];
 
 const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -146,7 +218,7 @@ function glowTex() {
 
 export async function openTwin(o) {
   const xy = o.xy, low = !!o.low, M = o.model;
-  if (!document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=8'; document.head.appendChild(l); }
+  if (!document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=21'; document.head.appendChild(l); }
   const root = document.createElement('div'); root.className = 'tw'; root.innerHTML = '<div class="tw-load"><i></i><span>디지털트윈을 불러오는 중…</span></div>'; document.body.appendChild(root);
   if (!M || !M.sat) { root.remove(); throw new Error('대시보드 만족도 식(model)을 받지 못했어요'); }
 
@@ -497,7 +569,10 @@ export async function openTwin(o) {
   // ---------- 개선안(공간 패키지) ----------
   const SDH = OPT_HRS.map(hr => sunDir(hr, SCN.heat.doy));
   const plans = {};
-  function buildPlan(h) {
+  let curV = 'B';
+  const pk = (h, v) => h.id + '|' + (v || curV);
+  function buildPlan(h, v) {
+    const V = VARS[v] || VARS.B;
     let cells = near(h, ENV_R); if (!cells.length) cells = near(h, 150); if (!cells.length) return null;
     let stay0 = near(h, STAY_R).filter(i => !blocked[i]); if (!stay0.length) { const c = cells.filter(i => !blocked[i]).sort((a, b) => Math.hypot(CX[a] - h.x, CY[a] - h.y) - Math.hypot(CX[b] - h.x, CY[b] - h.y))[0]; if (c == null) return null; stay0 = [c]; }
     const openOf = i => Math.max(40, (1 - TR[i]) * CELL_M2), open0 = stay0.reduce((s, i) => s + openOf(i), 0);
@@ -511,14 +586,14 @@ export async function openTwin(o) {
       if (nb) { const n = Math.min(SHIFT * ppl14, (CROWD_CUT - nb.r) * nb.g.cap); if (n >= 5) { const rt = route(h, nb.g); shift = { to: nb.g, n, share: n / ppl14, rTo: nb.r, rTo1: nb.r + n / nb.g.cap, len: rt.len, pts: rt.pts }; } }
       // ② 쉼터 넓히기: 지금 이곳 수용 밀도 그대로, 붙어 있는 칸(숲 제외)을 데크·잔디 쉼터로
       const need = (ppl14 - (shift ? shift.n : 0)) / CROWD_CUT - h.cap;
-      if (need > 0 && h.type !== 'indoor') {
+      if (need > 0 && h.type !== 'indoor' && V.yard) {
         const dens = h.cap / open0, used = new Set(stay0), pool = near(h, 110).filter(i => !blocked[i] && !used.has(i) && TR[i] < .55);
         while (added < need && yards.length < MAX_YARD) {
           let best = null;
           for (const i of pool) { if (used.has(i)) continue; let adj = false; for (const u of used) if (Math.hypot(CX[i] - CX[u], CY[i] - CY[u]) < 21) { adj = true; break; } if (!adj) continue;
             const sc = B[i] + .6 * (1 - TR[i]) - Math.hypot(CX[i] - h.x, CY[i] - h.y) / 200; if (!best || sc > best.sc) best = { i, sc }; }
           if (!best) break; const cap = dens * CELL_M2 * YARD_USE;
-          yards.push({ k: 'yard', cell: best.i, x: CX[best.i], y: CY[best.i], surf: B[best.i] >= .35 ? 'deck' : 'lawn', cap, B: B[best.i], T: TR[best.i] }); added += cap; used.add(best.i);
+          yards.push({ k: 'yard', cell: best.i, x: CX[best.i], y: CY[best.i], surf: !V.lawn && B[best.i] >= .35 ? 'deck' : 'lawn', cap, B: B[best.i], T: TR[best.i] }); added += cap; used.add(best.i);
         }
       }
     }
@@ -526,12 +601,13 @@ export async function openTwin(o) {
     // ③ 그늘: 야외 거점만 — 더운 날 14시 머무는 곳 그늘 50%까지, 10~16시 평균으로 가장 효과 큰 자리부터
     const shade = [], sd14 = sunDir(14, SCN.heat.doy), target = Math.max(SHADE_TARGET, shareAt(stay0, [], sd14));
     if (h.type === 'outdoor') {
-      const C = []; stay.forEach(i => { if (TR[i] >= .7) return; const p = offPath(CX[i], CY[i], 6); C.push({ k: 'sail', x: p.x, y: p.y, rot: p.rot, cell: i }); [[-6, -6], [6, 6], [-6, 6]].forEach(([ox, oy]) => { const q = offPath(CX[i] + ox, CY[i] + oy, 4); C.push({ k: 'tree', x: q.x, y: q.y, rot: 0, cell: i }); }); });
+      const useSail = V.kinds.includes('sail'), useTree = V.kinds.includes('tree'), TOFF = useSail ? [[-6, -6], [6, 6], [-6, 6]] : [[-6, -6], [6, 6], [-6, 6], [6, -6]];
+      const C = []; stay.forEach(i => { if (TR[i] >= .7) return; const p = offPath(CX[i], CY[i], 6); if (useSail) C.push({ k: 'sail', x: p.x, y: p.y, rot: p.rot, cell: i }); if (useTree) TOFF.forEach(([ox, oy]) => { const q = offPath(CX[i] + ox, CY[i] + oy, 4); C.push({ k: 'tree', x: q.x, y: q.y, rot: 0, cell: i }); }); });
       const CC = C.filter(t => okPt(t.x, t.y)), NS = stay.length, NH = SDH.length;
       CC.forEach(t => { t.mk = new Uint16Array(NS * NH); stay.forEach((i, j) => SDH.forEach((sd, k) => { t.mk[j * NH + k] = maskOf(t, i, sd); })); });
       const cur = new Uint16Array(NS * NH), mean = mk => { let s = 0; for (let j = 0; j < NS; j++) { const i = stay[j]; for (let k = 0; k < NH; k++) s += Math.min(1, TR[i] + POP[mk[j * NH + k]] / 16 * (1 - TR[i])); } return s / (NS * NH); };
       let base = mean(cur);
-      while (shade.length < MAX_SHADE + 2 * yards.length && shareAt(stay, shade, sd14) < target) {
+      while (shade.length < (useSail ? MAX_SHADE : MAX_SHADE * 2) + 2 * yards.length && shareAt(stay, shade, sd14) < target) {
         let best = null;
         for (const t of CC) { if (t.used || shade.some(u => Math.hypot(u.x - t.x, u.y - t.y) < (t.k === 'sail' || u.k === 'sail' ? 9 : 7))) continue;
           const tmp = new Uint16Array(cur.length); for (let q = 0; q < cur.length; q++) tmp[q] = cur[q] | t.mk[q]; const v = mean(tmp) - base; if (!best || v > best.v) best = { t, v, tmp }; }
@@ -544,7 +620,7 @@ export async function openTwin(o) {
     // ⑤ 점수 밖: 방문객 아쉬운 이유에 맞춰
     const rs = (P[h.id] || {}).reasons || {}, extra = [], taken = new Set(yards.map(y => y.cell).concat(shade.map(t => t.cell)));
     const freeCell = pref => { const c = stay.filter(i => !taken.has(i)).sort((a, b) => pref(b) - pref(a))[0]; if (c != null) taken.add(c); return c; };
-    const put = (k, cell, why) => { if (cell == null) return; const p = offPath(CX[cell], CY[cell], 5); if (okPt(p.x, p.y)) extra.push({ k, x: p.x, y: p.y, rot: p.rot, cell, why }); };
+    const put = (k, cell, why) => { if (cell == null || !V.extra.includes(k)) return; const p = offPath(CX[cell], CY[cell], 5); if (okPt(p.x, p.y)) extra.push({ k, x: p.x, y: p.y, rot: p.rot, cell, why }); };
     if (rs.boring) { put('garden', freeCell(i => B[i]), '「' + BAD.boring + '」 ' + rs.boring + '건'); put('photo', freeCell(i => B[i]), '「' + BAD.boring + '」 ' + rs.boring + '건'); }
     if ((rs.far || rs.facility) && stay.some(i => DT[i] > TOILET_M)) put('toilet', freeCell(i => DT[i]), '화장실 250m 밖 · 「' + (rs.facility ? BAD.facility : BAD.far) + '」 ' + (rs.facility || rs.far) + '건');
     // 환경(80m): 그늘나무 = 칸 수관 +16%p, 잔디 쉼터 = 포장 0, 쉼터·그늘막·벤치 = 쉴 곳
@@ -560,7 +636,7 @@ export async function openTwin(o) {
     if (trees.length) G.push({ k: 'tree', items: trees, at: cen(trees), z: 10 });
     if (benches.length) G.push({ k: 'bench', items: benches, at: cen(benches), z: 1.6 });
     extra.forEach(t => G.push({ k: t.k, items: [t], at: [t.x, t.y], z: 3 }));
-    const pl = { h, cells, stay0, stay, open0, added, yards, shift, shade, benches, extra, G, crowdOn, proven, r14, md, env0: h.env0, env1, cmp: { b: eb, a: ea } };
+    const pl = { v: V.key, h, cells, stay0, stay, open0, added, yards, shift, shade, benches, extra, G, crowdOn, proven, r14, md, env0: h.env0, env1, cmp: { b: eb, a: ea } };
     pl.d14 = { crowd: evalHub(pl, SCN.crowd, 14), heat: evalHub(pl, SCN.heat, 14) };
     return pl;
   }
@@ -571,7 +647,30 @@ export async function openTwin(o) {
     const r0 = h.cap ? p0 / h.cap : 0, r1 = cap1 ? p1 / cap1 : 0, b = satOf(r0, wxS(h.type, sc.w, s0), pl.env0), a = satOf(r1, wxS(h.type, sc.w, s1), pl.env1);
     return { b: Object.assign(b, { ratio: r0, ppl: p0, s: s0, cap: h.cap }), a: Object.assign(a, { ratio: r1, ppl: p1, s: s1, cap: cap1 }) };
   }
-  const planFor = h => (h.id in plans) ? plans[h.id] : (plans[h.id] = buildPlan(h));
+  const planFor = (h, v) => { const k = pk(h, v); return (k in plans) ? plans[k] : (plans[k] = buildPlan(h, v || curV)); };
+  // 사업비: 수량(개선안에서 셈) × 단가(가정값, 화면에서 바꿈)
+  function costOf(pl) {
+    const rows = [], put = (k, q) => { if (q > 0) rows.push({ k, label: COST[k].label, unit: COST[k].unit, q, p: COST[k].p, sum: q * COST[k].p }); };
+    if (pl.shift) put('sign', 1);
+    put('sail', pl.shade.filter(t => t.k === 'sail').length); put('tree', pl.shade.filter(t => t.k === 'tree').length);
+    put('bench', pl.benches.length * 2);
+    put('deck', pl.yards.filter(y => y.surf === 'deck').length * CELL_M2); put('lawn', pl.yards.filter(y => y.surf === 'lawn').length * CELL_M2);
+    pl.extra.forEach(t => put(t.k, 1));
+    return { rows, total: rows.reduce((s, r) => s + r.sum, 0) };
+  }
+  // 세 안 비교 한 줄씩(지금 시각 기준). 순위·추천은 붙이지 않음 — 고르는 것은 구청
+  function abcRows(h) {
+    return VK.map(v => {
+      const pl = plans[pk(h, v)]; if (pl === undefined) return { v, wait: true }; if (!pl) return { v, none: true };
+      const E = evalNow(pl), c = costOf(pl), dC = E.crowd.a.raw - E.crowd.b.raw, dH = E.heat.a.raw - E.heat.b.raw;
+      return { v, pl, c, E, dC, dH, dE: pl.env1 - pl.env0, tags: [] };
+    });
+  }
+  let allBusy = false;
+  function ensureAll(h) {
+    if (allBusy) return; const v = VK.find(k => !(pk(h, k) in plans)); if (!v) return;
+    allBusy = true; setTimeout(() => { planFor(h, v); allBusy = false; if (sel === h) { panelHTML(); ensureAll(h); } }, 40);
+  }
   const baseSat = (h, sc, hr) => satOf(h.cap ? demand(h, sc, hr, 0) : 0, wxS(h.type, sc.w, 0), h.env0).raw;
 
   // ---------- 상태 ----------
@@ -579,6 +678,10 @@ export async function openTwin(o) {
   const hubOf = id => hubs.find(h => h.id === id);
   let sel = hubOf(o.hub.id) || hubs[0];
   if (o.auto) { const lo = hubs.filter(h => h.n >= 5).sort((a, b) => a.pct - b.pct)[0]; if (lo) sel = lo; }
+  // 구청 검토 모드(?review=거점id 링크로 열림): 세 안을 나란히 보여 주고 구청이 하나씩 눌러 보며 고름. 관리자용 목록·가정 설정은 숨김
+  const REVIEW = !!o.review; if (REVIEW) curV = 'A';
+  let picked = null;
+  if (REVIEW && o.onHub) o.onHub(sel.id);   // 주소(?review=)를 실제로 보여 주는 거점으로 맞춤   // 구청 검토: 누른 안(없으면 세 안 목록 + 「지금」 한 화면)
 
   // ---------- 해 ----------
   const ctr = new THREE.Vector3();
@@ -599,7 +702,7 @@ export async function openTwin(o) {
   controls.addEventListener('change', () => { dirty = labDirty = true; if (controls.target.distanceTo(ctr) > 140) { ctr.copy(controls.target); placeSun(false); } });
   const above = h => ({ t: new THREE.Vector3(h.x, 0, -h.y), p: new THREE.Vector3(h.x, 1300, -h.y + 1) });
   function planView(h) {
-    const pl = plans[h.id], pts = [[h.x, h.y]]; if (pl) pl.G.forEach(g => g.items.forEach(t => pts.push([t.x, t.y])));
+    const pl = plans[pk(h)], pts = [[h.x, h.y]]; if (pl) pl.G.forEach(g => g.items.forEach(t => pts.push([t.x, t.y])));
     const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
     const Rr = Math.max(30, ...pts.map(q => Math.hypot(q[0] - cx, q[1] - cy))) + 10, v = views[views.length - 1], dir = new THREE.Vector3(-110, 105, 170).normalize();
     let d = 200;
@@ -611,7 +714,17 @@ export async function openTwin(o) {
 
   // ---------- 덧씌운 화면 ----------
   const ui = document.createElement('div'); ui.className = 'tw-ui'; root.appendChild(ui);
-  ui.innerHTML =
+  if (REVIEW) root.classList.add('tw-review');
+  ui.innerHTML = REVIEW ?
+    '<header class="tw-top tw-g"><button type="button" class="tw-home" data-t="exit">← 만족도 화면</button><b>디지털트윈 개선안</b><span class="tw-tag gov">구청 검토용</span><span class="tw-hubchip"></span>' + (rat.demo ? '<span class="tw-demo">시연용 가상 평가</span>' : '') +
+    '<span class="tw-sp"></span><span class="tw-vsw" role="group" aria-label="개선안 고르기"></span><span class="tw-seg tw-scn" role="group" aria-label="상황"><button type="button" data-t="crowd" aria-pressed="true">붐비는 날</button><button type="button" data-t="heat" aria-pressed="false">더운 날</button></span>' +
+    '<button type="button" data-t="hq" aria-pressed="false" title="카메라가 멈추면 틈 그늘(GTAO)을 더해 한 번 더 그려요">고화질</button><span class="tw-q" hidden></span>' +
+    '<button type="button" class="tw-exit" data-t="report">검토 자료 인쇄</button></header>' +
+    '<aside class="tw-pop tw-g" role="dialog" aria-label="개선안 자세히" hidden></aside>' +
+    '<div class="tw-time tw-g"><div class="t"><span class="tw-day"></span><b class="tw-hr">—</b><small class="tw-sun"></small></div><input class="tw-range" type="range" min="7" max="19" step="0.25" aria-label="시각"><div class="tw-ticks">' + [7, 10, 13, 16, 19].map(h => '<span>' + h + '시</span>').join('') + '</div></div>' +
+    '<div class="tw-split"><i class="tw-div"></i><b class="tw-vl" data-s="L">지금</b><b class="tw-vl" data-s="R">개선 후</b><div class="tw-vs" data-s="L"></div><div class="tw-vs" data-s="R"></div></div>' +
+    '<div class="tw-labs"></div><div class="tw-nums"></div><div class="tw-fps" hidden></div><div class="tw-report" hidden></div>'
+    :
     '<header class="tw-top tw-g"><b>디지털트윈 개선 시뮬레이션</b><span class="tw-tag">관리자</span>' + (rat.demo ? '<span class="tw-demo">시연용 가상 평가</span>' : '') +
     '<span class="tw-sp"></span><span class="tw-seg tw-scn" role="group" aria-label="상황"><button type="button" data-t="crowd" aria-pressed="true">붐비는 날</button><button type="button" data-t="heat" aria-pressed="false">더운 날</button></span>' +
     '<span class="tw-seg" role="group" aria-label="보기 방식"><button type="button" data-t="one" aria-pressed="false">한 화면</button><button type="button" data-t="split" aria-pressed="true">나눠 보기</button></span>' +
@@ -626,8 +739,9 @@ export async function openTwin(o) {
   range.value = hour;
   function lowList() { return hubs.filter(h => h.n >= 5).sort((a, b) => a.pct - b.pct).slice(0, 5); }
   function lowHTML() {
+    if (!$('.tw-lowl')) return;
     const L = lowList(); if (!L.includes(sel)) L.push(sel);
-    $('.tw-lowl').innerHTML = L.map(h => { const tb = topBad(P[h.id]), pl = plans[h.id];
+    $('.tw-lowl').innerHTML = L.map(h => { const tb = topBad(P[h.id]), pl = plans[pk(h)];
       const g = pl ? [['붐비는 날', pl.d14.crowd], ['더운 날', pl.d14.heat]].map(([n, e]) => n + ' ' + f1(e.a.raw - e.b.raw)).join(' · ') : '';
       return '<button type="button" class="tw-lo' + (h.id === sel.id ? ' on' : '') + '" data-h="' + h.id + '"><span class="nm"><b>' + esc(h.name) + '</b>' + (h.pct == null ? '<em class="na">평가 없음</em>' : '<em style="color:' + pctCss(h.pct) + '">😊 ' + Math.round(h.pct) + '%</em>') + '</span>' +
         '<small>' + (h.n ? h.n + '건' + (tb ? ' · ' + BAD[tb[0]] + ' ' + tb[1] : '') : '') + '</small>' +
@@ -653,7 +767,52 @@ export async function openTwin(o) {
     const t = g.items[0]; return { t: FAC[g.k].label, d: t.why + ' · 점수 밖' };
   }
   function evalNow(pl) { return { crowd: evalHub(pl, SCN.crowd, hour), heat: evalHub(pl, SCN.heat, hour) }; }
+  function rateHTML(p, pct) {
+    return '<div class="tw-face"><span>😊 ' + p.good + '</span><span>😐 ' + p.mid + '</span><span>😞 ' + p.bad + '</span><b style="color:' + pctCss(pct) + '">만족 ' + Math.round(pct) + '%</b></div>' +
+      '<div class="tw-sbar"><i class="g" style="width:' + p.good / p.n * 100 + '%"></i><i class="m" style="width:' + p.mid / p.n * 100 + '%"></i><i class="b" style="width:' + p.bad / p.n * 100 + '%"></i></div>' +
+      '<small>방문객 평가 ' + p.n + '건' + (rat.demo ? ' · 시연용 가상 평가' : ' · 최근 90일') + ' · 만족 비율 = (😊×100 + 😐×50) ÷ 건수</small>';
+  }
+  const reviewUrl = () => location.href.split(/[?#]/)[0] + '?review=' + encodeURIComponent(sel.id);
+  // ---------- 구청 검토 화면 ----------
+  // 처음: 3D 「지금」 한 화면 + 오른쪽 위 A·B·C 고르기(안마다 짧은 한 줄 설명)만.
+  // 안을 누르면: 새 창(팝업)이 떠서 그 안의 자세한 내용을 보여 주고, 3D는 지금 / 개선 후 화면 분할. ←·✕·Esc로 닫으면 처음으로.
+  function reviewHTML() {
+    const rows = abcRows(sel); if (rows.some(r => r.wait)) ensureAll(sel);
+    const pop = $('.tw-pop'), p = P[sel.id], pct = satPct(p);
+    const chip = $('.tw-hubchip'); if (chip) chip.textContent = sel.name;
+    // 오른쪽 위 A·B·C 고르기(항상 보임) — 누르면 그 안의 창이 열림
+    $('.tw-vsw').innerHTML = '<span class="lb">' + (picked ? '개선안' : '개선안을<br>골라 보세요') + '</span>' + VK.map(v => { const rr = rows.find(x => x.v === v); return '<button type="button" data-v="' + v + '" aria-pressed="' + (v === picked) + '" title="' + VARS[v].name + '"' + (rr && rr.pl ? '' : ' disabled') + '><b>' + VARS[v].tag + '</b><small>' + VARS[v].hint + '</small></button>'; }).join('');
+    if (!picked) { pop.hidden = true; pop.classList.remove('tw-left'); pop.innerHTML = ''; return; }
+    const r = rows.find(x => x.v === picked), V = VARS[picked], first = pop.hidden;
+    pop.hidden = false; pop.classList.add('tw-left'); if (first) { pop.classList.remove('in'); void pop.offsetWidth; pop.classList.add('in'); }
+    const bar = '<div class="tw-popbar"><span class="k">' + V.tag + '</span><b>' + V.title + '</b><button type="button" class="tw-x" data-t="back" aria-label="닫고 세 안 보기" title="닫기">✕</button></div>';
+    if (!r || !r.pl) { pop.innerHTML = bar + '<div class="tw-popb"><p class="tw-note">계산하고 있어요…</p></div>'; return; }
+    const pl = r.pl, C = r.E.crowd, Hh = r.E.heat, ul = a => '<ul>' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+    const chg = (lbl, b, a, good) => '<div class="tw-cg"><span>' + lbl + '</span><span>' + b + ' → <b class="' + (good ? 'up' : '') + '">' + a + '</b></span></div>';
+    const sat = (lbl, e) => '<div class="tw-kp"><small>' + lbl + '</small><span>' + e.b.raw.toFixed(0) + '<i>→</i><b class="' + (e.a.raw - e.b.raw > .5 ? 'up' : '') + '">' + e.a.raw.toFixed(0) + '</b><em>점</em></span></div>';
+    pop.innerHTML = bar + '<div class="tw-popb">' +
+      '<p class="tw-lead">' + esc(V.lead) + '</p><p class="tw-why2"><b>왜 이 조합인가</b>' + esc(V.why) + '</p>' +
+      '<div class="tw-kps"><div class="tw-kp big"><small>사업비 (개략)</small><b>' + won(r.c.total) + '</b></div><div class="tw-kp big"><small>효과 시점</small><b class="sm">' + esc(V.when) + '</b></div>' +
+      sat('붐비는 날 만족도 · ' + hm(hour), C) + sat('더운 날 만족도 · ' + hm(hour), Hh) + '</div>' +
+      '<h4>무엇을 바꾸나<small>번호는 오른쪽 「개선 후」 화면의 번호와 같아요</small></h4>' +
+      (pl.G.length ? '<ol class="tw-plan">' + pl.G.map((g, i) => { const t = groupText(g, pl); return '<li><span class="no">' + NUM[i] + '</span><span><b>' + esc(t.t) + '</b><small>' + esc(t.d) + '</small></span></li>'; }).join('') + '</ol>' : '<p class="tw-note">기준을 넘는 문제가 없어 바꿀 것이 없어요.</p>') +
+      '<div class="tw-pc2"><section class="pro"><h5>장점</h5><ul>' + listHTML(V.pros, pl) + '</ul></section><section class="con"><h5>단점</h5><ul>' + listHTML(V.cons, pl) + '</ul></section></div>' +
+      '<details class="tw-more"><summary>예상 변화 · ' + hm(hour) + '</summary><div class="tw-chg">' +
+      chg('혼잡률 (붐비는 날)', pc(C.b.ratio), pc(C.a.ratio), C.a.ratio < C.b.ratio - .005) + chg('머무는 곳 그늘 (더운 날)', pc(Hh.b.s), pc(Hh.a.s), Hh.a.s > Hh.b.s + .005) +
+      chg('주변 환경 점수', pl.env0.toFixed(1), pl.env1.toFixed(1), pl.env1 > pl.env0 + .05) + chg('쉴 곳까지 평균', Math.round(pl.cmp.b.rest) + 'm', Math.round(pl.cmp.a.rest) + 'm', pl.cmp.a.rest < pl.cmp.b.rest - 1) + '</div></details>' +
+      '<details class="tw-more"><summary>사업비 산출</summary><table class="tw-ct">' +
+      (r.c.rows.length ? r.c.rows.map(c => '<tr><td>' + esc(c.label) + '</td><td>' + c.q.toLocaleString() + c.unit + '</td><td>' + won(c.sum) + '</td></tr>').join('') : '<tr><td colspan="3">없음</td></tr>') +
+      '<tr class="sum"><td colspan="2">합계 (단가 가정값)</td><td>' + won(r.c.total) + '</td></tr></table></details>' +
+      '<details class="tw-more"><summary>왜 이곳인가</summary>' + (p && p.n ? '<div class="tw-rt">' + rateHTML(p, pct) + '</div>' : '<p class="tw-note">방문객 평가가 아직 없어요.</p>') + evHub(sel.id) + '</details>' +
+      '<p class="tw-rvn">사업비 단가는 가정값이고, 나무 위치·그늘은 알고리즘 추정이라 실측이 필요해요.</p></div>';
+  }
+  function pickPlan(v) {
+    picked = v; if (v) curV = v; split = !!v; root.classList.toggle('tw-picked', !!v);
+    if (v && !(pk(sel) in plans)) planFor(sel);
+    showPlan(); layoutBlocks(); if (!fly) flyTo(planView(sel), .9);
+  }
   function panelHTML() {
+    if (REVIEW) { reviewHTML(); return; }
     const p = P[sel.id], pct = satPct(p);
     let h = '<h2>' + esc(sel.name) + '<small>' + esc(sel.zone || '') + ' · 수용 ' + sel.cap.toLocaleString() + '명(대시보드 가정값) · ' + ({ outdoor: '야외', shade: '그늘', indoor: '실내' }[sel.type] || '') + ' 거점</small></h2>';
     if (p && p.n) {
@@ -664,7 +823,7 @@ export async function openTwin(o) {
         (reasons.length ? '<ul class="tw-why">' + reasons.map(k => '<li><span>' + BAD[k] + ' <b>' + p.reasons[k] + '</b></span><span>→ ' + REC[k] + '</span></li>').join('') + '</ul>' : '<p class="tw-note">아쉬운 이유가 아직 없어요.</p>') + evHub(sel.id) + '</div>';
     } else h += '<p class="tw-note">이 거점에는 방문객 평가가 아직 없어요.</p>';
     $('.tw-rate').innerHTML = h;
-    const pl = plans[sel.id];
+    const pl = plans[pk(sel)];
     if (!pl) { $('.tw-pred').innerHTML = '<p class="tw-note">' + (pl === null ? '이 거점은 팀 20m 격자 밖이라 계산할 수 없어요.' : '개선안을 계산하고 있어요…') + '</p>'; return; }
     const E = evalNow(pl), C = E.crowd, Hh = E.heat, e = E[scn.key], rsn = (P[sel.id] || {}).reasons || {};
     const bar = (lbl, b, a) => '<div class="tw-br"><span>' + lbl + '</span><i><b style="width:' + clamp(b, 0, 100) + '%"></b><em style="width:' + clamp(a, 0, 100) + '%"></em></i><span>' + Math.round(b) + ' → <b class="' + (a > b + .5 ? 'up' : '') + '">' + Math.round(a) + '</b></span></div>';
@@ -683,16 +842,43 @@ export async function openTwin(o) {
     const envCard = '<section class="tw-lv"><h5><span>환경</span>둘레 80m · 팀 20m 칸 점수</h5><p class="ef">환경 점수 ' + pl.env0.toFixed(1) + ' → <b class="' + (pl.env1 > pl.env0 + .05 ? 'up' : '') + '">' + pl.env1.toFixed(1) + '</b> · 쉴 곳까지 평균 ' + Math.round(pl.cmp.b.rest) + ' → ' + Math.round(pl.cmp.a.rest) + 'm' + (pl.cmp.a.dLst < -.005 ? ' · 땅 온도 ' + pl.cmp.a.dLst.toFixed(2) + '℃' : '') + '</p>' + (pl.benches.length ? '<ol class="tw-plan">' + gl(['bench']) + '</ol>' : '') + '</section>';
     const exCard = pl.extra.length ? '<section class="tw-lv"><h5><span>볼거리·편의</span>점수 밖 · 방문객 아쉬움에 맞춤</h5><ol class="tw-plan ex">' + gl(['garden', 'photo', 'toilet']) + '</ol></section>' : '';
     const asm = ['수용 인원·끌림은 대시보드 가정값(현장 계수로 보정 예정)', '새 쉼터 수용 = 지금 이곳 수용 밀도(' + (pl.open0 / Math.max(1, sel.cap)).toFixed(1) + '㎡/명, 나무 그늘 아닌 열린 땅 기준) × 칸의 ' + pc(YARD_USE), '분산 안내로 옮겨 가는 비율 ' + pc(SHIFT) + ' · 옮겨 갈 곳은 ' + NB_R + 'm 안 혼잡률 ' + pc(NB_FREE) + ' 이하', '그늘 목표 = 머무는 곳(거점 ' + STAY_R + 'm 안) 14시 그늘 ' + pc(SHADE_TARGET), '그늘 비율만큼 야외 거점의 날씨 영향을 대시보드의 「그늘 거점」 계수 쪽으로 섞음', '혼잡 70% = 대시보드 「혼잡」 기준 · 붐비는 날 날씨는 가정, 더운 날은 실측(' + SCN.heat.wTxt.split('— ')[1] + ')'];
+    const costOpen = !!($('.tw-cost') && $('.tw-cost').open);
     $('.tw-pred').innerHTML = '<h3>' + esc(sel.name) + ' 개선안 <small>대시보드 만족도 식(붐빔·날씨·환경)의 낮은 갈래를 공간으로 고쳐요 · 3D 왼쪽 지금 / 오른쪽 개선 후</small></h3>' +
+      abcHTML() +
+      '<h4 class="tw-vh">' + VARS[curV].name + ' 자세히</h4>' +
       '<div class="tw-heads">' + head + '</div>' +
       '<div class="tw-bars"><small>' + scn.label + ' ' + hm(hour) + ' 만족도를 이루는 세 점수(지금 → 개선 후)</small>' + bar('붐빔 .35', e.b.d, e.a.d) + bar('날씨 .30', e.b.x, e.a.x) + bar('환경 .35', e.b.e, e.a.e) + '</div>' +
       crowdCard + heatCard + envCard + exCard +
-      '<div class="tw-act"><button type="button" class="tw-main" data-t="report">개선안 보고서 만들기</button></div>' +
+      '<div class="tw-act"><button type="button" class="tw-main" data-t="review">구청 검토 화면 열기</button><button type="button" class="tw-sub" data-t="report">세 안 검토 자료</button></div>' +
       '<details class="tw-asm"><summary>계산에 쓴 가정 ' + asm.length + '가지</summary><ul>' + asm.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></details>';
+    if (costOpen && $('.tw-cost')) $('.tw-cost').open = true;
+  }
+  // 구청 검토용 A·B·C 비교: 누르면 3D·아래 자세히가 그 안으로 바뀜
+  function abcHTML() {
+    const rows = abcRows(sel); if (rows.some(r => r.wait)) ensureAll(sel);
+    return '<section class="tw-abc"><h4>구청에 보낼 세 안 <small>같은 진단에 시설 조합만 달리한 세 안 · 우리는 고르지 않고 세 안을 모두 보내요 · ' + hm(hour) + ' 기준 · 누르면 3D가 그 안으로 바뀌어요</small></h4><div class="tw-abc-t">' +
+      rows.map(r => {
+        const V = VARS[r.v];
+        if (r.wait || r.none) return '<button type="button" class="tw-abc-r" data-v="' + r.v + '" disabled><span class="hd"><b>' + V.name + '</b></span><small>' + (r.wait ? '계산 중…' : '격자 밖이라 계산할 수 없어요') + '</small></button>';
+        return '<button type="button" class="tw-abc-r' + (curV === r.v ? ' on' : '') + '" data-v="' + r.v + '" aria-pressed="' + (curV === r.v) + '">' +
+          '<span class="hd"><b>' + V.name + '</b>' + r.tags.map(t => '<em>' + t + '</em>').join('') + '</span>' +
+          '<span class="what">' + esc(r.pl.G.map(g => groupText(g, r.pl).t).join(' · ') || '바꿀 것 없음(기준을 넘지 않음)') + '</span>' +
+          '<span class="nums"><i>사업비<b>' + won(r.c.total) + '</b></i><i>붐비는 날<b class="' + (r.dC > .5 ? 'up' : '') + '">' + f1(r.dC) + '점</b></i><i>더운 날<b class="' + (r.dH > .5 ? 'up' : '') + '">' + f1(r.dH) + '점</b></i><i>환경<b class="' + (r.dE > .5 ? 'up' : '') + '">' + f1(r.dE) + '</b></i></span>' +
+          '<small>효과 시점 · ' + V.when + '</small>' + listOf(V.pros, r.pl).slice(0, 2).map(x => '<small class="pc">＋ ' + esc(x) + '</small>').join('') + listOf(V.cons, r.pl).slice(0, 2).map(x => '<small class="pc mi">－ ' + esc(x) + '</small>').join('') + '</button>';
+      }).join('') + '</div>' +
+      '<details class="tw-cost"><summary>사업비 단가 (가정값 · 바꾸면 다시 계산)</summary><p>개당 공개 단가를 찾지 못해 넣은 가정값이에요. 제출 전에 나라장터 계약 단가로 바꿔 넣으세요. 바꾼 값은 이 기기에만 저장돼요.</p><div class="tw-cost-g">' +
+      Object.keys(COST).map(k => '<label><span>' + COST[k].label + '</span><input type="number" min="0" step="1" data-cost="' + k + '" value="' + COST[k].p + '"><em>만 원/' + COST[k].unit + '</em></label>').join('') +
+      '</div><button type="button" class="tw-cost-x" data-t="cost-reset">처음 값으로</button></details></section>';
+  }
+  function setVar(v) {
+    if (REVIEW) { if (VARS[v]) pickPlan(v === picked ? null : v); return; }   // 고른 안을 한 번 더 누르면 닫힘
+    if (!VARS[v] || v === curV) return; curV = v; const h = sel;
+    if (!(pk(h) in plans)) { panelHTML(); setTimeout(() => { planFor(h); if (sel === h && curV === v) { showPlan(); lowHTML(); flyTo(planView(h), .8); } }, 30); }
+    else { showPlan(); lowHTML(); flyTo(planView(h), .8); }
   }
   function labelsHTML() { labs.innerHTML = hubs.map(h => '<button type="button" class="tw-lab' + (h.id === sel.id ? ' on' : '') + '" data-h="' + h.id + '">' + esc(h.name) + ' <em style="color:' + (h.pct == null ? '#aab' : pctCss(h.pct)) + '">' + (h.pct == null ? '평가 없음' : '😊' + Math.round(h.pct) + '%') + '</em> <b></b></button>').join(''); }
-  function labelScores() { [...labs.children].forEach((el, k) => { const h = hubs[k], pl = plans[h.id]; let t = ''; if (h.id === sel.id && pl) { const e = evalHub(pl, scn, hour); t = e.b.raw.toFixed(0) + '→' + e.a.raw.toFixed(0) + '점'; } else t = baseSat(h, scn, hour).toFixed(0) + '점'; el.querySelector('b').textContent = t; el._w = 0; }); }
-  function numsHTML() { const pl = plans[sel.id]; nums.innerHTML = pl ? pl.G.map((g, k) => '<span class="tw-num' + (['garden', 'photo', 'toilet'].includes(g.k) ? ' ex' : '') + '">' + NUM[k] + '</span>').join('') : ''; }
+  function labelScores() { [...labs.children].forEach((el, k) => { const h = hubs[k], pl = plans[pk(h)]; let t = ''; if (h.id === sel.id && pl && !(REVIEW && !picked)) { const e = evalHub(pl, scn, hour); t = e.b.raw.toFixed(0) + '→' + e.a.raw.toFixed(0) + '점'; } else t = baseSat(h, scn, hour).toFixed(0) + '점'; el.querySelector('b').textContent = t; el._w = 0; }); }
+  function numsHTML() { const pl = REVIEW && !picked ? null : plans[pk(sel)]; nums.innerHTML = pl ? pl.G.map((g, k) => '<span class="tw-num' + (['garden', 'photo', 'toilet'].includes(g.k) ? ' ex' : '') + '">' + NUM[k] + '</span>').join('') : ''; }
   let blocks = [];
   function layoutBlocks() { blocks = ['.tw-left', '.tw-right', '.tw-top', '.tw-time'].map(s => ui.querySelector(s)).filter(Boolean).map(e => e.getBoundingClientRect()); layoutViews(); }
   const v3 = new THREE.Vector3();
@@ -702,14 +888,14 @@ export async function openTwin(o) {
     el.style.display = hide ? 'none' : ''; if (!hide) el.style.transform = 'translate(' + px.toFixed(1) + 'px,' + py.toFixed(1) + 'px) translate(-50%,-100%)';
   }
   function placeLabels() {
-    const only = split && W <= 800, pl = plans[sel.id];
+    const only = split && W <= 800, pl = plans[pk(sel)];
     [...labs.children].forEach((el, k) => { const h = hubs[k]; if (only && h.id !== sel.id) { el.style.display = 'none'; return; } project(h.x, h.y, pillarG.visible ? h.top : 9, el); });
     [...nums.children].forEach((el, k) => { const g = pl && pl.G[k]; if (g) project(g.at[0], g.at[1], g.z, el); });
   }
   // 개선안을 장면에 놓기(오른쪽만: 레이어 1)
   function clearItems() { itemsG.traverse(m => { if (m.userData.own) { m.material.map && m.material.map.dispose(); m.material.dispose(); } }); itemsG.clear(); }
   function showPlan() {
-    clearItems(); const pl = plans[sel.id];
+    clearItems(); const pl = plans[pk(sel)];
     if (pl) {
       pl.yards.forEach(y => { itemsG.add(yardMesh(y)); itemsG.add(haloMesh(y.x, y.y, 21, 21, 0)); });
       pl.shade.concat(pl.benches, pl.extra).forEach(t => { const m = model(t.k, t); m.position.set(t.x, 0, -t.y); m.rotation.y = t.rot; itemsG.add(m); if (t.k === 'tree') return; const s = t.k === 'sail' ? 11 : t.k === 'garden' ? 10 : 7; itemsG.add(haloMesh(t.x, t.y, s, s, t.rot)); });
@@ -727,18 +913,18 @@ export async function openTwin(o) {
   }
   // 시각·상황이 바뀌면: 사람 수 · 패널 · 숫자 · 칸 불편도
   function refresh() {
-    const pl = plans[sel.id];
+    const pl = plans[pk(sel)];
     if (pl) { const e = evalHub(pl, scn, hour); setCount('L', e.b.ppl); setCount('R', e.a.ppl); }
     panelHTML(); updStats(); labelScores(); if (glow.visible) paintGlow(cellScores()); dirty = labDirty = true;
   }
   function cellScores() {
-    const out = Float64Array.from(S0), pl = plans[sel.id]; if (!pl) return out;
+    const out = Float64Array.from(S0), pl = plans[pk(sel)]; if (!pl) return out;
     const sd = sunDir(hour, SCN.heat.doy), r = envEval(pl.cells, pl.md, [sd]), b = envEval(pl.cells, EMPTY, [sd]);
     pl.cells.forEach((i, j) => { out[i] = S0[i] + r.sc[j] - b.sc[j]; }); return out;
   }
   function selectHub(id, flyDur) {
     const h = hubOf(id); if (!h) return; sel = h; labelsHTML(); lowHTML(); labDirty = true;
-    if (!(h.id in plans)) { panelHTML(); setTimeout(() => { planFor(h); if (sel === h) { showPlan(); lowHTML(); if (flyDur) flyTo(planView(h), flyDur); } }, 30); }
+    if (!(pk(h) in plans)) { panelHTML(); setTimeout(() => { planFor(h); if (sel === h) { showPlan(); lowHTML(); if (flyDur) flyTo(planView(h), flyDur); } }, 30); }
     else { showPlan(); if (flyDur) flyTo(planView(h), flyDur); }
   }
   function timeText() { const sd = sunDir(hour, scn.doy); $('.tw-day').textContent = scn.label + ' · ' + scn.date; $('.tw-hr').textContent = hm(hour); $('.tw-sun').textContent = '해 높이 ' + Math.round(sd.alt) + '° · ' + DIR8[Math.round(sd.az / 45) % 8] + '쪽'; }
@@ -757,10 +943,11 @@ export async function openTwin(o) {
     ndc.set((mx - v.x) / v.w * 2 - 1, -(my - v.y) / v.h * 2 + 1); ray.setFromCamera(ndc, v.cam);
     const ph = ray.intersectObjects(pillarG.children)[0]; if (ph) selectHub(ph.object.userData.hub, 1.4);
   });
-  function onKey(e) { if (e.key === 'Escape' && !$('.tw-report').hidden) $('.tw-report').hidden = true; }
+  function onKey(e) { if (e.key !== 'Escape') return; if (!$('.tw-report').hidden) $('.tw-report').hidden = true; else if (REVIEW && picked) pickPlan(null); }
   addEventListener('keydown', onKey);
   ui.addEventListener('click', e => {
     const hb = e.target.closest('[data-h]'); if (hb) { selectHub(hb.dataset.h, 1.4); return; }
+    const vb = e.target.closest('[data-v]'); if (vb) { setVar(vb.dataset.v); return; }
     const t = e.target.closest('[data-t]'); if (!t) return; const a = t.dataset.t;
     if (a === 'crowd' || a === 'heat') setScn(a);
     if (a === 'glow') { glow.visible = !glow.visible; t.setAttribute('aria-pressed', glow.visible); if (glow.visible) paintGlow(cellScores()); dirty = true; }
@@ -768,62 +955,142 @@ export async function openTwin(o) {
     if (a === 'hq') { hqWant = t.getAttribute('aria-pressed') !== 'true'; t.setAttribute('aria-pressed', hqWant); if (hqWant) ensureHQ(); dirty = true; }
     if (a === 'exit') exit();
     if (a === 'report') report();
-    if (a === 'print') window.print();
+    if (a === 'back') pickPlan(null);
+    if (a === 'review') window.open(reviewUrl(), '_blank', 'noopener');
+    if (a === 'print') printReport();
     if (a === 'png') savePNG();
     if (a === 'close-report') $('.tw-report').hidden = true;
+    if (a === 'cost-reset') { Object.keys(COST).forEach(k => { COST[k].p = COST0[k].p; }); saveCost(); panelHTML(); }
+  });
+  ui.addEventListener('change', e => {
+    const inp = e.target.closest('[data-cost]'); if (!inp) return; const v = +inp.value;
+    if (isFinite(v) && v >= 0) { COST[inp.dataset.cost].p = v; saveCost(); } panelHTML();
   });
   range.addEventListener('input', () => { hour = +range.value; timeText(); placeSun(false); });
   range.addEventListener('change', () => { hour = +range.value; placeSun(true); refresh(); });
 
-  // ---------- 보고서 ----------
+  // ---------- 구청에 보내는 세 안 검토 자료(공문 겉장 + ①~⑥ + 회신 + 붙임) ----------
+  // 우리는 고르지 않음: 세 안을 같은 형식으로 나란히 싣고, 구청이 회신란에서 고른다.
+  // 양식: 국민제안서·지자체 사업계획서에 공통으로 들어가는 항목(현황 및 문제점 · 개선방안 · 필요성 · 소요예산 · 추진 일정 · 기대효과)
   function reportData() {
-    const p = P[sel.id], pct = satPct(p), pl = plans[sel.id], d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    VK.forEach(v => planFor(sel, v));
+    const p = P[sel.id], pct = satPct(p), d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
     const reasons = p ? Object.keys(BAD).filter(k => (p.reasons || {})[k]).sort((a, b) => p.reasons[b] - p.reasons[a]).map(k => BAD[k] + ' ' + p.reasons[k] + '건') : [];
-    const E = pl ? evalNow(pl) : null, C = E && E.crowd, Hh = E && E.heat;
+    const rows = abcRows(sel).filter(r => r.pl), any = rows[0], C0 = any && any.E.crowd, H0 = any && any.E.heat;
+    const low = any ? (() => { const e = any.E[scn.key].b, L = [['붐빔', e.d], ['날씨', e.x], ['환경', e.e]].sort((a, b) => a[1] - b[1]); return L[0][0] + ' ' + Math.round(L[0][1]) + '점'; })() : '';
+    const plansOut = rows.map(r => {
+      const V = VARS[r.v], pl = r.pl, C = r.E.crowd, Hh = r.E.heat;
+      return { v: r.v, tag: V.tag, title: V.title, name: V.name, lead: V.lead, why: V.why, when: V.when, pros: listOf(V.pros, pl), cons: listOf(V.cons, pl), cost: r.c,
+        fac: pl.G.map((g, i) => { const t = groupText(g, pl); return NUM[i] + ' ' + t.t + ' — ' + t.d; }),
+        eff: { cB: C.b.raw, cA: C.a.raw, hB: Hh.b.raw, hA: Hh.a.raw, rB: C.b.ratio, rA: C.a.ratio, sB: Hh.b.s, sA: Hh.a.s, eB: pl.env0, eA: pl.env1, restB: pl.cmp.b.rest, restA: pl.cmp.a.rest, cap0: sel.cap, cap1: C.a.cap } };
+    });
     return {
-      hub: sel.name, date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'),
+      hub: sel.name, date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'), url: reviewUrl(),
+      gm: [['수신', '성동구청장 (참조: 공원 담당 부서)'], ['제목', '서울숲 「' + sel.name + '」 이용 만족도 개선안(A·B·C) 검토 요청'],
+        ['1. 관련', LAWS.join(' · ')],
+        ['2. 내용', '방문객 평가와 서울시 실시간 도시데이터로 확인한 「' + sel.name + '」의 문제를 고치기 위해, 시설 조합이 다른 세 안(A·B·C)을 디지털트윈으로 만들었습니다. 각 안의 특징·장단점·사업비와 설치 전후 모습을 비교 검토하시어, 추진할 안을 정해 회신하여 주시기 바랍니다.'],
+        ['3. 검토 화면', (() => { try { return decodeURI(reviewUrl()); } catch (e) { return reviewUrl(); } })() + ' (세 안을 눌러 전·후 모습을 화면 분할로 볼 수 있음)'],
+        ['붙임', '세 안 검토 자료 1부. 끝.'], ['발신', '카야팀 (상명대학교 그린스마트시티학과)']],
       why: (p && p.n ? '방문객 평가 ' + p.n + '건 · 만족 ' + Math.round(pct) + '%' + (rat.demo ? ' (시연용 가상 평가)' : ' (최근 90일)') + (reasons.length ? ' · 아쉬운 이유: ' + reasons.join(', ') : '') : '방문객 평가 없음') +
-        (C ? ' · 붐비는 날 ' + hm(hour) + ' 혼잡률 ' + pc(C.b.ratio) + ' · 더운 날 머무는 곳 그늘 ' + pc(Hh.b.s) : ''),
-      fac: pl ? pl.G.map((g, i) => { const t = groupText(g, pl); return NUM[i] + ' ' + t.t + ' — ' + t.d; }) : [],
-      eff: C ? ['예측 만족도(붐비는 날 ' + hm(hour) + ') ' + C.b.raw.toFixed(1) + ' → ' + C.a.raw.toFixed(1) + '점 (' + f1(C.a.raw - C.b.raw) + ')', '예측 만족도(더운 날 ' + hm(hour) + ') ' + Hh.b.raw.toFixed(1) + ' → ' + Hh.a.raw.toFixed(1) + '점 (' + f1(Hh.a.raw - Hh.b.raw) + ')',
-        '혼잡률(붐비는 날) ' + pc(C.b.ratio) + ' → ' + pc(C.a.ratio) + ' · 수용 ' + sel.cap + ' → ' + Math.round(C.a.cap) + '명', '머무는 곳 그늘(더운 날) ' + pc(Hh.b.s) + ' → ' + pc(Hh.a.s), '환경 점수 ' + pl.env0.toFixed(1) + ' → ' + pl.env1.toFixed(1) + ' · 쉴 곳까지 ' + Math.round(pl.cmp.b.rest) + ' → ' + Math.round(pl.cmp.a.rest) + 'm' + (pl.cmp.a.dLst < -.005 ? ' · 땅 온도 ' + pl.cmp.a.dLst.toFixed(2) + '℃' : '')] : [],
-      ev: hubEv(sel.id).map(e => '「' + BAD[e.key] + '」 ' + e.n + '건 — 공원 전체 ' + VTXT[e.park.v] + ' (' + evLine(e.key) + ')'),
-      ops: opsRecs(),
-      how: '대시보드 만족도 = 붐빔(.35) + 날씨(.30) + 환경(.35). 붐비는 날(쾌적한 토요일) 14시 혼잡률이 70%를 넘으면(「붐볐어요」가 실제 혼잡과 맞으면 55%) 여유 있는 거점으로 분산 안내하고, 남는 만큼 붙은 칸을 쉼터로 넓혀 혼잡률을 70% 아래로. 더운 날(체감 36.3℃) 야외 거점은 머무는 곳 14시 그늘이 50%가 될 때까지 10~16시 평균 그늘을 가장 많이 늘리는 자리에 그늘막·그늘나무(햇빛 광선 계산). 환경은 팀 20m 칸 점수 식으로 다시 셈.',
-      check: ['설치 뒤 같은 곳의 방문객 평가(😊😐😞·「붐볐어요」·「덥거나 추웠어요」)를 설치 전과 비교한다.', '수용 인원·끌림·분산 비율 15%·그늘 목표 50%·쉼터 사용률 85%는 가정값 — 현장 계수(혼잡 시간대 인원)와 설문으로 보정한다.', '그늘나무 효과는 수관 지름 9m로 자랐을 때 기준이다. 심은 직후에는 그늘막이 먼저 효과를 낸다.', '쉼터로 바꿀 칸의 지하 매설물·기존 수목 뿌리·행사 동선·배수를 현장에서 확인한다.', '휴게시설 설치의 공원조성계획 변경 절차(경미한 변경 해당 여부)는 도시공원법령으로 확인한다(검증 필요).']
+        (C0 ? ' · 붐비는 날 ' + hm(hour) + ' 혼잡률 ' + pc(C0.b.ratio) + ' · 더운 날 머무는 곳 그늘 ' + pc(H0.b.s) : ''),
+      plans: plansOut,
+      need: [low ? '대시보드 만족도 식(붐빔 .35 · 날씨 .30 · 환경 .35)에서 이 거점은 「' + low + '」이 가장 낮아요.' : '', reasons.length ? '방문객이 남긴 아쉬움: ' + reasons.join(', ') + '.' : '']
+        .concat(hubEv(sel.id).map(e => '「' + BAD[e.key] + '」 ' + e.n + '건 — 평가 당시 실시간 도시데이터와 대조: ' + VTXT[e.park.v] + ' (' + evLine(e.key) + ')'), LAWS.map(x => '근거 · ' + x)).filter(Boolean),
+      steps: ['1단계 · 안 결정: 구청이 세 안 중 하나를 고르거나 보완을 요청', '2단계 · 현장 확인: 쉼터로 바꿀 칸의 지하 매설물·기존 나무 뿌리·배수·행사 동선을 보고, 수목 현황은 실측으로 확인', '3단계 · 설치: 고른 안의 시설 설치 (효과 시점 — ' + plansOut.map(x => x.tag + ': ' + x.when).join(' / ') + ')', '4단계 · 설치 뒤 평가: 같은 곳의 방문객 평가(😊😐😞·아쉬운 이유)를 설치 전과 비교해 효과를 확인'],
+      how: '세 안 모두 같은 진단을 써요. 붐비는 날(쾌적한 토요일) 14시 혼잡률이 70%를 넘으면(「붐볐어요」가 실제 혼잡과 맞으면 55%) 여유 있는 거점으로 분산 안내하고, 더운 날(체감 36.3℃) 야외 거점은 머무는 곳 14시 그늘이 50%가 될 때까지 10~16시 평균 그늘을 가장 많이 늘리는 자리에 그늘을 놓아요(햇빛 광선 계산). A안은 쉼터 공사 없이 그늘막·벤치·안내만, B안은 쉼터 넓히기와 그늘막·그늘나무, C안은 잔디 쉼터와 그늘나무만 써요. 환경은 팀 20m 칸 점수 식으로 다시 셈.',
+      check: ['사업비 단가는 가정값이에요. 확정 전에 나라장터 계약 단가로 다시 계산해야 해요.', '수용 인원·끌림·분산 비율 15%·그늘 목표 50%·쉼터 사용률 85%는 가정값 — 현장 계수(혼잡 시간대 인원)와 설문으로 보정한다.', '나무 위치·그늘은 위성·격자 자료로 알고리즘이 추정한 값이라 실측이 필요해요. 그늘나무 효과는 수관 지름 9m로 자랐을 때 기준이에요.', '휴게시설 설치의 공원조성계획 변경 절차(경미한 변경 해당 여부)는 도시공원법령으로 확인한다(검증 필요).', '서울숲은 서울시 직영 공원이라 실제 제출처(서울시 공원 담당 부서·성동구)를 확인해야 해요.']
     };
   }
-  let shot = '';
+  // 세 안 각각의 개선 후 3D 장면을 찍음(오른쪽 카메라 한 화면) — 끝나면 보던 안으로 되돌림
+  function shotsAll() {
+    const keep = curV, out = {}, sv = [{ cam: camera, side: 'R', x: 0, y: 0, w: W, h: H, vis: VIS }];
+    VK.forEach(v => { if (!plans[pk(sel, v)]) return; curV = v; showPlan(); setOffset(camera, sv[0]); draw(sv, false); try { out[v] = cvs.toDataURL('image/jpeg', .82); } catch (e) { out[v] = ''; } });
+    curV = keep; showPlan(); layoutViews(); dirty = true; return out;
+  }
+  let shots = {};
   function report() {
-    const sv = [{ cam: camera, side: 'R', x: 0, y: 0, w: W, h: H, vis: VIS }]; setOffset(camera, sv[0]); draw(sv, false);
-    try { shot = cvs.toDataURL('image/jpeg', .85); } catch (e) { shot = ''; } layoutViews();
-    const r = reportData(), el = $('.tw-report'), ul = a => '<ul>' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
-    el.innerHTML = '<div class="tw-sheet"><header><span>서울숲 디지털트윈 · 개선안 보고서</span><span>' + r.date + '</span></header><h1>' + esc(r.hub) + '</h1>' + (shot ? '<img src="' + shot + '" alt="개선안 3D 장면">' : '') +
-      '<h4>왜 여기인가</h4><p>' + esc(r.why) + '</p><h4>개선안</h4>' + (r.fac.length ? ul(r.fac) : '<p>혼잡·그늘 기준을 모두 넘지 않아 공간을 바꾸지 않아요.</p>') +
-      (r.ev.length ? '<h4>아쉬움 근거 확인</h4>' + ul(r.ev) : '') + '<h4>예측 효과</h4>' + ul(r.eff) + (r.ops.length ? '<h4>오늘 운영 추천 (실시간 도시데이터)</h4>' + ul(r.ops) : '') + '<h4>고른 방법</h4><p>' + esc(r.how) + '</p><h4>확인할 것</h4>' + ul(r.check) +
-      '<footer>가상 시험 결과이며 실제 효과는 다를 수 있어요.</footer><div class="tw-ra"><button type="button" data-t="print">인쇄</button><button type="button" data-t="png">PNG 저장</button><button type="button" data-t="close-report">닫기</button></div></div>';
-    el.hidden = false;
+    const r = reportData(); shots = shotsAll();
+    const el = $('.tw-report'), ul = a => '<ul>' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>', E = r.plans.map(x => x.eff);
+    const gm = '<table class="tw-gm">' + r.gm.map(([k, v]) => '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>').join('') + '</table>';
+    const cards = r.plans.map(x => '<section class="tw-ab"><h5><span>' + x.tag + '</span>' + esc(x.title) + '</h5><p class="ld">' + esc(x.lead) + '</p><p class="ld"><b>왜 이 조합인가</b> ' + esc(x.why) + '</p>' + (shots[x.v] ? '<img src="' + shots[x.v] + '" alt="' + esc(x.name) + ' 개선 후 3D 장면">' : '') +
+      '<p class="sub">무엇을 바꾸나</p>' + (x.fac.length ? ul(x.fac) : '<p>바꿀 것 없음</p>') + '<div class="tw-pcs"><div><p class="sub">장점</p>' + ul(x.pros) + '</div><div><p class="sub">단점</p>' + ul(x.cons) + '</div></div>' +
+      '<p class="meta">사업비(개략) <b>' + won(x.cost.total) + '</b> · 효과 시점 ' + esc(x.when) + '</p></section>').join('');
+    const cost = r.plans.map(x => '<p class="sub">' + x.tag + ' · ' + esc(x.title) + '</p><table class="tw-tb"><tr><th>항목</th><th>수량</th><th>단가(가정)</th><th>금액</th></tr>' +
+      (x.cost.rows.length ? x.cost.rows.map(c => '<tr><td>' + esc(c.label) + '</td><td>' + c.q.toLocaleString() + ' ' + c.unit + '</td><td>' + c.p.toLocaleString() + '만 원</td><td>' + won(c.sum) + '</td></tr>').join('') : '<tr><td colspan="4">없음</td></tr>') +
+      '<tr class="sum"><td colspan="3">합계 (개략)</td><td>' + won(x.cost.total) + '</td></tr></table>').join('');
+    const th = '<tr><th></th>' + r.plans.map(x => '<th>' + x.tag + ' · ' + esc(x.title) + '</th>').join('') + '</tr>';
+    const tr = (lbl, f) => '<tr><td>' + lbl + '</td>' + E.map(f).map(t => '<td>' + t + '</td>').join('') + '</tr>';
+    const eff = '<table class="tw-tb">' + th + tr('예측 만족도 · 붐비는 날 ' + hm(hour), e => e.cB.toFixed(1) + ' → ' + e.cA.toFixed(1) + ' (' + f1(e.cA - e.cB) + ')') + tr('예측 만족도 · 더운 날 ' + hm(hour), e => e.hB.toFixed(1) + ' → ' + e.hA.toFixed(1) + ' (' + f1(e.hA - e.hB) + ')') +
+      tr('혼잡률 (붐비는 날)', e => pc(e.rB) + ' → ' + pc(e.rA)) + tr('수용 인원', e => e.cap0 + ' → ' + Math.round(e.cap1) + '명') + tr('머무는 곳 그늘 (더운 날)', e => pc(e.sB) + ' → ' + pc(e.sA)) + tr('주변 환경 점수', e => e.eB.toFixed(1) + ' → ' + e.eA.toFixed(1)) + tr('쉴 곳까지 평균', e => Math.round(e.restB) + ' → ' + Math.round(e.restA) + 'm') +
+      tr('사업비 (개략)', (e, i) => won(r.plans[i].cost.total)) + '</table>';
+    el.innerHTML = '<div class="tw-sheet"><header><span>서울숲 디지털트윈 · 개선안 검토 자료</span><span>' + r.date + '</span></header>' +
+      '<h4>공문</h4>' + gm + '<h1>' + esc(r.hub) + ' <small>개선안 A · B · C</small></h1>' +
+      '<h4>① 현황 및 문제점</h4><p>' + esc(r.why) + '</p>' +
+      '<h4>② 개선방안 — 세 안</h4><div class="tw-abs">' + cards + '</div>' +
+      '<h4>③ 필요성 (왜 해야 하나)</h4>' + ul(r.need) +
+      '<h4>④ 소요예산 (얼마 드나)</h4>' + cost +
+      '<h4>⑤ 추진 일정</h4>' + ul(r.steps) +
+      '<h4>⑥ 기대효과 (세 안 비교)</h4>' + eff +
+      '<h4>회신</h4><table class="tw-gm tw-reply"><tr><th>검토 결과</th><td>□ A안 · ' + esc(VARS.A.title) + '　□ B안 · ' + esc(VARS.B.title) + '　□ C안 · ' + esc(VARS.C.title) + '　□ 보완 요청</td></tr><tr><th>의견</th><td></td></tr><tr><th>검토자</th><td></td></tr></table>' +
+      '<h4>붙임 · 고른 방법</h4><p>' + esc(r.how) + '</p><h4>붙임 · 근거 문헌</h4>' + ul(REFS) + '<h4>붙임 · 확인할 것</h4>' + ul(r.check) +
+      '<footer>디지털트윈 가상 시험 결과이며 실제 효과는 다를 수 있어요.</footer><div class="tw-ra"><button type="button" data-t="print">인쇄</button><button type="button" data-t="png">PNG 저장</button><button type="button" data-t="close-report">닫기</button></div></div>';
+    el.hidden = false; el.scrollTop = 0;
+  }
+  // 인쇄: 3D 화면·덧씌운 패널이 인쇄물에 섞이지 않도록, 검토 자료만 담은 숨은 틀(iframe)을 따로 만들어 인쇄
+  const PRINT_CSS = '@page{size:A4;margin:14mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}' +
+    'body{margin:0;font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;color:#14201a;background:#fff}' +
+    'header{display:flex;justify-content:space-between;font-size:11px;color:#5b6b63;border-bottom:2px solid #0b7a45;padding-bottom:6px}' +
+    'h1{margin:16px 0 10px;font-size:24px;letter-spacing:-.02em}h1 small{font-size:14px;color:#0b7a45;margin-left:6px}' +
+    'h4{margin:16px 0 6px;font-size:13.5px;color:#0b7a45;break-after:avoid}p,li{font-size:12px;line-height:1.6;margin:0}ul{margin:0;padding-left:18px}' +
+    'img{width:100%;border-radius:6px;display:block;margin:4px 0 6px}' +
+    'table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:4px;break-inside:avoid}th,td{border:1px solid #cfd8d3;padding:5px 7px;text-align:left;vertical-align:top;line-height:1.5}' +
+    '.tw-gm th{width:76px;background:#f1f6f3;color:#0b7a45;white-space:nowrap}.tw-tb th{background:#f1f6f3;color:#0b7a45;white-space:nowrap}.tw-tb tr.sum td{font-weight:800;background:#f7faf8}.tw-tb small{color:#0b7a45;font-weight:700}' +
+    '.sub{margin:8px 0 2px;font-size:11.5px;color:#5b6b63}.meta{margin-top:6px}' +
+    '.tw-abs{display:grid;gap:10px}.tw-ab{border:1px solid #cfd8d3;border-radius:8px;padding:10px 12px;break-inside:avoid}' +
+    '.tw-ab h5{margin:0 0 4px;font-size:14px;display:flex;gap:8px;align-items:center}.tw-ab h5 span{background:#0b7a45;color:#fff;border-radius:6px;padding:1px 8px;font-size:11px}.tw-ab .ld{color:#4a5a52;margin-bottom:6px}' +
+    '.tw-pcs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tw-reply td{height:26px}' +
+    'footer{margin-top:16px;font-size:10.5px;color:#6b7a73;border-top:1px solid #e3e8e5;padding-top:6px}.tw-ra{display:none}';
+  function printReport() {
+    const sheet = $('.tw-sheet'); if (!sheet) return;
+    const old = document.getElementById('twPrint'); if (old) old.remove();
+    const f = document.createElement('iframe'); f.id = 'twPrint'; f.setAttribute('aria-hidden', 'true');
+    f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    f.srcdoc = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>서울숲 개선안 검토 자료 · ' + esc(sel.name) + '</title><style>' + PRINT_CSS + '</style></head><body>' + sheet.innerHTML + '</body></html>';
+    f.onload = () => {
+      const w = f.contentWindow, imgs = [...w.document.images];
+      Promise.all(imgs.map(im => im.decode ? im.decode().catch(() => null) : null)).then(() => { w.focus(); w.print(); setTimeout(() => f.remove(), 60000); });
+    };
+    document.body.appendChild(f);
   }
   function savePNG() {
     const r = reportData(), Wc = 1240, c = document.createElement('canvas'), x = c.getContext('2d'), F = 'Pretendard Variable, Pretendard, sans-serif', lines = [];
-    const push = (t, s, w, col, gap) => lines.push({ t, s, w, col, gap });
-    push('서울숲 디지털트윈 · 개선안 보고서 · ' + r.date, 22, 600, '#5b6b63', 10); push(r.hub, 48, 800, '#0d1a14', 18);
+    const push = (t, s, w, col, gap, img) => lines.push({ t, s, w, col, gap, img });
+    push('서울숲 디지털트윈 · 개선안 검토 자료 · ' + r.date, 22, 600, '#5b6b63', 10);
     const sec = (h, arr) => { push(h, 26, 800, '#0b7a45', 8); arr.forEach(t => push('· ' + t, 21, 500, '#1d2a24', 4)); push('', 10, 400, '#000', 8); };
-    sec('왜 여기인가', [r.why]); sec('개선안', r.fac.length ? r.fac : ['공간을 바꾸지 않음']); if (r.ev.length) sec('아쉬움 근거 확인', r.ev); sec('예측 효과', r.eff); if (r.ops.length) sec('오늘 운영 추천 (실시간 도시데이터)', r.ops); sec('고른 방법', [r.how]); sec('확인할 것', r.check);
-    push('가상 시험 결과이며 실제 효과는 다를 수 있어요.', 18, 500, '#6b7a73', 0);
+    sec('공문', r.gm.map(([k, v]) => k + ' : ' + v));
+    push(r.hub + ' — 개선안 A · B · C', 40, 800, '#0d1a14', 18);
+    sec('① 현황 및 문제점', [r.why]);
+    push('② 개선방안 — 세 안', 26, 800, '#0b7a45', 8);
+    r.plans.forEach(p2 => { push(p2.tag + ' · ' + p2.title + ' — ' + p2.lead, 23, 800, '#0d1a14', 6, shots[p2.v] || ''); push('왜 이 조합인가: ' + p2.why, 20, 600, '#0b7a45', 4); p2.fac.forEach(t => push('· ' + t, 20, 500, '#1d2a24', 3)); p2.pros.forEach(t => push('＋ ' + t, 20, 500, '#0b7a45', 3)); p2.cons.forEach(t => push('－ ' + t, 20, 500, '#a4572a', 3)); push('사업비(개략) ' + won(p2.cost.total) + ' · 효과 시점 ' + p2.when, 20, 700, '#1d2a24', 14); });
+    sec('③ 필요성', r.need);
+    sec('④ 소요예산 (단가는 가정값)', [].concat(...r.plans.map(p2 => p2.cost.rows.map(c2 => p2.tag + ' · ' + c2.label + ' ' + c2.q.toLocaleString() + c2.unit + ' × ' + c2.p.toLocaleString() + '만 원 = ' + won(c2.sum)).concat([p2.tag + ' 합계(개략) ' + won(p2.cost.total)]))));
+    sec('⑤ 추진 일정', r.steps);
+    sec('⑥ 기대효과', r.plans.map(p2 => { const e = p2.eff; return p2.tag + ' · 붐비는 날 ' + e.cB.toFixed(1) + '→' + e.cA.toFixed(1) + ' · 더운 날 ' + e.hB.toFixed(1) + '→' + e.hA.toFixed(1) + ' · 혼잡률 ' + pc(e.rB) + '→' + pc(e.rA) + ' · 그늘 ' + pc(e.sB) + '→' + pc(e.sA) + ' · 환경 ' + e.eB.toFixed(1) + '→' + e.eA.toFixed(1); }));
+    sec('회신', ['검토 결과: □ A안  □ B안  □ C안  □ 보완 요청', '의견:', '검토자:']);
+    sec('붙임 · 고른 방법', [r.how]); sec('붙임 · 근거 문헌', REFS); sec('붙임 · 확인할 것', r.check);
+    push('디지털트윈 가상 시험 결과이며 실제 효과는 다를 수 있어요.', 18, 500, '#6b7a73', 0);
     const wrap = (t, s, w) => { x.font = w + ' ' + s + 'px ' + F; const out = []; let cur = ''; for (const chh of t) { if (x.measureText(cur + chh).width > Wc - 160 && cur) { out.push(cur); cur = chh; } else cur += chh; } out.push(cur); return out; };
-    const img = new Image(), drawP = () => {
-      const ih = img.width ? Math.round((Wc - 160) * img.height / img.width) : 0; let H2 = 120 + ih + 40;
-      const wl = lines.map(l => { const w = l.t ? wrap(l.t, l.s, l.w) : ['']; H2 += w.length * l.s * 1.45 + l.gap; return w; });
-      c.width = Wc; c.height = Math.ceil(H2 + 60); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); let y = 80;
-      lines.forEach((l, k) => { x.font = l.w + ' ' + l.s + 'px ' + F; x.fillStyle = l.col; wl[k].forEach(t => { x.fillText(t, 80, y); y += l.s * 1.45; }); y += l.gap; if (k === 1 && ih) { x.drawImage(img, 80, y, Wc - 160, ih); y += ih + 30; } });
-      const a = document.createElement('a'); a.download = '서울숲_개선안_' + r.hub.replace(/[^\w가-힣]+/g, '_') + '_' + r.date + '.png'; a.href = c.toDataURL('image/png'); a.click();
-    };
-    if (shot) { img.onload = drawP; img.onerror = drawP; img.src = shot; } else drawP();
+    const need = lines.filter(l => l.img), imgs = need.map(l => { const im = new Image(); im.src = l.img; return im; });
+    Promise.all(imgs.map(im => im.decode().catch(() => null))).then(() => {
+      const IW = Wc - 160, IH = Math.round(IW * 9 / 16); let H2 = 140;
+      const wl = lines.map(l => { const w = l.t ? wrap(l.t, l.s, l.w) : ['']; H2 += w.length * l.s * 1.45 + l.gap + (l.img ? IH + 24 : 0); return w; });
+      c.width = Wc; c.height = Math.ceil(H2 + 60); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); let y = 80, k2 = 0;
+      lines.forEach((l, k) => { x.font = l.w + ' ' + l.s + 'px ' + F; x.fillStyle = l.col; wl[k].forEach(t => { x.fillText(t, 80, y); y += l.s * 1.45; }); if (l.img) { const im = imgs[k2++]; if (im && im.width) x.drawImage(im, 80, y, IW, IH); y += IH + 24; } y += l.gap; });
+      const a = document.createElement('a'); a.download = '서울숲_개선안검토_' + r.hub.replace(/[^\w가-힣]+/g, '_') + '_' + r.date + '.png'; a.href = c.toDataURL('image/png'); a.click();
+    });
   }
 
-  // ---------- 그리기(바뀔 때만 · 멈추면 고화질 한 번) ----------
-  let W = 1, H = 1, split = true, views = [], VIS = null, hqWant = false, HQ = null, hqPend = false, hqAt = 0, hqLoading = false;
+  let W = 1, H = 1, split = !REVIEW, views = [], VIS = null, hqWant = false, HQ = null, hqPend = false, hqAt = 0, hqLoading = false;
   function size() { W = root.clientWidth || innerWidth; H = root.clientHeight || innerHeight; renderer.setSize(W, H, false); layoutBlocks(); }
   function visRect() {
     const g = q => { const e = ui.querySelector(q); return e ? e.getBoundingClientRect() : null; }, L = g('.tw-left'), Rr = g('.tw-right'), T = g('.tw-top'), Tm = g('.tw-time');
@@ -837,7 +1104,7 @@ export async function openTwin(o) {
   }
   function layoutViews() {
     const v = VIS = visRect(), vert = W <= 800;
-    if (!split) views = [{ cam: camera, side: 'R', x: 0, y: 0, w: W, h: H, vis: v }];
+    if (!split) views = REVIEW && !picked ? [{ cam: camL, side: 'L', x: 0, y: 0, w: W, h: H, vis: v }] : [{ cam: camera, side: 'R', x: 0, y: 0, w: W, h: H, vis: v }];
     else if (!vert) { const m = Math.round((v.x0 + v.x1) / 2); views = [{ cam: camL, side: 'L', x: 0, y: 0, w: m, h: H, vis: { x0: v.x0, x1: m, y0: v.y0, y1: v.y1 } }, { cam: camera, side: 'R', x: m, y: 0, w: W - m, h: H, vis: { x0: m, x1: v.x1, y0: v.y0, y1: v.y1 } }]; }
     else { const m = Math.round((v.y0 + v.y1) / 2); views = [{ cam: camL, side: 'L', x: 0, y: 0, w: W, h: m, vis: { x0: 0, x1: W, y0: v.y0, y1: m } }, { cam: camera, side: 'R', x: 0, y: m, w: W, h: H - m, vis: { x0: 0, x1: W, y0: m, y1: v.y1 } }]; }
     views.forEach(w => setOffset(w.cam, w));
@@ -854,7 +1121,7 @@ export async function openTwin(o) {
   }
   // 각 화면 아래 핵심 숫자 3개(지금 상황·시각)
   function updStats() {
-    const pl = plans[sel.id], L = $('.tw-vs[data-s="L"]'), Rr = $('.tw-vs[data-s="R"]');
+    const pl = plans[pk(sel)], L = $('.tw-vs[data-s="L"]'), Rr = $('.tw-vs[data-s="R"]');
     if (!pl) { L.innerHTML = Rr.innerHTML = ''; return; }
     const e = evalHub(pl, scn, hour), cell = (k, v, df) => '<span><small>' + k + '</small><b>' + v + '</b>' + (df || '') + '</span>';
     const d = (v, u, good, dg) => '<em class="' + (good ? 'up' : '') + '">' + (Math.abs(v) < Math.pow(10, -dg) / 2 ? '±0' : (v > 0 ? '+' : '−') + Math.abs(v).toFixed(dg)) + u + '</em>';
@@ -907,14 +1174,14 @@ export async function openTwin(o) {
   const ro = new ResizeObserver(size); ro.observe(root);
 
   // ---------- 시작 ----------
-  labelsHTML(); timeText(); size(); treeLOD(); $('.tw-livebox').innerHTML = liveHTML();
+  labelsHTML(); timeText(); size(); treeLOD(); if ($('.tw-livebox')) $('.tw-livebox').innerHTML = liveHTML();
   placeSun(true);
-  plans[sel.id] = buildPlan(sel); showPlan(); lowHTML();
+  plans[pk(sel)] = buildPlan(sel, curV); showPlan(); lowHTML();
   if (hqWant) ensureHQ();
-  if (/[?&]debug3d\b/.test(location.search)) window.__tw = { THREE, renderer, scene, camera, camL, get views() { return views; }, get trees() { return TMESH.map(p => p.map(m => m.count).join('/')).join(' '); }, get plan() { return plans[sel.id]; }, evalNow: () => plans[sel.id] && evalNow(plans[sel.id]), plans, setScn };
+  if (/[?&]debug3d\b/.test(location.search)) window.__tw = { THREE, renderer, scene, camera, camL, get views() { return views; }, get trees() { return TMESH.map(p => p.map(m => m.count).join('/')).join(' '); }, get plan() { return plans[pk(sel)]; }, evalNow: () => plans[pk(sel)] && evalNow(plans[pk(sel)]), plans, setScn };
   root.querySelector('.tw-load').remove(); root.classList.add('in'); raf = requestAnimationFrame(frame);
   flyTo(planView(sel), 1.6, () => { root.classList.add('ready'); o.onReady && o.onReady(); layoutBlocks(); dirty = true; idle(); });
-  function idle() { const h = lowList().find(x => !(x.id in plans)); if (!h || !alive) return; setTimeout(() => { if (!alive) return; planFor(h); lowHTML(); idle(); }, 60); }
+  function idle() { const h = lowList().find(x => !(pk(x) in plans)); if (!h || !alive) return; setTimeout(() => { if (!alive) return; planFor(h); lowHTML(); idle(); }, 60); }
 
   let leaving = false;
   function exit() {

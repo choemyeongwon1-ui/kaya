@@ -186,3 +186,212 @@
 .tw-asm{margin-top:10px;font-size:11px;color:rgba(241,247,243,.6)}
 .tw-asm summary{cursor:pointer;font-weight:700;color:rgba(241,247,243,.75)}
 .tw-asm ul{margin:6px 0 0;padding-left:16px;line-height:1.55}
+
+/* ---------- 구청 검토용 A·B·C안 비교 ---------- */
+.tw-abc{margin-top:12px}
+.tw-abc h4{margin:0 0 8px;font-size:14px}
+.tw-abc h4 small{display:block;font-weight:500;font-size:10.5px;color:rgba(241,247,243,.6);margin-top:2px}
+.tw-abc-t{display:grid;gap:7px}
+.tw-abc-r{display:grid;gap:5px;text-align:left;width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(241,247,243,.14);background:rgba(255,255,255,.03);color:inherit;font:inherit;cursor:pointer;transition:border-color .2s,background .2s}
+.tw-abc-r:hover{border-color:rgba(106,245,176,.45)}
+.tw-abc-r.on{border-color:#6af5b0;background:rgba(106,245,176,.1);box-shadow:0 0 0 1px rgba(106,245,176,.35) inset}
+.tw-abc-r[disabled]{cursor:default;opacity:.6}
+.tw-abc-r .hd{display:flex;align-items:center;gap:8px}
+.tw-abc-r .hd b{font-size:13.5px}
+.tw-abc-r .hd em+em{margin-left:-2px}
+.tw-abc-r .hd em{font-style:normal;font-size:10px;font-weight:800;color:#04261a;background:#6af5b0;border-radius:999px;padding:2px 7px}
+.tw-abc-r .what{font-size:11px;color:rgba(241,247,243,.75);line-height:1.45}
+.tw-abc-r .nums{display:grid;grid-template-columns:1.3fr 1fr 1fr .8fr;gap:4px}
+.tw-abc-r .nums i{font-style:normal;font-size:10px;color:rgba(241,247,243,.55);background:rgba(0,0,0,.18);border-radius:8px;padding:5px 7px}
+.tw-abc-r .nums b{display:block;font-size:13px;color:#f1f7f3;margin-top:1px}
+.tw-abc-r .nums b.up{color:#6af5b0}
+.tw-abc-r small{font-size:10.5px;color:rgba(241,247,243,.6);line-height:1.45}
+.tw-abc-r small.pc{color:rgba(196,240,214,.85)}
+.tw-abc-r small.pc.mi{color:rgba(255,200,160,.85)}
+.tw-vh{margin:16px 0 0;font-size:14px;color:#6af5b0}
+.tw-cost{margin-top:8px;font-size:11px;color:rgba(241,247,243,.7)}
+.tw-cost summary{cursor:pointer;font-weight:700}
+.tw-cost p{margin:6px 0;line-height:1.5}
+.tw-cost-g{display:grid;gap:5px}
+.tw-cost-g label{display:grid;grid-template-columns:minmax(0,1fr) 78px auto;gap:6px;align-items:center}
+.tw-cost-g input{width:100%;box-sizing:border-box;background:rgba(0,0,0,.3);border:1px solid rgba(241,247,243,.2);border-radius:6px;color:#f1f7f3;padding:4px 6px;font:inherit;text-align:right}
+.tw-cost-g em{font-style:normal;color:rgba(241,247,243,.5);white-space:nowrap}
+.tw-cost-x{margin-top:7px;border:1px solid rgba(241,247,243,.25);background:transparent;color:inherit;border-radius:999px;padding:4px 10px;font:inherit;cursor:pointer}
+/* 제안서 표 */
+.tw-sheet h1 small{font-size:15px;color:#0b7a45;margin-left:6px}
+.tw-sheet .sub{margin-top:10px;font-size:12px;color:#5b6b63}
+.tw-gm,.tw-tb{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+.tw-gm th,.tw-gm td,.tw-tb th,.tw-tb td{border:1px solid #d6dfda;padding:6px 8px;text-align:left;vertical-align:top;line-height:1.5}
+.tw-gm th{width:78px;background:#f1f6f3;color:#0b7a45;white-space:nowrap}
+.tw-tb th{background:#f1f6f3;color:#0b7a45;font-weight:700;white-space:nowrap}
+.tw-tb tr.on td{background:#eafaf1}
+.tw-tb tr.sum td{font-weight:800;background:#f7faf8}
+.tw-tb small{color:#0b7a45;font-weight:700}
+@media print{.tw-gm th,.tw-tb th{background:#eee!important;color:#000}}
+
+/* ---------- 관리자: 두 버튼 ---------- */
+.tw-sub{flex:0 0 auto;border:1px solid rgba(106,245,176,.5);border-radius:999px;padding:10px 14px;font-size:12.5px;font-weight:800;background:transparent;color:#6af5b0;cursor:pointer}
+
+/* ---------- 구청 검토 화면 (?review=) ---------- */
+.tw-review .tw-tag.gov{background:linear-gradient(140deg,#ffcf7a,#ffb547);color:#2a1700}
+.tw-review .tw-lab:not(.on){display:none}
+.tw-vtabs{display:flex;gap:6px;margin-left:14px}
+.tw-top .tw-vt{display:flex;align-items:center;gap:10px;padding:5px 14px 5px 6px;border-radius:14px;border:1px solid rgba(241,247,243,.16);background:rgba(255,255,255,.035);color:#f1f7f3;text-align:left;transition:all .25s cubic-bezier(.2,.7,.2,1)}
+.tw-top .tw-vt:hover:not([disabled]){border-color:rgba(106,245,176,.55);transform:translateY(-1px)}
+.tw-top .tw-vt .k{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;font-size:13px;font-weight:900;background:rgba(255,255,255,.07);color:rgba(241,247,243,.8)}
+.tw-top .tw-vt .t b{display:block;font-size:13px;line-height:1.2}
+.tw-top .tw-vt .t small{display:block;font-size:10.5px;font-weight:600;color:rgba(241,247,243,.55)}
+.tw-top .tw-vt.on{border-color:#6af5b0;background:linear-gradient(140deg,rgba(106,245,176,.2),rgba(63,216,150,.08));box-shadow:0 0 0 1px rgba(106,245,176,.4) inset,0 8px 22px -10px rgba(106,245,176,.6)}
+.tw-top .tw-vt.on .k{background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a}
+.tw-top .tw-vt.on .t small{color:#bff5d9}
+.tw-review .tw-left.tw-rvl{width:340px;top:76px;bottom:14px;max-height:none;padding:16px}
+.tw-review .tw-right.tw-rvr{top:76px;width:320px}
+.tw-review .tw-time{left:368px;right:348px}
+.tw-rvh{display:flex;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid rgba(241,247,243,.1)}
+.tw-rvh .k{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:14px;font-size:17px;font-weight:900;background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a;box-shadow:0 8px 20px -8px rgba(106,245,176,.7)}
+.tw-rvh h2{margin:1px 0 4px;font-size:21px;letter-spacing:-.02em}
+.tw-rvh p{margin:0;font-size:12px;line-height:1.5;color:rgba(241,247,243,.7)}
+.tw-kps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 4px}
+.tw-kp{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(241,247,243,.08)}
+.tw-kp small{display:block;font-size:10px;color:rgba(241,247,243,.55);margin-bottom:3px}
+.tw-kp b{font-size:15px}.tw-kp b.sm{font-size:11.5px;line-height:1.4;display:block}
+.tw-kp.big b{font-size:18px;color:#f1f7f3}.tw-kp.big b.sm{font-size:11.5px}
+.tw-kp span{font-size:13px;color:rgba(241,247,243,.6)}.tw-kp span i{font-style:normal;margin:0 4px;opacity:.6}.tw-kp span b.up{color:#6af5b0;font-size:18px}.tw-kp span em{font-style:normal;font-size:10px;margin-left:2px}
+.tw-rvl h4{margin:16px 0 8px;font-size:12.5px;font-weight:800}
+.tw-rvl h4 small{display:block;font-size:10px;font-weight:500;color:rgba(241,247,243,.5);margin-top:2px}
+.tw-pc2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.tw-pc2 section{padding:10px;border-radius:12px;border:1px solid rgba(106,245,176,.22);background:rgba(106,245,176,.05)}
+.tw-pc2 section.con{border-color:rgba(255,157,92,.25);background:rgba(255,157,92,.05)}
+.tw-pc2 h5{margin:0 0 6px;font-size:11.5px;font-weight:800;color:#6af5b0}.tw-pc2 .con h5{color:#ff9d5c}
+.tw-pc2 ul{margin:0;padding-left:14px;display:grid;gap:4px}.tw-pc2 li{font-size:11px;line-height:1.45;color:rgba(241,247,243,.82)}
+.tw-chg{display:grid;gap:4px}
+.tw-cg{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.03);color:rgba(241,247,243,.65)}
+.tw-cg b{color:#f1f7f3}.tw-cg b.up{color:#6af5b0}
+.tw-ct,.tw-cmp{width:100%;border-collapse:collapse;font-size:11px}
+.tw-ct td{padding:6px 4px;border-bottom:1px solid rgba(241,247,243,.07);color:rgba(241,247,243,.75)}
+.tw-ct td:nth-child(n+2){text-align:right;white-space:nowrap}
+.tw-ct tr.sum td{font-weight:800;color:#f1f7f3;border-bottom:0}
+.tw-cmp th,.tw-cmp td{padding:7px 4px;border-bottom:1px solid rgba(241,247,243,.07);text-align:right;white-space:nowrap}
+.tw-cmp tr:first-child th{font-size:10px;font-weight:600;color:rgba(241,247,243,.5)}
+.tw-cmp th:first-child{text-align:left}
+.tw-cmp tr[data-v]{cursor:pointer;transition:background .2s}.tw-cmp tr[data-v]:hover{background:rgba(255,255,255,.04)}
+.tw-cmp tr.on{background:rgba(106,245,176,.1)}.tw-cmp tr.on th{color:#6af5b0}
+.tw-cmp td.up{color:#6af5b0;font-weight:800}
+.tw-rvr .tw-pred h4{margin-top:16px}
+@media(max-width:1100px){.tw-vtabs{order:5;width:100%;margin:6px 0 0}.tw-top .tw-vt{flex:1}.tw-review .tw-left.tw-rvl,.tw-review .tw-right.tw-rvr{top:124px}}
+@media(max-width:899px){.tw-review .tw-left.tw-rvl{width:auto;right:14px;bottom:auto;max-height:46%}.tw-review .tw-right.tw-rvr{display:none}}
+/* 검토 자료: 세 안 카드 */
+.tw-abs{display:grid;gap:12px}
+.tw-ab{border:1px solid #d6dfda;border-radius:10px;padding:12px 14px;break-inside:avoid}
+.tw-ab h5{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px}
+.tw-ab h5 span{display:inline-grid;place-items:center;min-width:34px;height:24px;border-radius:7px;background:#0b7a45;color:#fff;font-size:12px}
+.tw-ab .ld{font-size:12.5px;color:#4a5a52;margin:0 0 8px}
+.tw-ab img{margin:4px 0 6px}
+.tw-ab .meta{margin-top:8px;font-size:12.5px}
+.tw-pcs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tw-reply td{height:28px}
+
+/* ---------- 구청 검토 화면 v2: 처음엔 세 안 카드 → 누르면 자세히 창 + 전·후 분할 ---------- */
+.tw-hubchip{font-size:12px;font-weight:700;color:rgba(241,247,243,.75);padding:3px 10px;border-radius:999px;border:1px solid rgba(241,247,243,.16)}
+.tw-hubchip:empty{display:none}
+.tw-review .tw-time{left:388px;right:14px}
+.tw-review .tw-left.tw-rvl{width:360px;top:76px;padding:18px;scrollbar-width:thin}
+.tw-review .tw-left.tw-rv-list{bottom:auto;max-height:calc(100% - 92px)}
+.tw-review .tw-left.tw-rv-detail{bottom:14px;max-height:none}
+.tw-rv-list>*,.tw-rv-detail>*{animation:twIn .45s cubic-bezier(.2,.7,.2,1) both}
+.tw-rv-detail>*:nth-child(2){animation-delay:.04s}.tw-rv-detail>*:nth-child(3){animation-delay:.08s}.tw-rv-detail>*:nth-child(n+4){animation-delay:.12s}
+.tw-cards .tw-card:nth-child(2){animation-delay:.06s}.tw-cards .tw-card:nth-child(3){animation-delay:.12s}
+@keyframes twIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.tw-rvt small{font-size:11px;color:rgba(241,247,243,.5)}
+.tw-rvt h2{margin:2px 0 6px;font-size:22px;letter-spacing:-.02em}
+.tw-rvq{margin:0;font-size:12px;color:rgba(241,247,243,.65)}
+.tw-rvh3{margin:18px 0 10px;font-size:13px;font-weight:800;display:flex;align-items:baseline;justify-content:space-between}
+.tw-rvh3 small{font-size:10.5px;font-weight:500;color:rgba(241,247,243,.5)}
+.tw-cards{display:grid;gap:8px}
+.tw-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;padding:12px;border-radius:14px;border:1px solid rgba(241,247,243,.12);background:rgba(255,255,255,.035);color:inherit;font:inherit;cursor:pointer;animation:twIn .45s cubic-bezier(.2,.7,.2,1) both;transition:border-color .2s,background .2s,transform .2s}
+.tw-card:hover:not([disabled]){border-color:rgba(106,245,176,.6);background:rgba(106,245,176,.07);transform:translateX(3px)}
+.tw-card[disabled]{opacity:.55;cursor:wait}
+.tw-card .k{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;font-size:14px;font-weight:900;background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a}
+.tw-card .b b{display:block;font-size:15px;margin-bottom:2px}
+.tw-card .b small{display:block;font-size:11px;line-height:1.45;color:rgba(241,247,243,.6)}
+.tw-card .c{font-size:12px;font-weight:800;color:#f1f7f3;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tw-card .c i{font-style:normal;font-size:18px;color:#6af5b0}
+.tw-rvn{margin:14px 0 0;font-size:10.5px;color:rgba(241,247,243,.45)}
+.tw-rvnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.tw-back{border:0;background:none;color:#6af5b0;font:inherit;font-size:12px;font-weight:800;cursor:pointer;padding:4px 0}
+.tw-mini{display:inline-flex;gap:2px;padding:2px;border-radius:999px;border:1px solid rgba(241,247,243,.18)}
+.tw-mini button{border:0;background:none;color:rgba(241,247,243,.65);font:inherit;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;cursor:pointer}
+.tw-mini button[aria-pressed=true]{background:#6af5b0;color:#04261a}
+.tw-rv-detail h4{margin:16px 0 8px;font-size:12.5px;font-weight:800}
+.tw-rv-detail h4 small{display:block;font-size:10px;font-weight:500;color:rgba(241,247,243,.5);margin-top:2px}
+.tw-rv-detail .tw-plan li{padding:8px 10px}
+.tw-rv-detail .tw-plan b{font-size:12.5px}
+.tw-plan.sm li{padding:7px 9px}.tw-plan.sm b{font-size:11.5px}
+.tw-more{margin-top:8px;border-radius:12px;border:1px solid rgba(241,247,243,.1);background:rgba(255,255,255,.02);padding:0 12px}
+.tw-more summary{cursor:pointer;list-style:none;font-size:12px;font-weight:700;padding:11px 0;display:flex;justify-content:space-between;color:rgba(241,247,243,.85)}
+.tw-more summary::-webkit-details-marker{display:none}
+.tw-more summary::after{content:'+';color:#6af5b0;font-weight:800}
+.tw-more[open] summary::after{content:'−'}
+.tw-more[open]{padding-bottom:12px}
+.tw-more .tw-ct{margin-top:8px}
+@media(max-width:899px){.tw-review .tw-left.tw-rvl{width:auto;right:14px;top:auto;bottom:96px;max-height:48%}.tw-review .tw-time{left:14px}}
+.tw-left .tw-rvh3{margin:20px 0 10px}
+.tw-review.tw-picked .tw-lab{display:none}
+
+/* ---------- 구청 검토 화면 v3: 3D 전체 + 아래 세 안 카드 → 누르면 새 창(팝업) ---------- */
+.tw-review .tw-time{left:14px;right:14px}
+.tw-dock{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);width:min(980px,calc(100% - 28px));animation:twUp .5s cubic-bezier(.2,.7,.2,1) both}
+.tw-dock[hidden]{display:none}
+@keyframes twUp{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.tw-dockh{margin:0 0 8px 4px;font-size:13px;font-weight:800;color:#f1f7f3;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.tw-dockh span{font-size:11px;font-weight:500;color:rgba(241,247,243,.7);margin-left:6px}
+.tw-dockr{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tw-dock .tw-card{grid-template-columns:auto minmax(0,1fr);background:rgba(10,20,15,.9);border-color:rgba(241,247,243,.14);box-shadow:0 12px 30px -12px rgba(0,0,0,.6);backdrop-filter:blur(6px)}
+.tw-dock .tw-card:hover:not([disabled]){transform:translateY(-3px);background:rgba(16,34,25,.95)}
+.tw-pop{position:absolute;left:14px;top:76px;bottom:92px;width:380px;display:flex;flex-direction:column;overflow:hidden;padding:0;box-shadow:0 24px 60px -16px rgba(0,0,0,.7),0 0 0 1px rgba(106,245,176,.25)}
+.tw-pop[hidden]{display:none}
+.tw-pop.in{animation:twPop .38s cubic-bezier(.2,.8,.2,1) both}
+@keyframes twPop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}
+.tw-popbar{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-bottom:1px solid rgba(241,247,243,.1);background:linear-gradient(140deg,rgba(106,245,176,.14),rgba(63,216,150,.04))}
+.tw-popbar .k{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;font-size:13px;font-weight:900;background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a}
+.tw-popbar b{font-size:16px;flex:1}
+.tw-x{width:30px;height:30px;border-radius:50%;border:1px solid rgba(241,247,243,.2);background:rgba(255,255,255,.05);color:#f1f7f3;font-size:13px;cursor:pointer}
+.tw-x:hover{background:rgba(255,255,255,.14)}
+.tw-popb{flex:1;overflow:auto;padding:14px 16px 16px;scrollbar-width:thin}
+.tw-lead{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:rgba(241,247,243,.75)}
+.tw-popb h4{margin:16px 0 8px;font-size:12.5px;font-weight:800}
+.tw-popb h4 small{display:block;font-size:10px;font-weight:500;color:rgba(241,247,243,.5);margin-top:2px}
+.tw-popb .tw-plan li{padding:8px 10px}.tw-popb .tw-plan b{font-size:12.5px}
+@media(max-width:899px){.tw-dockr{grid-template-columns:1fr}.tw-dock{bottom:92px}.tw-pop{width:auto;right:14px;top:auto;height:52%}}
+/* 오른쪽 위 A·B·C 고르기 */
+.tw-vsw{display:inline-flex;align-items:center;gap:3px;padding:3px 3px 3px 12px;border-radius:999px;border:1px solid rgba(106,245,176,.45);background:rgba(106,245,176,.08);margin-right:6px}
+.tw-vsw .lb{font-size:11.5px;font-weight:800;color:#6af5b0;margin-right:5px}
+.tw-top .tw-vsw button{border:0;background:none;color:rgba(241,247,243,.8);font-size:14px;font-weight:900;padding:7px 16px;border-radius:999px}
+.tw-top .tw-vsw button:hover:not([disabled]){background:rgba(255,255,255,.08);color:#fff}
+.tw-top .tw-vsw button[aria-pressed=true]{background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a;box-shadow:0 4px 14px -4px rgba(106,245,176,.7)}
+/* 안을 고른 뒤 뒤로 가기 */
+.tw-top .tw-backbtn{border:1px solid rgba(241,247,243,.35);background:rgba(255,255,255,.08);color:#f1f7f3;font-size:12.5px;font-weight:800;padding:8px 14px;border-radius:999px;margin-right:8px;animation:twIn .3s both}
+.tw-top .tw-backbtn:hover{background:rgba(255,255,255,.16)}
+.tw-top .tw-backbtn[hidden]{display:none}
+.tw-pback{width:30px;height:30px;border-radius:50%;border:1px solid rgba(241,247,243,.2);background:rgba(255,255,255,.05);color:#f1f7f3;font-size:15px;font-weight:800;cursor:pointer;flex:none}
+.tw-pback:hover{background:rgba(255,255,255,.14)}
+/* 오른쪽 위 A·B·C: 안마다 짧은 한 줄 설명 · 처음 화면에선 더 눈에 띄게 */
+.tw-vsw{padding:4px 4px 4px 14px;gap:4px}
+.tw-vsw .lb{font-size:11.5px;line-height:1.25;margin-right:6px;white-space:nowrap}
+.tw-top .tw-vsw button{display:grid;justify-items:start;gap:1px;padding:7px 14px;border-radius:14px;text-align:left}
+.tw-top .tw-vsw button b{font-size:14px;font-weight:900;line-height:1.1}
+.tw-top .tw-vsw button small{font-size:10.5px;font-weight:600;color:rgba(241,247,243,.6);white-space:nowrap}
+.tw-top .tw-vsw button[aria-pressed=true] small{color:rgba(4,38,26,.75)}
+.tw-review:not(.tw-picked) .tw-vsw{border-color:#6af5b0;background:rgba(106,245,176,.12);animation:twGlow 2.2s ease-in-out infinite}
+.tw-review:not(.tw-picked) .tw-top .tw-vsw button{background:rgba(255,255,255,.06)}
+.tw-review:not(.tw-picked) .tw-top .tw-vsw button:hover{background:rgba(106,245,176,.22)}
+@keyframes twGlow{0%,100%{box-shadow:0 0 0 0 rgba(106,245,176,0)}50%{box-shadow:0 0 0 4px rgba(106,245,176,.18),0 0 24px rgba(106,245,176,.3)}}
+@media (prefers-reduced-motion:reduce){.tw-review:not(.tw-picked) .tw-vsw{animation:none}}
+.tw-review .tw-pop{top:88px}
+/* 구청 검토 화면 → 만족도 화면으로 */
+.tw-top .tw-home{border:1px solid rgba(241,247,243,.25);background:rgba(255,255,255,.05);color:rgba(241,247,243,.85);font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;margin-right:4px}
+.tw-top .tw-home:hover{background:rgba(255,255,255,.14);color:#fff}
+/* 왜 이 조합인가 · 근거 표시 */
+.tw-why2{margin:0 0 12px;padding:9px 11px;border-radius:10px;background:rgba(106,245,176,.07);border-left:3px solid #6af5b0;font-size:11.5px;line-height:1.55;color:rgba(241,247,243,.82)}
+.tw-why2 b{display:block;font-size:10.5px;color:#6af5b0;margin-bottom:2px}
+.tw-pc2 li cite{display:block;font-style:normal;font-size:9.5px;color:rgba(241,247,243,.45);margin-top:2px}
