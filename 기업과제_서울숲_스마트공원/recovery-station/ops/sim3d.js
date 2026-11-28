@@ -386,6 +386,10 @@ export async function openTwin(o) {
   // 바닥 자료
   const pairs = (a, s) => { const out = []; for (let i = s; i + 1 < a.length; i += 2) out.push([a[i], a[i + 1]]); return out; };
   const FE = (feats0 && feats0.features || []).map(f => ({ k: f.properties.kind, ring: f.geometry.coordinates[0].map(q => xy(q[0], q[1])) }));
+  // 실제 공원 경계(OpenStreetMap 「서울숲」 경계, 2026-11-09 수집 — data/meta.json) — 기본설계 도면용
+  // 길 중심선·폭(OpenStreetMap, data/paths.json — width 태그 있으면 그 값, 없으면 유형별 표준폭 추정)
+  let PATHW = [], PATHT = 0; J(D + 'paths.json').then(g => { PATHW = g.ways.map(w => ({ hw: w[0], w: w[1], tag: w[2], pts: w[3].map(q => xy(q[0], q[1])) })); PATHT = PATHW.filter(w => w.tag).length; }).catch(() => {});
+  let PARKB = []; J(D + 'park.geojson').then(g => { const gm = g.features ? g.features[0].geometry : g.geometry, ps = gm.type === 'Polygon' ? [gm.coordinates] : gm.coordinates; PARKB = ps.map(pg => pg[0].map(q => xy(q[0], q[1]))); }).catch(() => {});
   const CWATER = (city && city.water || []).map(w => Array.isArray(w[0]) ? w : pairs(w, 0)).filter(p => p.length > 2);
   const NX = net ? net.nodes.map(q => xy(q[0], q[1])) : [], NE = net ? net.edges.filter(e => NX[e[0]] && NX[e[1]]) : [];
   const BLOCK = FE.filter(f => f.k === 'building' || f.k === 'water').map(f => f.ring).concat(CWATER);
@@ -742,19 +746,22 @@ export async function openTwin(o) {
     // ── 도면 내용(도곽 안으로 자름)
     const g = ['<g clip-path="url(#' + id + 'c)"><rect x="' + DX0 + '" y="' + DY0 + '" width="' + DW + '" height="' + DH + '" fill="url(#bpo)"/>'];
     const cl = []; for (let i = 0; i < N; i++) if (inV(CX[i], CY[i], 20)) cl.push('<polygon points="' + poly(Q[i]) + '"/>');
-    g.push('<g fill="#fff" stroke="#fff" stroke-width=".8">' + cl.join('') + '</g>');
+    g.push('<g fill="#fff" stroke="#fff" stroke-width=".8">' + (PARKB.length ? PARKB.map(r => '<polygon points="' + poly(r) + '"/>').join('') : cl.join('')) + '</g>');
     CWATER.forEach(r => { if (r.some(q => inV(q[0], q[1], 200))) g.push('<polygon points="' + poly(r) + '" fill="url(#bpw)" stroke="#000" stroke-width="' + L(.18) + '"/>'); });
     FE.forEach(f => { if (!f.ring.some(q => inV(q[0], q[1], 80))) return;
       g.push('<polygon points="' + poly(f.ring) + '" ' + (f.k === 'water' ? 'fill="url(#bpw)" stroke="#000" stroke-width="' + L(.25) + '"' : f.k === 'building' ? 'fill="url(#bpb)" stroke="#000" stroke-width="' + L(.3) + '"' : f.k === 'lawn' ? 'fill="url(#bpl)" stroke="#555" stroke-width="' + L(.1) + '" stroke-dasharray="4 3"' : 'fill="none" stroke="#555" stroke-width="' + L(.1) + '" stroke-dasharray="1.5 3"') + '/>'); });
     const es = NE.filter(e => inV(NX[e[0]][0], NX[e[0]][1], 40) || inV(NX[e[1]][0], NX[e[1]][1], 40)).map(e => '<line x1="' + X(NX[e[0]][0]) + '" y1="' + Y(NX[e[0]][1]) + '" x2="' + X(NX[e[1]][0]) + '" y2="' + Y(NX[e[1]][1]) + '"/>').join('');
     if (mode === 'loc') g.push('<g stroke="#000" stroke-width="' + L(.18) + '" stroke-linecap="round">' + es + '</g>');
+    else if (PATHW.length) { const vis = PATHW.filter(w => w.pts.some(q => inV(q[0], q[1], 40))).sort((u, v) => v.w - u.w), pl2 = w => w.pts.map(q => X(q[0]) + ',' + Y(q[1])).join(' ');
+      g.push('<g fill="none" stroke="#000" stroke-linecap="butt" stroke-linejoin="round">' + vis.map(w => '<polyline points="' + pl2(w) + '" stroke-width="' + (w.w * S + 1.4).toFixed(1) + '"' + (w.tag ? '' : ' stroke-dasharray="none"') + '/>').join('') + '</g><g fill="none" stroke="#fff" stroke-linecap="butt" stroke-linejoin="round">' + vis.map(w => '<polyline points="' + pl2(w) + '" stroke-width="' + Math.max(.5, w.w * S - .4).toFixed(1) + '"/>').join('') + '</g>');
+      if (mode !== 'loc') g.push(vis.filter(w => w.tag && w.w * S > 9).map(w => { const k = Math.floor(w.pts.length / 2), a = w.pts[Math.max(0, k - 1)], b = w.pts[Math.min(w.pts.length - 1, k)], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; if (!inV(mx, my, -10)) return ''; let an = -Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI; if (an > 90) an -= 180; if (an < -90) an += 180; return '<text class="bp-d" text-anchor="middle" transform="translate(' + X(mx) + ',' + (+Y(my) + 3) + ') rotate(' + an.toFixed(1) + ')">B=' + (w.w * 1000).toLocaleString() + '</text>'; }).join('')); }
     else g.push('<g stroke="#000" stroke-width="' + (4 * S + 1.4).toFixed(1) + '" stroke-linecap="round" stroke-linejoin="round">' + es + '</g><g stroke="#fff" stroke-width="' + (4 * S - .4).toFixed(1) + '" stroke-linecap="round" stroke-linejoin="round">' + es + '</g>');
     // 기존 수목(위성 수관 피복으로 추정한 위치 — 실측 아님)
     if (mode !== 'loc') { const tr = []; for (let i = 0; i < N; i++) { if (TR[i] < .05 || !inV(CX[i], CY[i], 15)) continue; const n = Math.max(1, Math.round(TR[i] * CELL_M2 / CANOPY_M2));
       for (let t = 0; t < n; t++) { const px = CX[i] + (bpRnd(i, t, 1) - .5) * 15, py = CY[i] + (bpRnd(i, t, 2) - .5) * 15, r = (2.6 + bpRnd(i, t, 3) * 1.4) * S; tr.push('<circle cx="' + X(px) + '" cy="' + Y(py) + '" r="' + r.toFixed(1) + '"/><path d="M' + (+X(px) - 1.6) + ',' + Y(py) + 'h3.2M' + X(px) + ',' + (+Y(py) - 1.6) + 'v3.2"/>'); } }
       g.push('<g fill="#fff" fill-opacity=".35" stroke="#6a6a6a" stroke-width="' + L(.1) + '">' + tr.join('') + '</g>'); }
     // 공원 경계(1점 쇄선)
-    g.push('<g stroke="#000" stroke-width="' + L(mode === 'loc' ? .5 : .6) + '" stroke-dasharray="18 4 3 4" fill="none">' + bpEdge().filter(e => inV(e[0][0], e[0][1], 30)).map(e => '<line x1="' + X(e[0][0]) + '" y1="' + Y(e[0][1]) + '" x2="' + X(e[1][0]) + '" y2="' + Y(e[1][1]) + '"/>').join('') + '</g>');
+    g.push('<g stroke="#000" stroke-width="' + L(mode === 'loc' ? .5 : .6) + '" stroke-dasharray="18 4 3 4" fill="none">' + (PARKB.length ? PARKB.map(r => '<polygon points="' + poly(r) + '"/>').join('') : bpEdge().filter(e => inV(e[0][0], e[0][1], 30)).map(e => '<line x1="' + X(e[0][0]) + '" y1="' + Y(e[0][1]) + '" x2="' + X(e[1][0]) + '" y2="' + Y(e[1][1]) + '"/>').join('')) + '</g>');
     // 체류공간 범위
     if (mode !== 'loc') g.push('<circle cx="' + X(h.x) + '" cy="' + Y(h.y) + '" r="' + (STAY_R * S).toFixed(1) + '" fill="none" stroke="#000" stroke-width="' + L(.18) + '" stroke-dasharray="6 4"/><text class="bp-s" x="' + X(h.x) + '" y="' + (+Y(h.y + STAY_R) - 4) + '" text-anchor="middle">체류공간 범위 R=40m</text>');
     // ── 계획 시설(굵은 선)
@@ -795,7 +802,7 @@ export async function openTwin(o) {
     out.push('<rect x="' + FL + '" y="' + FT + '" width="' + (W - FL - FR) + '" height="' + (H - FT - FB) + '" fill="none" stroke="#000" stroke-width="' + L(.7) + '"/><rect x="' + (FL - 6) + '" y="' + (FT - 6) + '" width="' + (W - FL - FR + 12) + '" height="' + (H - FT - FB + 12) + '" fill="none" stroke="#000" stroke-width="' + L(.13) + '"/><line x1="' + TX + '" y1="' + FT + '" x2="' + TX + '" y2="' + (H - FB) + '" stroke="#000" stroke-width="' + L(.5) + '"/>');
     let ty = FT; const tb = [], hd = t => { tb.push('<rect x="' + TX + '" y="' + ty + '" width="' + TBW + '" height="20" fill="#eee" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-th" x="' + (TX + TBW / 2) + '" y="' + (ty + 14) + '" text-anchor="middle">' + t + '</text>'); ty += 20; };
     // 범례
-    const LEG = { bd: ['공원 경계', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width="1.5" stroke-dasharray="9 2 2 2"/>'], rd: ['원로(폭 4m 가정)', s => '<rect x="2" y="3" width="32" height="8" fill="#fff" stroke="#000" stroke-width=".9"/>'],
+    const LEG = { bd: ['공원 경계', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width="1.5" stroke-dasharray="9 2 2 2"/>'], rd: [PATHW.length ? '원로·도로(OSM 중심선)' : '원로(폭 4m 가정)', s => '<rect x="2" y="3" width="32" height="8" fill="#fff" stroke="#000" stroke-width=".9"/>'],
       et: ['기존 수목(위성 추정)', s => '<circle cx="18" cy="7" r="6" fill="#fff" stroke="#6a6a6a" stroke-width=".4"/><path d="M16.4,7h3.2M18,5.4v3.2" stroke="#6a6a6a" stroke-width=".4"/>'], lw0: ['잔디·초지', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpl)" stroke="#555" stroke-width=".4" stroke-dasharray="3 2"/>'],
       wt: ['수면', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpw)" stroke="#000" stroke-width=".6"/>'], bl: ['건축물', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpb)" stroke="#000" stroke-width=".8"/>'],
       st: ['체류공간 범위(R40m)', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width=".6" stroke-dasharray="5 3"/>'], hb: ['대상지', s => '<circle cx="18" cy="7" r="6" fill="none" stroke="#000" stroke-width="2"/>'],
@@ -818,7 +825,7 @@ export async function openTwin(o) {
       tb.push('<line x1="' + (TX + 26) + '" y1="' + (ty - 0) + '" x2="' + (TX + 26) + '" y2="' + (ty - 0) + '"/>'); ty += 4; }
     // 비고
     const TBH = 238, notes = (o.notes || []).map((t, i) => (i + 1) + '. ' + t);
-    hd('비 고'); notes.forEach(t => bpWrap(t, 21).forEach((l, j) => { if (ty + 14 > H - FB - TBH - 10) return; tb.push('<text class="bp-s" x="' + (TX + (j ? 18 : 8)) + '" y="' + (ty + 12) + '">' + esc(l) + '</text>'); ty += 12.5; }));
+    hd('비 고'); notes.forEach(t => bpWrap(t, 23).forEach((l, j) => { if (ty + 14 > H - FB - TBH - 10) return; tb.push('<text class="bp-s" x="' + (TX + (j ? 18 : 8)) + '" y="' + (ty + 12) + '">' + esc(l) + '</text>'); ty += 12.5; }));
     // 표제란(아래 고정)
     const pn = bpWrap('서울숲 「' + h.name + '」 거점 휴게환경 개선 기본구상', 14); let by = H - FB - TBH - (pn.length * 14 + 8 - 44); const row = (lab, val, hh, cls) => { tb.push('<rect x="' + TX + '" y="' + by + '" width="' + TBW + '" height="' + hh + '" fill="none" stroke="#000" stroke-width="' + L(.18) + '"/><rect x="' + TX + '" y="' + by + '" width="58" height="' + hh + '" fill="#eee" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-th2" x="' + (TX + 29) + '" y="' + (by + hh / 2 + 4) + '" text-anchor="middle">' + lab + '</text>');
       const ls = Array.isArray(val) ? val : [val]; ls.forEach((l, j) => tb.push('<text class="' + (cls || 'bp-s') + '" x="' + (TX + 66) + '" y="' + (by + hh / 2 + 4 - (ls.length - 1) * 7 + j * 14) + '">' + esc(l) + '</text>')); by += hh; };
@@ -1703,10 +1710,10 @@ export async function openTwin(o) {
   function drawingSet(set, date, keys) {
     keys = keys || KS;
     const sheets = [], dt = date.split('-').map(Number).join('. ') + '.', p0 = set[keys[0]], A3 = v => 'A3 1/' + v.toLocaleString();
-    const NOTE0 = ['기본구상(개략) 도면 — 측량·실시설계 도면 아님', '기존 수목: 위성 피복 추정(매목조사 필요)', '원로 폭 4m 가정(실측 필요)'];
-    const loc = bpSheet({ mode: 'loc', rel: 'L-002', pl: p0, no: 'L-001', title: '위치도', date: dt, notes: ['서울숲 전체에서 대상지 위치 표시', '공원 경계는 분석 격자(20m) 외곽선으로 지적 경계와 다를 수 있음'] });
+    const NOTE0 = ['기본구상(개략) 도면 — 측량·실시설계 도면 아님', '기존 수목: 위성 피복 추정(매목조사 필요)', PATHW.length ? '원로 폭: OSM 태그 ' + PATHT + '곳 외 유형별 추정(실측 필요)' : '원로 폭 4m 가정(실측 필요)'];
+    const loc = bpSheet({ mode: 'loc', rel: 'L-002', pl: p0, no: 'L-001', title: '위치도', date: dt, notes: ['서울숲 전체에서 대상지 위치 표시', PARKB.length ? '공원 경계: OpenStreetMap 서울숲 경계(2026-11-09 수집) — 지적 경계는 지적도로 확인' : '공원 경계: 분석 격자(20m) 외곽선 — 지적 경계와 다를 수 있음'] });
     sheets.push({ full: true, no: 'L-001', name: '위치도', svg: loc.svg, scale: A3(loc.scale) });
-    const ex = bpSheet({ mode: 'ex', rel: 'L-001, L-101', pl: p0, no: 'L-002', title: '현황도', date: dt, notes: NOTE0.concat(['수면·건축물·잔디: OpenStreetMap', '도면 명칭·축척: 서울시 건설기술용역 관리편람(조경편, 2014)']) });
+    const ex = bpSheet({ mode: 'ex', rel: 'L-001, L-101', pl: p0, no: 'L-002', title: '현황도', date: dt, notes: NOTE0.concat(['수면·건축물·잔디: OpenStreetMap', '도면 명칭·축척·서명란: 서울시 건설기술용역 관리편람(조경편, 2014) — 표제란 형식은 발주기관 협의']) });
     sheets.push({ full: true, no: 'L-002', name: '현황도', svg: ex.svg, scale: A3(ex.scale) });
     keys.forEach((k, n) => {
       const pl = set[k], no = 'L-1' + String(n + 1).padStart(2, '0'), b = bpSheet({ mode: 'pl', rel: 'L-002, L-2' + String(n + 1).padStart(2, '0') + ', D-001', pl, no, title: (keys.length > 1 ? k + '안 ' : '') + '시설물배치도', date: dt, notes: NOTE0.concat(['번호 = 수량표 번호', 'A–A′ = 단면도 L-2' + String(n + 1).padStart(2, '0') + ' 위치', '치수 단위 mm']) });
@@ -1843,8 +1850,8 @@ export async function openTwin(o) {
     const lg = s => s.legend ? '<div class="tw-lg2">' + s.legend.map(x => '<span class="lg-' + x[0] + '"><i></i>' + x[1] + '</span>').join('') + '</div>' : '';
     // 공문서 양식: 기안문(내부결재) + 검토보고서(Ⅰ·Ⅱ 장, □ ○ - 단계 기호) — 「행정업무의 운영 및 혁신에 관한 규정」 기안문 서식 구성을 따름
     const fd = (() => { const [y, m, dd] = r.date.split('-').map(Number), w = '일월화수목금토'[new Date(y, m - 1, dd).getDay()]; return { d: y + '. ' + m + '. ' + dd + '.', w: y + '. ' + m + '. ' + dd + '.(' + w + ')' }; })();
-    // 구청 사업제안서 서식 순서(주민참여예산 제안사업 신청서·소관부서 검토의견서 항목 참고)로 장을 다시 묶음
-    const CH = ['사업 개요', '사업 필요성 (현행 문제점 및 추진 배경)', '사업 내용', '소요 예산 (산출 기초)', '추진 일정', '기대 효과 (시행 전후 비교)', '행정 사항'];
+    // 장 순서: 서울시 시민참여예산 「사업제안서」(2026년 공모 붙임3) — 사업명·위치·예산·기간 → 사업목적(현 문제점·추진 배경) → 사업내용(대상·규모·추진방법·산출내역) → 사업효과(기대효과·수혜범위)
+    const CH = ['사업 개요', '사업 목적 (현 문제점 및 추진 배경)', '사업 내용 (대상·규모·추진 방법)', '소요 예산 (산출 내역)', '추진 일정', '사업 효과 (기대 효과·수혜 범위)', '행정 사항'];
     const one1 = KS.length === 1, chOf = sx => { const h = sx.h; if (/^검토 개요/.test(h)) return 0; if (/^①|^③ 필요성/.test(h)) return 1; if (/^②-3/.test(h)) return 6; if (/^②/.test(h) || (one1 && /안 사업 내용 — /.test(h))) return 2; if (/^④/.test(h) || (one1 && (/안 소요예산 내역/.test(h) || /^소요예산 공통/.test(h)))) return 3; if (/^⑤/.test(h)) return 4; if (/^⑥/.test(h)) return 5; return -1; };
     const ren = h => h === '검토 개요' ? '' : h === '① 현황 및 문제점' ? '현황' : h === '①-1 문제점' ? '문제점' : /^①-2/.test(h) ? '개선 기준 (기준값 대비 현황)' : h === '③ 필요성' ? '추진 배경' : /^② 개선방안 — /.test(h) ? (one1 ? '주요 내용 — ' + h.replace(/^② 개선방안 — /, '') : '대안 구성 (선택: 결재권자)') : /^②-1/.test(h) ? '대안 비교표' : /^②-2/.test(h) ? '만족도가 오르는 이유' : /^②-3/.test(h) ? '대상지 설계 의도 부합 여부' : /안 사업 내용 — /.test(h) ? '세부 내용' : h === '④ 소요예산' ? '총괄' : /안 소요예산 내역/.test(h) ? '산출 기초 (수량 × 단가)' : /^소요예산 공통/.test(h) ? '단가 적용 기준' : /^[⑤⑥]/.test(h) ? '' : h;
     const fl = a => '<ul class="fm-ul">' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
@@ -1856,13 +1863,16 @@ export async function openTwin(o) {
     const body = sx => (sx.html && altT ? tb(altT) : sx.html || '') + (sx.list ? fl(sx.list) : '') + (sx.table ? tb(sx.table) : '') + (sx.tables ? sx.tables.map(tb).join('') : '') + (sx.note ? '<p class="tw-n">' + esc(sx.note) + '</p>' : '');
     const sec = sx => { const t = ren(sx.h); return (t ? '<h5 class="fm-h2">' + esc(t) + '</h5>' : '') + body(sx); };
     const law = { h: '관련 법령 및 협조', list: ['「도시공원 및 녹지 등에 관한 법률」 제16조의2제3항 — 공원의 주제·특색을 바꾸지 않는 소규모 공원시설 설치는 도시공원위원회 심의·주민의견 청취 생략 가능(2009 판본 확인, 현행 조문 확인 필요)', '협조: ' + DOC.cc + ' — 시설 설치 위치·규격 협의', '설치 후 같은 거점 이용자 평가로 효과 확인(5. 추진 일정 참조), 결과에 따라 다음 단계 시설 검토'] };
+    const ov = (r.sections.find(sx => sx.h === '검토 개요') || { table: { rows: [] } }).table.rows, ovv = k => (ov.find(x => x[0] === k) || [, ''])[1];
+    const ben = { h: '수혜 범위', list: ['대상지 체류공간(반경 ' + STAY_R + 'm) 이용자 — 동시 수용 ' + Math.round(sel.cap || 0).toLocaleString() + '명(가정값), 주말·폭염 시간대 이용자 중심', '분산 유도 안내는 공원 안 다른 거점 이용자에게도 혼잡 완화 효과(점수 계산에는 이 거점만 반영)'] };
+    const sdF = G ? { h: '성동구 주민참여예산 사업 신청서 기재 요약', table: { head: ['신청서 항목', '기재 내용'], rows: [['사업명', ovv('사업명')], ['사업위치', ovv('사업 위치')], ['소요사업비(예상)', KS.map(k => (KS.length > 1 ? k + '안 ' : '') + G[k].cost).join(' / ')], ['사업목적(제안취지)', d.body[0] || ''], ['사업내용', KS.map(k => (KS.length > 1 ? k + '안: ' : '') + G[k].does).join(' / ')], ['현황사진', '붙임 2 현황·대안 비교 화면(현장 사진으로 교체 필요)']] }, note: '성동구 공고 제2024-516호(2024. 3. 18.) 붙임2 「주민참여예산사업 신청서」 항목 기준 — 2027년도 공모 서식과 다른지 확인 필요' } : null;
     const tagged = r.sections.map((sx, ix) => ({ sx, ix, c: chOf(sx) }));
-    const chap = CH.map((t, c) => { const xs = tagged.filter(x => x.c === c); if (c === 6) xs.push({ sx: law, ix: 999 }); return xs.length ? '<h4 class="fm-h1">' + esc(t) + '</h4>' + xs.map(x => sec(x.sx)).join('') : ''; }).join('');
+    const chap = CH.map((t, c) => { const xs = tagged.filter(x => x.c === c); if (c === 5) xs.push({ sx: ben, ix: 998 }); if (c === 6) { xs.push({ sx: law, ix: 999 }); if (sdF) xs.push({ sx: sdF, ix: 1000 }); } return xs.length ? '<h4 class="fm-h1">' + esc(t) + '</h4>' + xs.map(x => sec(x.sx)).join('') : ''; }).join('');
     const apx = tagged.filter(x => x.c < 0).map(x => x.sx);
     const main = null;
     el.innerHTML = '<div class="tw-sheet fm-on">' +
       // 1. 기안문(내부결재)
-      '<section class="tw-doc fm-doc"><p class="fm-draft">※ 초안 — 결재 전 작성 부서·직위·성명·연락처 기입</p><div class="fm-org">서울특별시</div>' +
+      '<section class="tw-doc fm-doc"><p class="fm-draft">※ 초안 — 결재 전 작성 부서·직위·성명·연락처 기입 · 서식: 「행정업무의 운영 및 혁신에 관한 규정 시행규칙」 제4조·별지 제1호서식(행정안전부령 제408호, 2023. 6. 28. 시행)</p><div class="fm-org">서울특별시</div>' +
       '<table class="fm-hd"><tr><th>수신</th><td>내부결재</td></tr><tr><th>(경유)</th><td></td></tr><tr><th>제목</th><td>' + esc(d.subj) + '</td></tr></table><div class="fm-rule"></div>' +
       '<div class="fm-bd"><p>1. 관련: ' + esc(d.rel) + '</p><p>2. ' + esc(d.subj.replace(/ 검토 보고$/, '')) + '에 대하여 아래와 같이 검토 결과를 보고합니다.</p>' + d.body.map((x, q) => '<p class="sub">' + '가나다라마'[q] + '. ' + esc(x) + '</p>').join('') + '</div>' +
       '<p class="fm-att">붙임&nbsp;&nbsp;1. 검토 보고서 1부.<br><span class="fm-att2">2. 현황·대안 비교 화면(현장 사진 대체) 1부.</span><br><span class="fm-att2">3. 기본설계 도면(위치도·현황도·시설물배치도·단면도·상세도) 1부.</span><br><span class="fm-att2">4. 소관부서 검토 의견서 1부.&nbsp;&nbsp;끝.</span></p>' +
@@ -1876,7 +1886,7 @@ export async function openTwin(o) {
       '<div class="fm-sum"><b>검토 요지</b>' + fl(d.body.slice(0, 2)) + '</div>' +
       chap +
       (apx.length ? '<h4 class="fm-h1 fm-ref">참고 자료</h4>' + apx.map(sx => '<h5 class="fm-h2">' + esc(sx.h) + '</h5>' + body(sx)).join('') : '') +
-      '<p class="tw-n fm-end">모형 예상 점수와 개략 단가로 만든 검토 보고서로, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 함.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터임.' : '') + '</p></section>' +
+      '<p class="tw-n fm-end">모형 예상 점수와 개략 단가로 만든 검토 보고서로, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 함. 항목 기호(□ ○ -)는 같은 시행규칙 제2조제1항 단서에 따름. 글꼴(제목 고딕·본문 명조)은 공식 규정이 아닌 관행.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터임.' : '') + '</p></section>' +
       // 붙임 1: 지금/개선 후 비교 그림
       '<section class="tw-dwg"><header><span>붙임 2 · 현황 / 대안 적용 비교 화면</span><span>' + r.date + '</span></header><h1>디지털트윈 비교 (좌: 현황 · 우: 대안 적용)</h1>' +
       KS.map(k => shots[k] ? '<h4>' + ALT[k].name + '</h4><img class="tw-shot" src="' + shots[k] + '" alt="' + ALT[k].name + ' 지금과 개선 후 3D 비교">' : '').join('') +
