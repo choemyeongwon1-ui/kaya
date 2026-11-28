@@ -1019,7 +1019,7 @@ div.tr-status-line{cursor:default}
 /* 주변 땅(용도지역) */
 /* 주변 땅을 펼치면 위성 사진을 흑백으로 바꾸고 그 위에 선명한 반투명 용도 색 */
 .tr-map.tr-zonemap .tr-sat{opacity:1!important}
-.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(1) brightness(1) contrast(1)}
+.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(1) brightness(1.12) contrast(.9)}
 .tr-map.tr-zonemap .tr-fade{display:none}
 .tr-zone-chip{display:inline-flex;align-items:center;gap:5px}
 .tr-zone-chip i{flex:none;width:9px;height:9px;border-radius:3px}

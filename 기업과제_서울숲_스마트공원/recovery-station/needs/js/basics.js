@@ -106,18 +106,23 @@ export function mountBasics(o) {
     }
   }
   // 정원: 코스 화면의 꽃은 클래스로 숨기고, 코스가 없을 땐 정원 전체를 꽃으로
+  let gKey = null;
   function syncGarden() {
     o.mapEl.classList.toggle('tr-nogarden', !st.garden);
-    gLayer.clearLayers();
-    if (!st.garden || o.routeGardens() || map.getZoom() < MIN_ZOOM) return;
-    for (const g of o.gardens()) {
+    // 보여줄 꽃이 그대로면 다시 그리지 않음(지도에 다른 레이어가 붙었다 떨어질 때마다 꽃이 깜빡이던 문제)
+    const on = st.garden && !o.routeGardens() && map.getZoom() >= MIN_ZOOM, list = on ? o.gardens() : [];
+    const key = on ? list.map(g => `${g.lat},${g.lon}`).join('|') : '';
+    if (key === gKey) return;
+    gKey = key; gLayer.clearLayers();
+    if (!on) return;
+    for (const g of list) {
       L.marker([g.lat, g.lon], { pane: 'tr-basic', icon: L.divIcon({ className: '', html: `<div class="tr-flower mini" title="${esc(g.name)}">${o.flower}</div>`, iconSize: [18, 18], iconAnchor: [9, 9] }) })
         .on('click', () => o.onGarden(g.g)).addTo(gLayer);
     }
   }
   let t = 0; const later = () => { clearTimeout(t); t = setTimeout(syncGarden, 120); };
   map.on('zoomend', () => { draw(); syncGarden(); });
-  map.on('layeradd layerremove', e => { if (e.layer?.options?.pane !== 'tr-basic') later(); });
+  map.on('layeradd layerremove', e => { const p = e.layer?.options?.pane; if (p !== 'tr-basic' && p !== 'zone' && !(e.layer instanceof L.Tooltip)) later(); });
 
   const counts = () => GROUPS.forEach(g => { bar.querySelector(`[data-k="${g.key}"] .n`).textContent = points.filter(p => g.kinds.includes(p.kind)).length; });
   // 서울시 화장실(중계 서버)을 받아 지도 화장실에 짝지음: 별칭 → 40m 안 가장 가까운 화장실 → 공원 안이면 새 화장실. 못 받으면 파일에 넣어 둔 값 그대로
