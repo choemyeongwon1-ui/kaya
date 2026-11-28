@@ -175,12 +175,21 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .gift-opt small{display:block;margin-top:1px;font-size:11px;color:#6b746e;line-height:1.4}
 .gift-opt[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
 .gift-opt[aria-pressed="true"] em{background:#cfe3d3}
-.gift-park{display:flex;align-items:center;gap:10px;margin:2px 0 4px;padding:10px 12px;border-radius:14px;background:#fff7e6;border:1.5px solid #f0d49a;font-size:11.5px;line-height:1.5;color:#3d3423;animation:up .35s cubic-bezier(.2,.7,.2,1) both}
+.gift-park{display:block;margin:2px 0 4px;padding:10px 11px;border-radius:14px;background:#fff7e6;border:1.5px solid #f0d49a;font-size:11.5px;line-height:1.5;color:#3d3423;animation:up .35s cubic-bezier(.2,.7,.2,1) both}
 .gift-park[hidden]{display:none}
 .gift-park:not([hidden])+.lock-note{display:none}
-.gift-park .pk-map{flex:none;width:46px;height:auto}
-.gift-park b{display:block;font-size:12.5px;color:#14201a}
-.gift-park span{color:#8a6a2c;font-weight:700}
+.gift-park .lot-h b{display:block;font-size:12.5px;color:#14201a}
+.gift-park .lot-h span{font-size:11px;color:#8a6a2c;font-weight:700}
+.gift-park .lot-body{display:flex;gap:8px;align-items:flex-start;margin-top:7px}
+.gift-park .pk-map{flex:none;width:58px;height:auto;margin-top:2px}
+.gift-park .lots{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.lot-opt{display:flex;align-items:center;gap:7px;width:100%;padding:6px 8px;border:1.5px solid #ecdcb5;border-radius:10px;background:#fffdf7;font:inherit;color:#14201a;text-align:left;cursor:pointer}
+.lot-opt i{flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #2b2a27;font-style:normal;font-size:10px;font-weight:800}
+.lot-opt b{display:block;font-size:11.5px;letter-spacing:-.02em}
+.lot-opt small{display:block;font-size:10px;color:#6b746e;line-height:1.35}
+.lot-opt[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
+.lot-opt[aria-pressed="true"] i{background:#2b2a27;color:#faf8f1}
+.gift-park .lot-n{margin:6px 0 0;font-size:10.5px;color:#8a6a2c}
 .gift-opt:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .faces{display:flex;justify-content:space-between;gap:8px;margin:4px 0 10px}
 .face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1.5px solid #dcdcd4;border-radius:16px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
@@ -886,7 +895,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     h += part(5, rt, P);
     h += '<hr class="hr">';
     h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark(R.date, R.time) + '</div></div>', P);
-    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + (st.gift === 'park' ? '<div class="pk">' + parkMap() + '<div class="pk-t"><b>' + PARK_LOT.name + '</b>' + PARK_LOT.addr + '<br>' + PARK_LOT.info + '<br>나갈 때 이 바코드를 찍어요</div></div>' : '') + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
+    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + (lotOf(st) && st.gift === 'park' ? '<div class="pk">' + parkMap(st.lot) + '<div class="pk-t"><b>' + lotOf(st).addr + '</b>' + lotOf(st).info + '<br>나갈 때 이 바코드를 찍어요</div></div>' : '') + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
     h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(R.no) + '번째 사람</b><br>' + R.line + ', 고맙습니다</div>';
     h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
@@ -1038,19 +1047,39 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
   var GIFTS = {
     cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페 · 발급일부터 3일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
-    park: { ico: '🅿️', t: '서울숲공원주차장 1시간 무료', pick: '서울숲 안 · 성수동1가 643 주차장에서만', s: '서울숲 안 주차장 · 발급 당일', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
+    park: { ico: '🅿️', t: '주변 주차장 1시간 무료', pick: '서울숲 주변 4곳 중 내가 세운 주차장', s: '발급 당일', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
     shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍 · 발급일부터 3일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
   };
-  // 주차 쿠폰에 찍는 주차장 안내 (서울시 실시간 도시데이터 '서울숲공원' 주차장 정보, 서울숲 누리집 주차장 안내 — 2026-11-28 확인)
-  var PARK_LOT = { name: '서울숲공원주차장', addr: '성동구 성수동1가 643', info: '211면 · 24시간', x: 210.1, y: 213.5 };
-  function parkMap() {
-    return '<svg class="pk-map" viewBox="0 0 ' + MAP.w + ' ' + MAP.h + '" aria-label="서울숲 안 주차장 위치">' +
-      '<path d="' + MAP.park + '" fill="#2b2a27" fill-opacity=".06" stroke="#2b2a27" stroke-width="5" stroke-linejoin="round"/>' +
-      '<circle cx="' + PARK_LOT.x + '" cy="' + PARK_LOT.y + '" r="30" fill="#2b2a27"/>' +
-      '<text x="' + PARK_LOT.x + '" y="' + (PARK_LOT.y + 15) + '" text-anchor="middle" font-size="42" font-weight="800" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">P</text></svg>';
+  // 주차 쿠폰을 쓸 수 있는 서울숲 주변 주차장 (2026-11-28 확인)
+  //  서울숲공원주차장·갤러리아포레: 서울시 실시간 도시데이터 '서울숲공원' 주차장 정보(이름·지번·면수·좌표), 서울숲 누리집 주차장 안내(211면·24시간)
+  //  서울숲 디타워: 블로그 2곳(wubl.net·avlab.co.kr)의 지번·면수, 좌표는 같은 필지 아크로서울포레스트(OpenStreetMap)
+  //  뚝섬유수지 공영: wubl.net의 주소·면수, 좌표는 OpenStreetMap '뚝섬유수지 공영주차장'
+  var PARK_LOTS = [
+    { name: '서울숲공원주차장', addr: '성동구 성수동1가 643', info: '211면 · 서울숲 안', lat: 37.54148, lon: 127.042774 },
+    { name: '갤러리아포레 더몰 주차장', addr: '성동구 성수동1가 685-696', info: '785면 · 서울숲역 쪽', lat: 37.545295, lon: 127.043045 },
+    { name: '서울숲 디타워 주차장', addr: '성동구 성수동1가 685-700', info: '826면 · 서울숲역 쪽', lat: 37.54446, lon: 127.043886 },
+    { name: '뚝섬유수지 공영주차장', addr: '성동구 왕십리로11길 23', info: '333면 · 공원 북쪽', lat: 37.550182, lon: 127.042099 },
+  ];
+  PARK_LOTS.forEach(function (p) {   // 영수증 지도와 같은 투영
+    p.x = Math.round(((p.lon - 127.030812) * 17060.1676 + 6) * 10) / 10;
+    p.y = Math.round(((37.551123 - p.lat) * 21516.7377 + 6) * 10) / 10;
+  });
+  function lotOf(st) { return PARK_LOTS[st && st.lot] || null; }
+  function parkMap(sel) {
+    var s = '<svg class="pk-map" viewBox="-4 -14 ' + (MAP.w + 12) + ' ' + (MAP.h + 22) + '" aria-label="서울숲 주변 주차장 위치">' +
+      '<path d="' + MAP.park + '" fill="#2b2a27" fill-opacity=".06" stroke="#2b2a27" stroke-width="5" stroke-linejoin="round"/>';
+    PARK_LOTS.forEach(function (p, i) {
+      var on = i === sel;
+      s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="' + (on ? 30 : 19) + '" fill="' + (on ? '#2b2a27' : '#faf8f1') + '" stroke="#2b2a27" stroke-width="5"/>' +
+        '<text x="' + p.x + '" y="' + (p.y + (on ? 15 : 10)) + '" text-anchor="middle" font-size="' + (on ? 42 : 28) + '" font-weight="800" font-family="Nanum Gothic Coding,monospace" fill="' + (on ? '#faf8f1' : '#2b2a27') + '">' + (on ? 'P' : i + 1) + '</text>';
+    });
+    return s + '</svg>';
   }
 
-  function giftOf(st) { return GIFTS[st && st.gift] || GIFTS.cafe; }
+  function giftOf(st) {
+    var g = GIFTS[st && st.gift] || GIFTS.cafe, lot = st && st.gift === 'park' && lotOf(st);
+    return lot ? { ico: g.ico, t: '주차 1시간 무료', s: lot.name + ' · 발급 당일', note: g.note } : g;
+  }
   $('#gifts').innerHTML = Object.keys(GIFTS).map(function (k) {
     var g = GIFTS[k];
     return '<button class="gift-opt" type="button" data-g="' + k + '" aria-pressed="false"><em>' + g.ico + '</em><span><b>' + g.t + '</b><small>' + (g.pick || g.s) + '</small></span></button>';
@@ -1061,9 +1090,21 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       state.gift = b.dataset.g; $('#bGift').disabled = false;
       // 주차 쿠폰은 이 주차장에서만 → 고르기 전에 어디인지 분명히
       var gp = $('#giftPark'); gp.hidden = state.gift !== 'park';
-      if (!gp.hidden) gp.innerHTML = parkMap() + '<div><b>🅿️ ' + PARK_LOT.name + '에서만 쓸 수 있어요</b>' + PARK_LOT.addr + ' · ' + PARK_LOT.info + '<br><span>다른 곳에 주차했다면 카페·가게 쿠폰을 골라 주세요.</span></div>';
+      if (state.gift === 'park') { state.lot = undefined; paintLots(); }
+      $('#bGift').disabled = state.gift === 'park' && state.lot == null;
     };
   });
+  // 주차 쿠폰은 그 주차장에서만 쓰므로, 어디에 세웠는지 먼저 고름
+  function paintLots() {
+    var gp = $('#giftPark'), sel = state.lot;
+    gp.innerHTML = '<div class="lot-h"><b>🅿️ 어디에 주차하셨나요?</b><span>고른 주차장에서만 쓰는 쿠폰이 나와요</span></div>' +
+      '<div class="lot-body">' + parkMap(sel) + '<div class="lots">' + PARK_LOTS.map(function (p, i) {
+        return '<button class="lot-opt" type="button" data-i="' + i + '" aria-pressed="' + (i === sel) + '"><i>' + (i + 1) + '</i><span><b>' + p.name + '</b><small>' + p.addr + ' · ' + p.info + '</small></span></button>';
+      }).join('') + '</div></div><p class="lot-n">주차를 안 했다면 카페·가게 쿠폰을 골라 주세요.</p>';
+    $$('.lot-opt', gp).forEach(function (b) {
+      b.onclick = function () { state.lot = +b.dataset.i; paintLots(); $('#bGift').disabled = false; };
+    });
+  }
   $('#bGift').onclick = function () { view('photo'); };
 
   var stream = null;
@@ -1293,7 +1334,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
     state = { best: '', tags: [], memo: '', photo: null };
-    $$('#gifts .gift-opt').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('#bGift').disabled = true; $('#giftPark').hidden = true;
+    $$('#gifts .gift-opt').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('#bGift').disabled = true; $('#giftPark').hidden = true; state.lot = undefined;
     var bs = $('#bShare'); bs.classList.remove('done'); bs.textContent = '방명록에 남기기'; $('#nick').value = '';
     $('#bScan').disabled = false; $('#tip').classList.remove('gone'); $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
     $$('#places .place,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
