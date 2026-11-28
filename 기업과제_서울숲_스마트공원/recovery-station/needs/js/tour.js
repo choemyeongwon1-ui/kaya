@@ -16,7 +16,7 @@ import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
-import { mountBasics } from './basics.js?v=6';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
+import { mountBasics } from './basics.js?v=7';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -688,18 +688,18 @@ function accessBar() {
 // 범례에서 한 종류만 고를 때만 그 종류를 캔버스에 덧그림. 필지·건물 원자료는 마우스를 올릴 때 처음 받음(이름·번지 보기용)
 const ZONE_GROUPS = [
   { key: 'r', t: '주거지역', items: [
-    ['r1x', '제1종전용주거지역', '#fff1b8', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#ffe38a', '공동주택 중심 조용한 동네'],
-    ['r1', '제1종일반주거지역', '#fcd462', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#f5bf3f', '중간 높이 주택 중심'],
-    ['r3', '제3종일반주거지역', '#eaa52a', '높은 아파트 중심'], ['rq', '준주거지역', '#db8a22', '집 + 가게·사무실'] ] },
+    ['r1x', '제1종전용주거지역', '#fbefc6', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거지역', '#f7e3a3', '공동주택 중심 조용한 동네'],
+    ['r1', '제1종일반주거지역', '#f2d382', '낮은 주택 중심'], ['r2', '제2종일반주거지역', '#e9c063', '중간 높이 주택 중심'],
+    ['r3', '제3종일반주거지역', '#dba948', '높은 아파트 중심'], ['rq', '준주거지역', '#c98f3a', '집 + 가게·사무실'] ] },
   { key: 'c', t: '상업지역', items: [
-    ['cc', '중심상업지역', '#a3172f', '도심·큰 중심가'], ['cm', '일반상업지역', '#d32f2f', '일반 상가·사무실'],
-    ['cn', '근린상업지역', '#ef6c5a', '동네 생활 상가'], ['cd', '유통상업지역', '#c2185b', '시장·물류'] ] },
+    ['cc', '중심상업지역', '#9e3a3a', '도심·큰 중심가'], ['cm', '일반상업지역', '#c25450', '일반 상가·사무실'],
+    ['cn', '근린상업지역', '#d88272', '동네 생활 상가'], ['cd', '유통상업지역', '#b0566a', '시장·물류'] ] },
   { key: 'i', t: '공업지역', items: [
-    ['ix', '전용공업지역', '#0d3b9e', '중화학 공장'], ['ig', '일반공업지역', '#1e63d6', '일반 공장'],
-    ['iq', '준공업지역', '#4a90ff', '공장 + 집·가게·사무실'] ] },
+    ['ix', '전용공업지역', '#2f4b8a', '중화학 공장'], ['ig', '일반공업지역', '#4a6bb0', '일반 공장'],
+    ['iq', '준공업지역', '#7c97cc', '공장 + 집·가게·사무실'] ] },
   { key: 'g', t: '녹지지역', items: [
-    ['gp', '보전녹지지역', '#0b6e2e', '자연을 그대로 지킴'], ['ga', '생산녹지지역', '#8bc34a', '농사 짓는 땅'],
-    ['gn', '자연녹지지역', '#2e9e48', '녹지를 지키며 조금만 개발'] ] },
+    ['gp', '보전녹지지역', '#2f6e48', '자연을 그대로 지킴'], ['ga', '생산녹지지역', '#a9c48a', '농사 짓는 땅'],
+    ['gn', '자연녹지지역', '#5f9e6e', '녹지를 지키며 조금만 개발'] ] },
 ];
 // 용도지역과 상관없이 지목으로 칠하는 땅(도로·물·공원)
 const INFRA = { road: { t: '도로·철도', c: '#dcdcd8', d: '지목 도로·철도용지' }, water: { t: '하천·물길', c: '#c3d3d7', d: '지목 하천·구거·유지·제방' }, park: { t: '공원', c: '#a9b48d', d: '지목 공원' } };
@@ -708,8 +708,8 @@ const infraOf = jm => !jm ? null : '도철'.includes(jm) ? 'road' : '천구유�
 const BLDG_G6 = { '01': 'h', '02': 'h', '03': 's', '04': 's', '07': 's', '15': 's', '16': 's', '14': 'o', '17': 'i', '18': 'i', '19': 'i', '20': 'i',
   '10': 'p', '05': 'p', '06': 'p', '09': 'p', '11': 'p', '13': 'p', '12': 'p', '08': 'p' };
 const BLDG_GROUPS = [{ key: 'all', t: '블록의 주용도', items: [
-  ['h', '주거', '#f2b632', '단독·아파트·연립'], ['s', '상업', '#d32f2f', '가게·음식점·판매·숙박'], ['o', '업무', '#8e5cc8', '사무실·오피스텔'],
-  ['i', '공업', '#1e63d6', '공장·창고·자동차시설'], ['p', '공공', '#2e9e48', '학교·문화·종교·의료·복지']] }];
+  ['h', '주거', '#e2b54f', '단독·아파트·연립'], ['s', '상업', '#c25450', '가게·음식점·판매·숙박'], ['o', '업무', '#8a72b8', '사무실·오피스텔'],
+  ['i', '공업', '#4a6bb0', '공장·창고·자동차시설'], ['p', '공공', '#5f9e6e', '학교·문화·종교·의료·복지']] }];
 const bshare6 = () => {   // 기타·용도 없음은 빼고 다섯 용도끼리의 비율
   const o = {}; for (const [c, p] of Object.entries(ZONES?.bshare ?? {})) { const g = BLDG_G6[c]; if (g) o[g] = (o[g] ?? 0) + p; }
   const t = Object.values(o).reduce((s, v) => s + v, 0) || 1;
@@ -718,7 +718,7 @@ const mixTxt = s => [...(s ?? '').matchAll(/([a-z])(\d+)/g)].map(([, g, p]) => `
 const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const BLDG_OF = Object.fromEntries(BLDG_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const JIMOK = { 대: '대지', 전: '밭', 답: '논', 임: '임야', 잡: '잡종지', 학: '학교용지', 종: '종교용지', 창: '창고용지', 장: '공장용지', 차: '주차장', 주: '주유소용지', 체: '체육용지', 원: '유원지', 사: '사적지', 묘: '묘지', 목: '목장용지', 과: '과수원', 광: '광천지', 염: '염전', 양: '양어장', 도: '도로', 철: '철도용지', 천: '하천', 구: '구거', 유: '유지', 제: '제방', 수: '수도용지', 공: '공원' };
-let ZONES = null, ZP = null, ZB = null, zoneOpen = false, zoneOnly = null, zonePlans = true, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
+let ZONES = null, ZP = null, ZB = null, ZZ = null, zoneOpen = false, zoneOnly = null, zonePlans = true, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
 const pctTxt = p => p >= .995 ? '100%' : p >= .01 ? `${Math.round(p * 100)}%` : p > 0 ? '1% 미만' : '';
 
 // 위경도 → 줌 0 픽셀(웹 메르카토르)
@@ -736,6 +736,15 @@ function decodeItems(src, list, kind) {
       if (X < x0) x0 = X; if (X > x1) x1 = X; if (Y < y0) y0 = Y; if (Y > y1) y1 = Y;
     }
     return { kind, i, r, p, bb: [x0, y0, x1, y1] };
+  });
+}
+function decodeRings(src) {   // 용도별로 합친 면(바깥 고리 + 구멍)
+  const [ox, oy] = src.origin, k = src.scale;
+  return src.z.map(([code, , rings]) => {
+    const rr = rings.map(d => { const p = new Float64Array(d.length); let x = 0, y = 0; for (let j = 0; j < d.length; j += 2) { x += d[j]; y += d[j + 1]; p[j] = mx(ox + x / k); p[j + 1] = my(oy + y / k); } return p; });
+    const e = rr[0]; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let j = 0; j < e.length; j += 2) { if (e[j] < x0) x0 = e[j]; if (e[j] > x1) x1 = e[j]; if (e[j + 1] < y0) y0 = e[j + 1]; if (e[j + 1] > y1) y1 = e[j + 1]; }
+    return { r: [code], rr, bb: [x0, y0, x1, y1] };
   });
 }
 function gridOf(items) {   // 마우스 아래 도형 찾기용 격자
@@ -820,8 +829,20 @@ const ZoneCanvas = L.Layer.extend({
     };
     // 범례에서 고른 한 종류만 진하게(나머지는 타일을 흐리게), 아주 가까우면 전부를 타일 대신 캔버스로
     const isZ = zoneMode === 'zone', hi = z >= ZONE_HI && !zoneOnly;
-    if ((zoneOnly || hi) && isZ && ZP?.items) paint(ZP.items, parcelLook, hi ? .48 : .75, 0, z >= 15 ? .6 : 0, hi ? 1 : .7);
-    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .5 : .7, 0, z >= 14 ? .8 : 0, hi ? 1.2 : 1);
+    const inView = b => !(b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1) && (b[2] - b[0] >= minPx || b[3] - b[1] >= minPx);
+    if ((zoneOnly || hi) && isZ && ZZ) {   // 용도별로 합친 면 + 용도 경계만 진하게 + 필지 선은 아주 옅게(타일과 같은 모양)
+      const groups = new Map();
+      for (const it of ZZ) { if (!inView(it.bb) || (zoneOnly && zoneOnly !== it.r[0])) continue; const c = ZONE_OF[it.r[0]]?.c; if (!c) continue; let g = groups.get(c); if (!g) groups.set(c, g = []); g.push(it.rr); }
+      const ring = p => { ctx.moveTo(p[0] * s - o.x, p[1] * s - o.y); for (let j = 2; j < p.length; j += 2) ctx.lineTo(p[j] * s - o.x, p[j + 1] * s - o.y); ctx.closePath(); };
+      for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = zoneOnly ? .7 : .42; ctx.fillStyle = c; ctx.fill('evenodd'); }
+      if (z >= 15 && ZP?.items) {
+        ctx.beginPath();
+        for (const it of ZP.items) { if (!inView(it.bb) || infraOf(it.r[1]) || (zoneOnly && zoneOnly !== it.r[0])) continue; ring(it.p); }
+        ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(225,225,225,.2)'; ctx.lineWidth = .8; ctx.stroke();
+      }
+      for (const [c, list] of groups) { ctx.beginPath(); list.forEach(rr => rr.forEach(ring)); ctx.globalAlpha = .85; ctx.strokeStyle = darkHex(c, .6); ctx.lineWidth = hi ? 1.4 : 1.1; ctx.lineJoin = 'round'; ctx.stroke(); }
+    }
+    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .45 : .7, 0, z >= 14 ? .8 : 0, hi ? 1.2 : 1);
     this.ms = Math.round(performance.now() - t0);
   },
 });
@@ -835,7 +856,7 @@ function zoneFilter() {
   zoneTiles.eachLayer(l => l.setOpacity(zoneOnly ? .25 : hi ? 0 : 1));
   if (zoneLayer?.remove) { map.removeLayer(zoneLayer); zoneLayer = null; }
   if (!zoneOnly && !hi) return;
-  if (zoneMode === 'zone' ? !ZP : !ZB) zoneLoad(zoneMode === 'zone' ? 'p' : 'b');
+  if (zoneMode === 'zone') { if (!ZZ) zoneLoad('z'); if (!ZP) zoneLoad('p'); } else if (!ZB) zoneLoad('b');
   zoneLayer = new ZoneCanvas().addTo(map);
 }
 function itemLatLngs(it) {   // 압축 좌표 → 위경도(테두리 강조용)
@@ -875,8 +896,9 @@ const zoneOut = () => { if (zoneLayer) zoneLayer.hl = null; zoneHl?.remove(); zo
 function zoneLoad(which) {   // 무거운 파일은 처음 펼칠 때만 받음
   if (zoneLoading[which]) return;
   zoneLoading[which] = true;
-  const url = which === 'p' ? './data/zoning_parcels.json' : './data/zoning_blocks.json';
+  const url = which === 'p' ? './data/zoning_parcels.json' : which === 'z' ? './data/zoning_zonepoly.json' : './data/zoning_blocks.json';
   fetch(new URL(url, location.href)).then(r => r.json()).then(d => {
+    if (which === 'z') { ZZ = decodeRings(d); zoneLayer?.draw?.(); return; }
     const items = decodeItems(d, which === 'p' ? d.p : d.k, which);
     const pack = { items, grid: gridOf(items), origin: d.origin, scale: d.scale };
     if (which === 'p') ZP = pack; else ZB = pack;
@@ -904,7 +926,7 @@ function zoneBar() {
   const sh = isB ? bshare6() : ZONES.share ?? {};
   const OF = isB ? BLDG_OF : ZONE_OF, G = isB ? BLDG_GROUPS : ZONE_GROUPS;
   const grp = k => Object.entries(sh).filter(([c]) => OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
-  const tone = { r: '#f5bf3f', c: '#d32f2f', i: '#1e63d6', g: '#2e9e48' };
+  const tone = { r: '#e9c063', c: '#c25450', i: '#4a6bb0', g: '#5f9e6e' };
   const chips = (isB ? Object.entries(sh).map(([k, p]) => [BLDG_OF[k]?.t ?? k, BLDG_OF[k]?.c, p]) : G.map(g => [g.t.replace('지역', ''), tone[g.key], grp(g.key)]))
     .filter(([, , p]) => p >= .01).slice(0, 4)
     .map(([t, c, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${c}` }), t, h('b', null, pctTxt(p))));
@@ -1746,7 +1768,7 @@ async function begin(course = null, avoid = []) {
   drawStart();
   flyBounds(L.latLngBounds(legs.flatMap(s => s.coords)), { ...padding(), maxZoom: 17 }, 1);
   await sleep(T(400));
-  drawCourse({ reveal: true });
+  drawCourse({ reveal: true }); basicsApi?.setGarden(true);   // 경로를 찾은 뒤에야 정원 꽃이 나타남
   renderPlan();
 }
 /** 갈 곳이 없을 때: 까닭을 한 줄로, 지금 되는 다른 선택을 버튼으로 */
@@ -2549,8 +2571,9 @@ function newCourse() {
   st.must.clear(); st.startPick = 'auto';
   begin(null, seen);
 }
+let basicsApi = null;
 function restart() {
-  flushCourse();
+  flushCourse(); basicsApi?.setGarden(false);
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers();
   trip = null; hud = null; document.body.classList.remove('tr-walking');
   Object.assign(st, { need: null, company: null, stay: null, startPick: 'auto' });
@@ -2597,7 +2620,7 @@ async function boot() {
   navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') watchMe(); }).catch(() => {});
   await sleep(Math.max(0, T(700) - (performance.now() - t0)));
   // 지도 기본 정보: 화장실·매점·쉼터 등과 정원 꽃을 버튼으로 켜고 끔(js/basics.js)
-  mountBasics({ map, L, root, mapEl: el.map, park: app.model.data.park, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
+  basicsApi = mountBasics({ map, L, root, mapEl: el.map, park: app.model.data.park, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
     gardens: () => gardenList().map(g => { const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place]; return hub ? { lat: hub.lat, lon: hub.lon, name: g.name, g: { ...g, hub } } : null; }).filter(Boolean) });
   window.__tour = { app, st, me, map, get zone() { return zoneLayer; }, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
   arrive();
