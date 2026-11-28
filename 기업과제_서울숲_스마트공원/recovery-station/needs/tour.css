@@ -1017,7 +1017,7 @@ div.tr-status-line{cursor:default}
 .tr-gl-img{flex:none;width:52px;height:52px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.05)}
 
 /* 주변 땅(용도지역) */
-.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(.85) brightness(.5) contrast(1.1)}
+.tr-map.tr-arrived.tr-zonemap .tr-sat img{filter:grayscale(.55) brightness(.62) contrast(1.05)}
 .tr-zone-chip{display:inline-flex;align-items:center;gap:5px}
 .tr-zone-chip i{flex:none;width:9px;height:9px;border-radius:3px}
 .tr-zone-lead{margin:0 0 10px;font-size:12px;line-height:1.55;color:var(--ink-2)}
@@ -1045,5 +1045,5 @@ div.tr-status-line{cursor:default}
 .tr-zone-tip::before{display:none}
 .tr-zone-tip b{display:block}
 .tr-zone-tip small{font-size:10.5px;opacity:.7}
-.tr-zone-rlabel{position:absolute;transform:translate(-50%,-130%);white-space:nowrap;padding:3px 9px;border-radius:999px;background:rgba(10,16,13,.85);border:1px solid rgba(159,240,198,.5);color:#bff5d8;font-size:11px;font-weight:600}
+.tr-zone-dong{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;padding:3px 10px;border-radius:999px;background:rgba(10,16,13,.78);border:1px dashed rgba(255,255,255,.55);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:-.01em;pointer-events:none}
 

@@ -680,9 +680,10 @@ function accessBar() {
   return h('section', { class: 'tr-status tr-access' }, line, more);
 }
 
-// ── 주변 땅(용도지역) ──
-// 국토교통부 용도지역(도시지역) LT_C_UQ111 · 지구단위계획 LT_C_UPISUQ161을 브이월드 2D 데이터 API로 받음(2026-11-28)
-// → 서울숲 중심 반지름 1.5km 원으로 잘라 data/zoning.json. 분류는 국토계획법 시행령 제30조(용도지역 세분)
+// ── 주변 땅(용도지역 × 지적도) ──
+// 브이월드 2D 데이터 API(2026-11-28): 연속지적도 LP_PA_CBND_BUBUN의 필지마다 용도지역 LT_C_UQ111을 붙이고,
+// 서울숲 둘레 4개 동(성수동1가·2가·응봉동·행당동)만 남김 → data/zoning.json. 도로·하천·공원 필지는 칠하지 않음.
+// 분류는 국토계획법 시행령 제30조(용도지역 세분)
 const ZONE_GROUPS = [
   { key: 'r', t: '주거지역', items: [
     ['r1x', '제1종전용주거', '#fff7c2', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거', '#ffee99', '공동주택 중심 조용한 동네'],
@@ -692,22 +693,20 @@ const ZONE_GROUPS = [
     ['cc', '중심상업', '#b8174f', '도심·큰 중심가'], ['cm', '일반상업', '#e0457b', '일반 상가·사무실'],
     ['cn', '근린상업', '#f282aa', '동네 생활 상가'], ['cd', '유통상업', '#a8509a', '시장·물류'] ] },
   { key: 'i', t: '공업지역', items: [
-    ['ix', '전용공업', '#4b3ca6', '중화학 공장'], ['ig', '일반공업', '#7363d6', '일반 공장'],
-    ['iq', '준공업', '#a493f0', '공장 + 집·가게·사무실'] ] },
+    ['ix', '전용공업', '#3f3aa8', '중화학 공장'], ['ig', '일반공업', '#5f6fe0', '일반 공장'],
+    ['iq', '준공업', '#6fa8ff', '공장 + 집·가게·사무실'] ] },
   { key: 'g', t: '녹지지역', items: [
     ['gp', '보전녹지', '#2c7a4c', '자연을 그대로 지킴'], ['ga', '생산녹지', '#8cc26a', '농사 짓는 땅'],
     ['gn', '자연녹지', '#55b06a', '녹지를 지키며 조금만 개발'] ] },
 ];
 const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
-let ZONES = null, zoneOpen = false, zoneOnly = null, zonePlans = true;
-const zoneShare = () => {   // 코드별 비율
-  const s = {}; for (const [name, p] of Object.entries(ZONES?.share ?? {})) { const k = ZONES.code?.[name]; if (k) s[k] = (s[k] ?? 0) + p; } return s;
-};
+const JIMOK = { 대: '대지', 전: '밭', 답: '논', 임: '임야', 잡: '잡종지', 학: '학교용지', 종: '종교용지', 창: '창고용지', 장: '공장용지', 차: '주차장', 주: '주유소용지', 체: '체육용지', 원: '유원지', 사: '사적지', 묘: '묘지', 목: '목장용지', 과: '과수원', 광: '광천지', 염: '염전', 양: '양어장' };
+let ZONES = null, zoneOpen = false, zoneOnly = null, zonePlans = true, zoneGeo = null, zoneCanvas = null, zoneBounds = null;
 const pctTxt = p => p >= .995 ? '100%' : p >= .01 ? `${Math.round(p * 100)}%` : p > 0 ? '1% 미만' : '';
 function zoneBar() {
   if (!ZONES) return null;
-  const sh = zoneShare(), grp = k => Object.entries(sh).filter(([c]) => ZONE_OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
-  const tone = { r: '#f7cf45', c: '#e0457b', i: '#a493f0', g: '#55b06a' };
+  const sh = ZONES.share ?? {}, grp = k => Object.entries(sh).filter(([c]) => ZONE_OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
+  const tone = { r: '#ffcf3f', c: '#e0457b', i: '#6fa8ff', g: '#55b06a' };
   const chips = ZONE_GROUPS.map(g => [g, grp(g.key)]).filter(([, p]) => p > 0)
     .map(([g, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${tone[g.key]}` }), g.t.replace('지역', ''), h('b', null, pctTxt(p))));
   const paintRows = () => more.querySelectorAll('.tr-zone-row').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === zoneOnly)));
@@ -718,58 +717,66 @@ function zoneBar() {
       return h('button', { type: 'button', class: `tr-zone-row${p ? '' : ' none'}`, 'data-k': k, 'aria-pressed': 'false', disabled: !p,
         onclick: () => { zoneOnly = zoneOnly === k ? null : k; paintRows(); zoneStyle(); } },
         h('i', { style: `background:${z.c}` }), h('span', null, h('b', null, `${z.t}지역`), h('small', null, z.d)),
-        h('em', null, p ? pctTxt(p) : '이 범위엔 없음'));
+        h('em', null, p ? pctTxt(p) : '이 동네엔 없음'));
     })));
   const more = h('div', { class: 'tr-acc-more tr-zone-more', hidden: !zoneOpen },
-    h('p', { class: 'tr-zone-lead' }, `서울숲에서 반지름 ${ZONES.radius / 1000}km(걸어서 약 20분) 안의 땅을 법으로 어디에 쓰도록 정해 뒀는지 보여 줘요. 줄을 누르면 그 땅만 지도에 남아요.`),
+    h('p', { class: 'tr-zone-lead' }, `서울숲 둘레 ${ZONES.dongs_list.join('·')}의 땅 ${ZONES.count.toLocaleString()}필지를 법으로 정한 쓰임새(용도지역)별로 칠했어요. 줄을 누르면 그 땅만 남아요.`),
     h('div', { class: 'tr-zone-groups' }, groups),
     h('button', { type: 'button', class: 'tr-zone-plan', 'aria-pressed': String(zonePlans),
       onclick: e => { zonePlans = !zonePlans; e.currentTarget.setAttribute('aria-pressed', String(zonePlans)); zonePaint(); } },
       h('i'), '지구단위계획구역 경계', h('b', null, `${ZONES.plans?.features?.length ?? 0}곳`)),
-    h('p', { class: 'tr-zone-note' }, '녹지 대부분은 서울숲과 한강이에요. 둘레 동네는 아파트·주택 땅과 성수동 준공업 땅이 거의 다라서, 걸어갈 만한 큰 녹지는 서울숲에 몰려 있어요.'),
-    h('p', { class: 'tr-lc-src' }, `국토교통부 용도지역·지구단위계획 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 원 안 면적 기준(한강 포함)`));
+    h('p', { class: 'tr-zone-note' }, `칠한 땅의 ${pctTxt(grp('i'))}가 준공업(공장·사무실), ${pctTxt(grp('r'))}가 주거예요. 녹지로 묶인 땅은 ${pctTxt(grp('g'))}뿐이라, 이 동네에서 걸어갈 만한 큰 녹지는 서울숲이에요.`),
+    h('p', { class: 'tr-lc-src' }, `국토교통부 연속지적도·용도지역·지구단위계획 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 필지 면적 기준(도로·하천·공원 땅 제외)`));
   const label = () => zoneOpen ? '지도 닫기' : '지도로 보기';
   const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(zoneOpen),
     onclick: e => { zoneOpen = !zoneOpen; more.hidden = !zoneOpen; e.currentTarget.setAttribute('aria-expanded', String(zoneOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); zonePaint(true); } },
     h('small', null, '주변 땅'), h('div', { class: 'tr-status-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
   return h('section', { class: 'tr-status tr-zone' }, line, more);
 }
-let zoneGeo = null;
-function zoneStyle() {
-  zoneGeo?.eachLayer(l => {
-    const k = l.feature.properties.c, dim = zoneOnly && k !== zoneOnly;
-    l.setStyle({ fillColor: ZONE_OF[k]?.c ?? '#999', fillOpacity: dim ? .06 : .84, color: dim ? 'rgba(255,255,255,.2)' : '#fff', weight: dim ? .4 : .9, opacity: dim ? .3 : .7 });
+/** 압축한 필지 좌표(1e-5도 정수 차분) → Leaflet 좌표 */
+function zoneParcels() {
+  if (zoneGeo) return zoneGeo;
+  const [ox, oy] = ZONES.origin, k = ZONES.scale;
+  zoneCanvas = zoneCanvas ?? L.canvas({ pane: 'zone', padding: .3 });
+  zoneGeo = ZONES.parcels.map(([c, jm, num, d]) => {
+    const ll = []; let x = 0, y = 0;
+    for (let i = 0; i < d.length; i += 2) { x += d[i]; y += d[i + 1]; ll.push([oy + y / k, ox + x / k]); }
+    const z = ZONE_OF[c];
+    const p = L.polygon(ll, { renderer: zoneCanvas, smoothFactor: 0 });
+    p.zc = c;
+    p.bindTooltip(`<b>${esc(z?.t ?? '')}지역</b><small>${esc(num)}번지${JIMOK[jm] ? ` · ${JIMOK[jm]}` : ''}</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' });
+    p.on('mouseover', () => { if (!zoneOnly || zoneOnly === c) p.setStyle({ weight: 2, color: '#fff', opacity: 1, fillOpacity: .85 }); });
+    p.on('mouseout', () => p.setStyle(zoneLook(c)));
+    return p;
   });
+  return zoneGeo;
 }
+const zoneLook = c => {
+  const dim = zoneOnly && c !== zoneOnly;
+  return { fillColor: ZONE_OF[c]?.c ?? '#999', fillOpacity: dim ? .04 : .58, color: ZONE_OF[c]?.c ?? '#999', weight: dim ? .3 : .7, opacity: dim ? .15 : .95 };
+};
+function zoneStyle() { zoneGeo?.forEach(p => p.setStyle(zoneLook(p.zc))); }
 function zonePaint(fly = false) {
   if (!layers?.zone) return;
-  layers.zone.clearLayers(); zoneGeo = null;
+  layers.zone.clearLayers();
   const on = !!ZONES && zoneOpen && st.step === 1 && !trip;
   const was = el.panel.classList.contains('zonemap');
   el.panel.classList.toggle('zonemap', on); el.map.classList.toggle('tr-zonemap', on);
   if (!on) { zoneOnly = null; if (fly && was && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
   // 휴대폰: 시트가 낮아진 뒤 주변 땅 칸이 시트 맨 위에 오게
   if (!was && !desk()) setTimeout(() => { const sec = el.panel.querySelector('.tr-zone'); if (sec) el.panel.scrollTop += sec.getBoundingClientRect().top - el.panel.getBoundingClientRect().top - 12; }, 380);
-  const [clat, clon] = ZONES.center, R = ZONES.radius;
-  // 원 바깥은 어둡게 덮어 범위가 또렷하게
-  const ring = Array.from({ length: 129 }, (_, i) => { const a = i / 128 * 2 * Math.PI; return [clat + R * Math.sin(a) / 110940, clon + R * Math.cos(a) / (111320 * Math.cos(clat * Math.PI / 180))]; });
-  L.polygon([[[clat - 1, clon - 1.4], [clat - 1, clon + 1.4], [clat + 1, clon + 1.4], [clat + 1, clon - 1.4]], ring], { pane: 'zone', interactive: false, stroke: false, fillColor: '#06100b', fillOpacity: .62 }).addTo(layers.zone);
-  zoneGeo = L.geoJSON(ZONES.zones, { pane: 'zone', className: 'tr-zone-poly',
-    onEachFeature: (f, l) => {
-      const z = ZONE_OF[f.properties.c]; if (!z) return;
-      l.bindTooltip(`<b>${esc(z.t)}지역</b><small>${esc(z.d)}</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' });
-      l.on('mouseover', () => { if (!zoneOnly || zoneOnly === f.properties.c) l.setStyle({ weight: 2.4, opacity: 1 }); });
-      l.on('mouseout', zoneStyle);
-    } }).addTo(layers.zone);
-  zoneStyle();
-  if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#fff', weight: 1.6, opacity: .95, dashArray: '5 4', className: 'tr-zone-plan-line' },
+  zoneParcels().forEach(p => p.addTo(layers.zone)); zoneStyle();
+  // 동 경계(점선) + 동 이름
+  const dongs = L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: { fill: false, color: '#fff', weight: 1.4, opacity: .7, dashArray: '2 5', lineCap: 'round' } }).addTo(layers.zone);
+  zoneBounds = dongs.getBounds();
+  for (const f of ZONES.dongs.features)
+    L.marker(f.properties.at, { interactive: false, zIndexOffset: 800, icon: L.divIcon({ className: '', html: `<div class="tr-zone-dong">${esc(f.properties.n)}</div>`, iconSize: [0, 0] }) }).addTo(layers.zone);
+  if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#ffffff', weight: 1.8, opacity: .9, dashArray: '7 5' },
     onEachFeature: (f, l) => l.bindTooltip(`<b>${esc(f.properties.n)}</b><small>지구단위계획구역 · ${f.properties.ha}ha</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' }) }).addTo(layers.zone);
-  L.circle([clat, clon], { radius: R, pane: 'zone', interactive: false, fill: false, color: '#9ff0c6', weight: 1.6, opacity: .9, dashArray: '2 6', lineCap: 'round' }).addTo(layers.zone);
-  L.marker([clat + R / 110940, clon], { interactive: false, zIndexOffset: 900, icon: L.divIcon({ className: '', html: `<div class="tr-zone-rlabel">서울숲에서 ${R / 1000}km · 걸어서 약 20분</div>`, iconSize: [0, 0] }) }).addTo(layers.zone);
-  // 넓은 화면: 왼쪽 카드 칸까지 비켜서 원 전체가 보이게
-  const sideW = desk() && !el.side.hidden ? el.side.getBoundingClientRect().right + 28 : 0;
-  const pad = sideW ? { paddingTopLeft: [sideW, 90], paddingBottomRight: [panelW() + 36, 70] } : padding();
-  if (fly) flyBounds(L.latLng(clat, clon).toBounds(R * 2.1), pad, .8);
+  // 필지가 보이게 서울숲 둘레를 가까이(넓은 화면은 왼쪽 카드 칸까지 비킴). 더 넓게는 손으로 줄여서
+  const sideW = desk() && !el.side.hidden ? el.side.getBoundingClientRect().right + 20 : 0;
+  const pad = sideW ? { paddingTopLeft: [sideW, 80], paddingBottomRight: [panelW() + 28, 60] } : padding();
+  if (fly) flyBounds(app.model.parkBounds.pad(.35), pad, .8);
 }
 
 // ── 오는 길 지도 핀 ──
