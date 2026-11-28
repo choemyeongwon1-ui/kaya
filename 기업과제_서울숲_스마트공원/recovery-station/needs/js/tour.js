@@ -1368,7 +1368,6 @@ function planFrom(from, count, seen0, queue = [], mustIds = []) {
   const ordered = queue.length ? picks : shortestOrder(from, picks);
   const out = [];
   f = from;
-  curPicks = new Set(ordered.map(o => o.r.place.id));
   for (const { r, rec } of ordered) { out.push(makeLeg(f, r, rec)); f = asFrom(r.place); }
   return out;
 }
@@ -1404,259 +1403,14 @@ function makeLeg(from, r, rec) {
   const elders = st.company === 'elders';
   const prefs = { shade: rec.mode.key === 'hot' || (rec.mode.key === 'mild' && rec.mode.uvHigh) || !!fb.bump.thermal, rest: elders || !!fb.bump.toilet, restGap: elders ? REST_STD.care.seat : null, nostairs: st.company === 'kids' || elders, quiet: st.company === 'alone' || st.company === 'pet' || !!fb.bump.crowd || (live?.rank ?? 0) >= 2 };
   const route = planRoute(m, from.node, r.place.node, prefs, env, rec.speed);
-  // 맞춤 최적 길: 후보 길 여럿을 이 사람 기준 비중으로 점수 매겨 가장 높은 길(아이·어르신이면 후보 모두 계단 없는 길)
-  const W = routeWeights(rec, sunMode), cands = scoreCands(candRoutes(m, from, r.place, prefs, env, rec.speed, route), W, r.place.id, from, rec.speed);
-  const R = { pick: cands.list[0]?.x ?? route?.main ?? null, short: route?.base ?? null };
-  // 추천 이유를 보여 주려고 조건이 왜 켜졌는지 함께 둠
-  const why = { company: st.company, hot: rec.mode.key === 'hot', uv: !!rec.mode.uvHigh, feels: rec.mode.fmax != null ? Math.round(rec.mode.fmax) : null, liveRank: live?.rank ?? 0, liveLvl: live?.level ?? null, liveTime: live?.time ?? null };
-  const s = { r, rec, from, offM: Math.round((from.off ?? 0) + r.place.off), R, cands, W, sunMode, prefs, why, rating: null };
-  return Object.assign(s, legView(s, 'pick'));
-}
-/** 한 구간을 고른 길(key)로 그릴 값 — 좌표·거리·가장 짧은 길과 견줄 값 */
-function legView(s, key) {
-  const R = s.R, x = R[key] ?? R.pick, b = R.short;
-  const coords = [[s.from.lat, s.from.lon], ...(x?.coords ?? []), [s.r.place.lat, s.r.place.lon]];
-  const meters = (x?.meters ?? 0) + s.offM;
+  const coords = [[from.lat, from.lon], ...(route?.main?.coords ?? []), [r.place.lat, r.place.lon]];
+  const meters = (route?.main?.meters ?? 0) + Math.round((from.off ?? 0) + r.place.off);
   // 가장 짧은 길과 견줄 값(햇볕 정보가 있는 구간 기준, 그늘 m)
-  const sh = y => y && y.shade != null ? { m: y.shade * y.sunKnown, k: y.sunKnown, len: y.meters } : null;
-  const cmp = { main: sh(x), base: sh(b), sunMode: s.sunMode, prefs: key === 'pick' ? s.prefs : { ...s.prefs, shade: key === 'cool', quiet: key === 'quiet', rest: false, restGap: null },
-    unpaved: [x?.unpaved ?? 0, b?.unpaved ?? 0], biz: [x?.bizLen ?? 0, b?.bizLen ?? 0],   // [고른 길, 가장 짧은 길] m
-    dist: [x?.meters ?? 0, b?.meters ?? 0], stairs: [x?.stairs ?? 0, b?.stairs ?? 0] };
-  return { rkey: R[key] ? key : 'pick', coords, meters, cmp, walkMin: Math.max(1, Math.round(meters / s.rec.speed)), gardens: gardensNear(coords, s.r.place.id) };
-}
-
-// ── 맞춤 최적 길: 여러 조건으로 후보 길을 만들고, 고른 사람(같이 온 사람·하고 싶은 일·날씨·머물 시간) 기준 비중으로 점수를 매겨 가장 높은 길 ──
-// 한 기준(짧음·그늘)만 좋은 길이 아니라, 이 사람에게 중요한 기준들을 비중대로 합친 점수가 가장 높은 길을 고름
-// 햇볕 아래 시간 = 길 위 나무 그늘 비율(팀 20m 격자)로 볕 드는 거리 ÷ 걷는 속도
-// 땅 온도 = Landsat 8 지표온도(ST_B10, 2026-06-16·09-04 두 장면 평균, 30m 격자)
-let curPicks = new Set();  // 지금 짜는 코스에 담긴 곳(명소 경유 후보가 다른 목적지를 미리 지나지 않게)
-const SCENIC_MAX = 1.6;    // 명소 경유 후보: 가장 짧은 길의 이 배수까지만(팀 값)
-// 그늘 정도: 길 위 볕 노출(1 − 나무 비율, 팀 20m 격자) — 지도 선 색과 같게 씀
-const SUNC = { g: '#4fd18b', m: '#d9d26a', s: '#ff8f4d', u: '#6f7d76' };
-const SUNW = { g: '그늘', m: '반그늘', s: '햇볕', u: '정보 없음' };
-const sunCls = e => e.sun == null ? 'u' : e.sun < .4 ? 'g' : e.sun < .7 ? 'm' : 's';
-const sunR = v => v == null ? null : v < 10 ? Math.round(v * 10) / 10 : Math.round(v);   // 10분 미만은 소수 한 자리
-/** 길을 그늘 정도가 같은 구간끼리 묶음: [{c, len, pts}] */
-function sunRuns(x) {
-  const out = [];
-  x.edges.forEach((e, i) => {
-    const a = x.coords[i], b = x.coords[i + 1]; if (!a || !b) return;
-    const c = sunCls(e), last = out[out.length - 1];
-    if (last && last.c === c) { last.len += e.len; last.pts.push(b); } else out.push({ c, len: e.len, pts: [a, b] });
-  });
-  return out;
-}
-/** 두 길을 이어 붙임(명소 경유: 출발 → 들를 곳 → 도착) */
-function joinRoutes(p, q) {
-  const k = (p.sunKnown ?? 0) + (q.sunKnown ?? 0), m = p.meters + q.meters;
-  return { meters: m, minutes: p.minutes + q.minutes, coords: [...p.coords, ...q.coords.slice(1)], nodes: [...p.nodes, ...q.nodes.slice(1)], edges: [...p.edges, ...q.edges],
-    stairs: p.stairs + q.stairs, crowd: m ? (p.crowd * p.meters + q.crowd * q.meters) / m : 0, unpaved: p.unpaved + q.unpaved, bizLen: p.bizLen + q.bizLen, outLen: p.outLen + q.outLen,
-    floodLen: (p.floodLen ?? 0) + (q.floodLen ?? 0), sunKnown: k, shade: k ? ((p.shade ?? 0) * (p.sunKnown ?? 0) + (q.shade ?? 0) * (q.sunKnown ?? 0)) / k : null,
-    stops: [...p.stops, ...q.stops], maxGap: Math.max(p.maxGap, q.maxGap), repeat: 0 };
-}
-const SIGHT_NEAR = 45;   // 길에서 이 거리(m) 안의 정원·명소는 '지나는 볼거리'
-/** 길이 지나는 정원·명소 이름(도착지·출발지·코스에 담긴 곳 제외) */
-function sightsOf(x, destId, from) {
-  const out = new Set(), pts = x.coords.map(c => L.latLng(c[0], c[1]));
-  const near = (lat, lon) => { const q = L.latLng(lat, lon); return pts.some(c => c.distanceTo(q) <= SIGHT_NEAR); };
-  for (const g of gardenList()) {
-    const hub = g.pos ? { lat: g.pos[0], lon: g.pos[1] } : app.model.hubById[g.place];
-    if (hub && g.place !== destId && near(hub.lat, hub.lon)) out.add(g.spot ?? g.name);
-  }
-  for (const p of app.model.places) {
-    if (p.id === destId || curPicks.has(p.id) || p.node === from?.node) continue;
-    if (near(p.lat, p.lon)) out.add(p.name);
-  }
-  return [...out];
-}
-/** 명소 하나를 들러 가는 후보(지나는 정원·명소가 가장 많은 것) */
-function viaRoute(m, from, place, pr, env, speed, short) {
-  if (!short) return null;
-  const ll = p => L.latLng(p.lat, p.lon), a = ll(from), b = ll(place), direct = a.distanceTo(b);
-  const cands = m.places.filter(p => p.id !== place.id && !curPicks.has(p.id) && p.node != null && p.node !== from.node && p.type !== 'indoor')
-    .map(p => ({ p, d: a.distanceTo(ll(p)) + ll(p).distanceTo(b) })).filter(c => c.d > direct * 1.08 + 40 && c.d <= direct * 1.45 + 150)
-    .sort((x, y) => x.d - y.d).slice(0, 4);
-  let best = null;
-  for (const { p } of cands) {
-    const r1 = planRoute(m, from.node, p.node, pr, env, speed)?.main, r2 = planRoute(m, p.node, place.node, pr, env, speed)?.main;
-    if (!r1 || !r2) continue;
-    const x = joinRoutes(r1, r2);
-    if (x.meters > short.meters * SCENIC_MAX) continue;
-    const n = sightsOf(x, place.id, from).length;
-    if (!best || n > best.n) best = { x, n };
-  }
-  return best?.x ?? null;
-}
-const rsig = x => x.edges.map(e => e.id).join(',');
-/** 후보 길: 오늘 조건 · 가장 짧은 길 · 그늘/한산/쉴 곳 조합 · 명소 경유. 아이·어르신이면 모두 계단 없는 길(안전 필수 조건) */
-function candRoutes(m, from, place, prefs, env, speed, route) {
-  const bf = { nostairs: prefs.nostairs }, out = [];
-  const add = x => { if (x && x.edges?.length && !out.some(c => rsig(c) === rsig(x))) out.push(x); };
-  add(route?.main); add(route?.base);
-  for (const p of [{ shade: true }, { quiet: true }, { shade: true, quiet: true }, { rest: true, restGap: 150 }, { rest: true, restGap: 100, shade: true }])
-    add(planRoute(m, from.node, place.node, { ...bf, ...p }, env, speed)?.main);
-  add(viaRoute(m, from, place, { ...bf, shade: env.sunMode !== 'none' }, env, speed, route?.base));
-  return out;
-}
-// 기준 7가지: dir = 클수록 좋으면 1, 작을수록 좋으면 -1
-const CRIT = [
-  { k: 'time', label: '덜 걷기', dir: -1 },
-  { k: 'sun', label: '햇볕 덜 받기', dir: -1 },
-  { k: 'safety', label: '계단·흙길 피하기', dir: -1 },
-  { k: 'gap', label: '쉴 곳 가까이', dir: -1 },
-  { k: 'crowd', label: '사람 적은 길', dir: -1 },
-  { k: 'tree', label: '나무 많은 길', dir: 1 },
-  { k: 'sights', label: '볼거리', dir: 1 },
-];
-function routeMetrics(x, destId, from, speed) {
-  let sun = 0, known = 0, sunK = 0, lst = 0, lstK = 0;
-  for (const e of x.edges) { sun += (e.sun ?? .5) * e.len; if (e.sun != null) { known += e.len; sunK += e.sun * e.len; } if (e.lst != null) { lst += e.lst * e.len; lstK += e.len; } }
-  const names = sightsOf(x, destId, from);
-  return { time: x.meters / speed, sun: sun / speed, safety: x.stairs * 40 + (x.unpaved ?? 0), stairs: x.stairs, unpaved: x.unpaved ?? 0, gap: x.maxGap ?? 0, crowd: x.crowd,
-    tree: known > 50 ? (1 - sunK / known) * 100 : null, temp: lstK > 50 ? lst / lstK : null, sights: names.length, names, meters: x.meters };
-}
-/** 고른 사람 기준 비중(팀 값 — 근거는 방향만 정함). why[k] = [이유, 근거 종류, 출처] */
-function routeWeights(rec, sunMode) {
-  const w = { time: 14, sun: 12, safety: 8, gap: 8, crowd: 10, tree: 10, sights: 10 }, why = {}, c = st.company, n = st.need, mode = rec.mode, fb = trip.fb.bump;
-  const add = (k, v, t, kind, src) => { w[k] += v; if (t) why[k] = [t, kind, src]; };
-  if (c === 'alone') { add('crowd', 14, '혼자 — 조용히 걷기', '연구', '일상 탈출 동기가 만족도를 높임(조경진 외 2014), 같은 밀도도 목적 따라 더 붐비게 느낌(Vaske & Shelby 2008)'); add('tree', 10, '혼자 — 나무 사이로 걷기', '팀 값', ''); }
-  if (c === 'couple') { add('sights', 14, '연인 — 경관·볼거리', '연구', '경관이 만족도 2순위 요인(이재호·김순기 2018)'); add('tree', 6); }
-  if (c === 'friends') { add('sights', 10, '친구 — 함께 볼거리', '팀 값', ''); add('crowd', -4); }
-  if (c === 'kids') { add('safety', 22, '아이(유모차) — 계단·흙길 피하기', '측정 자료', '계단·포장 정보: OpenStreetMap(포장 정보는 공원 길의 약 26%만 있음)'); add('gap', 8, '아이 — 쉬어 갈 곳', '연구', '가족 이용자에게 편의시설이 중요하지만 성취도가 낮음(이지연 2012)'); add('time', 8, '아이 — 덜 걷기', '팀 값', ''); add('sights', 4); }
-  if (c === 'elders') { add('safety', 22, '어르신 — 계단·흙길 피하기', '측정 자료', '계단·포장 정보: OpenStreetMap'); add('gap', 20, `어르신 — ${REST_STD.care.seat}m마다 앉을 곳`, '연구 + 팀 값', `고령자는 좌석 밀도가 가장 시급(Lin 외 2024). ${REST_STD.care.seat}m는 팀이 정한 값`); add('time', 8, '어르신 — 덜 걷기', '팀 값', ''); add('sun', 6); }
-  if (c === 'pet') { add('crowd', 14, '반려견 — 사람 적은 길(서로 편하게)', '팀 값', ''); add('sun', 6, '반려견 — 달궈진 바닥 피하기', '팀 값', ''); add('tree', 4); }
-  if (n === 'walk' || n === 'active') add('time', -8, '걷기·운동 — 조금 더 걸어도 좋아요', '팀 값', '');
-  if (n === 'learn' || n === 'play') add('sights', 8, why.sights ? null : '구경·놀이 — 볼거리', '팀 값', '');
-  if (n === 'rest') { add('time', 4); add('gap', 4); }
-  if (st.stay <= 30) add('time', 8, '머물 시간 30분 — 덜 걷기', '팀 값', '');
-  if ((live?.rank ?? 0) >= 2) add('crowd', 10, `지금 서울숲 ${live.level} — 사람 적은 길`, '측정 자료', `서울시 실시간 도시데이터(서울숲공원)${live.time ? ` · ${live.time}` : ''}`);
-  if (fb.thermal) add('sun', 10, '덥다는 의견 반영', '이용자 의견', '');
-  if (fb.crowd) add('crowd', 10, '붐빈다는 의견 반영', '이용자 의견', '');
-  if (fb.toilet) add('gap', 8, '쉴 곳·화장실 의견 반영', '이용자 의견', '');
-  // 날씨: 더운 날은 햇볕 비중을 크게, 밤엔 뺌, 쌀쌀한 날은 '볕 받기'로 뒤집음
-  const sunDir = sunMode === 'sun' ? 1 : -1;
-  if (sunMode === 'none') w.sun = 0;
-  else if (mode.key === 'hot') { w.sun *= 2.2; why.sun = [`체감 ${mode.fmax != null ? Math.round(mode.fmax) : ''}℃ — 햇볕 피하기`, '연구', '녹지 그늘이 걷는 길 온도를 낮춤(Lee & Park 2020, Patel 2026). 33℃는 기상청 폭염주의보 기준']; }
-  else if (mode.uvHigh) { w.sun *= 1.4; why.sun ??= ['자외선 강함 — 햇볕 피하기', '공식 기준', '자외선지수 6 이상 「높음」(기상청)']; }
-  else if (sunMode === 'sun') why.sun = ['쌀쌀한 날 — 볕 드는 길', '팀 값', ''];
-  else w.sun *= .5;
-  for (const k in w) w[k] = Math.max(0, w[k]);
-  const tot = Object.values(w).reduce((a, b) => a + b, 0) || 1;
-  const pct = Object.fromEntries(Object.entries(w).map(([k, v]) => [k, v / tot]));
-  return { w: pct, why, sunDir };
-}
-/** 후보마다 기준별로 0~1(후보 중 가장 나쁨 → 가장 좋음)로 바꿔 비중대로 더함. 모든 후보가 같은 기준은 점수에 영향 없음 */
-function scoreCands(cands, W, destId, from, speed) {
-  const list = cands.map(x => ({ x, mt: routeMetrics(x, destId, from, speed) }));
-  const range = {};
-  for (const c of CRIT) {
-    const v = list.map(o => o.mt[c.k]).filter(x => x != null);
-    range[c.k] = v.length ? [Math.min(...v), Math.max(...v)] : null;
-  }
-  for (const o of list) {
-    let s = 0;
-    for (const c of CRIT) {
-      const wk = W.w[c.k], r = range[c.k], v = o.mt[c.k]; if (!wk || !r || v == null || r[1] - r[0] < 1e-6) continue;
-      const dir = c.k === 'sun' ? W.sunDir : c.dir, t = (v - r[0]) / (r[1] - r[0]);
-      s += wk * (dir > 0 ? t : 1 - t);
-    }
-    o.score = s;
-  }
-  list.sort((a, b) => b.score - a.score || a.mt.time - b.mt.time);
-  return { list, range };
-}
-const crowdWord = (v, lo) => v - lo < .03 ? '가장 한산' : v - lo < .08 ? '조금 붐빔' : '붐비는 편';   // 후보끼리 견준 말(절대 혼잡도 아님)
-/** 이 사람에게 맞춘 길 — 비중과, 고른 길이 후보들 사이에서 어디쯤인지 */
-function routeCompare(legs) {
-  const live = legs.filter(s => s.cands && !s.walking && !s.walked);
-  if (!live.length) return null;
-  const W = live[0].W, sunMode = live[0].sunMode, mode = live[0].rec.mode;
-  const nC = Math.round(live.reduce((a, s) => a + s.cands.list.length, 0) / live.length);
-  // 코스 전체로 모음: 고른 길 값과 후보들의 범위(구간마다 가장 좋은·나쁜 값을 더함)
-  const agg = {};
-  for (const c of CRIT) {
-    if (!W.w[c.k]) continue;
-    let pick = 0, lo = 0, hi = 0, ok = true, wsum = 0;
-    for (const s of live) {
-      const best = s.cands.list[0].mt, vals = s.cands.list.map(o => o.mt[c.k]).filter(v => v != null);
-      if (best[c.k] == null || !vals.length) { ok = false; break; }
-      const avg = c.k === 'tree' || c.k === 'crowd', wt = avg ? best.meters : 1;
-      if (c.k === 'gap') { pick = Math.max(pick, best[c.k]); lo = Math.max(lo, Math.min(...vals)); hi = Math.max(hi, Math.max(...vals)); continue; }
-      pick += best[c.k] * wt; lo += Math.min(...vals) * wt; hi += Math.max(...vals) * wt; wsum += wt;
-    }
-    if (!ok) continue;
-    if (c.k === 'tree' || c.k === 'crowd') { pick /= wsum; lo /= wsum; hi /= wsum; }
-    agg[c.k] = { pick, lo, hi };
-  }
-  const stairs = live.reduce((a, s) => a + s.cands.list[0].mt.stairs, 0), unpaved = live.reduce((a, s) => a + s.cands.list[0].mt.unpaved, 0);
-  const names = [...new Set(live.flatMap(s => s.cands.list[0].mt.names))];
-  const fmt = { time: v => `${Math.round(v)}분`, sun: v => `${sunMode === 'sun' ? '볕' : '햇볕'} 아래 ${sunR(v)}분`, safety: () => stairs || unpaved >= 20 ? `계단 ${stairs}곳 · 흙길 ${fmtM(unpaved)}` : '계단·흙길 없음',
-    gap: v => `최대 ${fmtM(v)}`, crowd: (v, a) => crowdWord(v, a.lo), tree: v => `${Math.round(v)}%`, sights: v => `${Math.round(v)}곳` };
-  const label = c => c.k === 'sun' && sunMode === 'sun' ? '볕 받기' : c.label;
-  const who = labels().filter(Boolean).join(' · '), wx = sunMode === 'none' ? '밤' : mode.key === 'hot' ? `폭염(체감 ${Math.round(mode.fmax)}℃)` : mode.key === 'cold' || mode.key === 'cool' ? '쌀쌀한 날' : mode.key === 'rain' ? '비' : mode.key === 'dust' ? '미세먼지' : '맑은 날';
-  const rows = CRIT.filter(c => W.w[c.k]).sort((a, b) => W.w[b.k] - W.w[a.k]);
-  const KIND = k => k === '팀 값' || k === '이용자 의견' ? 'mid' : 'ok';
-  return h('section', { class: 'tr-rc tr-fit' },
-    h('div', { class: 'tr-rc-h' }, h('b', null, icon('target', 13), '나에게 맞춘 길'), h('small', null, `${who} · ${wx}`)),
-    h('p', { class: 'tr-rc-lead' }, `구간마다 후보 길 ${nC}개(가장 짧은 길·그늘·한산·쉴 곳·명소 경유 등)를 만들고, 아래 비중으로 점수가 가장 높은 길을 골랐어요. 한 가지만 좋은 길이 아니라 나에게 중요한 것들을 합쳐 가장 나은 길이에요.`),
-    h('div', { class: 'tr-opt-t', role: 'table' },
-      h('div', { class: 'tr-opt-hd', role: 'row' }, h('span', null, '기준 · 나에게 중요한 정도'), h('span', null, '이 길'), h('span', null, '후보들 사이에서')),
-      rows.map(c => {
-        const a = agg[c.k], dir = c.k === 'sun' ? W.sunDir : c.dir, why = W.why[c.k];
-        const flat = !a || a.hi - a.lo < 1e-6, pos = flat ? 1 : dir > 0 ? (a.pick - a.lo) / (a.hi - a.lo) : (a.hi - a.pick) / (a.hi - a.lo);
-        const top = flat || pos > .97;
-        return h('div', { class: 'tr-opt-r', role: 'row' },
-          h('div', { class: 'tr-opt-k' },
-            h('div', null, h('b', null, label(c)), h('i', { class: 'tr-opt-w' }, h('s', { style: `width:${Math.round(W.w[c.k] * 100 / Math.max(...rows.map(r => W.w[r.k])) * 100) / 100}%` })), h('em', null, `${Math.round(W.w[c.k] * 100)}%`)),
-            why ? h('small', null, why[0], why[1] ? h('u', { class: KIND(why[1]), title: why[2] || null }, why[1]) : null) : null),
-          h('div', { class: 'tr-opt-v', title: c.k === 'sights' && names.length ? names.join(' · ') : null }, a ? fmt[c.k](a.pick, a) : '–'),
-          h('div', { class: 'tr-opt-g' }, flat ? h('small', null, '후보 모두 같음') : [
-            h('span', { class: 'tr-opt-bar' }, h('i', { style: `left:${Math.round(pos * 100)}%` })),
-            h('small', { class: top ? 'top' : '' }, top ? '가장 좋음' : pos > .6 ? '좋은 편' : pos > .35 ? '중간' : '양보함')]));
-      })),
-    h('p', { class: 'tr-rc-src' }, h('em', null, '측정 자료'), `${sunMode !== 'none' ? '햇볕·숲길: 길 위 나무 그늘 비율(팀 20m 격자) · ' : ''}볼거리: 길에서 ${SIGHT_NEAR}m 안의 정원·명소 · 계단·흙길: OpenStreetMap · 붐빔: 보행 밀도 추정 · 비중은 팀이 정한 값(방향은 연구 근거), 현장 설문이 쌓이면 바꿈`));
-}
-/** 계획 화면 지도: 고려한 다른 후보 길을 아주 옅게(어떤 길들 중에서 골랐는지) */
-function drawAlts() {
-  if (trip.idx !== 0 || trip.stops.some(s => s.walking || s.walked)) return;
-  for (const s of trip.stops) {
-    if (!s.cands) continue;
-    for (const o of s.cands.list.slice(1)) {
-      const c = [[s.from.lat, s.from.lon], ...o.x.coords, [s.r.place.lat, s.r.place.lon]];
-      L.polyline(c, { interactive: false, className: 'tr-alt', color: '#dfe9e3', weight: 1.6, opacity: .28, dashArray: '3 6', lineCap: 'round' }).addTo(layers.plan);
-    }
-  }
-}
-let rcHov = null;
-function previewRoute() { if (rcHov) { rcHov.remove(); rcHov = null; } el.map.classList.remove('tr-rc-hov'); }
-/** 계획 화면 지도: 고른 길을 그늘 정도 색으로 칠함(근거를 지도에서 바로 보이게) */
-function drawSunRoute() {
-  const live = trip.stops.filter(s => s.R && !s.walking && !s.walked);
-  if (!live.length || live[0].sunMode === 'none') return false;
-  for (const s of live) {
-    const x = s.R[s.rkey] ?? s.R.pick; if (!x || x.coords.length < 2) continue;
-    const ends = [[[s.from.lat, s.from.lon], x.coords[0]], [x.coords[x.coords.length - 1], [s.r.place.lat, s.r.place.lon]]];
-    for (const e of ends) L.polyline(e, { interactive: false, color: '#d8ffea', weight: 2, opacity: .7, dashArray: '1 6', lineCap: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
-    L.polyline(x.coords, { interactive: false, color: '#03140b', weight: 8, opacity: .6, lineCap: 'round', lineJoin: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
-    for (const r of sunRuns(x)) L.polyline(r.pts, { interactive: false, color: SUNC[r.c], weight: 4.5, opacity: .95, lineCap: 'round', lineJoin: 'round', className: 'tr-sunseg' }).addTo(layers.plan);
-  }
-  return true;
-}
-/** 지도의 코스 선: 계획 화면에선 고른 길(그늘 색) + 다른 길(점선), 걷는 중엔 점선만 */
-function drawPlanLines(reveal = false) {
-  layers.plan.clearLayers();
-  const planning = trip.idx === 0 && !trip.stops.some(s => s.walking || s.walked);
-  if (planning) drawAlts();
-  const sunOn = planning && drawSunRoute();
-  trip.stops.forEach((s, i) => {
-    if (i < trip.idx || s.walking || s.walked) return;
-    const glow = L.polyline(s.coords, { interactive: false, className: 'tr-plan-glow', color: MINT, weight: 10, opacity: i === trip.idx ? .2 : .1, lineCap: 'round', lineJoin: 'round' }).addTo(layers.plan);
-    glow.bringToBack();
-    if (reveal) drawIn(glow, i * 200, 500);
-    if (sunOn) return;
-    const dash = L.polyline(s.coords, { interactive: false, className: `tr-plan${i === trip.idx ? ' next' : ''}`, color: '#d8ffea', weight: i === trip.idx ? 2.6 : 2, opacity: i === trip.idx ? .95 : .55, dashArray: '1 9', lineCap: 'round' }).addTo(layers.plan);
-    if (reveal) dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: i * 200 + 300, fill: 'backwards' });
-  });
+  const sh = x => x && x.shade != null ? { m: x.shade * x.sunKnown, k: x.sunKnown, len: x.meters } : null;
+  const cmp = { main: sh(route?.main), base: sh(route?.base), sunMode, prefs,
+    unpaved: [route?.main?.unpaved ?? 0, route?.base?.unpaved ?? 0], biz: [route?.main?.bizLen ?? 0, route?.base?.bizLen ?? 0],   // [고른 길, 가장 짧은 길] m
+    dist: [route?.main?.meters ?? 0, route?.base?.meters ?? 0], stairs: [route?.main?.stairs ?? 0, route?.base?.stairs ?? 0] };
+  return { r, rec, coords, meters, cmp, walkMin: Math.max(1, Math.round(meters / rec.speed)), gardens: gardensNear(coords, r.place.id), rating: null };
 }
 /** 머물 시간을 넘지 않게 뒤에서부터 덜어 냅니다(담은 곳은 남기고, 빠진 자리 다음 구간은 다시 이어 그림) */
 function fitTime(legs, left) {
@@ -1837,10 +1591,14 @@ function pinIcon(s, i, extra = '') {
   return L.divIcon({ className: '', html: `<div class="tr-pin ${state}${low} ${extra}" style="--d:${i * 110}ms"><span>${i + 1}</span><em>${esc(s.r.place.name)}${tag}</em></div>`, iconSize: [30, 30], iconAnchor: [15, 15] });
 }
 function drawCourse({ reveal = false, changed = new Set() } = {}) {
-  layers.pins.clearLayers(); layers.garden.clearLayers();
-  previewRoute(null); drawPlanLines(reveal);
+  layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers();
   const shown = new Set();
   trip.stops.forEach((s, i) => {
+    if (i >= trip.idx && !s.walking && !s.walked) {
+      const glow = L.polyline(s.coords, { interactive: false, className: 'tr-plan-glow', color: MINT, weight: 10, opacity: i === trip.idx ? .2 : .1, lineCap: 'round', lineJoin: 'round' }).addTo(layers.plan);
+      const dash = L.polyline(s.coords, { interactive: false, className: `tr-plan${i === trip.idx ? ' next' : ''}`, color: '#d8ffea', weight: i === trip.idx ? 2.6 : 2, opacity: i === trip.idx ? .95 : .55, dashArray: '1 9', lineCap: 'round' }).addTo(layers.plan);
+      if (reveal) { drawIn(glow, i * 200, 500); dash.getElement()?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: i * 200 + 300, fill: 'backwards' }); }
+    }
     L.marker([s.r.place.lat, s.r.place.lon], { icon: pinIcon(s, i, changed.has(s.r.place.id) ? 'changed' : ''), zIndexOffset: 800 - i }).addTo(layers.pins).on('click', () => showShot(s, i));
     if (i >= trip.idx) for (const g of s.gardens) {
       if (shown.has(g.id)) continue; shown.add(g.id);
@@ -1868,23 +1626,18 @@ function startRow() {
       h('button', { type: 'button', class: 'tr-mini', onclick: () => { box.hidden = !box.hidden; } }, '바꾸기')),
     box);
 }
-function planStats(legs) {
-  const walk = sum(legs, s => s.walkMin), total = walk + dwell() * legs.length;
-  return h('div', { class: 'tr-stats four' },
-    h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
-    h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
-    h('div', { title: KCAL_NOTE }, h('b', null, legsKcal(legs), h('small', null, 'kcal')), h('span', null, '쓰는 칼로리')),
-    h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함')));
-}
 function renderPlan() {
-  const legs = trip.stops;
+  const legs = trip.stops, walk = sum(legs, s => s.walkMin), total = walk + dwell() * legs.length;
   mount('tr-s-result', [
     tripHead(),
     h('h2', { class: 'tr-q' }, trip.course ? trip.course : `${legs.length}곳을 걷는 코스`),
-    planStats(legs),
+    h('div', { class: 'tr-stats four' },
+      h('div', null, h('b', null, walk, h('small', null, '분')), h('span', null, '걷기')),
+      h('div', null, h('b', null, ...meterParts(sum(legs, s => s.meters))), h('span', null, '거리')),
+      h('div', { title: KCAL_NOTE }, h('b', null, legsKcal(legs), h('small', null, 'kcal')), h('span', null, '쓰는 칼로리')),
+      h('div', null, h('b', null, total, h('small', null, '분')), h('span', null, '머무는 시간 포함'))),
     h('p', { class: 'tr-kcal-note' }, `칼로리는 ${KCAL_NOTE}`),
     planNotes(legs),
-    routeCompare(legs),
     criteriaBox(legs),
     startRow(),
     h('ol', { class: 'tr-tl' }, legs.map((s, i) => tlItem(s, i))),
@@ -1939,7 +1692,7 @@ function criteriaBox(legs) {
       h('ul', { class: 'tr-crit-stops' }, legs.map((s, i) => { const r = s.r.reasons;
         return h('li', null, h('b', null, `${i + 1}. ${s.r.place.name}`),
           h('span', null, [s.r.match[0], `붐빔 ${r.crowd.value}(${r.crowd.note.split(' · ')[0]})`, `화장실 ${r.toilet.value}`, `머물기 ${r.stay.value}`].filter(Boolean).join(' · '))); })),
-      h('h4', null, '2. 길: 후보 길 중 나에게 맞춘 점수가 가장 높은 길'),
+      h('h4', null, '2. 길: 가장 짧은 길에서 출발해 조건만큼만 돌아가기'),
       row('걷는 거리', `${fmtM(dm)} (가장 짧은 길 ${fmtM(db)}${dm - db >= 20 ? `, +${Math.round((dm / Math.max(1, db) - 1) * 100)}%` : ''})`),
       shade != null ? row('그늘진 길', `${shade}%`) : null,
       row('계단', sm ? `${sm}곳${sb > sm ? ` (가장 짧은 길 ${sb}곳)` : ''}` : sb ? `없음 (가장 짧은 길엔 ${sb}곳)` : '없음'),
