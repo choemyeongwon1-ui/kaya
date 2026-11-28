@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<!-- 영수증·스토리 카드를 그림 파일(PNG)로 바꾸는 도구 -->
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <style>
 :root{color-scheme:light;--page:#f3f1ea;--surface:#fff;--surface-2:#f6f4ee;--surface-3:#e9e6dc;--ink:#14201a;--ink-2:#4b554e;--muted:#8b918a;--hair:rgba(20,32,26,.09);
 --brand:#1d4d3a;--brand-2:#2a6a50;--brand-ink:#fff;--brand-wash:#e4eee5;--lime:#cfe887;--warm:#e2703e;--deep:#0f2a1f;
@@ -311,6 +313,72 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .modal .holder{animation:lift .6s cubic-bezier(.2,.8,.2,1) both}
 .modal .receipt{transform:rotate(-1.2deg) scale(1.3);transform-origin:top center;margin:20px auto 140px}
 .mclose{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:51}
+/* 영수증 저장 · 인스타 스토리 공유 */
+.view[data-v="done"]{overflow-y:auto}
+.act2{display:flex;gap:8px}
+.act2 .btn{flex:1;font-size:13.5px;height:46px;margin-top:10px}
+.btn.story{background:linear-gradient(135deg,#f6b23c,#e2483f 45%,#b0378f 80%,#6a42c2)}
+.msave{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:51;display:flex;gap:8px}
+.msave button{height:46px;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#14201a;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);white-space:nowrap}
+.msave button.story{background:linear-gradient(135deg,#f6b23c,#e2483f 45%,#b0378f 80%,#6a42c2);color:#fff}
+.msave button:disabled{opacity:.6;cursor:wait}
+.cap-off{position:fixed;left:-10000px;top:0;pointer-events:none}
+.cap-wrap{padding:18px 16px;background:#f3f1ea;display:inline-block}
+.cap-wrap .receipt{box-shadow:none;background:linear-gradient(90deg,rgba(0,0,0,.035),transparent 8%,transparent 92%,rgba(0,0,0,.04)),var(--paper)}
+/* 스토리 미리보기 */
+.smodal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;overflow:auto;padding:30px 16px 40px;background:rgba(8,12,10,.82);backdrop-filter:blur(6px)}
+.smodal[hidden]{display:none}
+.sphone{position:relative;width:324px;height:576px;border-radius:30px;overflow:hidden;background:#000;box-shadow:0 0 0 9px #111,0 0 0 10px #333,0 40px 80px -30px rgba(0,0,0,.8);flex:none}
+.sphone .sc-foot{visibility:hidden}
+.sphone .sc-holder{position:absolute;left:0;top:0;width:360px;height:640px;transform:scale(.9);transform-origin:0 0}
+.s-ui{position:absolute;inset:0;pointer-events:none;color:#fff;font-family:var(--font)}
+.s-bars{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:4px}
+.s-bars i{flex:1;height:2.5px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.s-bars i b{display:block;height:100%;width:0;background:#fff;animation:sbar 5s linear forwards}
+@keyframes sbar{to{width:100%}}
+.s-head{position:absolute;left:12px;right:12px;top:22px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.s-av{width:30px;height:30px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#f6b23c,#e2483f,#b0378f)}
+.s-av span{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:#1d4d3a;border:2px solid #000;font-size:11px}
+.s-head small{opacity:.75;font-weight:500}
+.s-head .x{margin-left:auto;font-size:18px;font-weight:400}
+.s-foot{position:absolute;left:12px;right:12px;bottom:14px;display:flex;align-items:center;gap:12px;font-size:20px}
+.s-foot span:first-child{flex:1;height:38px;display:flex;align-items:center;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.6);font-size:13px;font-weight:500}
+.s-side{max-width:300px;color:#eef1ec;font-size:14px;line-height:1.7}
+.s-side h3{margin:0 0 6px;font-size:20px;letter-spacing:-.02em}
+.s-side p{margin:0 0 14px;color:#b7beb6}
+.s-side .btn{margin-top:8px}
+.s-note{min-height:20px;margin-top:10px;font-size:12.5px;color:#cfe8d9}
+.s-close{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:61}
+/* 스토리 카드(1080×1920으로 저장되는 그림) */
+.sc{position:relative;width:360px;height:640px;box-sizing:border-box;padding:68px 26px 22px;overflow:hidden;font-family:var(--font);color:#fff;
+  background:radial-gradient(120% 70% at 85% 0%,#3d7a5b 0%,transparent 60%),radial-gradient(90% 60% at 0% 100%,#2c5e46 0%,transparent 65%),linear-gradient(170deg,#173326,#0f2219)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:#bfe3cd}
+.sc-title{margin:4px 0 10px;font-size:24px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
+.sc-title em{font-style:normal;color:#c6f36b}
+.sc-photo{position:relative;margin:0 auto;width:232px;padding:8px 8px 24px;background:#faf8f1;border-radius:3px;transform:rotate(-2.2deg);box-shadow:0 18px 30px -14px rgba(0,0,0,.6)}
+.sc-photo canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.sc-photo .cap{position:absolute;left:10px;right:10px;bottom:6px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:#2b2a27}
+.sc-quote{margin:6px 0 4px;padding:18px 18px;border-radius:14px;background:rgba(255,255,255,.08);font-family:"Nanum Pen Script",var(--font);font-size:27px;line-height:1.25;color:#f4f1e6}
+.sc-paper{position:relative;display:flex;gap:10px;margin:12px -4px 0;padding:12px 12px 12px 8px;background:#faf8f1;color:#2b2a27;font-family:var(--mono);border-radius:2px;transform:rotate(1deg);box-shadow:0 18px 30px -16px rgba(0,0,0,.6)}
+.sc-paper .rc-map{flex:none;width:104px;height:auto}
+.sc-paper.big .rc-map{width:132px}
+.sc-list{flex:1;min-width:0;font-size:11.5px;line-height:1.5}
+.sc-list .sec{font-size:9.5px;letter-spacing:.12em;opacity:.7;margin-bottom:3px}
+.sc-list .st{display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.sc-list .st i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#2b2a27;color:#faf8f1;font-size:9px;flex:none}
+.sc-list .st span{overflow:hidden;text-overflow:ellipsis}
+.sc-list .st.best span{font-weight:700}
+.sc-stats{display:flex;gap:8px;margin-top:8px;padding-top:7px;border-top:1px dashed rgba(43,42,39,.4)}
+.sc-stats div{flex:1}
+.sc-stats b{display:block;font-size:12.5px}
+.sc-stats small{font-size:9px;opacity:.7}
+.sc-best{margin-top:10px;font-size:12px;color:#d9eadf}
+.sc-best b{display:block;margin-top:1px;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.03em}
+.sc-best b em{font-style:normal;color:#c6f36b}
+.sc-tags{margin-top:4px;font-size:12px;color:#bfe3cd}
+.sc-loc{position:absolute;right:20px;top:140px;padding:6px 11px;border-radius:9px;background:#fff;color:#1d4d3a;font-size:12.5px;font-weight:800;transform:rotate(6deg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+.sc-foot{position:absolute;left:26px;right:26px;bottom:18px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:#9cc7ad;letter-spacing:.06em}
+@media (max-width:700px){.s-side{text-align:center}}
 
 /* ---------- 읽는 법 ---------- */
 
@@ -486,7 +554,10 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
                 <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
                 <p>기계에서 영수증을 뜯어 가세요.<br>휴대폰에도 같은 영수증이 저장돼요.</p>
                 <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
-                <div class="wallet"><b>오늘의 영수증 보관함</b>지금까지 받은 영수증을 날짜별로 다시 볼 수 있어요<br><span class="tg">3번째 서울숲 영수증</span></div>
+              </div>
+              <div class="act2">
+                <button class="btn ghost" id="bSave" type="button">📥 영수증 저장</button>
+                <button class="btn story" id="bStory" type="button">스토리 공유</button>
               </div>
               <button class="btn" id="bShare" type="button">방명록에 남기기</button>
               <button class="ph-link" id="bAgain" type="button">↺ 처음부터 다시 보기</button>
@@ -538,6 +609,26 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="영수증 크게 보기">
   <button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
   <div class="holder" id="holder"></div>
+  <div class="msave"><button type="button" id="bSaveM">📥 영수증 저장</button><button type="button" class="story" id="bStoryM">스토리 공유</button></div>
+</div>
+
+<div class="smodal" id="smodal" hidden role="dialog" aria-modal="true" aria-label="인스타그램 스토리 미리보기">
+  <button class="s-close" id="sClose" type="button" aria-label="닫기">✕</button>
+  <div class="sphone">
+    <div class="sc-holder" id="scHolder"></div>
+    <div class="s-ui" aria-hidden="true">
+      <div class="s-bars"><i><b></b></i></div>
+      <div class="s-head"><div class="s-av"><span>나</span></div>내 스토리 <small>방금</small><span class="x">✕</span></div>
+      <div class="s-foot"><span>메시지 보내기</span><span>♡</span><span>➤</span></div>
+    </div>
+  </div>
+  <div class="s-side">
+    <h3>스토리에 이렇게 올라가요</h3>
+    <p>오늘 찍은 사진, 걸은 코스, 제일 좋았던 곳이 한 장에 담겨요. 휴대폰에서 누르면 공유 창이 열리고 <b>인스타그램 → 스토리</b>를 고르면 바로 올라가요.</p>
+    <button class="btn story" id="sShare" type="button">인스타그램에 올리기</button>
+    <button class="btn ghost" id="sSave" type="button">📥 스토리 이미지 저장</button>
+    <div class="s-note" id="sNote" role="status"></div>
+  </div>
 </div>
 
 <script>
@@ -959,13 +1050,157 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   }
 
   $('#bOpen').onclick = function () {
+    modalState = state;
     $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(state, { inkStatic: true }));
     $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
   };
   function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; (wallOpener || $('#bOpen')).focus(); wallOpener = null; }
   $('#bClose').onclick = closeModal;
   $('#modal').addEventListener('click', function (e) { if (e.target === this || e.target.id === 'holder') closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('#smodal').hidden) closeStory(); else if (!$('#modal').hidden) closeModal();
+  });
+
+  // ---------- 영수증 전체를 그림으로 저장 · 인스타 스토리 공유 ----------
+  // 그림은 이 기기 안에서만 만들고 서버로 보내지 않음
+  var modalState = null;
+  var fileDate = function () { return (state.d && state.d.date || dateStr).replace(/\./g, ''); };
+  // 화면 밖에 잠깐 붙여 PNG로 바꿈(캔버스 사진·지도·쿠폰까지 영수증 한 장 전체)
+  // 글꼴: 다른 주소(구글 폰트·jsdelivr)의 글꼴은 그림 도구가 직접 못 읽어서, 글꼴 파일을 받아 그림 안에 넣어 줌.
+  // 쓰인 글자가 들어 있는 조각(unicode-range)만 받아 빠르게.
+  var FONT_CSS = [
+    'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap',
+    'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css',
+  ];
+  var fontCssP = null, fontFile = {};
+  function blobToDataUrl(b) { return new Promise(function (ok, no) { var r = new FileReader(); r.onload = function () { ok(r.result); }; r.onerror = no; r.readAsDataURL(b); }); }
+  function rangesOf(s) {
+    return s.split(',').map(function (p) {
+      p = p.trim().replace(/^U\+/i, ''); var ab = p.split('-'), a = ab[0], b = ab[1] || ab[0];
+      if (a.indexOf('?') >= 0) { b = a.replace(/\?/g, 'F'); a = a.replace(/\?/g, '0'); }
+      return [parseInt(a, 16), parseInt(b, 16)];
+    });
+  }
+  function fontEmbedFor(node) {
+    if (!fontCssP) fontCssP = Promise.all(FONT_CSS.map(function (u) { return fetch(u).then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }); }));
+    var codes = []; Array.from(node.textContent + '0123456789★·').forEach(function (c) { var k = c.codePointAt(0); if (codes.indexOf(k) < 0) codes.push(k); });
+    return fontCssP.then(function (texts) {
+      var jobs = [];
+      texts.forEach(function (t, i) {
+        (t.match(/@font-face\s*\{[^}]*\}/g) || []).forEach(function (rule) {
+          var ur = rule.match(/unicode-range:\s*([^;}]+)/);
+          if (ur) { var rs = rangesOf(ur[1]); if (!codes.some(function (c) { return rs.some(function (x) { return c >= x[0] && c <= x[1]; }); })) return; }
+          var m = rule.match(/url\(([^)]+)\)/); if (!m) return;
+          var url = new URL(m[1].replace(/["']/g, ''), FONT_CSS[i]).href;
+          if (!fontFile[url]) fontFile[url] = fetch(url).then(function (r) { return r.blob(); }).then(blobToDataUrl).catch(function () { delete fontFile[url]; return ''; });
+          jobs.push(fontFile[url].then(function (d) { return d ? rule.replace(m[0], 'url(' + d + ')') : ''; }));
+        });
+      });
+      return Promise.all(jobs).then(function (a) { return a.join('\n'); });
+    });
+  }
+  function nodeToBlob(node, opt) {
+    if (!window.htmlToImage) return Promise.reject(new Error('no html-to-image'));
+    var off = document.createElement('div'); off.className = 'cap-off'; off.appendChild(node); document.body.appendChild(off);
+    var done = function () { off.remove(); };
+    var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    return fontsReady.then(function () { return fontEmbedFor(node); }).then(function (css) {
+      return htmlToImage.toBlob(node, Object.assign({ pixelRatio: 3, cacheBust: false, fontEmbedCSS: css }, opt || {}));
+    }).then(function (b) { done(); return b; }, function (e) { done(); throw e; });
+  }
+  function receiptBlob(st) {
+    var wrap = document.createElement('div'); wrap.className = 'cap-wrap';
+    wrap.appendChild(makeReceipt(st, { inkStatic: true }));
+    return nodeToBlob(wrap, { backgroundColor: '#f3f1ea' });
+  }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function busy(btn, on, label) {
+    if (!btn) return;
+    if (on) { btn.dataset.t = btn.textContent; btn.textContent = label || '만드는 중…'; btn.disabled = true; }
+    else { btn.textContent = btn.dataset.t || btn.textContent; btn.disabled = false; }
+  }
+  function saveReceipt(st, btn) {
+    busy(btn, true);
+    receiptBlob(st).then(function (b) {
+      download(b, '숲영수증_' + fileDate() + '.png');
+      busy(btn, false); var t = btn.textContent; btn.textContent = '✓ 저장했어요'; setTimeout(function () { btn.textContent = t; }, 1800);
+    }).catch(function () { busy(btn, false); btn.textContent = '다시 눌러 주세요'; });
+  }
+  $('#bSave').onclick = function () { saveReceipt(state, this); };
+  $('#bSaveM').onclick = function () { saveReceipt(modalState || state, this); };
+
+  // 스토리 카드(360×640 → 1080×1920): 사진 · 코스 지도 · 들른 곳 · 기록 · 제일 좋았던 곳
+  function storyCard(st) {
+    var R = rinfo(st), d = document.createElement('div'); d.className = 'sc';
+    var best = st.best || '';
+    var h = '<div class="sc-top"><span>SEOUL FOREST</span><span>' + R.date + ' (' + R.dow + ')</span></div>';
+    h += '<div class="sc-title">오늘, <em>서울숲</em>에서<br>머물다 왔어요</div>';
+    if (st.photo) h += '<div class="sc-photo"><canvas class="rcPhoto"></canvas><div class="cap"><span>서울숲 ' + R.date + '</span><span>' + esc(R.with) + '</span></div></div>';
+    else h += '<div class="sc-quote">“' + esc(st.memo || R.line + ' 쉬어 간 날') + '”</div>';
+    h += '<div class="sc-loc">📍 서울숲</div>';
+    var list = '<div class="sec">오늘 걸은 코스 · ' + R.km + '</div>';
+    R.stops.slice(0, 5).forEach(function (s, i) {
+      var isBest = best && s[0] === best;
+      list += '<div class="st' + (isBest ? ' best' : '') + '"><i>' + (i + 1) + '</i><span>' + esc(s[0]) + (isBest ? ' ★' : '') + '</span></div>';
+    });
+    list += '<div class="sc-stats"><div><b>' + R.stay + '</b><small>머문 시간</small></div><div><b>' + R.steps + '</b><small>걸음</small></div></div>';
+    h += '<div class="sc-paper rc-ink' + (st.photo ? '' : ' big') + '">' + realMap(st) + '<div class="sc-list">' + list + '</div></div>';
+    if (best) h += '<div class="sc-best">오늘 제일 좋았던 곳<b>' + esc(best) + ' <em>★</em></b></div>';
+    var tags = (st.tags || []).map(function (t) { return '#' + t.replace(/\s/g, ''); });
+    h += '<div class="sc-tags">' + ['#서울숲', '#숲영수증'].concat(tags).slice(0, 4).join(' ') + '</div>';
+    h += '<div class="sc-foot"><span>숲 영수증 No.' + R.no + '</span><span>서울숲 스마트 공원</span></div>';
+    d.innerHTML = h;
+    paintPhotos(d, st.photo);
+    return d;
+  }
+  var storyState = null, storyBlobP = null, storyOpener = null;
+  function openStory(st, opener) {
+    storyState = st; storyOpener = opener || null; storyBlobP = null;
+    $('#scHolder').innerHTML = ''; $('#scHolder').appendChild(storyCard(st));
+    var bar = $('.s-bars b'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
+    $('#sNote').textContent = '';
+    $('#smodal').hidden = false; document.body.style.overflow = 'hidden'; $('#sShare').focus();
+    // 미리 만들어 둠: 공유 창은 버튼을 누른 직후에만 열 수 있어서, 누를 때 바로 넘길 수 있게
+    setTimeout(function () { storyBlob().catch(function () {}); }, 400);
+  }
+  function closeStory() {
+    $('#smodal').hidden = true;
+    if ($('#modal').hidden) document.body.style.overflow = '';
+    if (storyOpener) storyOpener.focus();
+  }
+  function storyBlob() {
+    if (!storyBlobP) storyBlobP = nodeToBlob(storyCard(storyState)).catch(function (e) { storyBlobP = null; throw e; });
+    return storyBlobP;
+  }
+  $('#bStory').onclick = function () { openStory(state, this); };
+  $('#bStoryM').onclick = function () { openStory(modalState || state, this); };
+  $('#sClose').onclick = closeStory;
+  $('#smodal').addEventListener('click', function (e) { if (e.target === this) closeStory(); });
+  $('#sSave').onclick = function () {
+    var btn = this; busy(btn, true);
+    storyBlob().then(function (b) { download(b, '숲영수증_스토리_' + fileDate() + '.png'); busy(btn, false); $('#sNote').textContent = '스토리용 이미지(1080×1920)를 저장했어요.'; })
+      .catch(function () { busy(btn, false); $('#sNote').textContent = '이미지를 만들지 못했어요. 다시 눌러 주세요.'; });
+  };
+  // 휴대폰: 공유 창(인스타그램 → 스토리) / PC: 이미지를 저장하고 안내
+  $('#sShare').onclick = function () {
+    var btn = this; busy(btn, true, '준비하는 중…');
+    storyBlob().then(function (b) {
+      busy(btn, false);
+      var file = new File([b], '숲영수증_스토리.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], title: '오늘의 숲 영수증' })
+          .then(function () { $('#sNote').textContent = '공유 창을 열었어요. 인스타그램 → 스토리를 골라 주세요.'; })
+          .catch(function (e) { if (e && e.name !== 'AbortError') $('#sNote').textContent = '공유하지 못했어요. 이미지 저장 후 스토리에 올려 주세요.'; });
+      }
+      download(b, '숲영수증_스토리_' + fileDate() + '.png');
+      $('#sNote').textContent = '이 기기에서는 바로 공유가 안 돼서 이미지를 저장했어요. 휴대폰에서 누르면 인스타그램을 바로 고를 수 있어요.';
+    }).catch(function () { busy(btn, false); $('#sNote').textContent = '이미지를 만들지 못했어요. 다시 눌러 주세요.'; });
+  };
 
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
@@ -1044,6 +1279,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       b.onclick = function () {
         wallOpener = b;
         var full = { best: st.best, tags: st.tags, memo: st.memo, course: st.course, d: st.d, photo: st.photoOk ? st.photo : null };
+        modalState = full;
         $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(full, { inkStatic: true }));
         $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
       };
