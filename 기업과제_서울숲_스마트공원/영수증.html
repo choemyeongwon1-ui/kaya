@@ -350,6 +350,8 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .msave button{height:46px;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#14201a;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);white-space:nowrap}
 .msave button.story{background:linear-gradient(135deg,#f6b23c,#e2483f 45%,#b0378f 80%,#6a42c2);color:#fff}
 .msave button:disabled{opacity:.6;cursor:wait}
+.modal[hidden]~.mclose,.modal[hidden]~.msave{display:none}
+.msave{padding-bottom:env(safe-area-inset-bottom)}
 .cap-off{position:fixed;left:-10000px;top:0;pointer-events:none}
 .cap-wrap{padding:18px 16px;background:#f3f1ea;display:inline-block}
 .cap-wrap .receipt{box-shadow:none;background:linear-gradient(90deg,rgba(0,0,0,.035),transparent 8%,transparent 92%,rgba(0,0,0,.04)),var(--paper)}
@@ -665,10 +667,11 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 <footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드<br><small style="opacity:.6">셔터 소리: 「Canon T50 shutter noise」 Francois C, CC BY-SA 3.0 (위키미디어 공용, 앞부분만 잘라 씀)</small></footer>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="영수증 크게 보기">
-  <button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
   <div class="holder" id="holder"></div>
-  <div class="msave"><button type="button" id="bSaveM">📥 영수증 저장</button><button type="button" class="story" id="bStoryM">스토리 공유</button></div>
 </div>
+<!-- 닫기·저장 버튼은 창 밖에 둠: .modal의 배경 흐림(backdrop-filter) 안에 있으면 fixed가 화면이 아니라 창 내용에 붙어 스크롤 따라 중간에 떠 버림 -->
+<button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
+<div class="msave"><button type="button" id="bSaveM">📥 영수증 저장</button><button type="button" class="story" id="bStoryM">스토리 공유</button></div>
 
 <div class="smodal" id="smodal" hidden role="dialog" aria-modal="true" aria-label="인스타그램 스토리 미리보기">
   <button class="s-close" id="sClose" type="button" aria-label="닫기">✕</button>
