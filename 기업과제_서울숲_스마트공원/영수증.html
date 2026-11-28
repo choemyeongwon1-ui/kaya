@@ -662,7 +662,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     <p class="wall-note">🔒 사진은 본인이 동의한 경우에만 걸리고, 30일 뒤 내려가요. 언제든 직접 내릴 수 있어요. 화면 속 방명록은 가상 예시예요.</p>
   </section>
 
-  <p class="note rv">기록·번호·제휴처(카페·주차장·가게)·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
+  <p class="note rv">기록·번호·제휴처(카페·음식점·소품샵·주차장)·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
 </main>
 <footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드<br><small style="opacity:.6">셔터 소리: 「Canon T50 shutter noise」 Francois C, CC BY-SA 3.0 (위키미디어 공용, 앞부분만 잘라 씀)</small></footer>
 
@@ -1006,7 +1006,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     scan: '① 출구에 선 영수증 기계의 QR을 휴대폰으로 찍습니다. 앱 설치는 필요 없습니다.',
     rec: '② 휴대폰에 남은 오늘 기록을 확인합니다. 이동 경로는 휴대폰 안에만 있습니다.',
     rate: '③ 오늘 제일 좋았던 곳을 골라야 영수증이 나옵니다. 고른 곳과 이유가 장소별 만족도로 모입니다.',
-    gift: '③ 영수증과 함께 받을 혜택을 미리 고릅니다. 이미 밥·커피를 마친 사람도 쓸 수 있게 카페·주차장·동네 가게 중 하나를 고릅니다.',
+    gift: '③ 영수증과 함께 받을 혜택을 미리 고릅니다. 카페·음식점·소품샵·주차장 중 하나를 고릅니다. 이미 밥·커피를 마친 사람은 소품샵이나 주차장을 고르면 됩니다.',
     photo: '④ 원하면 기계 카메라로 사진을 찍어 영수증에 함께 인쇄합니다.',
     count: '④ 기계 카메라가 3초 뒤 사진을 찍습니다.',
     check: '④ 사진은 영수증 인쇄처럼 흑백 점으로 바뀌어 찍힙니다.',
@@ -1047,11 +1047,12 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   });
   $('#memo').oninput = function () { state.memo = this.value.trim(); $('#memoN').textContent = this.value.length; };
   $('#bRate').onclick = function () { view('gift'); };
-  // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
+  // 영수증과 함께 나올 혜택 4가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
   var GIFTS = {
     cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페 · 발급일부터 3일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
+    food: { ico: '🍽️', t: '성수 동네 음식점 10% 할인', s: '제휴 식당 · 발급일부터 3일', note: '숲에서 걷고 난 뒤, 성수 골목에서 한 끼' },
+    shop: { ico: '🛍️', t: '성수 소품샵 10% 할인', s: '제휴 소품샵 · 발급일부터 3일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
     park: { ico: '🅿️', t: '주변 주차장 1시간 무료', pick: '서울숲공원 · 갤러리아포레 · 디타워 · 뚝섬유수지', s: '발급 당일', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
-    shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍 · 발급일부터 3일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
   };
   // 주차 쿠폰을 쓸 수 있는 서울숲 주변 주차장 (2026-11-28 확인)
   //  서울숲공원주차장·갤러리아포레: 서울시 실시간 도시데이터 '서울숲공원' 주차장 정보(이름·지번·면수·좌표), 서울숲 누리집 주차장 안내(211면·24시간)
@@ -1103,7 +1104,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     gp.innerHTML = '<div class="lot-h"><b>🅿️ 어디에 주차하셨나요?</b><span>고른 주차장에서만 쓰는 쿠폰이 나와요</span></div>' +
       '<div class="lot-body">' + parkMap(sel) + '<div class="lots">' + PARK_LOTS.map(function (p, i) {
         return '<button class="lot-opt" type="button" data-i="' + i + '" aria-pressed="' + (i === sel) + '"><i>' + (i + 1) + '</i><span><b>' + p.name + '</b><small>' + p.addr + ' · ' + p.info + '</small></span></button>';
-      }).join('') + '</div></div><p class="lot-n">주차를 안 했다면 카페·가게 쿠폰을 골라 주세요.</p>';
+      }).join('') + '</div></div><p class="lot-n">주차를 안 했다면 카페·음식점·소품샵 쿠폰을 골라 주세요.</p>';
     $$('.lot-opt', gp).forEach(function (b) {
       b.onclick = function () { state.lot = +b.dataset.i; paintLots(); $('#bGift').disabled = false; };
     });
