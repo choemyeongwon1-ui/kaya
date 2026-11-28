@@ -167,6 +167,15 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .place[aria-pressed="true"] em{transform:scale(1.25)}
 .place:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .place.hint:not([aria-pressed="true"]){border-color:#9dbf9d;border-style:dashed}
+.gifts{display:flex;flex-direction:column;gap:8px;margin:4px 0 4px}
+.gift-opt{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:1.5px solid #dcdcd4;border-radius:14px;background:#fff;font:inherit;color:#14201a;cursor:pointer;text-align:left;transition:transform .15s,border-color .2s,background .2s}
+.gift-opt:hover{transform:translateY(-2px)}
+.gift-opt em{flex:none;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#f1efe8;font-style:normal;font-size:20px;transition:background .2s}
+.gift-opt b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+.gift-opt small{display:block;margin-top:1px;font-size:11px;color:#6b746e;line-height:1.4}
+.gift-opt[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
+.gift-opt[aria-pressed="true"] em{background:#cfe3d3}
+.gift-opt:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .faces{display:flex;justify-content:space-between;gap:8px;margin:4px 0 10px}
 .face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1.5px solid #dcdcd4;border-radius:16px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
 .face em{font-style:normal;font-size:26px;line-height:1;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
@@ -351,10 +360,11 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .s-close{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:61}
 /* 스토리 카드(1080×1920으로 저장되는 그림) */
 .sc{position:relative;width:360px;height:640px;box-sizing:border-box;padding:68px 28px 62px;overflow:hidden;display:flex;flex-direction:column;font-family:var(--font);color:#16352a;
-  background:radial-gradient(140% 55% at 50% 0%,#f8f5ee 0%,transparent 70%),linear-gradient(180deg,#f3efe6,#ebe5d8)}
-.sc>*{flex-shrink:0}
-.sc::before{content:"";position:absolute;inset:12px;border:1px solid rgba(22,53,42,.18);border-radius:22px;pointer-events:none}
-.sc::after{content:"";position:absolute;left:28px;right:28px;top:88px;height:1px;background:rgba(22,53,42,.16)}
+  background:#f1eee6}
+.sc-bg{position:absolute;left:0;top:0;width:360px;height:640px;z-index:0;pointer-events:none}
+.sc>*{flex-shrink:0;z-index:1}
+.sc::before{content:"";position:absolute;inset:12px;z-index:2;border:1px solid rgba(255,255,255,.75);border-radius:22px;pointer-events:none}
+.sc::after{content:"";position:absolute;left:28px;right:28px;top:88px;height:1px;z-index:1;background:rgba(22,53,42,.14)}
 .sc-top{display:flex;justify-content:space-between;align-items:center;height:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:#6f7d73}
 .sc-title{margin:10px 0 10px;font-size:24px;font-weight:800;letter-spacing:-.045em;line-height:1.18}
 .sc-title em{font-style:normal;color:#24704b;background:linear-gradient(transparent 64%,#dcef9f 64%,#dcef9f 92%,transparent 92%)}
@@ -532,6 +542,14 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <button class="btn" id="bRate" type="button" disabled>골랐어요</button>
             </div>
 
+            <div class="view" data-v="gift">
+              <h4>영수증과 함께 받을 혜택</h4>
+              <p class="ph-sub">오늘 나에게 쓸모 있는 걸 하나 골라 주세요.</p>
+              <div class="gifts" id="gifts"></div>
+              <div class="lock-note">🎁 <span>고른 혜택이 <b>영수증 맨 아래 쿠폰</b>으로 같이 나와요.</span></div>
+              <button class="btn" id="bGift" type="button" disabled>이걸로 받을게요</button>
+            </div>
+
             <div class="view" data-v="photo">
               <h4>사진도 같이 뽑을까요?</h4>
               <p class="ph-sub">기계 위 카메라로 찍어 영수증에 함께 인쇄해요.</p>
@@ -573,7 +591,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <div class="done-box">
                 <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
                 <p>기계에서 영수증을 뜯어 가세요.<br>휴대폰에도 같은 영수증이 저장돼요.</p>
-                <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
+                <div class="wallet" id="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 발급일부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
               </div>
               <div class="act2">
                 <button class="btn ghost" id="bSave" type="button">📥 영수증 저장</button>
@@ -622,7 +640,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     <p class="wall-note">🔒 사진은 본인이 동의한 경우에만 걸리고, 30일 뒤 내려가요. 언제든 직접 내릴 수 있어요. 화면 속 방명록은 가상 예시예요.</p>
   </section>
 
-  <p class="note rv">기록·번호·제휴 카페·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
+  <p class="note rv">기록·번호·제휴처(카페·주차장·가게)·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
 </main>
 <footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드<br><small style="opacity:.6">셔터 소리: 「Canon T50 shutter noise」 Francois C, CC BY-SA 3.0 (위키미디어 공용, 앞부분만 잘라 씀)</small></footer>
 
@@ -857,7 +875,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     h += part(5, rt, P);
     h += '<hr class="hr">';
     h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark(R.date, R.time) + '</div></div>', P);
-    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>성수 동네 카페 10% 할인</b><div class="cs">제휴 카페(예시) · 발급일부터 7일<br>숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
+    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
     h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(R.no) + '번째 사람</b><br>' + R.line + ', 고맙습니다</div>';
     h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
@@ -959,12 +977,13 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bSound').onclick = function () { soundOn = !soundOn; this.setAttribute('aria-pressed', String(soundOn)); this.textContent = soundOn ? '🔊 출력 소리 켜짐' : '🔈 출력 소리 꺼짐'; };
 
   // ---------- 화면 전환 ----------
-  var ORDER = ['scan', 'rec', 'rate', 'photo', 'count', 'check', 'done', 'share'];
-  var STEP_OF = { scan: 0, rec: 1, rate: 2, photo: 3, count: 3, check: 3, done: 4, share: 4 };
+  var ORDER = ['scan', 'rec', 'rate', 'gift', 'photo', 'count', 'check', 'done', 'share'];
+  var STEP_OF = { scan: 0, rec: 1, rate: 2, gift: 2, photo: 3, count: 3, check: 3, done: 4, share: 4 };
   var CAP = {
     scan: '① 출구에 선 영수증 기계의 QR을 휴대폰으로 찍습니다. 앱 설치는 필요 없습니다.',
     rec: '② 휴대폰에 남은 오늘 기록을 확인합니다. 이동 경로는 휴대폰 안에만 있습니다.',
     rate: '③ 오늘 제일 좋았던 곳을 골라야 영수증이 나옵니다. 고른 곳과 이유가 장소별 만족도로 모입니다.',
+    gift: '③ 영수증과 함께 받을 혜택을 미리 고릅니다. 이미 밥·커피를 마친 사람도 쓸 수 있게 카페·주차장·동네 가게 중 하나를 고릅니다.',
     photo: '④ 원하면 기계 카메라로 사진을 찍어 영수증에 함께 인쇄합니다.',
     count: '④ 기계 카메라가 3초 뒤 사진을 찍습니다.',
     check: '④ 사진은 영수증 인쇄처럼 흑백 점으로 바뀌어 찍힙니다.',
@@ -1004,7 +1023,25 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     };
   });
   $('#memo').oninput = function () { state.memo = this.value.trim(); $('#memoN').textContent = this.value.length; };
-  $('#bRate').onclick = function () { view('photo'); };
+  $('#bRate').onclick = function () { view('gift'); };
+  // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
+  var GIFTS = {
+    cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페(예시) · 발급일부터 7일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
+    park: { ico: '🅿️', t: '주변 공영주차장 1시간 무료', s: '제휴 주차장(예시) · 오늘 하루', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
+    shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍(예시) · 7일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
+  };
+  function giftOf(st) { return GIFTS[st && st.gift] || GIFTS.cafe; }
+  $('#gifts').innerHTML = Object.keys(GIFTS).map(function (k) {
+    var g = GIFTS[k];
+    return '<button class="gift-opt" type="button" data-g="' + k + '" aria-pressed="false"><em>' + g.ico + '</em><span><b>' + g.t + '</b><small>' + g.s + '</small></span></button>';
+  }).join('');
+  $$('#gifts .gift-opt').forEach(function (b) {
+    b.onclick = function () {
+      $$('#gifts .gift-opt').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      state.gift = b.dataset.g; $('#bGift').disabled = false;
+    };
+  });
+  $('#bGift').onclick = function () { view('photo'); };
 
   var stream = null;
   function stopCam() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } $('#kcam').classList.remove('live'); }
@@ -1050,6 +1087,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   function print() {
     view('done'); kscreen('print');
+    var gw = giftOf(state); $('#wallet').innerHTML = '<b>' + gw.ico + ' ' + gw.t + '</b>' + gw.s + '<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span>';
     var rc = $('#receipt'); rc.innerHTML = buildReceipt(state); paintPhotos(rc, state.photo);
     var clip = $('#clip'), mv = $('#move');
     clip.classList.remove('hidden');
@@ -1158,7 +1196,8 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   function storyCard(st) {
     var R = rinfo(st), d = document.createElement('div'); d.className = 'sc';
     var best = st.best || '';
-    var h = '<div class="sc-top"><span>SEOUL FOREST</span><span>' + R.date + ' (' + R.dow + ')</span></div>';
+    var h = '<svg class="sc-bg" viewBox="0 0 360 640" aria-hidden="true"><defs><linearGradient id="scSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dde9ec"/><stop offset=".38" stop-color="#eef0e8"/><stop offset=".62" stop-color="#f6eee3"/><stop offset="1" stop-color="#f3e6da"/></linearGradient><radialGradient id="scSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6df"/><stop offset=".45" stop-color="#fdf0d6" stop-opacity=".7"/><stop offset="1" stop-color="#fdf0d6" stop-opacity="0"/></radialGradient><linearGradient id="scLake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3e5ea"/><stop offset="1" stop-color="#e4eef0"/></linearGradient></defs><rect width="360" height="640" fill="url(#scSky)"/><circle cx="290" cy="150" r="120" fill="url(#scSun)"/><g fill="none" stroke="#a9bdb2" stroke-width="1.3" stroke-linecap="round"><path d="M232 214q5-5 10 0q5-5 10 0"/><path d="M262 232q3.5-3.5 7 0q3.5-3.5 7 0"/></g><g fill="#cfe1d1" opacity=".75"><ellipse cx="8" cy="4" rx="11" ry="4.6" transform="rotate(-60 8 4)"/><ellipse cx="21" cy="20" rx="11" ry="4.6" transform="rotate(-4 21 20)"/><ellipse cx="34" cy="22" rx="11" ry="4.6" transform="rotate(-48 34 22)"/><ellipse cx="47" cy="38" rx="11" ry="4.6" transform="rotate(8 47 38)"/><ellipse cx="60" cy="40" rx="11" ry="4.6" transform="rotate(-36 60 40)"/><ellipse cx="73" cy="56" rx="11" ry="4.6" transform="rotate(20 73 56)"/><ellipse cx="86" cy="58" rx="11" ry="4.6" transform="rotate(-24 86 58)"/><ellipse cx="99" cy="74" rx="11" ry="4.6" transform="rotate(32 99 74)"/><ellipse cx="112" cy="76" rx="11" ry="4.6" transform="rotate(-12 112 76)"/></g><path d="M0 418C60 392 120 398 180 412S300 390 360 404V640H0Z" fill="#e2ebe0"/><g fill="#cadecb"><ellipse cx="-6" cy="452" rx="11.3" ry="13.0"/><ellipse cx="9" cy="451" rx="10.1" ry="11.6"/><ellipse cx="22" cy="449" rx="13.6" ry="15.6"/><ellipse cx="39" cy="450" rx="9.5" ry="10.9"/><ellipse cx="52" cy="447" rx="12.8" ry="14.7"/><ellipse cx="68" cy="447" rx="11.6" ry="13.3"/><ellipse cx="83" cy="448" rx="9.4" ry="10.8"/><ellipse cx="96" cy="446" rx="12.6" ry="14.4"/><ellipse cx="112" cy="447" rx="9.3" ry="10.7"/><ellipse cx="124" cy="445" rx="12.0" ry="13.8"/><ellipse cx="140" cy="447" rx="9.5" ry="10.9"/><ellipse cx="152" cy="446" rx="9.6" ry="11.1"/><ellipse cx="164" cy="445" rx="12.0" ry="13.8"/><ellipse cx="180" cy="443" rx="14.8" ry="17.0"/><ellipse cx="199" cy="446" rx="9.9" ry="11.3"/><ellipse cx="212" cy="446" rx="10.6" ry="12.1"/><ellipse cx="226" cy="444" rx="13.4" ry="15.4"/><ellipse cx="243" cy="443" rx="15.6" ry="18.0"/><ellipse cx="263" cy="445" rx="13.0" ry="15.0"/><ellipse cx="280" cy="447" rx="11.8" ry="13.5"/><ellipse cx="296" cy="445" rx="15.8" ry="18.2"/><ellipse cx="316" cy="450" rx="9.3" ry="10.7"/><ellipse cx="328" cy="447" rx="15.0" ry="17.3"/><ellipse cx="348" cy="451" rx="11.0" ry="12.7"/><ellipse cx="362" cy="452" rx="10.0" ry="11.5"/></g><path d="M0 462C70 444 130 452 190 466S300 448 360 458V640H0Z" fill="#d3e4d1"/><g fill="#bcd5bf"><ellipse cx="22" cy="498" rx="17" ry="21"/><ellipse cx="58" cy="497" rx="18" ry="22"/><ellipse cx="318" cy="496" rx="21" ry="26"/><ellipse cx="346" cy="497" rx="17" ry="21"/></g><path d="M0 500C90 486 210 494 360 482V640H0Z" fill="#dbe9d3"/><ellipse cx="150" cy="548" rx="170" ry="20" fill="url(#scLake)"/><path d="M60 544h60M170 552h80M110 556h40" stroke="#f4f8f8" stroke-width="1.4" stroke-linecap="round" opacity=".9"/><path d="M0 572C100 558 230 566 360 552V640H0Z" fill="#d4e6cc"/><circle cx="208" cy="613" r="1.7" fill="#ffffff"/><circle cx="252" cy="608" r="2.2" fill="#f5e2a6"/><circle cx="191" cy="620" r="2.3" fill="#e8d6ef"/><circle cx="164" cy="594" r="2.4" fill="#f5e2a6"/><circle cx="93" cy="609" r="2.7" fill="#e8d6ef"/><circle cx="258" cy="594" r="1.7" fill="#f2cfd2"/><circle cx="152" cy="619" r="2.7" fill="#f5e2a6"/><circle cx="153" cy="630" r="2.5" fill="#f2cfd2"/><circle cx="205" cy="625" r="2.0" fill="#ffffff"/><circle cx="129" cy="605" r="1.7" fill="#e8d6ef"/><circle cx="42" cy="593" r="1.7" fill="#f2cfd2"/><circle cx="249" cy="613" r="1.9" fill="#e8d6ef"/><circle cx="141" cy="614" r="2.7" fill="#f2cfd2"/><circle cx="131" cy="611" r="1.7" fill="#e8d6ef"/><circle cx="271" cy="585" r="2.1" fill="#f5e2a6"/><circle cx="322" cy="605" r="2.1" fill="#f5e2a6"/><circle cx="197" cy="626" r="2.6" fill="#e8d6ef"/><circle cx="105" cy="600" r="2.4" fill="#ffffff"/><circle cx="139" cy="590" r="1.8" fill="#f2cfd2"/><circle cx="89" cy="591" r="2.6" fill="#e8d6ef"/><circle cx="72" cy="593" r="2.1" fill="#f5e2a6"/><circle cx="136" cy="609" r="2.4" fill="#f5e2a6"/><circle cx="185" cy="611" r="2.1" fill="#f2cfd2"/><circle cx="306" cy="629" r="2.1" fill="#e8d6ef"/><circle cx="144" cy="604" r="1.7" fill="#e8d6ef"/><circle cx="33" cy="589" r="1.7" fill="#f5e2a6"/></svg>';
+    h += '<div class="sc-top"><span>SEOUL FOREST</span><span>' + R.date + ' (' + R.dow + ')</span></div>';
     h += '<div class="sc-title">오늘, <em>서울숲</em>에서<br>머물다 왔어요</div>';
     if (st.photo) h += '<div class="sc-photo"><canvas class="rcPhoto"></canvas><div class="cap"><span>서울숲 ' + R.date + '</span><span>' + esc(R.with) + '</span></div></div>';
     else h += '<div class="sc-quote">“' + esc(st.memo || R.line + ' 쉬어 간 날') + '”</div>';
@@ -1231,6 +1270,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
     state = { best: '', tags: [], memo: '', photo: null };
+    $$('#gifts .gift-opt').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('#bGift').disabled = true;
     var bs = $('#bShare'); bs.classList.remove('done'); bs.textContent = '방명록에 남기기'; $('#nick').value = '';
     $('#bScan').disabled = false; $('#tip').classList.remove('gone'); $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
     $$('#places .place,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });

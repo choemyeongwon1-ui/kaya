@@ -15,7 +15,7 @@ import { dijkstra } from './graph.js';
 import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
-import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
+import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -1775,7 +1775,7 @@ function exitWalk(ex) {
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '다른 기계 고르기')),
     h('h2', { class: 'tr-q' }, kiosk.at),
     h('p', { class: 'tr-exit-lead' }, `지도의 노란 길을 따라 걸어서 ${min}분(${fmtM(meters)})이에요.`),
-    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 오늘 산책 영수증을 뽑으면 근처 카페 할인 쿠폰이 같이 나와요.'),
+    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 오늘 산책 영수증을 뽑으면 카페·주차장·동네 가게 중 고른 쿠폰이 같이 나와요.'),
     Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가까운 화장실 · ${fmtM(Math.round(wc))}`) : null,
     h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→')),
   ]);
@@ -1847,8 +1847,8 @@ function courseAsk(walkMin, meters) {
     pendingCourse = { send: () => sendCourse(data(), id), timer: setTimeout(flushCourse, 6000) };
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
-  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
-  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 카페 쿠폰'), h('span', null, '표정을 남기면 영수증과 함께 근처 카페 할인 쿠폰이 나와요. 어떤 표정이든 괜찮아요.'));
+  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 카페 할인·주차 1시간 무료·동네 가게 할인 중 고른 쿠폰이 함께 나옴
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 혜택 쿠폰'), h('span', null, '표정을 남기면 영수증과 함께 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라 받아요. 어떤 표정이든 괜찮아요.'));
   const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 쿠폰 준비 완료'), h('span', null, '지도에 🧾로 표시된 영수증 기계 어디서든 받아 가세요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
@@ -1907,7 +1907,7 @@ function nextBox(later) {
 }
 
 // ── 마무리 3. 나가는 길: 마지막 곳에서 가장 가까운 영수증 기계(출구 2곳 + 공원 곳곳) ──
-// 영수증 기계 배치(팀 제안): 두 출입구 + 공원 곳곳 12대. 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
+// 영수증 기계 배치(팀 제안): 두 출입구 + 공원 곳곳 12대. 영수증을 뽑으면 고른 혜택 쿠폰(카페·주차·동네 가게)이 함께 나옴
 // 가장 가까운 기계로 안내하되, 지도에 모두 띄우고 목록·지도에서 다른 기계를 골라 갈 수 있게 함
 const KIOSKS = [
   { id: 'gate-station', at: '서울숲역 방면 입구' },
