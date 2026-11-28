@@ -62,23 +62,28 @@
 
   // 마지막 장 카드 아래 움직이는 그림(값은 위 출처 그대로)
   var VIZ = {
-    waffle: function () { var h = ''; for (var i = 0; i < 100; i++) h += '<i' + (i < 73 ? ' class="on" style="--d:' + (0.9 + i * 0.016).toFixed(3) + 's"' : '') + '></i>'; return '<div class="vz"><div class="waf" aria-hidden="true">' + h + '</div><p>100명 중 <b>73명</b></p></div>'; },
-    bars: function () { return '<div class="vz"><div class="bars2" aria-hidden="true"><div class="bc"><b>8,864명</b><u><i style="--h:100%"></i></u><span>5월</span></div><div class="bc hot"><b>4,557명</b><u><i style="--h:51.4%"></i></u><span>8월 ☀️</span></div></div><p>서울숲역 낮 시간 내리는 사람</p></div>'; },
+    waffle: function () { var h = ''; for (var i = 0; i < 100; i++) h += '<i' + (i < 73 ? ' class="on" style="--d:' + (0.9 + i * 0.014).toFixed(3) + 's"' : '') + '></i>'; return '<div class="vz"><div class="waf" aria-hidden="true">' + h + '</div><p>100명 중 73명</p></div>'; },
+    bars: function () { return '<div class="vz"><div class="hb" aria-hidden="true"><div><span>5월</span><u><i style="--w:100%"></i></u><b>8,864</b></div><div class="hot"><span>8월</span><u><i style="--w:51.4%"></i></u><b>4,557</b></div></div><p>서울숲역 낮 시간 하차 인원</p></div>'; },
+    thermo: function () {
+      var x = function (t) { return (20 + (t - 20) / 15 * 260).toFixed(1); };   // 20~35℃ 눈금
+      return '<div class="vz"><svg class="tsc" viewBox="0 0 300 70" aria-hidden="true">' +
+        '<line x1="20" y1="40" x2="280" y2="40" class="ax"/>' + [20, 25, 30, 35].map(function (t) { return '<line x1="' + x(t) + '" y1="36" x2="' + x(t) + '" y2="44" class="tk"/><text x="' + x(t) + '" y="62" class="tl">' + t + '℃</text>'; }).join('') +
+        '<line class="rg" x1="' + x(25.6) + '" y1="40" x2="' + x(27.5) + '" y2="40"/>' +
+        '<circle class="dr" cx="' + x(33) + '" cy="40" r="5"/><text x="' + x(33) + '" y="22" class="lb hot">도로 33℃</text>' +
+        '<text x="' + x(26.55) + '" y="22" class="lb">공원 안</text></svg><p>33℃ 넘는 한낮, 공원 안 온도</p></div>';
+    },
+    paths: function () {
+      return '<div class="vz"><svg class="pth" viewBox="0 0 300 70" aria-hidden="true">' +
+        '<path class="p-short" pathLength="1" d="M20,52 L280,52"/><path class="p-quiet" pathLength="1" d="M20,52 C80,8 220,8 280,52"/>' +
+        '<circle cx="20" cy="52" r="3.5" fill="#fff"/><circle cx="280" cy="52" r="3.5" fill="#fff"/>' +
+        '<text x="150" y="68" class="t-short">가장 짧은 길</text><text x="150" y="9" class="t-quiet">조용한 길 +12%</text></svg><p>그래도 이쪽을 더 좋아해요</p></div>';
+    },
   };
-  VIZ.paths = function () {
-    return '<div class="vz"><svg class="pth" viewBox="0 0 300 96" aria-hidden="true">' +
-      '<path class="p-short" pathLength="1" d="M20,70 L280,70"/><path class="p-quiet" pathLength="1" d="M20,70 C70,26 140,28 170,38 S250,48 280,70"/>' +
-      '<g class="p-tree"><circle cx="92" cy="30" r="8"/><circle cx="132" cy="27" r="10"/><circle cx="212" cy="42" r="8"/></g>' +
-      '<circle cx="20" cy="70" r="6" fill="#fff"/><circle cx="280" cy="70" r="6" fill="#fff"/>' +
-      '<text x="150" y="90" class="t-short">가장 짧은 길 · 차 소리</text><text x="150" y="10" class="t-quiet">12% 더 길어도 조용한 길 🌳</text></svg>' +
-      '</div>';
-  };
-  VIZ.thermo = function () { return '<div class="vz"><div class="thm2" aria-hidden="true"><div class="tb hot"><i style="--h:88%"></i><span>바깥 도로<br><b>33℃ 넘을 때</b></span></div><div class="tb"><i style="--h:45%"></i><span>공원 안<br><b>더 시원</b></span></div></div></div>'; };
   var STATS = [
-    { k: '누가 오나요', n: '73.4%', t: '동네 밖에서 찾아와요', s: '처음이라 길을 모르는 사람이 많아요', viz: 'waffle', src: '서울시 실시간 인구데이터(2026-11-19)' },
-    { k: '여름엔', n: '−48.6%', t: '한여름엔 발길이 절반으로', s: '5월 8,864명 → 8월 4,557명', viz: 'bars', hot: true, src: '서울 열린데이터광장 OA-12252(2026)' },
-    { k: '그늘의 힘', n: '5.5~7.4℃', t: '공원 안이 도로보다 시원해요', s: '33℃가 넘는 한낮 기준', viz: 'thermo', src: '조현민·권태경(2022)' },
-    { k: '사람들은', n: '12%', t: '조용한 길이면 더 걸어도 좋아해요', s: '조금 돌아가도 보기 좋은 길', viz: 'paths', src: 'Quercia 외(2014)' },
+    { k: '누가 오나요', n: '73.4', u: '%', t: '동네 밖에서 찾아와요', s: '처음이라 길을 모르는 사람이 많아요', viz: 'waffle', src: '서울시 실시간 인구데이터(2026-11-19)' },
+    { k: '여름엔', n: '−48.6', u: '%', t: '한여름엔 발길이 절반으로', s: '5월 8,864명 → 8월 4,557명', viz: 'bars', hot: true, src: '서울 열린데이터광장 OA-12252(2026)' },
+    { k: '그늘의 힘', n: '5.5–7.4', u: '℃', t: '공원 안이 도로보다 시원해요', s: '33℃가 넘는 한낮 기준', viz: 'thermo', still: true, src: '조현민·권태경(2022)' },
+    { k: '사람들은', n: '12', u: '%', t: '조용한 길이면 더 걸어도 좋아해요', s: '조금 돌아가도 보기 좋은 길을 골라요', viz: 'paths', src: 'Quercia 외(2014)' },
   ];
   var FLOW = ['날씨·붐빔·함께 온 사람', '그늘지고 한산한 길 찾기', '나만의 코스', '장소마다 표정 남기기', '다음 추천과 공원 관리에 반영'];
   var THERMO = '<div class="thm" aria-hidden="true"><div class="tb hot"><i style="--h:87%"></i><span>도로</span></div><div class="tb"><i style="--h:42%"></i><span>공원</span></div></div>';
@@ -234,28 +239,57 @@
     '.dk-btn span{transition:transform .3s}.dk-btn:hover span{transform:translate(3px,-3px)}',
     /* 만든 이유(마지막 장) */
     '.dk-slide.full .dk-copy{max-width:1680px;width:100%}',
-    '.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}',
-    '.dk-stats section{display:flex;flex-direction:column;padding:20px 22px 16px;border-radius:18px;background:var(--gl);border:1px solid var(--ln);border-top:3px solid var(--m);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;transform:translateY(40px);transition:opacity .8s,transform 1.1s ' + E + '}',
-    '.dk-stats section.hot{border-top-color:var(--hot)}',
-    '.dk-slide.on .dk-stats section{opacity:1;transform:none;transition-delay:calc(.45s + var(--i) * .14s)}',
-    '.dk-stats h4{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--mu)}',
-    '.dk-stats .big{display:block;font-size:clamp(40px,3.6vw,58px);line-height:1.05;font-weight:700;letter-spacing:-.04em;color:var(--m);font-variant-numeric:tabular-nums;white-space:nowrap}',
-    '.dk-stats .hot .big{color:var(--hot)}',
-    '.dk-stats h5{margin:10px 0 4px;font-size:18px;line-height:1.35;font-weight:700;color:#fff;letter-spacing:-.02em;word-break:keep-all}',
-    '.dk-stats .sub{margin:0;font-size:13.5px;color:var(--mu);word-break:keep-all}',
-    '.dk-stats .vz{border-top:0;padding-top:18px;min-height:108px;display:flex;flex-direction:column;justify-content:flex-end}',
-    '.dk-stats cite{margin-top:12px;font-size:11px;font-style:normal;color:rgba(241,247,243,.4)}',
-    '.thm2{display:flex;gap:26px;align-items:flex-end}',
-    '.thm2 .tb{flex-direction:row;align-items:flex-end;gap:10px}',
-    '.thm2 .tb i{width:16px;height:96px;border-radius:8px}',
-    '.thm2 .tb span{font-size:12px;line-height:1.4;color:var(--mu)}.thm2 .tb span b{color:#fff;font-size:13px}',
-    '.dk-flow{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:16px;background:var(--gl);border:1px solid var(--ln);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}',
-    '.dk-flow > b{flex:none;font-size:14px;color:var(--m)}',
-    '.dk-flow ol{flex:1;display:flex;gap:26px;list-style:none;margin:0;padding:0}',
-    '.dk-flow li{position:relative;flex:1;text-align:center;padding:10px 8px;border-radius:10px;background:rgba(106,245,176,.07);border:1px solid rgba(106,245,176,.16);font-size:13.5px;font-weight:600;word-break:keep-all}',
-    '.dk-flow li:not(:last-child):after{content:"→";position:absolute;right:-20px;top:50%;transform:translateY(-50%);color:var(--m);font-weight:700}',
-    '.dk-slide.on .dk-flow li{animation:dkStep 6s ease infinite;animation-delay:calc(2s + var(--i) * 1.2s)}',
-    '.dk-flow .lp{flex:none;font-size:24px;color:var(--m);display:inline-block}.dk-slide.on .dk-flow .lp{animation:dkSpin 2.5s linear infinite}',
+    '.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:6px 0 26px;border-top:1px solid var(--ln)}',
+    '.dk-stats section{display:flex;flex-direction:column;padding:22px 28px 4px;border-left:1px solid var(--ln);opacity:0;transform:translateY(30px);transition:opacity .9s,transform 1.2s ' + E + '}',
+    '.dk-stats section:first-child{border-left:0;padding-left:0}',
+    '.dk-slide.on .dk-stats section{opacity:1;transform:none;transition-delay:calc(.45s + var(--i) * .12s)}',
+    '.dk-stats h4{display:flex;gap:10px;align-items:baseline;margin:0 0 18px;font-size:12.5px;font-weight:500;color:var(--mu);letter-spacing:.02em}',
+    '.dk-stats h4 em,.dk-flow li em{font-style:normal;font:500 11px/1 ' + MONO + ';color:var(--m);letter-spacing:.1em}',
+    '.dk-stats .hot h4 em{color:var(--hot)}',
+    '.dk-stats .big{display:flex;align-items:baseline;gap:4px;font-size:clamp(44px,4.2vw,68px);line-height:1;font-weight:200;letter-spacing:-.05em;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}',
+    '.dk-stats .big small{font-size:.4em;font-weight:400;letter-spacing:0;color:var(--m)}',
+    '.dk-stats .hot .big small{color:var(--hot)}',
+    '.dk-stats h5{margin:16px 0 6px;font-size:16.5px;line-height:1.4;font-weight:600;color:#fff;letter-spacing:-.02em;word-break:keep-all}',
+    '.dk-stats .sub{margin:0;font-size:13px;line-height:1.5;color:var(--mu);word-break:keep-all}',
+    '.dk-stats .vz{margin-top:auto;border-top:0;padding-top:26px;min-height:92px;display:flex;flex-direction:column;justify-content:flex-end}',
+    '.dk-stats .vz p{margin:10px 0 0;font-size:11.5px;line-height:1.3;font-weight:500;color:rgba(241,247,243,.45)}',
+    '.dk-stats cite{margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);font-size:10.5px;font-style:normal;color:rgba(241,247,243,.36)}',
+    '.waf{display:grid;grid-template-columns:repeat(20,1fr);gap:5px;max-width:240px}',
+    '.waf i{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.12)}',
+    '.dk-slide.on .waf i.on{animation:dkWaf2 .4s ease var(--d) forwards}',
+    '@keyframes dkWaf2{to{background:var(--m)}}',
+    '.hb{display:flex;flex-direction:column;gap:12px}',
+    '.hb div{display:grid;grid-template-columns:28px 1fr 44px;align-items:center;gap:10px;font-size:11.5px;line-height:1;color:var(--mu)}.hb b{font:500 11px/1 ' + MONO + '}',
+    '.hb b{font-weight:500;color:#fff;text-align:right}',
+    '.hb u{display:block;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}',
+    '.hb i{display:block;height:100%;width:var(--w);background:rgba(241,247,243,.75);border-radius:2px;transform:scaleX(0);transform-origin:left}',
+    '.hb .hot i{background:var(--hot)}',
+    '.dk-slide.on .hb i{animation:dkBarX 1.4s ' + E + ' 1s forwards}.dk-slide.on .hb .hot i{animation-delay:1.4s}',
+    '@keyframes dkBarX{to{transform:scaleX(1)}}',
+    '.tsc,.pth{display:block;width:100%;max-width:300px;height:auto;overflow:visible}',
+    '.tsc .ax{stroke:rgba(255,255,255,.18);stroke-width:1}.tsc .tk{stroke:rgba(255,255,255,.25);stroke-width:1}',
+    '.tsc text{font:500 10px ' + MONO + ';text-anchor:middle;fill:rgba(241,247,243,.4)}',
+    '.tsc .lb{font-family:inherit;font-weight:600;font-size:11.5px;fill:#bfffe0;opacity:0}.tsc .lb.hot{fill:#ffb08a}',
+    '.tsc .rg{stroke:var(--m);stroke-width:6;stroke-linecap:round;opacity:0}.tsc .dr{fill:var(--hot);opacity:0}',
+    '.dk-slide.on .tsc .dr,.dk-slide.on .tsc .lb.hot{animation:dkFade .6s ease 1.1s forwards}',
+    '.dk-slide.on .tsc .rg,.dk-slide.on .tsc .lb:not(.hot){animation:dkFade .8s ease 1.8s forwards}',
+    '.pth path{fill:none;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1}',
+    '.pth .p-short{stroke:rgba(255,176,138,.7);stroke-width:1.2}.pth .p-quiet{stroke:var(--m);stroke-width:1.6}',
+    '.dk-slide.on .pth .p-short{animation:dkDraw 1s ease 1.1s forwards}.dk-slide.on .pth .p-quiet{animation:dkDraw 1.6s ' + E + ' 1.8s forwards}',
+    '.pth text{font-size:11.5px;font-weight:600;text-anchor:middle;opacity:0}.pth .t-short{fill:rgba(255,176,138,.8)}.pth .t-quiet{fill:#bfffe0}',
+    '.dk-slide.on .pth .t-short{animation:dkFade .6s ease 1.6s forwards}.dk-slide.on .pth .t-quiet{animation:dkFade .6s ease 3s forwards}',
+    '.dk-flow{display:flex;align-items:flex-start;gap:28px;padding:20px 0 0;border:0;border-top:1px solid var(--ln);border-radius:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}',
+    '.dk-flow > b{flex:none;width:150px;font-size:13px;font-weight:600;line-height:1.5;color:#fff;padding-top:18px}',
+    '.dk-flow ol{position:relative;flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;list-style:none;margin:0;padding:0}',
+    '.dk-flow ol:before{content:"";position:absolute;left:4px;right:4px;top:4px;height:1px;background:linear-gradient(90deg,rgba(106,245,176,.5),rgba(106,245,176,.15))}',
+    '.dk-flow ol:after{content:"";position:absolute;left:0;top:1px;width:7px;height:7px;border-radius:50%;background:var(--m);box-shadow:0 0 14px var(--m);opacity:0}',
+    '.dk-slide.on .dk-flow ol:after{animation:dkRun 6s ease-in-out 1.6s infinite}',
+    '@keyframes dkRun{0%{left:0;opacity:0}6%{opacity:1}90%{opacity:1}100%{left:calc(100% - 7px);opacity:0}}',
+    '.dk-flow li{position:relative;padding:20px 0 0;border:0;background:none;text-align:left;font-size:13px;line-height:1.45;font-weight:500;color:rgba(241,247,243,.82);word-break:keep-all}',
+    '.dk-flow li:before{content:"";position:absolute;left:0;top:0;width:9px;height:9px;border-radius:50%;background:#04090a;border:1px solid var(--m)}',
+    '.dk-flow li em{display:block;margin-bottom:6px}',
+    '.dk-flow .lp{flex:none;padding-top:18px;font-size:12px;font-weight:600;line-height:1.5;color:var(--m);white-space:nowrap}',
+    '.dk-head .dk-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}.dk-head .dk-btn:hover{background:#fff;color:#0a0f0d}',
     '.dk-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px}.dk-head .dk-title{margin:0 !important}',
     '.vz{margin-top:auto;padding-top:16px;border-top:1px solid var(--ln)}',
     '.vz p{margin:10px 0 0;font-size:13px;color:var(--mu)}.vz p b{color:#fff}',
@@ -325,13 +359,13 @@
     '.dk-arrow:hover{background:rgba(255,255,255,.14);transform:scale(1.06)}',
     '.dk-arrow:disabled{opacity:.25;cursor:default;transform:none}',
     '.dk-arrow.next:not(:disabled){background:#fff;color:#0a0f0d;border-color:#fff}',
-    '@media (max-width:1100px){.dk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dk-slide.full{overflow-y:auto;pointer-events:auto;align-items:flex-start}.dk-slide{padding:100px 32px 120px 36px}.dk-nav{left:36px;right:32px}.dk-copy{max-width:420px}.dk-hud{right:28px;width:290px}.dk-res{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '@media (max-width:1100px){.dk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dk-stats section:nth-child(3){border-left:0;padding-left:0}.dk-slide.full{overflow-y:auto;pointer-events:auto;align-items:flex-start}.dk-slide{padding:100px 32px 120px 36px}.dk-nav{left:36px;right:32px}.dk-copy{max-width:420px}.dk-hud{right:28px;width:290px}.dk-res{grid-template-columns:repeat(2,minmax(0,1fr))}}',
     '@media (max-width:820px){html.dk-page .topbar-inner{padding:10px 16px}',
     '  .dk-slide{align-items:flex-end;padding:0 20px 92px}.dk-slide.full{align-items:flex-start;padding:110px 20px 100px;overflow-y:auto;pointer-events:auto}',
     '  .dk-copy{max-width:none}.dk-en{margin-bottom:14px;font-size:11px}.dk-title{font-size:30px;margin-bottom:12px}.dk-body{font-size:15px;line-height:1.6;margin-bottom:18px}.dk-note{margin:-8px 0 14px}',
     '  .dk-shade{background:linear-gradient(0deg,rgba(4,9,10,.97) 0%,rgba(4,9,10,.9) 36%,rgba(4,9,10,0) 62%),linear-gradient(180deg,rgba(4,9,10,.7),transparent 16%)}',
     '  .dk-hud{right:10px;top:118px;width:300px;transform:scale(.6);transform-origin:top right}',
-    '  .dk-stats{grid-template-columns:1fr}.dk-flow{flex-direction:column;align-items:stretch}.dk-flow ol{flex-direction:column;gap:18px}.dk-flow li:not(:last-child):after{content:"↓";right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%)}.dk-head{flex-direction:column;align-items:flex-start;gap:16px}.dk-res{grid-template-columns:1fr}.dk-nav{left:20px;right:20px;bottom:18px;gap:12px}.dk-steps{gap:5px}.dk-steps button{font-size:0}.dk-arrow{width:42px;height:42px}}',
+    '  .dk-stats{grid-template-columns:1fr}.dk-stats section{border-left:0;padding:22px 0 8px;border-bottom:1px solid var(--ln)}.dk-flow{flex-direction:column;gap:10px}.dk-flow ol{grid-template-columns:1fr}.dk-flow ol:before,.dk-flow ol:after{display:none}.dk-head{flex-direction:column;align-items:flex-start;gap:16px}.dk-res{grid-template-columns:1fr}.dk-nav{left:20px;right:20px;bottom:18px;gap:12px}.dk-steps{gap:5px}.dk-steps button{font-size:0}.dk-arrow{width:42px;height:42px}}',
     '@media (prefers-reduced-motion:reduce){.dk *,.dk *:before,.dk *:after{transition-duration:.01s !important;animation-duration:.01s !important;animation-delay:0s !important}}',
   ].join('\n');
 
@@ -442,8 +476,8 @@
     if (s.research) {
       h = h.replace('<h2', '<div class="dk-head"><h2').replace('</h2>', '</h2><div class="dk-fade dk-cta" style="--i:0"><a class="dk-btn" href="' + TOUR + '">코스 찾기 시작 <span>↗</span></a></div></div>');
       h += '<div class="dk-stats">' + STATS.map(function (c, ci) {
-        return '<section class="' + (c.hot ? 'hot' : '') + '" style="--i:' + ci + '"><h4>' + c.k + '</h4><b class="big" data-n="' + esc(c.n) + '">' + esc(c.n) + '</b><h5>' + esc(c.t) + '</h5><p class="sub">' + esc(c.s) + '</p>' + VIZ[c.viz]() + '<cite>' + esc(c.src) + '</cite></section>';
-      }).join('') + '</div><div class="dk-flow dk-fade" style="--i:2"><b>그래서 이렇게 만들었어요</b><ol>' + FLOW.map(function (f, k) { return '<li style="--i:' + k + '">' + f + '</li>'; }).join('') + '</ol><span class="lp" title="다시 처음으로">↺</span></div>';
+        return '<section class="' + (c.hot ? 'hot' : '') + '" style="--i:' + ci + '"><h4><em>0' + (ci + 1) + '</em>' + c.k + '</h4><div class="big"><span' + (c.still ? '' : ' data-n="' + esc(c.n) + '"') + '>' + esc(c.n) + '</span><small>' + c.u + '</small></div><h5>' + esc(c.t) + '</h5><p class="sub">' + esc(c.s) + '</p>' + VIZ[c.viz]() + '<cite>' + esc(c.src) + '</cite></section>';
+      }).join('') + '</div><div class="dk-flow dk-fade" style="--i:2"><b>그래서 이렇게 만들었어요</b><ol>' + FLOW.map(function (f, k) { return '<li style="--i:' + k + '"><em>0' + (k + 1) + '</em>' + f + '</li>'; }).join('') + '</ol><span class="lp">↺ 다시 처음으로</span></div>';
       if (0) h += '<div class="dk-res">' + RESEARCH.map(function (c, ci) {
         var inner = c.flow ? '<ol>' + c.flow.map(function (f, k) { return '<li style="--i:' + k + '">' + f + '</li>'; }).join('') + '</ol><div class="loopback"><span>↺</span> 다음에 올 땐 더 잘 맞춰 드려요</div>'
           : c.rows.map(function (r) { return '<div class="r' + (c.thermo && r[0].indexOf('℃') > 0 ? ' th' : '') + '">' + (c.thermo && r[0].indexOf('℃') > 0 ? THERMO : '') + '<b data-n="' + esc(r[0]) + '">' + esc(r[0]) + '</b><p>' + esc(r[1]) + '</p><cite>' + esc(r[2]) + '</cite></div>'; }).join('');
