@@ -1063,3 +1063,25 @@ div.tr-status-line{cursor:default}
 body:has(.tr-map.tr-zonemap) .tr-vignette{opacity:.12}
 .leaflet-container .tr-zone-tiles img.leaflet-tile{mix-blend-mode:normal;filter:none}
 .tr-map.tr-zonemap .leaflet-tr-mask-pane{display:none}
+/* 길 비교(추천 길 · 가장 짧은 길 · 그늘 많은 길 · 한산한 길) */
+.tr-rc{margin:10px 0 4px;padding:12px 13px 10px;border:1px solid var(--line);border-radius:14px;background:var(--glass-2)}
+.tr-rc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
+.tr-rc-h b{display:inline-flex;align-items:center;gap:6px;font-size:13px}.tr-rc-h b svg{color:var(--mint)}
+.tr-rc-h small{font-size:11px;color:var(--mute)}
+.tr-rc-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tr-rc-t th,.tr-rc-t td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;font-size:12.5px;white-space:nowrap}
+.tr-rc-t thead th{font-size:10.5px;font-weight:600;color:var(--mute);padding-top:2px}
+.tr-rc-t tbody th{text-align:left;font-weight:600;white-space:normal}
+.tr-rc-t tbody th span{display:inline-flex;flex-direction:column;vertical-align:middle}
+.tr-rc-t tbody th em{font-style:normal;font-size:10px;font-weight:600;color:var(--mint)}
+.tr-rc-t tbody tr{cursor:pointer;transition:background .15s}
+.tr-rc-t tbody tr:hover{background:rgba(255,255,255,.04)}
+.tr-rc-t tbody tr.on{background:var(--mint-soft)}
+.tr-rc-t tbody tr:focus-visible{outline:1.5px solid var(--mint);outline-offset:-1.5px}
+.tr-rc-t td small{font-size:10px;color:var(--mute);margin-left:1px}
+.tr-rc-t td.best{color:var(--mint);font-weight:700}
+.tr-rc-sw{display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--c);margin-right:7px;vertical-align:middle}
+.tr-rc-trade{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink)}
+.tr-rc-src{margin:5px 0 0;font-size:10.5px;line-height:1.5;color:var(--mute)}
+.tr-alt{cursor:pointer}
+.tr-alt-tag{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:10.5px;font-weight:650;padding:2px 8px;border-radius:999px;background:rgba(8,15,12,.85);color:var(--c);border:1px solid var(--c);cursor:pointer}

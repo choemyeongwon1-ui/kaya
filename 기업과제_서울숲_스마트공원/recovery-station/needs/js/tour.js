@@ -1458,7 +1458,7 @@ function routeCompare(legs) {
           anyStairs ? cell(o.stairs, o.stairs === 0, '곳') : null);
       }))),
     trade ? h('p', { class: 'tr-rc-trade' }, trade) : null,
-    h('p', { class: 'tr-rc-src' }, `${sun ? '햇볕 아래 시간: 길 위 나무 그늘 비율(팀 20m 격자)로 계산 · ' : ''}${hot ? '땅 온도: 여름 맑은 날 위성으로 잰 길바닥 온도(Landsat 8, 2026년 6·9월) · ' : ''}그늘진 길은 걷는 길 온도를 낮춰요(Lee & Park 2020)`));
+    sun && h('p', { class: 'tr-rc-src' }, `${sun ? '햇볕 아래 시간: 길 위 나무 그늘 비율(팀 20m 격자)로 계산 · ' : ''}${hot ? '땅 온도: 여름 맑은 날 위성으로 잰 길바닥 온도(Landsat 8, 2026년 6·9월) · ' : ''}그늘진 길은 걷는 길 온도를 낮춰요(Lee & Park 2020)`));
 }
 /** 계획 화면 지도: 고르지 않은 길을 옅게 그려 견주게 함(누르면 그 길로) */
 function drawAlts() {
