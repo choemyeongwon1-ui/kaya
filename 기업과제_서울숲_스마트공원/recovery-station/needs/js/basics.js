@@ -50,6 +50,7 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
  * @param {() => boolean} o.routeGardens  코스 화면이 정원 꽃을 이미 그리고 있는지
  * @param {string} o.flower        꽃 SVG
  * @param {(g) => void} o.onGarden 꽃을 눌렀을 때
+ * @param {object} [o.park]       공원 경계 GeoJSON(서울시 화장실이 공원 안인지 판단)
  */
 export function mountBasics(o) {
   const { map, L } = o;
@@ -73,9 +74,21 @@ export function mountBasics(o) {
     bar.querySelector(`[data-k="${key}"]`).setAttribute('aria-pressed', String(st[key]));
     if (key === 'garden') syncGarden(); else draw();
   }
+  // 화장실은 서울시 공중화장실 위치정보로 이름·개방시간·장애인 화장실·비상벨·기저귀교환대를 붙여 보여 줌
+  function toiletLines(t) {
+    const days = (t.extra || []).filter(x => /요일|공휴일/.test(x)), more = (t.extra || []).filter(x => !/요일|공휴일/.test(x));
+    return [
+      t.hours ? `개방 ${t.hours.replace(/^(정시|상시)\((.*)\)$/, '$2').replace(',평일', ' 평일')}${days.length ? ` · ${days.join('·')}` : ''}` : null,
+      t.accessible?.length ? `장애인 화장실 ${t.accessible.join('·')}` : '장애인 화장실 정보 없음',
+      [...(t.safety || []), ...more].length ? [...(t.safety || []), ...more].join(' · ') : null,
+    ].filter(Boolean);
+  }
   function popHtml(p) {
-    const k = KIND[p.kind], extra = [p.brand && p.brand !== p.name ? p.brand : null, p.fee === 'no' ? '무료' : p.fee === 'yes' ? '유료' : null, p.hours ? `운영 ${p.hours}` : null].filter(Boolean);
-    return `<div class="tr-bx-pop"><small>${esc(k.label)}</small><b>${esc(p.name || k.label)}</b>${extra.length ? `<p>${esc(extra.join(' · '))}</p>` : ''}<em>${p.src ? esc(p.src) : 'OpenStreetMap 기준'} · 현장과 다를 수 있어요</em></div>`;
+    const k = KIND[p.kind], t = p.seoul;
+    const extra = t ? toiletLines(t) : [[p.brand && p.brand !== p.name ? p.brand : null, p.fee === 'no' ? '무료' : p.fee === 'yes' ? '유료' : null, p.hours ? `운영 ${p.hours}` : null].filter(Boolean).join(' · ')].filter(Boolean);
+    const name = t?.name ? `${t.name.replace(/화장실$/, '')} 화장실` : p.name || k.label;
+    const src = t ? `서울시 공중화장실 위치정보${t.org && t.org !== t.name ? ` · 관리 ${t.org}` : ''}` : p.src || 'OpenStreetMap 기준';
+    return `<div class="tr-bx-pop"><small>${esc(k.label)}</small><b>${esc(name)}</b>${extra.map(x => `<p>${esc(x)}</p>`).join('')}<em>${esc(src)} · 현장과 다를 수 있어요</em></div>`;
   }
   function draw() {
     layer.clearLayers();
@@ -84,7 +97,7 @@ export function mountBasics(o) {
     if (!z) return;
     for (const p of points) {
       const k = KIND[p.kind]; if (!k || !st[k.g]) continue;
-      L.marker([p.lat, p.lon], { pane: 'tr-basic', icon: L.divIcon({ className: '', html: `<div class="tr-bx-pin k-${k.g}" title="${esc(p.name || k.label)}">${svg(k.ico, 12)}</div>`, iconSize: [22, 22], iconAnchor: [11, 11] }), keyboard: true })
+      L.marker([p.lat, p.lon], { pane: 'tr-basic', icon: L.divIcon({ className: '', html: `<div class="tr-bx-pin k-${k.g}" title="${esc(p.seoul?.name || p.name || k.label)}">${svg(k.ico, 12)}</div>`, iconSize: [22, 22], iconAnchor: [11, 11] }), keyboard: true })
         .bindPopup(popHtml(p), { className: 'tr-bx-popw', closeButton: false, offset: [0, -6], autoPanPaddingTopLeft: [20, 120], autoPanPaddingBottomRight: [20, 100] }).addTo(layer);
     }
   }
@@ -102,12 +115,39 @@ export function mountBasics(o) {
   map.on('zoomend', () => { draw(); syncGarden(); });
   map.on('layeradd layerremove', e => { if (e.layer?.options?.pane !== 'tr-basic') later(); });
 
+  const counts = () => GROUPS.forEach(g => { bar.querySelector(`[data-k="${g.key}"] .n`).textContent = points.filter(p => g.kinds.includes(p.kind)).length; });
+  // 서울시 화장실(중계 서버)을 받아 지도 화장실에 짝지음: 별칭 → 40m 안 가장 가까운 화장실 → 공원 안이면 새 화장실. 못 받으면 파일에 넣어 둔 값 그대로
+  const inPark = (lon, lat) => { let c = false; const ring = r => { for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const a = r[i], b = r[j]; if ((a[1] > lat) !== (b[1] > lat) && lon < (b[0] - a[0]) * (lat - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } };
+    const geo = g => { if (!g) return; if (g.type === 'FeatureCollection') g.features.forEach(f => geo(f.geometry)); else if (g.type === 'Feature') geo(g.geometry); else if (g.type === 'Polygon') ring(g.coordinates[0]); else if (g.type === 'MultiPolygon') g.coordinates.forEach(pg => ring(pg[0])); };
+    geo(o.park); return c; };
+  const mDist = (a, b) => Math.hypot((a.lat - b.lat) * 110900, (a.lon - b.lon) * 88200);
+  function mergeSeoul(cfg, items) {
+    const T = points.filter(p => p.kind === 'toilet' && !String(p.id).startsWith('seoul-'));
+    T.forEach(p => { delete p.seoul; });
+    points = points.filter(p => !String(p.id).startsWith('seoul-'));
+    const info = it => ({ name: it.name, hours: it.hours, open: it.open, toilets: it.toilets, accessible: it.accessible, extra: it.extra, safety: it.safety, org: it.org });
+    for (const it of items) {
+      const al = cfg.alias?.[it.name], hit = al && T.find(p => p.id === al);
+      if (hit) { hit.seoul = info(it); continue; }
+      if ((cfg.skip || []).some(s => mDist(it, { lat: s[0], lon: s[1] }) < 5) || !inPark(it.lon, it.lat)) continue;
+      const near = T.filter(p => !p.seoul).sort((a, b) => mDist(a, it) - mDist(b, it))[0];
+      if (near && mDist(near, it) <= (cfg.match_m ?? 40)) near.seoul = info(it);
+      else points.push({ id: it.id, kind: 'toilet', name: null, lat: it.lat, lon: it.lon, seoul: info(it) });
+    }
+  }
   fetch(new URL('../data/basics.json', import.meta.url), { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
     if (!d) { bar.querySelectorAll('.tr-bx-b:not(.k-garden)').forEach(b => { b.disabled = true; b.title = '시설 자료를 불러오지 못했어요'; }); return; }
     meta = d; points = d.points || [];
-    GROUPS.forEach(g => { const n = points.filter(p => g.kinds.includes(p.kind)).length; bar.querySelector(`[data-k="${g.key}"] .n`).textContent = n; });
-    bar.title = `${d.source} · ${d.fetched} · ${d.note}`;
+    counts(); bar.title = `${d.source} · ${d.fetched} · ${d.note}`;
     draw(); syncGarden();
+    const cfg = d.seoulToilet;
+    if (cfg?.url && o.park) {
+      const ac = new AbortController(); setTimeout(() => ac.abort(), 10000);
+      fetch(cfg.url, { signal: ac.signal }).then(r => r.ok ? r.json() : null).catch(() => null).then(s => {
+        if (!s?.items?.length) return;
+        mergeSeoul(cfg, s.items); meta.seoulLive = s.fetched; counts(); draw();
+      });
+    }
   });
   return { refresh: () => { draw(); syncGarden(); }, get meta() { return meta; } };
 }

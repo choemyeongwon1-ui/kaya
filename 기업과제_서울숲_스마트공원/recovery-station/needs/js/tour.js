@@ -16,7 +16,7 @@ import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
 import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
-import { mountBasics } from './basics.js?v=2';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
+import { mountBasics } from './basics.js?v=4';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -2057,7 +2057,7 @@ async function boot() {
   navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') watchMe(); }).catch(() => {});
   await sleep(Math.max(0, T(700) - (performance.now() - t0)));
   // 지도 기본 정보: 화장실·매점·쉼터 등과 정원 꽃을 버튼으로 켜고 끔(js/basics.js)
-  mountBasics({ map, L, root, mapEl: el.map, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
+  mountBasics({ map, L, root, mapEl: el.map, park: app.model.data.park, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
     gardens: () => gardenList().map(g => { const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place]; return hub ? { lat: hub.lat, lon: hub.lon, name: g.name, g: { ...g, hub } } : null; }).filter(Boolean) });
   window.__tour = { app, st, me, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
   arrive();
