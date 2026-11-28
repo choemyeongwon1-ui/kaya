@@ -55,7 +55,7 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 export function mountBasics(o) {
   const { map, L } = o;
   let saved = {}; try { saved = JSON.parse(localStorage.getItem(SAVE) || '{}') || {}; } catch { saved = {}; }
-  const st = Object.fromEntries(GROUPS.map(g => [g.key, saved[g.key] ?? g.on]).concat([['garden', saved.garden ?? false]]));
+  const st = Object.fromEntries(GROUPS.map(g => [g.key, saved[g.key] ?? g.on]).concat([['garden', false]]));   // 정원은 처음엔 꺼 두고, 경로를 찾으면 켜짐(setGarden)
   const save = () => { try { localStorage.setItem(SAVE, JSON.stringify(st)); } catch {} };
 
   if (!map.getPane('tr-basic')) { const p = map.createPane('tr-basic'); p.style.zIndex = 590; }
@@ -158,5 +158,7 @@ export function mountBasics(o) {
       });
     }
   });
-  return { refresh: () => { draw(); syncGarden(); }, get meta() { return meta; } };
+  /** 경로를 찾으면 켜서 길가 정원이 톡 나타나게, 처음부터 하면 끔 */
+  const setGarden = on => { if (st.garden === !!on) return; st.garden = !!on; bar.querySelector('[data-k="garden"]').setAttribute('aria-pressed', String(st.garden)); syncGarden(); };
+  return { refresh: () => { draw(); syncGarden(); }, setGarden, get meta() { return meta; } };
 }
