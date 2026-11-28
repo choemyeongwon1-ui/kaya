@@ -509,7 +509,9 @@ export async function openTwin(o) {
     const rs = (P[h.id] || {}).reasons || {}, extra = [], taken = new Set(yards.map(y => y.cell).concat(shade.map(t => t.cell)));
     const freeCell = pref => { const c = stay.filter(i => !taken.has(i)).sort((a, b) => pref(b) - pref(a))[0]; if (c != null) taken.add(c); return c; };
     const put = (k, cell, why) => { if (cell == null) return; const p = offPath(CX[cell], CY[cell], 5); if (okPt(p.x, p.y)) extra.push({ k, x: p.x, y: p.y, rot: p.rot, cell, why }); };
-    if (rs.boring && opt.extra) { put('garden', freeCell(i => B[i]), '「' + BAD.boring + '」 ' + rs.boring + '건'); put('photo', freeCell(i => B[i]), '「' + BAD.boring + '」 ' + rs.boring + '건'); }
+    // 계절 정원은 새 잔디·녹음수 가까이(식재를 한 곳에 모아 관수·관리 동선 단축, 식재평면도 한 장)
+    const greenPts = yards.filter(y => y.surf !== 'deck').map(y => [y.x, y.y]).concat(shade.filter(t => t.k === 'tree').map(t => [t.x, t.y])), gDist = i => greenPts.length ? Math.min(...greenPts.map(q => Math.hypot(CX[i] - q[0], CY[i] - q[1]))) : Math.hypot(CX[i] - h.x, CY[i] - h.y);
+    if (rs.boring && opt.extra) { put('garden', freeCell(i => B[i] - gDist(i) / 30), '「' + BAD.boring + '」 ' + rs.boring + '건'); put('photo', freeCell(i => B[i]), '「' + BAD.boring + '」 ' + rs.boring + '건'); }
     if (opt.extra && (rs.far || rs.facility) && stay.some(i => DT[i] > TOILET_M)) put('toilet', freeCell(i => DT[i]), '화장실 250m 밖 · 「' + (rs.facility ? BAD.facility : BAD.far) + '」 ' + (rs.facility || rs.far) + '건');
     // 환경(80m): 녹음수 = 칸 수관 +16%p, 잔디 쉼터 = 포장 0, 쉼터·그늘막·벤치 = 쉴 곳
     const tc = new Map(); shade.filter(t => t.k === 'tree').forEach(t => { const c = cellAt(t.x, t.y); if (c >= 0) tc.set(c, (tc.get(c) || 0) + 1); });

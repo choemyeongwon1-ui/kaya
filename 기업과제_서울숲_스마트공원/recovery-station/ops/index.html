@@ -1028,7 +1028,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
     var base = location.pathname; if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(h.id));
     document.body.classList.add('tw-go'); $('tip').style.opacity = 0;
     var hr0 = S.hour >= 7 && S.hour <= 19 ? S.hour : 14, coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=82').then(function (m) {
+    import('./sim3d.js?v=83').then(function (m) {
       return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto, alt: alt, review: !!review,
         model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat },
         mobile: W < 760 || coarse, low: W < 760 || coarse || (navigator.hardwareConcurrency || 8) <= 4,
@@ -1056,7 +1056,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   function engStart() {
     if (ENG || engStart.busy) return; engStart.busy = true;
     var coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=82').then(function (m) {
+    import('./sim3d.js?v=83').then(function (m) {
       return m.openTwin({ headless: true, hub: S.hubs[0], hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: 14, predict: predict, model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat }, low: true, mobile: W < 760 || coarse });
     }).then(function (e) {
       ENG = e; ENG.done = {};
