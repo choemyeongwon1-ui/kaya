@@ -240,7 +240,7 @@
     /* 만든 이유(마지막 장) */
     '.dk-slide.full .dk-copy{max-width:1680px;width:100%}',
     '.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:6px 0 14px}',
-    '.dk-stats section{display:flex;flex-direction:column;padding:22px 24px 16px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(4,9,10,.35);opacity:0;transform:translateY(30px);transition:opacity .9s,transform 1.2s ' + E + '}',
+    '.dk-stats section{display:flex;flex-direction:column;padding:22px 24px 16px;border:1px solid rgba(255,255,255,.08);border-radius:0;background:linear-gradient(var(--cc),var(--cc)) top left/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) top left/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) top right/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) top right/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom left/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom left/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom right/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom right/1px 16px no-repeat,linear-gradient(180deg,rgba(255,255,255,.035),rgba(4,9,10,.3) 60%);--cc:rgba(241,247,243,.75);opacity:0;transform:translateY(30px);transition:opacity .9s,transform 1.2s ' + E + '}',
     '.dk-stats section:first-child{}',
     '.dk-slide.on .dk-stats section{opacity:1;transform:none;transition-delay:calc(.45s + var(--i) * .12s)}',
     '.dk-stats h4{display:flex;gap:10px;align-items:baseline;margin:0 0 18px;font-size:12.5px;font-weight:500;color:var(--mu);letter-spacing:.02em}',
@@ -249,6 +249,7 @@
     '.dk-stats .big{display:flex;align-items:baseline;gap:4px;font-size:clamp(44px,4.2vw,68px);line-height:1;font-weight:200;letter-spacing:-.05em;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}',
     '.dk-stats .big small{font-size:.4em;font-weight:400;letter-spacing:0;color:var(--m)}',
     '.dk-stats .hot .big small{color:var(--hot)}',
+    '.dk-stats section.hot{--cc:rgba(255,150,110,.85)}',
     '.dk-stats h5{margin:16px 0 6px;font-size:16.5px;line-height:1.4;font-weight:600;color:#fff;letter-spacing:-.02em;word-break:keep-all}',
     '.dk-stats .sub{margin:0;font-size:13px;line-height:1.5;color:var(--mu);word-break:keep-all}',
     '.dk-stats .vz{margin-top:auto;border-top:0;padding-top:26px;min-height:92px;display:flex;flex-direction:column;justify-content:flex-end}',
@@ -278,7 +279,7 @@
     '.dk-slide.on .pth .p-short{animation:dkDraw 1s ease 1.1s forwards}.dk-slide.on .pth .p-quiet{animation:dkDraw 1.6s ' + E + ' 1.8s forwards}',
     '.pth text{font-size:11.5px;font-weight:600;text-anchor:middle;opacity:0}.pth .t-short{fill:rgba(255,176,138,.8)}.pth .t-quiet{fill:#bfffe0}',
     '.dk-slide.on .pth .t-short{animation:dkFade .6s ease 1.6s forwards}.dk-slide.on .pth .t-quiet{animation:dkFade .6s ease 3s forwards}',
-    '.dk-flow{display:flex;align-items:flex-start;gap:28px;padding:18px 24px 18px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(4,9,10,.35);-webkit-backdrop-filter:none;backdrop-filter:none}',
+    '.dk-flow{display:flex;align-items:flex-start;gap:28px;padding:18px 24px 18px;border:1px solid rgba(255,255,255,.08);border-radius:0;background:linear-gradient(var(--cc),var(--cc)) top left/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) top left/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) top right/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) top right/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom left/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom left/1px 16px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom right/16px 1px no-repeat,linear-gradient(var(--cc),var(--cc)) bottom right/1px 16px no-repeat,linear-gradient(180deg,rgba(255,255,255,.035),rgba(4,9,10,.3) 60%);--cc:rgba(241,247,243,.75);-webkit-backdrop-filter:none;backdrop-filter:none}',
     '.dk-flow > b{flex:none;width:150px;font-size:13px;font-weight:600;line-height:1.5;color:#fff;padding-top:18px}',
     '.dk-flow ol{position:relative;flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;list-style:none;margin:0;padding:0}',
     '.dk-flow ol:before{content:"";position:absolute;left:4px;right:4px;top:4px;height:1px;background:linear-gradient(90deg,rgba(106,245,176,.5),rgba(106,245,176,.15))}',
@@ -385,7 +386,7 @@
     var S = {};
     // 0. 소개: 공원 안 장소들이 하나씩 켜짐
     var lab = { lake: '서울숲호수', family: '가족마당', deer: '사슴우리', insect: '곤충식물원', wetland: '습지생태원', skate: '스케이트파크', museum: '수도박물관', ginkgo: '은행나무숲' };
-    S.intro = { svg: '', html: Object.keys(HUB).filter(function (k) { return k !== 'museum' && k !== 'hangang'; }).map(function (k, i) {
+    S.intro = { svg: '', html: Object.keys(HUB).filter(function (k) { return ['museum', 'hangang', 'butterfly', 'gallery'].indexOf(k) < 0; }).map(function (k, i) {
       return pin(HUB[k], '<b class="pop" style="--d:' + (0.4 + i * 0.06).toFixed(2) + 's"><span class="dot m' + (lab[k] ? ' ring' : '') + '"></span>' + (lab[k] ? '<span class="lbl">' + lab[k] + '</span>' : '') + '</b>');
     }).join('') };
 
