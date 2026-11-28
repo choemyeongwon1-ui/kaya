@@ -166,9 +166,18 @@
   // window, not inside the phone. Intercept clicks in the frame; as a fallback, if the frame still
   // ends up on another page, move the whole window there.
   function goDash(url){ location.href=url; }
+  // The forest receipt (영수증.html: print, save, Instagram story) is part of the walk, so it opens inside the phone too.
+  function isReceipt(p){ try{ p=decodeURIComponent(p); }catch(e){} return /\/영수증\.html$/.test(p); }
   function guardFrame(){
     var w,doc; try{ w=frame.contentWindow; doc=w.document; }catch(e){ return; }
     if(!doc||w.location.href==='about:blank') return;
+    if(isReceipt(w.location.pathname)){
+      if(doc.__ndGuard) return; doc.__ndGuard=true;
+      // In the phone: no dashboard button (the page corner has 「‹ 이용자 화면」), no desktop scrollbar.
+      var rs=doc.createElement('style');
+      rs.textContent='#backPill{display:none!important}html{scrollbar-width:none}::-webkit-scrollbar{display:none}';
+      doc.head.appendChild(rs); return;
+    }
     if(!/\/needs\/tour\.html/.test(w.location.pathname)){ goDash(w.location.href); return; }
     if(doc.__ndGuard) return; doc.__ndGuard=true;
     // Phone-only tweaks to the user screen (tour.html itself is untouched):
@@ -188,7 +197,9 @@
       var u=new URL(a.getAttribute('href'),w.location.href);
       if(u.origin===w.location.origin&&/\/needs\/tour\.html$/.test(u.pathname)) return; // stays in the user screen
       if(a.target==='_blank') return;
-      e.preventDefault(); goDash(u.href);
+      e.preventDefault();
+      if(u.origin===w.location.origin&&isReceipt(u.pathname)){ setTimeout(function(){ w.location.href=u.href; },0); return; }  // after the link's own handler saves today's walk
+      goDash(u.href);
     },true);
   }
   frame.addEventListener('load',guardFrame);

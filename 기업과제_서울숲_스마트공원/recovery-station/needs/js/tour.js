@@ -15,7 +15,8 @@ import { dijkstra } from './graph.js';
 import { crowdScale } from './crowd.js';
 import { loadNews, todayIso } from './news.js';
 import { h, icon, iconSvg, fmtM, esc } from './ui.js';
-import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js';
+import { faces, staticFace, faceHtml, upsertJourney, loadReviews, sendComfort, sendCourse } from './review.js?v=2pv';
+import { mountBasics } from './basics.js?v=5';   // 지도 기본 정보(화장실·매점·쉼터…·정원 꽃) 켜고 끄기
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
@@ -304,14 +305,16 @@ function seasonImagery() {
 function makeMap() {
   map = L.map(el.map, { zoomControl: false, attributionControl: true, zoomSnap: 0, minZoom: 10, maxZoom: 19 });
   map.attributionControl.setPrefix(false);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20, className: 'tr-base', attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 기여자 © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+  // 바탕 지도: Esri World Dark Gray(키 없이 무료, 출처 표기). CARTO는 2026-11 이후 키 없으면 'API KEY REQUIRED' 그림을 줌
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20, maxNativeZoom: 16, className: 'tr-base', attribution: '바탕 지도 © Esri, HERE, Garmin, © OpenStreetMap 기여자' }).addTo(map);
   const sat = seasonImagery();
   L.tileLayer(sat.url, { maxZoom: 19, maxNativeZoom: sat.native, className: 'tr-sat', keepBuffer: 4, attribution: `위성 사진(${sat.label}) © Esri, Maxar, Earthstar Geographics` }).addTo(map);
   // 모바일 화면에서 돌아온 경우: 지난번 공원 화면 자리에서 바로 시작(위성 사진도 받아 둔 것 그대로) → 멀리서 다시 불러오지 않음
   let back = null; try { back = backFromMobile && JSON.parse(sessionStorage.getItem('sf-tour-view') || 'null'); } catch {}
   if (back?.c) map.setView(back.c, back.z, { animate: false }); else map.setView(PARK_CENTER, 12.4);
+  map.createPane('zone').style.zIndex = 350;   // 주변 땅 색: 공원·길 그림 아래
   layers = {
-    park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
+    zone: L.layerGroup().addTo(map), park: L.layerGroup().addTo(map), route: L.layerGroup().addTo(map), plan: L.layerGroup().addTo(map),
     garden: L.layerGroup().addTo(map), pins: L.layerGroup().addTo(map), me: L.layerGroup().addTo(map),
     gshot: L.layerGroup().addTo(map), shot: L.layerGroup().addTo(map), prog: L.layerGroup().addTo(map),
     flow: L.layerGroup().addTo(map), access: L.layerGroup().addTo(map),
@@ -677,6 +680,108 @@ function accessBar() {
   return h('section', { class: 'tr-status tr-access' }, line, more);
 }
 
+// ── 주변 땅(용도지역 × 지적도) ──
+// 브이월드 2D 데이터 API(2026-11-28): 연속지적도 LP_PA_CBND_BUBUN의 필지마다 용도지역 LT_C_UQ111을 붙이고,
+// 서울숲 둘레 4개 동(성수동1가·2가·응봉동·행당동)만 남김 → data/zoning.json. 도로·하천·공원 필지는 칠하지 않음.
+// 분류는 국토계획법 시행령 제30조(용도지역 세분)
+const ZONE_GROUPS = [
+  { key: 'r', t: '주거지역', items: [
+    ['r1x', '제1종전용주거', '#fff7c2', '단독주택 중심 조용한 동네'], ['r2x', '제2종전용주거', '#ffee99', '공동주택 중심 조용한 동네'],
+    ['r1', '제1종일반주거', '#fff59d', '낮은 주택 중심'], ['r2', '제2종일반주거', '#ffcf3f', '중간 높이 주택 중심'],
+    ['r3', '제3종일반주거', '#e08a2e', '높은 아파트 중심'], ['rq', '준주거', '#f2914a', '집 + 가게·사무실'] ] },
+  { key: 'c', t: '상업지역', items: [
+    ['cc', '중심상업', '#b8174f', '도심·큰 중심가'], ['cm', '일반상업', '#e0457b', '일반 상가·사무실'],
+    ['cn', '근린상업', '#f282aa', '동네 생활 상가'], ['cd', '유통상업', '#a8509a', '시장·물류'] ] },
+  { key: 'i', t: '공업지역', items: [
+    ['ix', '전용공업', '#3f3aa8', '중화학 공장'], ['ig', '일반공업', '#5f6fe0', '일반 공장'],
+    ['iq', '준공업', '#6fa8ff', '공장 + 집·가게·사무실'] ] },
+  { key: 'g', t: '녹지지역', items: [
+    ['gp', '보전녹지', '#2c7a4c', '자연을 그대로 지킴'], ['ga', '생산녹지', '#8cc26a', '농사 짓는 땅'],
+    ['gn', '자연녹지', '#55b06a', '녹지를 지키며 조금만 개발'] ] },
+];
+const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
+const JIMOK = { 대: '대지', 전: '밭', 답: '논', 임: '임야', 잡: '잡종지', 학: '학교용지', 종: '종교용지', 창: '창고용지', 장: '공장용지', 차: '주차장', 주: '주유소용지', 체: '체육용지', 원: '유원지', 사: '사적지', 묘: '묘지', 목: '목장용지', 과: '과수원', 광: '광천지', 염: '염전', 양: '양어장' };
+let ZONES = null, ZP = null, zpLoading = false, zoneOpen = false, zoneOnly = null, zonePlans = true, zoneGeo = null, zoneCanvas = null, zoneBounds = null;
+const pctTxt = p => p >= .995 ? '100%' : p >= .01 ? `${Math.round(p * 100)}%` : p > 0 ? '1% 미만' : '';
+function zoneBar() {
+  if (!ZONES) return null;
+  const sh = ZONES.share ?? {}, grp = k => Object.entries(sh).filter(([c]) => ZONE_OF[c]?.g === k).reduce((s, [, p]) => s + p, 0);
+  const tone = { r: '#ffcf3f', c: '#e0457b', i: '#6fa8ff', g: '#55b06a' };
+  const chips = ZONE_GROUPS.map(g => [g, grp(g.key)]).filter(([, p]) => p > 0)
+    .map(([g, p]) => h('span', { class: 'tr-zone-chip' }, h('i', { style: `background:${tone[g.key]}` }), g.t.replace('지역', ''), h('b', null, pctTxt(p))));
+  const paintRows = () => more.querySelectorAll('.tr-zone-row').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === zoneOnly)));
+  const groups = ZONE_GROUPS.map(g => h('div', { class: 'tr-zone-grp' },
+    h('div', { class: 'tr-zone-gh' }, h('b', null, g.t), h('span', null, pctTxt(grp(g.key)) || '없음')),
+    g.items.map(([k]) => {
+      const z = ZONE_OF[k], p = sh[k] ?? 0;
+      return h('button', { type: 'button', class: `tr-zone-row${p ? '' : ' none'}`, 'data-k': k, 'aria-pressed': 'false', disabled: !p,
+        onclick: () => { zoneOnly = zoneOnly === k ? null : k; paintRows(); zoneStyle(); } },
+        h('i', { style: `background:${z.c}` }), h('span', null, h('b', null, `${z.t}지역`), h('small', null, z.d)),
+        h('em', null, p ? pctTxt(p) : '이 동네엔 없음'));
+    })));
+  const more = h('div', { class: 'tr-acc-more tr-zone-more', hidden: !zoneOpen },
+    h('p', { class: 'tr-zone-lead' }, `서울숲 둘레 땅 ${ZONES.count.toLocaleString()}필지를 법으로 정한 쓰임새(용도지역)별로 칠했어요. 줄을 누르면 그 땅만 남아요. 비율은 서울숲에 붙은 ${ZONES.dongs_list.join('·')} ${ZONES.near_count.toLocaleString()}필지 기준이에요.`),
+    h('div', { class: 'tr-zone-groups' }, groups),
+    h('button', { type: 'button', class: 'tr-zone-plan', 'aria-pressed': String(zonePlans),
+      onclick: e => { zonePlans = !zonePlans; e.currentTarget.setAttribute('aria-pressed', String(zonePlans)); zonePaint(); } },
+      h('i'), '지구단위계획구역 경계', h('b', null, `${ZONES.plans?.features?.length ?? 0}곳`)),
+    h('p', { class: 'tr-zone-note' }, `4개 동 땅의 ${pctTxt(grp('i'))}가 준공업(공장·사무실), ${pctTxt(grp('r'))}가 주거예요. 녹지로 묶인 땅은 ${pctTxt(grp('g'))}뿐이라, 이 동네에서 걸어갈 만한 큰 녹지는 서울숲이에요.`),
+    h('p', { class: 'tr-lc-src' }, `국토교통부 연속지적도·용도지역·지구단위계획 · 브이월드 · ${ZONES.fetched} 받음 · 비율은 필지 면적 기준(도로·하천·공원 땅 제외)`));
+  const label = () => zoneOpen ? '지도 닫기' : '지도로 보기';
+  const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(zoneOpen),
+    onclick: e => { zoneOpen = !zoneOpen; more.hidden = !zoneOpen; e.currentTarget.setAttribute('aria-expanded', String(zoneOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); zonePaint(true); } },
+    h('small', null, '주변 땅'), h('div', { class: 'tr-status-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
+  return h('section', { class: 'tr-status tr-zone' }, line, more);
+}
+/** 압축한 필지 좌표(1e-5도 정수 차분) → Leaflet 좌표 */
+function zoneParcels() {
+  if (zoneGeo) return zoneGeo;
+  const [ox, oy] = ZP.origin, k = ZP.scale;
+  zoneCanvas = zoneCanvas ?? L.canvas({ pane: 'zone', padding: .3 });
+  zoneGeo = ZP.parcels.map(([c, jm, num, d]) => {
+    const ll = []; let x = 0, y = 0;
+    for (let i = 0; i < d.length; i += 2) { x += d[i]; y += d[i + 1]; ll.push([oy + y / k, ox + x / k]); }
+    const z = ZONE_OF[c];
+    const p = L.polygon(ll, { renderer: zoneCanvas, smoothFactor: 0 });
+    p.zc = c;
+    p.bindTooltip(`<b>${esc(z?.t ?? '')}지역</b><small>${esc(num)}번지${JIMOK[jm] ? ` · ${JIMOK[jm]}` : ''}</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' });
+    p.on('mouseover', () => { if (!zoneOnly || zoneOnly === c) p.setStyle({ weight: 2, color: '#fff', opacity: 1, fillOpacity: .85 }); });
+    p.on('mouseout', () => p.setStyle(zoneLook(c)));
+    return p;
+  });
+  return zoneGeo;
+}
+const zoneLook = c => {
+  const dim = zoneOnly && c !== zoneOnly;
+  return { fillColor: ZONE_OF[c]?.c ?? '#999', fillOpacity: dim ? .04 : .58, color: ZONE_OF[c]?.c ?? '#999', weight: dim ? .3 : .7, opacity: dim ? .15 : .95 };
+};
+function zoneStyle() { zoneGeo?.forEach(p => p.setStyle(zoneLook(p.zc))); }
+function zonePaint(fly = false) {
+  if (!layers?.zone) return;
+  layers.zone.clearLayers();
+  const on = !!ZONES && zoneOpen && st.step === 1 && !trip;
+  const was = el.panel.classList.contains('zonemap');
+  el.panel.classList.toggle('zonemap', on); el.map.classList.toggle('tr-zonemap', on);
+  if (!on) { zoneOnly = null; if (fly && was && app?.model?.parkBounds) flyBounds(cityBounds(), padding(), .8); return; }
+  // 휴대폰: 시트가 낮아진 뒤 주변 땅 칸이 시트 맨 위에 오게
+  if (!was && !desk()) setTimeout(() => { const sec = el.panel.querySelector('.tr-zone'); if (sec) el.panel.scrollTop += sec.getBoundingClientRect().top - el.panel.getBoundingClientRect().top - 12; }, 380);
+  // 필지 파일(무거움)은 처음 펼칠 때만 받음
+  if (!ZP) {
+    if (!zpLoading) { zpLoading = true; fetch(new URL('./data/zoning_parcels.json', location.href)).then(r => r.json()).then(d => { ZP = d; zpLoading = false; zonePaint(); }).catch(() => { zpLoading = false; }); }
+  } else { zoneParcels().forEach(p => p.addTo(layers.zone)); zoneStyle(); }
+  // 동 경계(점선) + 동 이름
+  const dongs = L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: f => ({ fill: false, color: '#fff', weight: f.properties.near ? 1.6 : 1, opacity: f.properties.near ? .8 : .4, dashArray: '2 5', lineCap: 'round' }) }).addTo(layers.zone);
+  zoneBounds = dongs.getBounds();
+  for (const f of ZONES.dongs.features)
+    L.marker(f.properties.at, { interactive: false, zIndexOffset: 800, icon: L.divIcon({ className: '', html: `<div class="tr-zone-dong${f.properties.near ? ' near' : ''}">${esc(f.properties.n)}</div>`, iconSize: [0, 0] }) }).addTo(layers.zone);
+  if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#ffffff', weight: 1.8, opacity: .9, dashArray: '7 5' },
+    onEachFeature: (f, l) => l.bindTooltip(`<b>${esc(f.properties.n)}</b><small>지구단위계획구역 · ${f.properties.ha}ha</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' }) }).addTo(layers.zone);
+  // 필지가 보이게 서울숲 둘레를 가까이(넓은 화면은 왼쪽 카드 칸까지 비킴). 더 넓게는 손으로 줄여서
+  const sideW = desk() && !el.side.hidden ? el.side.getBoundingClientRect().right + 20 : 0;
+  const pad = sideW ? { paddingTopLeft: [sideW, 80], paddingBottomRight: [panelW() + 28, 60] } : padding();
+  if (fly) flyBounds(app.model.parkBounds.pad(.35), pad, .8);
+}
+
 // ── 오는 길 지도 핀 ──
 // 버스는 도착 시간이 있을 때만 처음부터 켬(정류장 위치만으론 지도를 어지럽힘). null = 아직 사용자가 안 건드림
 let accessShow = { park: true, sub: true, bus: null, event: true, bike: true, ev: true };
@@ -845,6 +950,7 @@ function go(step) {
     h('div', { class: 'tr-livetop-slot' }, liveCard('top') ?? ''),
     h('div', { class: 'tr-status-slot' }, statusBar() ?? ''),
     h('div', { class: 'tr-access-slot' }, accessBar() ?? ''),
+    h('div', { class: 'tr-zone-slot' }, zoneBar() ?? ''),
   ] : [];
   const side = step === 1 && desk();
   sideDesk = desk();
@@ -862,7 +968,8 @@ function go(step) {
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
   if (step !== 1 && accessOpen) accessOpen = false;
-  if (layers) accessPins();
+  if (step !== 1) zoneOpen = false;
+  if (layers) { accessPins(); zonePaint(); }
 }
 async function choose(key, value, btn) {
   watchMe();          // 첫 선택 때 위치를 물어봅니다(코스를 짤 때쯤 준비되도록)
@@ -1183,7 +1290,7 @@ function gardenStrip(s) {
 async function begin(course = null, avoid = []) {
   flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers(); layers.access.clearLayers();
-  accessOpen = false;
+  accessOpen = false; zoneOpen = false; zonePaint();
   clearTreePins();
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
@@ -1757,7 +1864,7 @@ function renderEnd() {
     next,
     h('div', { class: 'tr-end-links' },
       h('button', { type: 'button', class: 'tr-textbtn', onclick: restart }, '다른 코스 고르기'),
-      endInfo.receipt ? h('a', { class: 'tr-textbtn', href: receiptHref(), target: inFrame ? '_top' : null, onclick: flushCourse }, '영수증으로 남기기') : null,
+      endInfo.receipt ? h('a', { class: 'tr-textbtn', href: receiptHref(), target: inFrame ? '_top' : null, onclick: rcGo, ...rcLock() }, '영수증으로 남기기') : null,
       h('a', { class: 'tr-textbtn', href: `./?need=${st.need}&company=${st.company}&stay=${st.stay}#citizen` }, '자세히 보기')),
     h('p', { class: 'tr-foot' }, `붐빔은 요일·시간대 추정값, 날씨는 ${app.wx.live ? '실시간 예보' : '표본 날씨'}예요.${hasSeed() ? ' 좋아요 비율에 시연용 가상 평가 포함.' : ''} 사진: 위키미디어 공용`),
   ];
@@ -1770,14 +1877,15 @@ let endNodes = null, endInfo = null;
 function exitWalk(ex) {
   ex.show();
   const { last, kiosk, meters, min, wc } = ex;
+  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
   mount('tr-s-exit', [
     h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '영수증 기계로')),
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '다른 기계 고르기')),
     h('h2', { class: 'tr-q' }, kiosk.at),
     h('p', { class: 'tr-exit-lead' }, `지도의 노란 길을 따라 걸어서 ${min}분(${fmtM(meters)})이에요.`),
-    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 오늘 산책 영수증을 뽑으면 근처 카페 할인 쿠폰이 같이 나와요.'),
     Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가까운 화장실 · ${fmtM(Math.round(wc))}`) : null,
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→')),
+    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 영수증을 뽑을 때 카페·주차장·동네 가게 중 받을 쿠폰을 골라요.'),
+    cta,
   ]);
 }
 
@@ -1798,7 +1906,7 @@ function goodbye() {
       info.places ? h('p', null, `서울숲에서 ${info.places}곳, ${Math.round(info.walkMin)}분을 걸었어요.`) : null,
       info.later ? h('p', { class: 'tr-bye-later' }, icon('clock', 13), `다음에 오기 좋은 때 · ${info.later}`) : null,
       h('small', null, '남겨 주신 표정은 이름·위치 없이 공원 길과 쉼터를 고치는 데 써요.')),
-    info.receipt ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null },
+    info.receipt && surveyDone ? h('a', { class: 'tr-cta tr-glow-on tr-bye-rc', href: receiptHref(), target: inFrame ? '_top' : null, onclick: flushCourse },
       h('span', { class: 'tr-bye-rc-t' }, h('b', null, '오늘 산책, 영수증으로 받기'), h('small', null, '걸은 길이 찍힌 한 장 · 방명록에도 남길 수 있어요')),
       h('span', { class: 'tr-cta-arrow' }, '→')) : null,
     h('button', { type: 'button', class: 'tr-ghost tr-bye-home', onclick: restart }, '처음 화면으로'),
@@ -1808,11 +1916,27 @@ function goodbye() {
 // ── 마무리 6. 숲 영수증(../../영수증.html)으로 이어 주기 ──
 // 오늘 걸은 기록을 이 기기(localStorage)에만 잠깐 두고, 영수증 페이지가 읽어서 내 영수증·지도에 찍습니다. 서버로 보내지 않음.
 const RECEIPT_KEY = 'sf-receipt';
+// 만족도(코스 표정)를 남기기 전에는 영수증으로 넘어가는 버튼·링크를 잠금(누를 수 없음). 쿠폰은 영수증 페이지 폰 화면에서 고름
+let surveyDone = false;
+const rcLock = () => (surveyDone ? { 'data-rc': '1' } : { 'data-rc': '1', 'aria-disabled': 'true', tabindex: '-1', disabled: true });
+const rcHint = () => (surveyDone ? null : h('p', { class: 'tr-rc-hint' }, '위에서 오늘 코스 표정을 먼저 눌러 주세요. 그래야 영수증 기계로 갈 수 있어요.'));
+function rcGo(e) { if (!surveyDone) { e.preventDefault(); e.stopImmediatePropagation(); return; } flushCourse(); }
+function nudgeSurvey() {   // 잠긴 채로 지도 기계를 눌렀을 때: 표정 칸으로 데려가 살짝 흔들기
+  const f = document.querySelector('.tr-flow'); if (!f) return;
+  f.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  f.classList.remove('tr-nudge'); void f.offsetWidth; f.classList.add('tr-nudge');
+}
+function unlockReceipt() {
+  surveyDone = true;
+  document.querySelectorAll('[data-rc]').forEach(el => { el.removeAttribute('aria-disabled'); el.removeAttribute('tabindex'); if ('disabled' in el) el.disabled = false; });
+  document.querySelectorAll('.tr-rc-hint').forEach(el => el.remove());
+}
 const inFrame = (() => { try { return window.top !== window.self; } catch { return true; } })();   // 모바일 화면(mobile.html) 폰 틀 안이면 틀 밖으로 열기
 const receiptHref = () => `../../영수증.html?from=${inFrame ? 'mobile' : 'tour'}`;
 const WHO_OF = { alone: '혼자', couple: '연인', friends: '친구', kids: '가족', elders: '어르신과', pet: '반려견과' };
 function saveReceipt(walkMin, meters) {
   if (!trip?.stops.length) return false;
+  surveyDone = false;   // 새 산책마다 만족도부터 다시
   const h0 = app.wx.hourly[0] ?? {};
   const sky = h0.pty === 3 ? '눈' : h0.pty > 0 ? '비' : (h0.sky ?? 1) >= 4 ? '흐림' : h0.sky === 3 ? '구름' : '맑음';
   const short = n => n.replace(/\(.*?\)/g, '').split('·')[0].trim();
@@ -1847,9 +1971,9 @@ function courseAsk(walkMin, meters) {
     pendingCourse = { send: () => sendCourse(data(), id), timer: setTimeout(flushCourse, 6000) };
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
-  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
-  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 카페 쿠폰'), h('span', null, '표정을 남기면 영수증과 함께 근처 카페 할인 쿠폰이 나와요. 어떤 표정이든 괜찮아요.'));
-  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 쿠폰 준비 완료'), h('span', null, '지도에 🧾로 표시된 영수증 기계 어디서든 받아 가세요.')); };
+  // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 카페 할인·주차 1시간 무료·동네 가게 할인 중 고른 쿠폰이 함께 나옴
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🧾 영수증 열기'), h('span', null, '표정을 남기면 영수증을 받을 수 있어요. 영수증에서 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라요. 어떤 표정이든 괜찮아요.'));
+  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🧾 영수증 열림'), h('span', null, '이제 🧾 영수증 기계 어디서든 영수증과 쿠폰을 받을 수 있어요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
     on ? api.tags.add(x.key) : api.tags.delete(x.key);
@@ -1861,7 +1985,7 @@ function courseAsk(walkMin, meters) {
     api.face = v;
     word.textContent = { 5: '좋았어요', 3: '그저 그랬어요', 1: '별로였어요' }[v]; word.classList.add('on'); word.dataset.f = v >= 4 ? 'good' : v === 3 ? 'mid' : 'bad';
     if (flip) { api.tags.clear(); paintChips(v >= 4); }
-    giftDone(); arm(); api.onChange?.();
+    giftDone(); unlockReceipt(); arm(); api.onChange?.();
   }, '오늘 코스 흐름');
   api.el = h('section', { class: 'tr-rate tr-flow' },
     h('div', { class: 'tr-rate-h' }, h('b', null, stops.length > 1 ? '오늘 코스, 이어지는 흐름은 어땠어요?' : '오늘 산책, 어땠어요?'), word), gift, pick, chips,
@@ -1907,7 +2031,7 @@ function nextBox(later) {
 }
 
 // ── 마무리 3. 나가는 길: 마지막 곳에서 가장 가까운 영수증 기계(출구 2곳 + 공원 곳곳) ──
-// 영수증 기계 배치(팀 제안): 두 출입구 + 공원 곳곳 12대. 영수증을 뽑으면 주변 카페 할인 쿠폰이 함께 나옴
+// 영수증 기계 배치(팀 제안): 두 출입구 + 공원 곳곳 12대. 영수증을 뽑으면 고른 혜택 쿠폰(카페·주차·동네 가게)이 함께 나옴
 // 가장 가까운 기계로 안내하되, 지도에 모두 띄우고 목록·지도에서 다른 기계를 골라 갈 수 있게 함
 const KIOSKS = [
   { id: 'gate-station', at: '서울숲역 방면 입구' },
@@ -1956,7 +2080,7 @@ function exitBox() {
       flyBounds(L.latLngBounds(coords), { ...padding(), maxZoom: 17.4 }, .8);
     },
   });
-  const go = o => exitWalk(exOf(o));
+  const go = o => { if (!surveyDone) { nudgeSurvey(); return; } exitWalk(exOf(o)); };   // 표정(만족도)을 남겨야 기계로 넘어감
   // 산책 끝 화면: 기계 전부와 오늘 걸은 길이 한눈에 들어오게
   setTimeout(() => {
     drawKiosks(opts, best.k.id, go);
@@ -1967,10 +2091,11 @@ function exitBox() {
     h('div', { class: 'tr-exit-row' },
       h('span', { class: 'tr-exit-ico' }, '🧾'),
       h('div', null, h('b', null, `가장 가까운 영수증 기계 · ${best.k.at}`), h('p', null, `걸어서 ${best.min}분(${fmtM(best.meters)}) · 공원 곳곳 ${opts.length}곳 어디서든 뽑을 수 있어요`))),
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => go(best) }, '가장 가까운 기계로 길 안내', h('span', { class: 'tr-cta-arrow' }, '→')),
+    rcHint(),
+    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: () => go(best), ...rcLock() }, '가장 가까운 기계로 길 안내', h('span', { class: 'tr-cta-arrow' }, '→')),
     h('details', { class: 'tr-kiosk-list' },
       h('summary', null, '다른 기계로 가기'),
-      h('div', { class: 'tr-kiosk-chips' }, opts.slice(1).map(o => h('button', { type: 'button', class: 'rv-chip', onclick: () => go(o) }, `${o.k.at} · ${o.min}분`)))),
+      h('div', { class: 'tr-kiosk-chips' }, opts.slice(1).map(o => h('button', { type: 'button', class: 'rv-chip', onclick: () => go(o), ...rcLock() }, `${o.k.at} · ${o.min}분`)))),
     h('button', { type: 'button', class: 'tr-textbtn', onclick: goodbye }, '안내 없이 산책 마치기'));
 }
 function countUp(v, digits = 0) {
@@ -2012,6 +2137,7 @@ async function boot() {
   flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+  loadJson('./data/zoning.json').then(z => { ZONES = z; document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); }).catch(() => {});
   try {
     const wxLive = fetchWeather().catch(() => null);
     const [data, raw, photos, gardens, seed, expo] = await Promise.all([loadData(loadJson), Promise.race([wxLive, sleep(1500).then(() => null)]),
@@ -2036,6 +2162,9 @@ async function boot() {
   // 이미 위치 권한을 준 기기면 바로 내 위치를 띄웁니다(묻는 창은 띄우지 않음)
   navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') watchMe(); }).catch(() => {});
   await sleep(Math.max(0, T(700) - (performance.now() - t0)));
+  // 지도 기본 정보: 화장실·매점·쉼터 등과 정원 꽃을 버튼으로 켜고 끔(js/basics.js)
+  mountBasics({ map, L, root, mapEl: el.map, park: app.model.data.park, flower: FLOWER_SVG, onGarden: g => gardenShot(g), routeGardens: () => layers.garden.getLayers().length > 0,
+    gardens: () => gardenList().map(g => { const hub = g.pos ? { id: g.id, lat: g.pos[0], lon: g.pos[1], name: g.spot ?? g.name } : app.model.hubById[g.place]; return hub ? { lat: hub.lat, lon: hub.lon, name: g.name, g: { ...g, hub } } : null; }).filter(Boolean) });
   window.__tour = { app, st, me, get trip() { return trip; }, get nav() { return nav; }, begin, startLeg, advance };      // 점검용
   arrive();
 }

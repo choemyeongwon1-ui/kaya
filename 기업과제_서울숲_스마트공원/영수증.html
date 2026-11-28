@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<!-- 영수증·스토리 카드를 그림 파일(PNG)로 바꾸는 도구 -->
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <style>
 :root{color-scheme:light;--page:#f3f1ea;--surface:#fff;--surface-2:#f6f4ee;--surface-3:#e9e6dc;--ink:#14201a;--ink-2:#4b554e;--muted:#8b918a;--hair:rgba(20,32,26,.09);
 --brand:#1d4d3a;--brand-2:#2a6a50;--brand-ink:#fff;--brand-wash:#e4eee5;--lime:#cfe887;--warm:#e2703e;--deep:#0f2a1f;
@@ -165,6 +167,30 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .place[aria-pressed="true"] em{transform:scale(1.25)}
 .place:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .place.hint:not([aria-pressed="true"]){border-color:#9dbf9d;border-style:dashed}
+.gifts{display:flex;flex-direction:column;gap:8px;margin:4px 0 4px}
+.gift-opt{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:1.5px solid #dcdcd4;border-radius:14px;background:#fff;font:inherit;color:#14201a;cursor:pointer;text-align:left;transition:transform .15s,border-color .2s,background .2s}
+.gift-opt:hover{transform:translateY(-2px)}
+.gift-opt em{flex:none;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#f1efe8;font-style:normal;font-size:20px;transition:background .2s}
+.gift-opt b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+.gift-opt small{display:block;margin-top:1px;font-size:11px;color:#6b746e;line-height:1.4}
+.gift-opt[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
+.gift-opt[aria-pressed="true"] em{background:#cfe3d3}
+.gift-park{display:block;margin:2px 0 4px;padding:10px 11px;border-radius:14px;background:#fff7e6;border:1.5px solid #f0d49a;font-size:11.5px;line-height:1.5;color:#3d3423;animation:up .35s cubic-bezier(.2,.7,.2,1) both}
+.gift-park[hidden]{display:none}
+.gift-park:not([hidden])+.lock-note{display:none}
+.gift-park .lot-h b{display:block;font-size:12.5px;color:#14201a}
+.gift-park .lot-h span{font-size:11px;color:#8a6a2c;font-weight:700}
+.gift-park .lot-body{display:flex;gap:8px;align-items:flex-start;margin-top:7px}
+.gift-park .pk-map{flex:none;width:58px;height:auto;margin-top:2px}
+.gift-park .lots{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.lot-opt{display:flex;align-items:center;gap:7px;width:100%;padding:6px 8px;border:1.5px solid #ecdcb5;border-radius:10px;background:#fffdf7;font:inherit;color:#14201a;text-align:left;cursor:pointer}
+.lot-opt i{flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #2b2a27;font-style:normal;font-size:10px;font-weight:800}
+.lot-opt b{display:block;font-size:11.5px;letter-spacing:-.02em}
+.lot-opt small{display:block;font-size:10px;color:#6b746e;line-height:1.35}
+.lot-opt[aria-pressed="true"]{border-color:#1d4d3a;background:#e6efe7}
+.lot-opt[aria-pressed="true"] i{background:#2b2a27;color:#faf8f1}
+.gift-park .lot-n{margin:6px 0 0;font-size:10.5px;color:#8a6a2c}
+.gift-opt:focus-visible{outline:2px solid #2a78d6;outline-offset:2px}
 .faces{display:flex;justify-content:space-between;gap:8px;margin:4px 0 10px}
 .face{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1.5px solid #dcdcd4;border-radius:16px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:transform .15s,border-color .2s,background .2s}
 .face em{font-style:normal;font-size:26px;line-height:1;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
@@ -176,7 +202,7 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .chip{padding:6px 10px;border:1px solid #d6d6ce;border-radius:999px;background:#fff;font-size:11.5px;font-weight:700;color:#4b554e;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
 .chip[aria-pressed="true"]{border-color:#1d4d3a;background:#1d4d3a;color:#fff}
 .memo{width:100%;margin-top:4px;padding:9px 12px;border:1.5px solid #dcdcd4;border-radius:12px;background:#fff;font:600 13px/1.45 var(--font);color:#14201a;resize:none}
-.view[data-v="rate"]{overflow-y:auto}
+.view[data-v="rate"],.view[data-v="gift"]{overflow-y:auto}
 .memo:focus{outline:none;border-color:#1d4d3a}
 .memo-n{text-align:right;font-size:10.5px;color:#8b918a;margin-top:3px}
 .ph-choice{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px}
@@ -295,6 +321,10 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .coupon{border:1.5px solid #2b2a27;padding:8px 10px;border-radius:4px}
 .coupon b{display:block;font-size:13.5px}
 .coupon .cs{font-size:10px;line-height:1.5}
+.coupon .pk{display:flex;align-items:center;gap:9px;margin:7px 0 2px;padding-top:7px;border-top:1px dashed rgba(43,42,39,.45)}
+.coupon .pk-map{flex:none;width:48px;height:auto}
+.coupon .pk-t{font-size:9.5px;line-height:1.45}
+.coupon .pk-t b{display:block;font-size:11px}
 .barcode{display:block;width:100%;height:34px;margin-top:6px}
 .bnum{text-align:center;font-size:9.5px;letter-spacing:.2em}
 .foot{text-align:center;font-size:10.5px;margin-top:10px;line-height:1.6}
@@ -311,6 +341,95 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .modal .holder{animation:lift .6s cubic-bezier(.2,.8,.2,1) both}
 .modal .receipt{transform:rotate(-1.2deg) scale(1.3);transform-origin:top center;margin:20px auto 140px}
 .mclose{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:51}
+/* 영수증 저장 · 인스타 스토리 공유 */
+.view[data-v="done"]{overflow-y:auto}
+.act2{display:flex;gap:8px}
+.act2 .btn{flex:1;font-size:13.5px;height:46px;margin-top:10px}
+.btn.story{background:linear-gradient(135deg,#f6b23c,#e2483f 45%,#b0378f 80%,#6a42c2)}
+.msave{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:51;display:flex;gap:8px}
+.msave button{height:46px;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#14201a;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);white-space:nowrap}
+.msave button.story{background:linear-gradient(135deg,#f6b23c,#e2483f 45%,#b0378f 80%,#6a42c2);color:#fff}
+.msave button:disabled{opacity:.6;cursor:wait}
+.modal[hidden]~.mclose,.modal[hidden]~.msave{display:none}
+.msave{padding-bottom:env(safe-area-inset-bottom)}
+.cap-off{position:fixed;left:-10000px;top:0;pointer-events:none}
+.cap-wrap{padding:18px 16px;background:#f3f1ea;display:inline-block}
+.cap-wrap .receipt{box-shadow:none;background:linear-gradient(90deg,rgba(0,0,0,.035),transparent 8%,transparent 92%,rgba(0,0,0,.04)),var(--paper)}
+/* 스토리 미리보기 */
+.smodal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;overflow:auto;padding:30px 16px 40px;background:rgba(8,12,10,.82);backdrop-filter:blur(6px)}
+.smodal[hidden]{display:none}
+.sphone{position:relative;width:324px;height:576px;border-radius:30px;overflow:hidden;background:#000;box-shadow:0 0 0 9px #111,0 0 0 10px #333,0 40px 80px -30px rgba(0,0,0,.8);flex:none}
+.sphone .sc-foot{visibility:hidden}
+.sphone .sc-holder{position:absolute;left:0;top:0;width:360px;height:640px;transform:scale(.9);transform-origin:0 0}
+.s-ui{position:absolute;inset:0;pointer-events:none;color:#fff;font-family:var(--font)}
+.s-bars{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:4px}
+.s-bars i{flex:1;height:2.5px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.s-bars i b{display:block;height:100%;width:0;background:#fff;animation:sbar 5s linear forwards}
+@keyframes sbar{to{width:100%}}
+.s-head{position:absolute;left:12px;right:12px;top:22px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.s-av{width:30px;height:30px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#f6b23c,#e2483f,#b0378f)}
+.s-av span{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;background:#1d4d3a;border:2px solid #000;font-size:11px}
+.s-head small{opacity:.75;font-weight:500}
+.s-head .x{margin-left:auto;font-size:18px;font-weight:400}
+.s-foot{position:absolute;left:12px;right:12px;bottom:14px;display:flex;align-items:center;gap:12px;font-size:20px}
+.s-foot span:first-child{flex:1;height:38px;display:flex;align-items:center;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.6);font-size:13px;font-weight:500}
+.s-side{max-width:300px;color:#eef1ec;font-size:14px;line-height:1.7}
+.s-side h3{margin:0 0 6px;font-size:20px;letter-spacing:-.02em}
+.s-side p{margin:0 0 14px;color:#b7beb6}
+.s-side .btn{margin-top:8px}
+.s-note{min-height:20px;margin-top:10px;font-size:12.5px;color:#cfe8d9}
+.s-close{position:fixed;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#14201a;font-size:18px;cursor:pointer;z-index:61}
+/* 스토리 카드(1080×1920으로 저장되는 그림) */
+.sc{position:relative;width:360px;height:640px;box-sizing:border-box;padding:68px 28px 62px;overflow:hidden;display:flex;flex-direction:column;font-family:var(--font);color:#16352a;
+  background:#f1eee6}
+.sc-bg{position:absolute;left:0;top:0;width:360px;height:640px;z-index:0;pointer-events:none}
+.sc>*{flex-shrink:0;z-index:1}
+.sc::before{content:"";position:absolute;inset:12px;z-index:2;border:1px solid rgba(255,255,255,.75);border-radius:22px;pointer-events:none}
+.sc::after{content:"";position:absolute;left:28px;right:28px;top:88px;height:1px;z-index:1;background:rgba(22,53,42,.14)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;height:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:#6f7d73}
+.sc-title{margin:10px 0 10px;font-size:24px;font-weight:800;letter-spacing:-.045em;line-height:1.18}
+.sc-title em{font-style:normal;color:#24704b;background:linear-gradient(transparent 64%,#dcef9f 64%,#dcef9f 92%,transparent 92%)}
+.sc-photo{position:relative;margin:4px 0 2px;border-radius:16px;overflow:hidden;background:#fbf9f3;box-shadow:0 0 0 1px rgba(22,53,42,.1),0 14px 26px -18px rgba(22,53,42,.55)}
+.sc-photo canvas{display:block;width:100%;height:140px;object-fit:cover;object-position:50% 50%;image-rendering:pixelated}
+.sc-photo .cap{display:flex;justify-content:space-between;padding:7px 12px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#5d6b62;border-top:1px solid rgba(22,53,42,.08)}
+.sc-quote{position:relative;margin:2px 0 4px;padding:4px 0 6px 18px;border-left:3px solid #24704b;font-family:"Nanum Pen Script",var(--font);font-size:30px;line-height:1.18;color:#1f4535;text-wrap:balance;word-break:keep-all}
+.sc-paper{position:relative;display:flex;gap:12px;margin:10px 0 0;padding:11px 14px 10px 10px;background:#fffdf8;color:#24302a;font-family:var(--mono);border-radius:16px;box-shadow:0 0 0 1px rgba(22,53,42,.1),0 14px 26px -18px rgba(22,53,42,.55)}
+.sc-paper .rc-map{flex:none;width:100px;height:auto}
+.sc-paper.big .rc-map{width:128px}
+.sc-list{flex:1;min-width:0;font-size:11.5px;line-height:1.55}
+.sc-list .sec{font-size:9px;letter-spacing:.14em;color:#6f7d73;margin-bottom:4px}
+.sc-list .st{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.sc-list .st i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#16352a;color:#f3efe6;font-size:8.5px;flex:none}
+.sc-list .st span{overflow:hidden;text-overflow:ellipsis}
+.sc-list .st.best span{font-weight:700;color:#16352a}
+.sc-list .st.best i{background:#24704b}
+.sc-stats{display:flex;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(22,53,42,.12)}
+.sc-stats div{flex:1}
+.sc-stats b{display:block;font-size:13px;color:#16352a}
+.sc-stats small{font-size:8.5px;letter-spacing:.06em;color:#7a867e}
+.sc-best{margin-top:auto;padding-top:8px;font-size:11px;letter-spacing:.02em;color:#6f7d73}
+.sc-best b{display:flex;align-items:center;gap:6px;margin-top:1px;font-size:18px;font-weight:800;color:#16352a;letter-spacing:-.035em}
+.sc-best b em{font-style:normal;font-size:16px;color:#e0a63a}
+.sc-tags{margin-top:4px;font-size:11.5px;font-weight:600;color:#24704b}
+.sc-loc{position:absolute;right:24px;top:112px;padding:6px 11px 6px 9px;border-radius:999px;background:#16352a;color:#f3efe6;font-size:11.5px;font-weight:700;letter-spacing:-.01em;transform:rotate(4deg);box-shadow:0 8px 16px -10px rgba(22,53,42,.8)}
+.sc-foot{position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:#8b968e;letter-spacing:.08em}
+/* 미리보기의 인스타 글자(흰색)가 밝은 카드 위에서도 보이게, 실제 스토리처럼 위아래를 살짝 어둡게 */
+.s-ui::before,.s-ui::after{content:"";position:absolute;left:0;right:0;pointer-events:none}
+.s-ui::before{top:0;height:78px;background:linear-gradient(rgba(10,20,15,.38),transparent)}
+.s-ui::after{bottom:0;height:72px;background:linear-gradient(transparent,rgba(10,20,15,.42))}
+.s-bars,.s-head,.s-foot{z-index:1}
+@media (max-width:700px){.s-side{text-align:center}}
+/* 폰 화면(좁은 화면): 폰 틀 없이 실제 스토리처럼 화면을 채우고, 버튼은 아래 두 칸 */
+@media (max-width:640px){
+  .smodal{--sh:min(calc(100vh - 128px),calc((100vw - 20px) * 16 / 9));flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;gap:12px;padding:10px 10px 14px;background:#000}
+  .sphone{height:var(--sh);width:calc(var(--sh) * 9 / 16);border-radius:14px;box-shadow:none}
+  .s-head .x{visibility:hidden}
+  .s-close{top:30px;right:calc(50vw - var(--sh) * 9 / 32 + 6px);width:34px;height:34px;background:transparent;color:#fff;font-size:20px}
+  .s-side{max-width:none;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center}
+  .s-side h3,.s-side p{display:none}
+  .s-side .btn{margin:0;height:48px;font-size:14px;padding:0 8px}
+  .s-note{grid-column:1/-1;margin:0;min-height:0}
+}
 
 /* ---------- 읽는 법 ---------- */
 
@@ -444,6 +563,15 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <button class="btn" id="bRate" type="button" disabled>골랐어요</button>
             </div>
 
+            <div class="view" data-v="gift">
+              <h4>영수증과 함께 받을 혜택</h4>
+              <p class="ph-sub">오늘 나에게 쓸모 있는 걸 하나 골라 주세요.</p>
+              <div class="gifts" id="gifts"></div>
+              <div class="gift-park" id="giftPark" hidden></div>
+              <div class="lock-note">🎁 <span>고른 혜택이 <b>영수증 맨 아래 쿠폰</b>으로 같이 나와요.</span></div>
+              <button class="btn" id="bGift" type="button" disabled>이걸로 받을게요</button>
+            </div>
+
             <div class="view" data-v="photo">
               <h4>사진도 같이 뽑을까요?</h4>
               <p class="ph-sub">기계 위 카메라로 찍어 영수증에 함께 인쇄해요.</p>
@@ -485,8 +613,11 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <div class="done-box">
                 <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
                 <p>기계에서 영수증을 뜯어 가세요.<br>휴대폰에도 같은 영수증이 저장돼요.</p>
-                <div class="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 오늘부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
-                <div class="wallet"><b>오늘의 영수증 보관함</b>지금까지 받은 영수증을 날짜별로 다시 볼 수 있어요<br><span class="tg">3번째 서울숲 영수증</span></div>
+                <div class="wallet" id="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페 · 발급일부터 3일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
+              </div>
+              <div class="act2">
+                <button class="btn ghost" id="bSave" type="button">📥 영수증 저장</button>
+                <button class="btn story" id="bStory" type="button">스토리 공유</button>
               </div>
               <button class="btn" id="bShare" type="button">방명록에 남기기</button>
               <button class="ph-link" id="bAgain" type="button">↺ 처음부터 다시 보기</button>
@@ -531,13 +662,34 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     <p class="wall-note">🔒 사진은 본인이 동의한 경우에만 걸리고, 30일 뒤 내려가요. 언제든 직접 내릴 수 있어요. 화면 속 방명록은 가상 예시예요.</p>
   </section>
 
-  <p class="note rv">기록·번호·제휴 카페·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
+  <p class="note rv">기록·번호·제휴처(카페·주차장·가게)·장소 이름은 가상 예시입니다. 실제 기계 위치와 쿠폰은 운영 주체(서울숲 관리 측·성동구)와 협의가 필요합니다.</p>
 </main>
 <footer>숲 영수증 시안 · 서울숲 스마트 공원 대시보드<br><small style="opacity:.6">셔터 소리: 「Canon T50 shutter noise」 Francois C, CC BY-SA 3.0 (위키미디어 공용, 앞부분만 잘라 씀)</small></footer>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="영수증 크게 보기">
-  <button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
   <div class="holder" id="holder"></div>
+</div>
+<!-- 닫기·저장 버튼은 창 밖에 둠: .modal의 배경 흐림(backdrop-filter) 안에 있으면 fixed가 화면이 아니라 창 내용에 붙어 스크롤 따라 중간에 떠 버림 -->
+<button class="mclose" id="bClose" type="button" aria-label="닫기">✕</button>
+<div class="msave"><button type="button" id="bSaveM">📥 영수증 저장</button><button type="button" class="story" id="bStoryM">스토리 공유</button></div>
+
+<div class="smodal" id="smodal" hidden role="dialog" aria-modal="true" aria-label="인스타그램 스토리 미리보기">
+  <button class="s-close" id="sClose" type="button" aria-label="닫기">✕</button>
+  <div class="sphone">
+    <div class="sc-holder" id="scHolder"></div>
+    <div class="s-ui" aria-hidden="true">
+      <div class="s-bars"><i><b></b></i></div>
+      <div class="s-head"><div class="s-av"><span>나</span></div>내 스토리 <small>방금</small><span class="x">✕</span></div>
+      <div class="s-foot"><span>메시지 보내기</span><span>♡</span><span>➤</span></div>
+    </div>
+  </div>
+  <div class="s-side">
+    <h3>스토리에 이렇게 올라가요</h3>
+    <p>오늘 찍은 사진, 걸은 코스, 제일 좋았던 곳이 한 장에 담겨요. 휴대폰에서 누르면 공유 창이 열리고 <b>인스타그램 → 스토리</b>를 고르면 바로 올라가요.</p>
+    <button class="btn story" id="sShare" type="button">인스타그램에 올리기</button>
+    <button class="btn ghost" id="sSave" type="button">📥 스토리 이미지 저장</button>
+    <div class="s-note" id="sNote" role="status"></div>
+  </div>
 </div>
 
 <script>
@@ -746,7 +898,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     h += part(5, rt, P);
     h += '<hr class="hr">';
     h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark(R.date, R.time) + '</div></div>', P);
-    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>성수 동네 카페 10% 할인</b><div class="cs">제휴 카페(예시) · 발급일부터 7일<br>숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
+    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + (lotOf(st) && st.gift === 'park' ? '<div class="pk">' + parkMap(st.lot) + '<div class="pk-t"><b>' + lotOf(st).addr + '</b>' + lotOf(st).info + '<br>나갈 때 이 바코드를 찍어요</div></div>' : '') + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
     h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(R.no) + '번째 사람</b><br>' + R.line + ', 고맙습니다</div>';
     h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
@@ -848,12 +1000,13 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bSound').onclick = function () { soundOn = !soundOn; this.setAttribute('aria-pressed', String(soundOn)); this.textContent = soundOn ? '🔊 출력 소리 켜짐' : '🔈 출력 소리 꺼짐'; };
 
   // ---------- 화면 전환 ----------
-  var ORDER = ['scan', 'rec', 'rate', 'photo', 'count', 'check', 'done', 'share'];
-  var STEP_OF = { scan: 0, rec: 1, rate: 2, photo: 3, count: 3, check: 3, done: 4, share: 4 };
+  var ORDER = ['scan', 'rec', 'rate', 'gift', 'photo', 'count', 'check', 'done', 'share'];
+  var STEP_OF = { scan: 0, rec: 1, rate: 2, gift: 2, photo: 3, count: 3, check: 3, done: 4, share: 4 };
   var CAP = {
     scan: '① 출구에 선 영수증 기계의 QR을 휴대폰으로 찍습니다. 앱 설치는 필요 없습니다.',
     rec: '② 휴대폰에 남은 오늘 기록을 확인합니다. 이동 경로는 휴대폰 안에만 있습니다.',
     rate: '③ 오늘 제일 좋았던 곳을 골라야 영수증이 나옵니다. 고른 곳과 이유가 장소별 만족도로 모입니다.',
+    gift: '③ 영수증과 함께 받을 혜택을 미리 고릅니다. 이미 밥·커피를 마친 사람도 쓸 수 있게 카페·주차장·동네 가게 중 하나를 고릅니다.',
     photo: '④ 원하면 기계 카메라로 사진을 찍어 영수증에 함께 인쇄합니다.',
     count: '④ 기계 카메라가 3초 뒤 사진을 찍습니다.',
     check: '④ 사진은 영수증 인쇄처럼 흑백 점으로 바뀌어 찍힙니다.',
@@ -893,7 +1046,69 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     };
   });
   $('#memo').oninput = function () { state.memo = this.value.trim(); $('#memoN').textContent = this.value.length; };
-  $('#bRate').onclick = function () { view('photo'); };
+  $('#bRate').onclick = function () { view('gift'); };
+  // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
+  var GIFTS = {
+    cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페 · 발급일부터 3일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
+    park: { ico: '🅿️', t: '주변 주차장 1시간 무료', pick: '서울숲공원 · 갤러리아포레 · 디타워 · 뚝섬유수지', s: '발급 당일', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
+    shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍 · 발급일부터 3일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
+  };
+  // 주차 쿠폰을 쓸 수 있는 서울숲 주변 주차장 (2026-11-28 확인)
+  //  서울숲공원주차장·갤러리아포레: 서울시 실시간 도시데이터 '서울숲공원' 주차장 정보(이름·지번·면수·좌표), 서울숲 누리집 주차장 안내(211면·24시간)
+  //  서울숲 디타워: 블로그 2곳(wubl.net·avlab.co.kr)의 지번·면수, 좌표는 같은 필지 아크로서울포레스트(OpenStreetMap)
+  //  뚝섬유수지 공영: wubl.net의 주소·면수, 좌표는 OpenStreetMap '뚝섬유수지 공영주차장'
+  var PARK_LOTS = [
+    { name: '서울숲공원주차장', addr: '성동구 성수동1가 643', info: '211면 · 서울숲 안', lat: 37.54148, lon: 127.042774 },
+    { name: '갤러리아포레 더몰 주차장', addr: '성동구 성수동1가 685-696', info: '785면 · 서울숲역 쪽', lat: 37.545295, lon: 127.043045 },
+    { name: '서울숲 디타워 주차장', addr: '성동구 성수동1가 685-700', info: '826면 · 서울숲역 쪽', lat: 37.54446, lon: 127.043886 },
+    { name: '뚝섬유수지 공영주차장', addr: '성동구 왕십리로11길 23', info: '333면 · 공원 북쪽', lat: 37.550182, lon: 127.042099 },
+  ];
+  PARK_LOTS.forEach(function (p) {   // 영수증 지도와 같은 투영
+    p.x = Math.round(((p.lon - 127.030812) * 17060.1676 + 6) * 10) / 10;
+    p.y = Math.round(((37.551123 - p.lat) * 21516.7377 + 6) * 10) / 10;
+  });
+  function lotOf(st) { return PARK_LOTS[st && st.lot] || null; }
+  function parkMap(sel) {
+    var s = '<svg class="pk-map" viewBox="-4 -14 ' + (MAP.w + 12) + ' ' + (MAP.h + 22) + '" aria-label="서울숲 주변 주차장 위치">' +
+      '<path d="' + MAP.park + '" fill="#2b2a27" fill-opacity=".06" stroke="#2b2a27" stroke-width="5" stroke-linejoin="round"/>';
+    PARK_LOTS.forEach(function (p, i) {
+      var on = i === sel;
+      s += '<circle cx="' + p.x + '" cy="' + p.y + '" r="' + (on ? 30 : 19) + '" fill="' + (on ? '#2b2a27' : '#faf8f1') + '" stroke="#2b2a27" stroke-width="5"/>' +
+        '<text x="' + p.x + '" y="' + (p.y + (on ? 15 : 10)) + '" text-anchor="middle" font-size="' + (on ? 42 : 28) + '" font-weight="800" font-family="Nanum Gothic Coding,monospace" fill="' + (on ? '#faf8f1' : '#2b2a27') + '">' + (on ? 'P' : i + 1) + '</text>';
+    });
+    return s + '</svg>';
+  }
+
+  function giftOf(st) {
+    var g = GIFTS[st && st.gift] || GIFTS.cafe, lot = st && st.gift === 'park' && lotOf(st);
+    return lot ? { ico: g.ico, t: '주차 1시간 무료', s: lot.name + ' · 발급 당일', note: g.note } : g;
+  }
+  $('#gifts').innerHTML = Object.keys(GIFTS).map(function (k) {
+    var g = GIFTS[k];
+    return '<button class="gift-opt" type="button" data-g="' + k + '" aria-pressed="false"><em>' + g.ico + '</em><span><b>' + g.t + '</b><small>' + (g.pick || g.s) + '</small></span></button>';
+  }).join('');
+  $$('#gifts .gift-opt').forEach(function (b) {
+    b.onclick = function () {
+      $$('#gifts .gift-opt').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      state.gift = b.dataset.g; $('#bGift').disabled = false;
+      // 주차 쿠폰은 이 주차장에서만 → 고르기 전에 어디인지 분명히
+      var gp = $('#giftPark'); gp.hidden = state.gift !== 'park';
+      if (state.gift === 'park') { state.lot = undefined; paintLots(); }
+      $('#bGift').disabled = state.gift === 'park' && state.lot == null;
+    };
+  });
+  // 주차 쿠폰은 그 주차장에서만 쓰므로, 어디에 세웠는지 먼저 고름
+  function paintLots() {
+    var gp = $('#giftPark'), sel = state.lot;
+    gp.innerHTML = '<div class="lot-h"><b>🅿️ 어디에 주차하셨나요?</b><span>고른 주차장에서만 쓰는 쿠폰이 나와요</span></div>' +
+      '<div class="lot-body">' + parkMap(sel) + '<div class="lots">' + PARK_LOTS.map(function (p, i) {
+        return '<button class="lot-opt" type="button" data-i="' + i + '" aria-pressed="' + (i === sel) + '"><i>' + (i + 1) + '</i><span><b>' + p.name + '</b><small>' + p.addr + ' · ' + p.info + '</small></span></button>';
+      }).join('') + '</div></div><p class="lot-n">주차를 안 했다면 카페·가게 쿠폰을 골라 주세요.</p>';
+    $$('.lot-opt', gp).forEach(function (b) {
+      b.onclick = function () { state.lot = +b.dataset.i; paintLots(); $('#bGift').disabled = false; };
+    });
+  }
+  $('#bGift').onclick = function () { view('photo'); };
 
   var stream = null;
   function stopCam() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } $('#kcam').classList.remove('live'); }
@@ -939,6 +1154,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
 
   function print() {
     view('done'); kscreen('print');
+    var gw = giftOf(state); $('#wallet').innerHTML = '<b>' + gw.ico + ' ' + gw.t + '</b>' + gw.s + '<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span>';
     var rc = $('#receipt'); rc.innerHTML = buildReceipt(state); paintPhotos(rc, state.photo);
     var clip = $('#clip'), mv = $('#move');
     clip.classList.remove('hidden');
@@ -959,17 +1175,169 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   }
 
   $('#bOpen').onclick = function () {
+    modalState = state;
     $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(state, { inkStatic: true }));
     $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
   };
   function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; (wallOpener || $('#bOpen')).focus(); wallOpener = null; }
   $('#bClose').onclick = closeModal;
   $('#modal').addEventListener('click', function (e) { if (e.target === this || e.target.id === 'holder') closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('#smodal').hidden) closeStory(); else if (!$('#modal').hidden) closeModal();
+  });
+
+  // ---------- 영수증 전체를 그림으로 저장 · 인스타 스토리 공유 ----------
+  // 그림은 이 기기 안에서만 만들고 서버로 보내지 않음
+  var modalState = null;
+  var fileDate = function () { return (state.d && state.d.date || dateStr).replace(/\./g, ''); };
+  // 화면 밖에 잠깐 붙여 PNG로 바꿈(캔버스 사진·지도·쿠폰까지 영수증 한 장 전체)
+  // 글꼴: 다른 주소(구글 폰트·jsdelivr)의 글꼴은 그림 도구가 직접 못 읽어서, 글꼴 파일을 받아 그림 안에 넣어 줌.
+  // 쓰인 글자가 들어 있는 조각(unicode-range)만 받아 빠르게.
+  var FONT_CSS = [
+    'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&display=swap',
+    'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css',
+  ];
+  var fontCssP = null, fontFile = {};
+  function blobToDataUrl(b) { return new Promise(function (ok, no) { var r = new FileReader(); r.onload = function () { ok(r.result); }; r.onerror = no; r.readAsDataURL(b); }); }
+  function rangesOf(s) {
+    return s.split(',').map(function (p) {
+      p = p.trim().replace(/^U\+/i, ''); var ab = p.split('-'), a = ab[0], b = ab[1] || ab[0];
+      if (a.indexOf('?') >= 0) { b = a.replace(/\?/g, 'F'); a = a.replace(/\?/g, '0'); }
+      return [parseInt(a, 16), parseInt(b, 16)];
+    });
+  }
+  function fontEmbedFor(node) {
+    if (!fontCssP) fontCssP = Promise.all(FONT_CSS.map(function (u) { return fetch(u).then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }); }));
+    var codes = []; Array.from(node.textContent + '0123456789★·').forEach(function (c) { var k = c.codePointAt(0); if (codes.indexOf(k) < 0) codes.push(k); });
+    return fontCssP.then(function (texts) {
+      var jobs = [];
+      texts.forEach(function (t, i) {
+        (t.match(/@font-face\s*\{[^}]*\}/g) || []).forEach(function (rule) {
+          var ur = rule.match(/unicode-range:\s*([^;}]+)/);
+          if (ur) { var rs = rangesOf(ur[1]); if (!codes.some(function (c) { return rs.some(function (x) { return c >= x[0] && c <= x[1]; }); })) return; }
+          var m = rule.match(/url\(([^)]+)\)/); if (!m) return;
+          var url = new URL(m[1].replace(/["']/g, ''), FONT_CSS[i]).href;
+          if (!fontFile[url]) fontFile[url] = fetch(url).then(function (r) { return r.blob(); }).then(blobToDataUrl).catch(function () { delete fontFile[url]; return ''; });
+          jobs.push(fontFile[url].then(function (d) { return d ? rule.replace(m[0], 'url(' + d + ')') : ''; }));
+        });
+      });
+      return Promise.all(jobs).then(function (a) { return a.join('\n'); });
+    });
+  }
+  function nodeToBlob(node, opt) {
+    if (!window.htmlToImage) return Promise.reject(new Error('no html-to-image'));
+    var off = document.createElement('div'); off.className = 'cap-off'; off.appendChild(node); document.body.appendChild(off);
+    var done = function () { off.remove(); };
+    var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    return fontsReady.then(function () { return fontEmbedFor(node); }).then(function (css) {
+      return htmlToImage.toBlob(node, Object.assign({ pixelRatio: 3, cacheBust: false, fontEmbedCSS: css }, opt || {}));
+    }).then(function (b) { done(); return b; }, function (e) { done(); throw e; });
+  }
+  function receiptBlob(st) {
+    var wrap = document.createElement('div'); wrap.className = 'cap-wrap';
+    wrap.appendChild(makeReceipt(st, { inkStatic: true }));
+    return nodeToBlob(wrap, { backgroundColor: '#f3f1ea' });
+  }
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function busy(btn, on, label) {
+    if (!btn) return;
+    if (on) { btn.dataset.t = btn.textContent; btn.textContent = label || '만드는 중…'; btn.disabled = true; }
+    else { btn.textContent = btn.dataset.t || btn.textContent; btn.disabled = false; }
+  }
+  function saveReceipt(st, btn) {
+    busy(btn, true);
+    receiptBlob(st).then(function (b) {
+      download(b, '숲영수증_' + fileDate() + '.png');
+      busy(btn, false); var t = btn.textContent; btn.textContent = '✓ 저장했어요'; setTimeout(function () { btn.textContent = t; }, 1800);
+    }).catch(function () { busy(btn, false); btn.textContent = '다시 눌러 주세요'; });
+  }
+  $('#bSave').onclick = function () { saveReceipt(state, this); };
+  $('#bSaveM').onclick = function () { saveReceipt(modalState || state, this); };
+
+  // 스토리 카드(360×640 → 1080×1920): 사진 · 코스 지도 · 들른 곳 · 기록 · 제일 좋았던 곳
+  function storyCard(st) {
+    var R = rinfo(st), d = document.createElement('div'); d.className = 'sc';
+    var best = st.best || '';
+    var h = '<svg class="sc-bg" viewBox="0 0 360 640" aria-hidden="true"><defs><linearGradient id="scSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dde9ec"/><stop offset=".38" stop-color="#eef0e8"/><stop offset=".62" stop-color="#f6eee3"/><stop offset="1" stop-color="#f3e6da"/></linearGradient><radialGradient id="scSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6df"/><stop offset=".45" stop-color="#fdf0d6" stop-opacity=".7"/><stop offset="1" stop-color="#fdf0d6" stop-opacity="0"/></radialGradient><linearGradient id="scLake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3e5ea"/><stop offset="1" stop-color="#e4eef0"/></linearGradient></defs><rect width="360" height="640" fill="url(#scSky)"/><circle cx="290" cy="150" r="120" fill="url(#scSun)"/><g fill="none" stroke="#a9bdb2" stroke-width="1.3" stroke-linecap="round"><path d="M232 214q5-5 10 0q5-5 10 0"/><path d="M262 232q3.5-3.5 7 0q3.5-3.5 7 0"/></g><g fill="#cfe1d1" opacity=".75"><ellipse cx="8" cy="4" rx="11" ry="4.6" transform="rotate(-60 8 4)"/><ellipse cx="21" cy="20" rx="11" ry="4.6" transform="rotate(-4 21 20)"/><ellipse cx="34" cy="22" rx="11" ry="4.6" transform="rotate(-48 34 22)"/><ellipse cx="47" cy="38" rx="11" ry="4.6" transform="rotate(8 47 38)"/><ellipse cx="60" cy="40" rx="11" ry="4.6" transform="rotate(-36 60 40)"/><ellipse cx="73" cy="56" rx="11" ry="4.6" transform="rotate(20 73 56)"/><ellipse cx="86" cy="58" rx="11" ry="4.6" transform="rotate(-24 86 58)"/><ellipse cx="99" cy="74" rx="11" ry="4.6" transform="rotate(32 99 74)"/><ellipse cx="112" cy="76" rx="11" ry="4.6" transform="rotate(-12 112 76)"/></g><path d="M0 418C60 392 120 398 180 412S300 390 360 404V640H0Z" fill="#e2ebe0"/><g fill="#cadecb"><ellipse cx="-6" cy="452" rx="11.3" ry="13.0"/><ellipse cx="9" cy="451" rx="10.1" ry="11.6"/><ellipse cx="22" cy="449" rx="13.6" ry="15.6"/><ellipse cx="39" cy="450" rx="9.5" ry="10.9"/><ellipse cx="52" cy="447" rx="12.8" ry="14.7"/><ellipse cx="68" cy="447" rx="11.6" ry="13.3"/><ellipse cx="83" cy="448" rx="9.4" ry="10.8"/><ellipse cx="96" cy="446" rx="12.6" ry="14.4"/><ellipse cx="112" cy="447" rx="9.3" ry="10.7"/><ellipse cx="124" cy="445" rx="12.0" ry="13.8"/><ellipse cx="140" cy="447" rx="9.5" ry="10.9"/><ellipse cx="152" cy="446" rx="9.6" ry="11.1"/><ellipse cx="164" cy="445" rx="12.0" ry="13.8"/><ellipse cx="180" cy="443" rx="14.8" ry="17.0"/><ellipse cx="199" cy="446" rx="9.9" ry="11.3"/><ellipse cx="212" cy="446" rx="10.6" ry="12.1"/><ellipse cx="226" cy="444" rx="13.4" ry="15.4"/><ellipse cx="243" cy="443" rx="15.6" ry="18.0"/><ellipse cx="263" cy="445" rx="13.0" ry="15.0"/><ellipse cx="280" cy="447" rx="11.8" ry="13.5"/><ellipse cx="296" cy="445" rx="15.8" ry="18.2"/><ellipse cx="316" cy="450" rx="9.3" ry="10.7"/><ellipse cx="328" cy="447" rx="15.0" ry="17.3"/><ellipse cx="348" cy="451" rx="11.0" ry="12.7"/><ellipse cx="362" cy="452" rx="10.0" ry="11.5"/></g><path d="M0 462C70 444 130 452 190 466S300 448 360 458V640H0Z" fill="#d3e4d1"/><g fill="#bcd5bf"><ellipse cx="22" cy="498" rx="17" ry="21"/><ellipse cx="58" cy="497" rx="18" ry="22"/><ellipse cx="318" cy="496" rx="21" ry="26"/><ellipse cx="346" cy="497" rx="17" ry="21"/></g><path d="M0 500C90 486 210 494 360 482V640H0Z" fill="#dbe9d3"/><ellipse cx="150" cy="548" rx="170" ry="20" fill="url(#scLake)"/><path d="M60 544h60M170 552h80M110 556h40" stroke="#f4f8f8" stroke-width="1.4" stroke-linecap="round" opacity=".9"/><path d="M0 572C100 558 230 566 360 552V640H0Z" fill="#d4e6cc"/><circle cx="208" cy="613" r="1.7" fill="#ffffff"/><circle cx="252" cy="608" r="2.2" fill="#f5e2a6"/><circle cx="191" cy="620" r="2.3" fill="#e8d6ef"/><circle cx="164" cy="594" r="2.4" fill="#f5e2a6"/><circle cx="93" cy="609" r="2.7" fill="#e8d6ef"/><circle cx="258" cy="594" r="1.7" fill="#f2cfd2"/><circle cx="152" cy="619" r="2.7" fill="#f5e2a6"/><circle cx="153" cy="630" r="2.5" fill="#f2cfd2"/><circle cx="205" cy="625" r="2.0" fill="#ffffff"/><circle cx="129" cy="605" r="1.7" fill="#e8d6ef"/><circle cx="42" cy="593" r="1.7" fill="#f2cfd2"/><circle cx="249" cy="613" r="1.9" fill="#e8d6ef"/><circle cx="141" cy="614" r="2.7" fill="#f2cfd2"/><circle cx="131" cy="611" r="1.7" fill="#e8d6ef"/><circle cx="271" cy="585" r="2.1" fill="#f5e2a6"/><circle cx="322" cy="605" r="2.1" fill="#f5e2a6"/><circle cx="197" cy="626" r="2.6" fill="#e8d6ef"/><circle cx="105" cy="600" r="2.4" fill="#ffffff"/><circle cx="139" cy="590" r="1.8" fill="#f2cfd2"/><circle cx="89" cy="591" r="2.6" fill="#e8d6ef"/><circle cx="72" cy="593" r="2.1" fill="#f5e2a6"/><circle cx="136" cy="609" r="2.4" fill="#f5e2a6"/><circle cx="185" cy="611" r="2.1" fill="#f2cfd2"/><circle cx="306" cy="629" r="2.1" fill="#e8d6ef"/><circle cx="144" cy="604" r="1.7" fill="#e8d6ef"/><circle cx="33" cy="589" r="1.7" fill="#f5e2a6"/></svg>';
+    h += '<div class="sc-top"><span>SEOUL FOREST</span><span>' + R.date + ' (' + R.dow + ')</span></div>';
+    h += '<div class="sc-title">오늘, <em>서울숲</em>에서<br>머물다 왔어요</div>';
+    if (st.photo) h += '<div class="sc-photo"><canvas class="rcPhoto"></canvas><div class="cap"><span>서울숲 ' + R.date + '</span><span>' + esc(R.with) + '</span></div></div>';
+    else h += '<div class="sc-quote">“' + esc(st.memo || R.line + ' 쉬어 간 날') + '”</div>';
+    h += '<div class="sc-loc">📍 서울숲</div>';
+    var list = '<div class="sec">오늘 걸은 코스 · ' + R.km + '</div>';
+    R.stops.slice(0, 5).forEach(function (s, i) {
+      var isBest = best && s[0] === best;
+      list += '<div class="st' + (isBest ? ' best' : '') + '"><i>' + (i + 1) + '</i><span>' + esc(s[0]) + (isBest ? ' ★' : '') + '</span></div>';
+    });
+    list += '<div class="sc-stats"><div><b>' + R.stay + '</b><small>머문 시간</small></div><div><b>' + R.steps + '</b><small>걸음</small></div></div>';
+    h += '<div class="sc-paper rc-ink' + (st.photo ? '' : ' big') + '">' + realMap(st) + '<div class="sc-list">' + list + '</div></div>';
+    if (best) h += '<div class="sc-best">오늘 제일 좋았던 곳<b>' + esc(best) + ' <em>★</em></b></div>';
+    var tags = (st.tags || []).map(function (t) { return '#' + t.replace(/\s/g, ''); });
+    h += '<div class="sc-tags">' + ['#서울숲', '#숲영수증'].concat(tags).slice(0, 4).join(' ') + '</div>';
+    h += '<div class="sc-foot"><span>숲 영수증 No.' + R.no + '</span><span>서울숲 스마트 공원</span></div>';
+    d.innerHTML = h;
+    paintPhotos(d, st.photo);
+    return d;
+  }
+  var storyState = null, storyBlobP = null, storyOpener = null;
+  function openStory(st, opener) {
+    storyState = st; storyOpener = opener || null; storyBlobP = null;
+    $('#scHolder').innerHTML = ''; $('#scHolder').appendChild(storyCard(st));
+    var bar = $('.s-bars b'); bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
+    $('#sNote').textContent = '';
+    $('#smodal').hidden = false; document.body.style.overflow = 'hidden'; fitStory(); $('#sShare').focus();
+    // 미리 만들어 둠: 공유 창은 버튼을 누른 직후에만 열 수 있어서, 누를 때 바로 넘길 수 있게
+    setTimeout(function () { storyBlob().catch(function () {}); }, 400);
+  }
+  // 스토리 카드(360×640)를 미리보기 틀 크기에 맞춰 키우거나 줄임 (넓은 화면은 .9, 폰 화면은 꽉 차게)
+  function fitStory() {
+    var ph = $('.sphone'); if (!ph) return;
+    $('#scHolder').style.transform = 'scale(' + (ph.clientWidth / 360) + ')';
+  }
+  addEventListener('resize', function () { if (!$('#smodal').hidden) fitStory(); });
+  function closeStory() {
+    $('#smodal').hidden = true;
+    if ($('#modal').hidden) document.body.style.overflow = '';
+    if (storyOpener) storyOpener.focus();
+  }
+  function storyBlob() {
+    if (!storyBlobP) storyBlobP = nodeToBlob(storyCard(storyState)).catch(function (e) { storyBlobP = null; throw e; });
+    return storyBlobP;
+  }
+  $('#bStory').onclick = function () { openStory(state, this); };
+  $('#bStoryM').onclick = function () { openStory(modalState || state, this); };
+  $('#sClose').onclick = closeStory;
+  $('#smodal').addEventListener('click', function (e) { if (e.target === this) closeStory(); });
+  $('#sSave').onclick = function () {
+    var btn = this; busy(btn, true);
+    storyBlob().then(function (b) { download(b, '숲영수증_스토리_' + fileDate() + '.png'); busy(btn, false); $('#sNote').textContent = '스토리용 이미지(1080×1920)를 저장했어요.'; })
+      .catch(function () { busy(btn, false); $('#sNote').textContent = '이미지를 만들지 못했어요. 다시 눌러 주세요.'; });
+  };
+  // 휴대폰: 공유 창(인스타그램 → 스토리) / PC: 이미지를 저장하고 안내
+  $('#sShare').onclick = function () {
+    var btn = this; busy(btn, true, '준비하는 중…');
+    storyBlob().then(function (b) {
+      busy(btn, false);
+      var file = new File([b], '숲영수증_스토리.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], title: '오늘의 숲 영수증' })
+          .then(function () { $('#sNote').textContent = '공유 창을 열었어요. 인스타그램 → 스토리를 골라 주세요.'; })
+          .catch(function (e) { if (e && e.name !== 'AbortError') $('#sNote').textContent = '공유하지 못했어요. 이미지 저장 후 스토리에 올려 주세요.'; });
+      }
+      download(b, '숲영수증_스토리_' + fileDate() + '.png');
+      $('#sNote').textContent = '이 기기에서는 바로 공유가 안 돼서 이미지를 저장했어요. 휴대폰에서 누르면 인스타그램을 바로 고를 수 있어요.';
+    }).catch(function () { busy(btn, false); $('#sNote').textContent = '이미지를 만들지 못했어요. 다시 눌러 주세요.'; });
+  };
 
   $('#bAgain').onclick = function () {
     timers.forEach(clearTimeout); timers = []; stopCam();
     state = { best: '', tags: [], memo: '', photo: null };
+    $$('#gifts .gift-opt').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('#bGift').disabled = true; $('#giftPark').hidden = true; state.lot = undefined;
     var bs = $('#bShare'); bs.classList.remove('done'); bs.textContent = '방명록에 남기기'; $('#nick').value = '';
     $('#bScan').disabled = false; $('#tip').classList.remove('gone'); $('#bRate').disabled = true; $('#memo').value = ''; $('#memoN').textContent = '0';
     $$('#places .place,#chips .chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
@@ -1044,6 +1412,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
       b.onclick = function () {
         wallOpener = b;
         var full = { best: st.best, tags: st.tags, memo: st.memo, course: st.course, d: st.d, photo: st.photoOk ? st.photo : null };
+        modalState = full;
         $('#holder').innerHTML = ''; $('#holder').appendChild(makeReceipt(full, { inkStatic: true }));
         $('#modal').hidden = false; document.body.style.overflow = 'hidden'; $('#bClose').focus();
       };
