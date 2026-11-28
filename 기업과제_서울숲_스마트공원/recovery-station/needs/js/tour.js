@@ -960,6 +960,63 @@ function zoneBar() {
     h('small', null, isB ? '건물 용도' : '주변 땅'), h('div', { class: 'tr-status-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
   return h('section', { class: 'tr-status tr-zone' }, line, more);
 }
+// ── 서울숲 나무 현황(추정): 위성 나무 덮인 비율 × 칸 넓이 ÷ 나무 한 그루 그늘 넓이 + 2020년 조사 수종 비율 ──
+// 알고리즘으로 유추한 값이라 실제 수종·그루 수는 현장 매목조사로 확인해야 함(화면에 그대로 적음)
+let TREES = null, treeOpen = false, treeLayer = null;
+const CROWN = { mid: 9, lo: 11, hi: 7 };   // 나무 한 그루가 덮는 폭(지름 m): 9m 기준, 범위 7~11m
+function treeEst() {
+  const cs = app?.model?.cells?.filter(c => !c.hold);
+  if (!cs?.length) return null;
+  const cover = cs.reduce((a, c) => a + Math.min(1, Math.max(0, c.p.tree ?? 0)), 0) * 400;   // 20m 칸 = 400㎡
+  const per = d => Math.PI * (d / 2) ** 2;
+  const r = n => Math.round(n / 100) * 100;
+  return { n: cs.length, area: cover, ratio: cover / (cs.length * 400), mid: r(cover / per(CROWN.mid)), lo: r(cover / per(CROWN.lo)), hi: r(cover / per(CROWN.hi)) };
+}
+function treeBar() {
+  const E = treeEst();
+  if (!E || !TREES) return null;
+  const cnt = Object.entries(TREES.count ?? {}).sort((a, b) => b[1] - a[1]);
+  const tot = cnt.reduce((a, [, v]) => a + v, 0), max = cnt[0]?.[1] ?? 1;
+  const n = v => v.toLocaleString();
+  const chips = [h('span', null, '약 ', h('b', null, `${n(E.mid)}그루`), ' 추정'), h('span', null, '많은 나무 ', h('b', null, cnt.slice(0, 2).map(([k]) => k).join('·')))];
+  const more = h('div', { class: 'tr-acc-more tr-tree-more', hidden: !treeOpen },
+    h('div', { class: 'tr-tree-est' },
+      h('div', null, h('small', null, '지금 서울숲 나무(추정)'), h('b', null, `약 ${n(E.mid)}그루`), h('span', null, `${n(E.lo)} ~ ${n(E.hi)}그루 사이`)),
+      h('div', null, h('small', null, '나무로 덮인 땅'), h('b', null, `${Math.round(E.ratio * 100)}%`), h('span', null, `약 ${n(Math.round(E.area / 1000) * 1000)}㎡`))),
+    h('div', { class: 'tr-zone-gh' }, h('b', null, '많이 심긴 나무'), h('span', null, `조사된 ${TREES.kinds}종 중 상위 ${cnt.length}종`)),
+    h('ul', { class: 'tr-tree-list' }, cnt.map(([k, v]) => h('li', null,
+      h('span', { class: 'nm' }, k),
+      h('span', { class: 'bar' }, h('i', { style: `width:${Math.max(4, v / max * 100)}%` })),
+      h('em', null, `${n(v)}그루`, h('small', null, ` · ${Math.round(v / tot * 100)}%`))))),
+    TREES.spots?.length ? h('p', { class: 'tr-zone-note' }, '모여 있는 곳: ', TREES.spots.map(s => `${s.name}(${s.where.split(' · ')[0]})`).join(', ')) : null,
+    h('details', { class: 'tr-tree-how' }, h('summary', null, '어떻게 셌나요?'),
+      h('ol', null,
+        h('li', null, `서울숲을 20m 칸 ${n(E.n)}개로 나누고, 위성 사진으로 칸마다 나무가 덮은 비율을 봤어요.`),
+        h('li', null, `덮인 땅을 모두 더하면 약 ${n(Math.round(E.area / 1000) * 1000)}㎡예요.`),
+        h('li', null, `다 자란 나무 한 그루가 폭 약 9m(그늘 약 64㎡)를 덮는다고 보고 나눴어요. 폭을 7~11m로 바꾸면 ${n(E.lo)}~${n(E.hi)}그루예요.`),
+        h('li', null, '어떤 나무가 많은지(주로 자라는 나무)는 2020년 서울시 조사 그루 수로 순서를 매겼어요. %는 상위 7종 안에서 차지하는 몫이에요.')),
+      h('p', null, `한계: 2020년 조사 상위 ${cnt.length}종만 더해도 ${n(tot)}그루라, 위성으로는 작은 나무나 겹쳐 선 나무를 덜 세요. 나머지 ${Math.max(0, TREES.kinds - cnt.length)}종은 비율에 넣지 못했어요.`)),
+    h('p', { class: 'tr-tree-warn' }, icon('info', 14), '알고리즘으로 유추한 값이에요. 실제 나무 종류와 그루 수는 현장 조사(매목조사)로 확인이 필요해요.'),
+    h('p', { class: 'tr-lc-src' }, `수종·그루 수: ${TREES.source.split(' — ')[0]} · 나무 덮인 비율: 팀 20m 격자(ESA WorldCover 10m 위성) · 지도는 나무가 빽빽할수록 진한 초록`));
+  const label = () => treeOpen ? '지도 닫기' : '지도로 보기';
+  const line = h('button', { type: 'button', class: 'tr-status-line', 'aria-expanded': String(treeOpen),
+    onclick: e => { treeOpen = !treeOpen; more.hidden = !treeOpen; e.currentTarget.setAttribute('aria-expanded', String(treeOpen)); e.currentTarget.querySelector('.tr-status-tog').textContent = label(); treePaint(); } },
+    h('small', null, '서울숲 나무'), h('div', { class: 'tr-status-chips' }, chips), h('span', { class: 'tr-status-tog' }, label()));
+  return h('section', { class: 'tr-status tr-tree' }, line, more);
+}
+function treePaint() {
+  if (!map) return;
+  const on = treeOpen && st.step === 1 && !trip && !!app?.model;
+  if (!on) { if (treeLayer) { map.removeLayer(treeLayer); treeLayer = null; } return; }
+  if (treeLayer) return;
+  const rend = L.canvas({ padding: .3 });
+  treeLayer = L.geoJSON(app.model.data.team.grid, {
+    renderer: rend, interactive: false,
+    filter: f => !f.properties.hold && (f.properties.tree ?? 0) > .05,
+    style: f => ({ stroke: false, fill: true, fillColor: '#2f9e5a', fillOpacity: .08 + .38 * Math.min(1, f.properties.tree) }),
+  }).addTo(map);
+}
+
 function zonePaint(fly = false) {
   if (!layers?.zone) return;
   layers.zone.clearLayers(); zoneOut();
@@ -1160,6 +1217,7 @@ function go(step) {
     h('div', { class: 'tr-status-slot' }, statusBar() ?? ''),
     h('div', { class: 'tr-access-slot' }, accessBar() ?? ''),
     h('div', { class: 'tr-zone-slot' }, zoneBar() ?? ''),
+    h('div', { class: 'tr-tree-slot' }, treeBar() ?? ''),
   ] : [];
   const side = step === 1 && desk();
   sideDesk = desk();
@@ -1177,8 +1235,8 @@ function go(step) {
     step === 1 ? h('div', { class: 'tr-quick-slot' }, quickBlock()) : null,
     step === 1 ? h('div', { class: 'tr-prog-slot' }, programBlock() ?? '') : null,  ]);
   if (step !== 1 && accessOpen) accessOpen = false;
-  if (step !== 1) zoneOpen = false;
-  if (layers) { accessPins(); zonePaint(); }
+  if (step !== 1) { zoneOpen = false; treeOpen = false; }
+  if (layers) { accessPins(); zonePaint(); treePaint(); }
 }
 async function choose(key, value, btn) {
   watchMe();          // 첫 선택 때 위치를 물어봅니다(코스를 짤 때쯤 준비되도록)
@@ -1499,7 +1557,7 @@ function gardenStrip(s) {
 async function begin(course = null, avoid = []) {
   flushCourse();
   layers.route.clearLayers(); layers.plan.clearLayers(); layers.pins.clearLayers(); layers.garden.clearLayers(); layers.shot.clearLayers(); layers.gshot.clearLayers(); layers.prog.clearLayers(); layers.access.clearLayers();
-  accessOpen = false; zoneOpen = false; zonePaint();
+  accessOpen = false; zoneOpen = false; treeOpen = false; zonePaint(); treePaint();
   clearTreePins();
   trip = { id: Date.now().toString(36), stops: [], idx: 0, course: course?.name ?? null, courseObj: course, fb: { liked: [], disliked: [], bump: {} } };
   mount('tr-s-loading', [h('div', { class: 'tr-loading' },
@@ -2347,6 +2405,7 @@ async function boot() {
   flowTick(); setInterval(flowTick, 5 * 60 * 1000);
   const t0 = performance.now();
   const loadJson = path => fetch(new URL(path, location.href), { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+  loadJson('./data/trees.json').then(t => { TREES = t; document.querySelectorAll('.tr-tree-slot').forEach(x => x.replaceChildren(treeBar() ?? '')); }).catch(() => {});
   loadJson('./data/zoning.json').then(z => { ZONES = z; document.querySelectorAll('.tr-zone-slot').forEach(s => s.replaceChildren(zoneBar() ?? '')); }).catch(() => {});
   try {
     const wxLive = fetchWeather().catch(() => null);
