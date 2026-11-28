@@ -306,6 +306,10 @@ h2{margin:12px 0 10px;font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-sp
 .coupon{border:1.5px solid #2b2a27;padding:8px 10px;border-radius:4px}
 .coupon b{display:block;font-size:13.5px}
 .coupon .cs{font-size:10px;line-height:1.5}
+.coupon .pk{display:flex;align-items:center;gap:9px;margin:7px 0 2px;padding-top:7px;border-top:1px dashed rgba(43,42,39,.45)}
+.coupon .pk-map{flex:none;width:48px;height:auto}
+.coupon .pk-t{font-size:9.5px;line-height:1.45}
+.coupon .pk-t b{display:block;font-size:11px}
 .barcode{display:block;width:100%;height:34px;margin-top:6px}
 .bnum{text-align:center;font-size:9.5px;letter-spacing:.2em}
 .foot{text-align:center;font-size:10.5px;margin-top:10px;line-height:1.6}
@@ -591,7 +595,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
               <div class="done-box">
                 <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
                 <p>기계에서 영수증을 뜯어 가세요.<br>휴대폰에도 같은 영수증이 저장돼요.</p>
-                <div class="wallet" id="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페(예시) · 발급일부터 7일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
+                <div class="wallet" id="wallet"><b>성수 동네 카페 10% 할인</b>제휴 카페 · 발급일부터 3일<br><span class="tg">골라 줘서 고마워요 · 쿠폰 열림</span></div>
               </div>
               <div class="act2">
                 <button class="btn ghost" id="bSave" type="button">📥 영수증 저장</button>
@@ -875,7 +879,7 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
     h += part(5, rt, P);
     h += '<hr class="hr">';
     h += part(6, '<div class="sec">오늘의 기념 소인</div><div class="pmbox"><div class="pm ' + (opt.inkStatic ? 'static' : '') + '">' + postmark(R.date, R.time) + '</div></div>', P);
-    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
+    h += part(7, '<div class="cut"><span>✂ 자르는 선</span></div><div class="coupon"><b>' + giftOf(st).t + '</b><div class="cs">' + giftOf(st).s + '<br>' + giftOf(st).note + '</div>' + (st.gift === 'park' ? '<div class="pk">' + parkMap() + '<div class="pk-t"><b>' + PARK_LOT.name + '</b>' + PARK_LOT.addr + '<br>' + PARK_LOT.info + '<br>나갈 때 이 바코드를 찍어요</div></div>' : '') + barcode(11) + '<div class="bnum">2611 2103 8400 17</div></div>', P);
     h += '<div class="foot"><b>오늘 숲을 나선 ' + Number(R.no) + '번째 사람</b><br>' + R.line + ', 고맙습니다</div>';
     h += '<div class="mini-qr">' + (realQr(PAGE, '#2b2a27') || qrSvg(21, '#2b2a27')) + '</div><div class="c fade" style="font-size:9.5px">이 영수증 페이지 열기</div>';
     return h;
@@ -1026,10 +1030,19 @@ footer{padding:64px 0 72px;text-align:center;font-size:12.5px;color:var(--muted)
   $('#bRate').onclick = function () { view('gift'); };
   // 영수증과 함께 나올 혜택 3가지 중 하나 (모두 예시 — 실제 제휴처는 성동구·상인회와 협의 필요)
   var GIFTS = {
-    cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페(예시) · 발급일부터 7일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
-    park: { ico: '🅿️', t: '주변 공영주차장 1시간 무료', s: '제휴 주차장(예시) · 오늘 하루', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
-    shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍(예시) · 7일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
+    cafe: { ico: '☕', t: '성수 동네 카페 10% 할인', s: '제휴 카페 · 발급일부터 3일', note: '숲에서 충분히 머문 뒤, 동네에서 쓰는 쿠폰' },
+    park: { ico: '🅿️', t: '서울숲공원주차장 1시간 무료', s: '서울숲 안 주차장 · 발급 당일', note: '차로 온 날, 나가는 길 주차비 걱정 끝' },
+    shop: { ico: '🛍️', t: '성수 동네 가게 10% 할인', s: '제휴 소품·편집숍 · 발급일부터 3일', note: '카페 말고도, 성수 골목 가게에서 쓰는 쿠폰' },
   };
+  // 주차 쿠폰에 찍는 주차장 안내 (서울시 실시간 도시데이터 '서울숲공원' 주차장 정보, 서울숲 누리집 주차장 안내 — 2026-11-28 확인)
+  var PARK_LOT = { name: '서울숲공원주차장', addr: '성동구 성수동1가 643', info: '211면 · 24시간', x: 210.1, y: 213.5 };
+  function parkMap() {
+    return '<svg class="pk-map" viewBox="0 0 ' + MAP.w + ' ' + MAP.h + '" aria-label="서울숲 안 주차장 위치">' +
+      '<path d="' + MAP.park + '" fill="#2b2a27" fill-opacity=".06" stroke="#2b2a27" stroke-width="5" stroke-linejoin="round"/>' +
+      '<circle cx="' + PARK_LOT.x + '" cy="' + PARK_LOT.y + '" r="30" fill="#2b2a27"/>' +
+      '<text x="' + PARK_LOT.x + '" y="' + (PARK_LOT.y + 15) + '" text-anchor="middle" font-size="42" font-weight="800" font-family="Nanum Gothic Coding,monospace" fill="#faf8f1">P</text></svg>';
+  }
+
   function giftOf(st) { return GIFTS[st && st.gift] || GIFTS.cafe; }
   $('#gifts').innerHTML = Object.keys(GIFTS).map(function (k) {
     var g = GIFTS[k];
