@@ -9,8 +9,9 @@ import { h } from './ui.js';
 const FLOW_URL = 'https://krseuiwyftqbbdsbvycq.supabase.co/functions/v1/seoul-flow';
 const LV = ['여유', '보통', '약간 붐빔', '붐빔'];
 const ROAD_C = { '원활': '#6af5b0', '서행': '#ffc978', '정체': '#ff7a66' };
-// 하차 급증: 최근 10분 ≥ 80명이면서 그 앞 20분의 10분 평균의 1.5배 이상(잠정 규칙, 검증 필요)
-const SURGE_MIN = 80, SURGE_X = 1.5;
+// 하차 급증: 최근 10분 ≥ 150명이면서 그 앞 20분의 10분 평균의 1.5배 이상(잠정 규칙, 검증 필요)
+// 서울숲역은 하루 약 1만 명이 내려 10분 평균 80~90명 수준(서울시 실시간 도시데이터 2026-11-28) → 80명은 평소 수준이라 150명으로 올림
+export const SURGE_MIN = 150, SURGE_X = 1.5;
 const LOG_KEY = 'sf-tour-autolog-v2';
 
 let flow = null;
@@ -63,7 +64,7 @@ export const roadJam = () => {
 export function soonBusy(live) {
   const sg = surges(), hits = sg.filter(s => s.hit);
   const subTxt = sg.length ? sg.map(s => `${s.name}역 ${Math.round(s.off10)}명`).join(' · ') + ' (10분간 내림)' : '';
-  if (hits.length) return { hot: true, head: '30분 뒤 서울숲이 붐빌 수 있어요', text: `${hits.map(s => `${s.name}역`).join('·')}에서 평소보다 사람이 많이 내리고 있어요`, src: `${subTxt} · 서울시 실시간 도시데이터` };
+  if (hits.length) return { hot: true, head: '30분 뒤 서울숲이 붐빌 수 있어요', text: hits.map(s => `${s.name}역에서 내리는 사람이 직전보다 ${(s.off10 / Math.max(s.before, 1)).toFixed(1)}배 늘었어요`).join(' · '), src: `${subTxt} · 서울시 실시간 도시데이터` };
   if (!live?.level) return sg.length ? { hot: false, head: '30분 뒤에도 지금과 비슷해요', text: '역에서 내리는 사람이 평소 수준이에요', src: subTxt } : null;
   const cur = LV.indexOf(live.level);
   const up = (live.forecast ?? []).slice(0, 3).find(f => LV.indexOf(f.level) > cur);

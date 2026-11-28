@@ -20,7 +20,7 @@ import { mountBasics } from './basics.js?v=6';   // 지도 기본 정보(화장�
 import { fetchLiveCrowd, fmtPeople } from './live.js';
 import { fetchPrograms, upcomingPrograms, pickPrograms, genericPlace } from './programs.js';
 import { mountTreeCam, clearTreePins } from './trees.js?v=13';   // 「이 나무 뭐지?」 카메라로 수종 알아보기
-import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard } from './cityflow.js?v=22';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
+import { refreshFlow, drawFlow, clearFlow, soonBusy, surges, roadJam, recordAuto, autoCard, SURGE_MIN, SURGE_X } from './cityflow.js?v=23';   // 30분 뒤 예측(역 하차 급증·서울시 예측)
 
 const L = window.L;
 const root = document.getElementById('tour');
@@ -551,7 +551,7 @@ function statusBar() {
     : sit.hot ? { cls: 'hot', text: '더운 날이에요. 서울숲 안은 바깥 거리보다 5.5~7.4℃ 낮았어요. 그늘과 물가 위주로 골라 드려요.', src: '2022년 7월 서울숲 실측(조현민·권태경 2022)' }
     : DUST_G.indexOf(dust) >= 2 ? { cls: 'dust', text: `미세먼지 ${dust}이에요. 곤충식물원·나비정원 같은 실내도 생각해 보세요.`, src: `에어코리아 ${w.air.station} 측정소` }
     : sit.busy ? { cls: 'busy', text: `${sit.weekday ? '지금 사람이 몰려 있어요' : '주말 오후엔 사람이 몰려요'}. 붐비는 곳은 피해서 골라 드려요.`, src: '서울숲 보행 계수: 토요일 오후 2시가 가장 붐빔(조현민·권태경 2025)' }
-    : surge ? { cls: 'busy', text: `서울숲역에서 사람이 많이 내리고 있어요(최근 10분 ${surge.text}명). 10~20분 뒤 붐빌 수 있어요(짐작).`, src: '서울시 실시간 도시데이터 · 지하철 승하차 인원' }
+    : surge ? { cls: 'busy', text: `서울숲역에서 내리는 사람이 직전보다 ${surge.x}배 늘었어요(최근 10분 ${surge.text}명). 10~20분 뒤 붐빌 수 있어요(짐작).`, src: '서울시 실시간 도시데이터 · 지하철 승하차 인원' }
     : null;
   const chips = [];
   if (h0) chips.push(h('span', { class: 'tmp' }, h('b', null, `${Math.round(h0.temp)}°`), h0.feels != null && Math.abs(h0.feels - h0.temp) >= 1 ? ` 체감 ${Math.round(h0.feels)}°` : ''));
@@ -604,7 +604,8 @@ function subSurge() {
   const f = access?.subFlow;
   if (!f?.off10 || !f?.off30) return null;
   const now10 = mid(f.off10), before = (mid(f.off30) - now10) / 2;
-  return now10 >= 80 && now10 >= 1.5 * Math.max(before, 1) ? { text: rngTxt(f.off10) } : null;
+  const x = now10 / Math.max(before, 1);
+  return now10 >= SURGE_MIN && x >= SURGE_X ? { text: rngTxt(f.off10), x: x.toFixed(1) } : null;
 }
 /** 「지금」 자세히 안: 지금 공원에 있는 연령대 · 비 · 중랑천 물 · 성수동 거리 센서(하루 늦음) */
 function envCard() {
@@ -764,11 +765,17 @@ function pick(grid, X, Y) {
 // 필지·건물 색
 function parcelLook(r) {
   const inf = infraOf(r[1]);
-  if (inf) return { key: `i:${inf}`, c: INFRA[inf].c, on: !zoneOnly || zoneOnly === `i:${inf}` };
+  if (inf) return { key: `i:${inf}`, c: INFRA[inf].c, on: false };   // 도로·하천은 칠하지 않음
   const z = ZONE_OF[r[0]];
   return { key: `z:${r[0]}`, c: z?.c ?? '#5f6368', on: !zoneOnly || zoneOnly === r[0] };
 }
-function bldgLook(r) { const b = BLDG_OF[r[0]]; return { key: `b:${r[0]}`, c: b?.c ?? '#000', on: !!b && (!zoneOnly || zoneOnly === `b:${r[0]}`) }; }
+function bldgLook(r) {   // 한 용도가 절반이 안 되는 섞인 블록은 옅게(타일과 같게)
+  const b = BLDG_OF[r[0]], top = +((r[2] ?? '').match(/\d+/)?.[0] ?? 100);
+  return { key: `b:${r[0]}`, c: b?.c ?? '#000', a: top < 50 ? .52 : 1, on: !!b && (!zoneOnly || zoneOnly === `b:${r[0]}`) };
+}
+// 이 줌부터는 미리 그린 타일을 늘리지 않고 캔버스로 경계를 또렷하게 직접 그림
+const ZONE_HI = 17.3;
+const darkHex = (c, f = .62) => `rgb(${[1, 3, 5].map(i => Math.round(parseInt(c.slice(i, i + 2), 16) * f)).join(',')})`;
 
 const ZoneCanvas = L.Layer.extend({
   onAdd(map) {
@@ -801,29 +808,33 @@ const ZoneCanvas = L.Layer.extend({
         const b = it.bb; if (b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1) continue;
         if (b[2] - b[0] < minPx && b[3] - b[1] < minPx) continue;   // 1픽셀도 안 되는 건 건너뜀
         const L_ = look(it.r); if (!L_.on) continue;
-        const key = `${L_.c}|${L_.a ?? ''}`;
-        let g = groups.get(key); if (!g) groups.set(key, g = { c: L_.c, a: L_.a, on: L_.on, list: [] }); g.list.push(it.p);
+        const key = `${L_.c}|${L_.a ?? 1}`;
+        let g = groups.get(key); if (!g) groups.set(key, g = { c: L_.c, a: L_.a ?? 1, list: [] }); g.list.push(it.p);
       }
       for (const g of groups.values()) {
         ctx.beginPath();
         for (const p of g.list) { ctx.moveTo(p[0] * s - o.x, p[1] * s - o.y); for (let j = 2; j < p.length; j += 2) ctx.lineTo(p[j] * s - o.x, p[j + 1] * s - o.y); ctx.closePath(); }
-        ctx.globalAlpha = g.on ? (g.a != null ? g.a * alpha / .6 : alpha) : dimA; ctx.fillStyle = g.c; ctx.fill();
-        if (strokeA && g.on) { ctx.globalAlpha = strokeA; ctx.strokeStyle = '#fff'; ctx.lineWidth = lw; ctx.stroke(); }
+        ctx.globalAlpha = alpha * g.a; ctx.fillStyle = g.c; ctx.fill();
+        if (strokeA) { ctx.globalAlpha = strokeA; ctx.strokeStyle = darkHex(g.c); ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.stroke(); }   // 같은 색 계열의 진한 가는 선
       }
     };
-    const isZ = zoneMode === 'zone';   // 고른 한 종류만(나머지는 타일을 흐리게 해서 보임)
-    if (zoneOnly && isZ && ZP?.items) paint(ZP.items, parcelLook, .75, 0, z >= 15 ? .6 : 0, .7);
-    if (zoneOnly && !isZ && ZB?.items) paint(ZB.items, bldgLook, .7, 0, z >= 14 ? .6 : 0, 1);
+    // 범례에서 고른 한 종류만 진하게(나머지는 타일을 흐리게), 아주 가까우면 전부를 타일 대신 캔버스로
+    const isZ = zoneMode === 'zone', hi = z >= ZONE_HI && !zoneOnly;
+    if ((zoneOnly || hi) && isZ && ZP?.items) paint(ZP.items, parcelLook, hi ? .48 : .75, 0, z >= 15 ? .6 : 0, hi ? 1 : .7);
+    if ((zoneOnly || hi) && !isZ && ZB?.items) paint(ZB.items, bldgLook, hi ? .5 : .7, 0, z >= 14 ? .8 : 0, hi ? 1.2 : 1);
     this.ms = Math.round(performance.now() - t0);
   },
 });
-let zoneTip = null, zoneHl = null, zoneHoverRaf = 0, zoneTiles = null;
+let zoneTip = null, zoneHl = null, zoneHoverRaf = 0, zoneTiles = null, zoneHiNow = false;
+const zoneZoom = () => { if ((map.getZoom() >= ZONE_HI) !== zoneHiNow) zoneFilter(); };   // 또렷하게 그리는 줌을 넘나들 때만
 /** 범례에서 한 종류를 고르면: 타일은 흐리게, 그 종류만 캔버스로 진하게 */
 function zoneFilter() {
   if (!zoneTiles) return;
-  zoneTiles.eachLayer(l => l.setOpacity(zoneOnly ? .25 : 1));
+  const hi = map.getZoom() >= ZONE_HI;
+  zoneHiNow = hi;
+  zoneTiles.eachLayer(l => l.setOpacity(zoneOnly ? .25 : hi ? 0 : 1));
   if (zoneLayer?.remove) { map.removeLayer(zoneLayer); zoneLayer = null; }
-  if (!zoneOnly) return;
+  if (!zoneOnly && !hi) return;
   if (zoneMode === 'zone' ? !ZP : !ZB) zoneLoad(zoneMode === 'zone' ? 'p' : 'b');
   zoneLayer = new ZoneCanvas().addTo(map);
 }
@@ -845,7 +856,7 @@ function zoneHover(e) {
   hit.hl = it;
   if (!it) { zoneHl?.remove(); zoneHl = null; zoneTip?.remove(); zoneTip = null; return; }
   const ll = itemLatLngs(it);
-  if (!zoneHl) zoneHl = L.polygon(ll, { pane: 'zone', interactive: false, fill: false, color: '#ffffff', weight: 2.6, opacity: 1 }).addTo(map);
+  if (!zoneHl) zoneHl = L.polygon(ll, { pane: 'zone', interactive: false, fill: false, color: '#ffffff', weight: 2, opacity: 1 }).addTo(map);
   else zoneHl.setLatLngs(ll);
   let html;
   if (it.kind === 'b') {
@@ -929,7 +940,7 @@ function zoneBar() {
 function zonePaint(fly = false) {
   if (!layers?.zone) return;
   layers.zone.clearLayers(); zoneOut();
-  if (zoneTiles) { map.removeLayer(zoneTiles); zoneTiles = null; map.off('mousemove click', zoneMove); map.off('mouseout', zoneOut); }
+  if (zoneTiles) { map.removeLayer(zoneTiles); zoneTiles = null; map.off('mousemove click', zoneMove); map.off('mouseout', zoneOut); map.off('zoomend', zoneZoom); }
   if (zoneLayer?.remove) map.removeLayer(zoneLayer); zoneLayer = null;
   const on = !!ZONES && zoneOpen && st.step === 1 && !trip;
   const was = el.panel.classList.contains('zonemap');
@@ -944,7 +955,7 @@ function zonePaint(fly = false) {
     L.tileLayer(url, { pane: 'zone', minNativeZoom: 13, maxNativeZoom: 16, maxZoom: 20, keepBuffer: 1, bounds: L.latLngBounds([bb[1], bb[0]], [bb[3], bb[2]]), className: 'tr-zone-tiles', errorTileUrl: blank }),
     L.tileLayer(url, { pane: 'zone', minZoom: 16.5, minNativeZoom: 17, maxNativeZoom: 17, maxZoom: 20, keepBuffer: 1, bounds: L.latLngBounds([37.528, 127.024], [37.562, 127.064]), className: 'tr-zone-tiles', errorTileUrl: blank }),
   ]).addTo(map);
-  map.on('mousemove click', zoneMove); map.on('mouseout', zoneOut);
+  map.on('mousemove click', zoneMove); map.on('mouseout', zoneOut); map.on('zoomend', zoneZoom);
   zoneFilter();
   // 동 경계(점선) + 동 이름. 서울숲에 붙은 4개 동만 진하게
   L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: f => ({ fill: false, color: '#ffffff', weight: f.properties.near ? 1.8 : 1.1, opacity: f.properties.near ? .95 : .5, dashArray: '2 5', lineCap: 'round' }) }).addTo(layers.zone);
@@ -1040,7 +1051,7 @@ function accessPins(fly = false) {
     add(s.lat, s.lon, 'sub', `<i>${iconSvg('train', 12)}</i><span>${esc(s.name)}역</span>`,
       head('train', `${s.name}역`, s.line) + (ts.length ? ts.map(t => row(`${t.to}행`, trainMsg(t))).join('') : '<small>도착 정보가 아직 없어요</small>') +
       (f?.off10 ? row('최근 10분 내린 사람', `${rngTxt(f.off10)}명`) + row('최근 30분 내린 사람', f.off30 ? `${rngTxt(f.off30)}명` : null) +
-        (sg ? '<small class="warn">평소보다 많이 내리고 있어요. 10~20분 뒤 공원이 붐빌 수 있어요(짐작)</small>' : '') : ''), 40);
+        (sg ? `<small class="warn">내리는 사람이 직전보다 ${sg.x}배 늘었어요. 10~20분 뒤 공원이 붐빌 수 있어요(짐작)</small>` : '') : ''), 40);
   }
   if (showing('bus')) for (const b of mergeStops(a.bus)) {
     const arr = (b.arrivals ?? []).map(x => ({ ...x, m1: busMin(x.msg1), m2: busMin(x.msg2) })).sort((x, y) => (x.m1 ?? 999) - (y.m1 ?? 999));
