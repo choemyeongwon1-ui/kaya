@@ -307,7 +307,7 @@ function glowTex() {
 export async function openTwin(o) {
   applyAltEdits(loadAltEdits());
   const xy = o.xy, low = !!o.low, M = o.model;
-  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=48'; document.head.appendChild(l); }
+  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=49'; document.head.appendChild(l); }
   const root = document.createElement('div'); root.className = 'tw'; root.innerHTML = '<div class="tw-load"><i></i><span>디지털트윈을 불러오는 중…</span></div>'; if (!o.headless) document.body.appendChild(root);
   if (!M || !M.sat) { root.remove(); throw new Error('만족도 모형(model) 수신 실패'); }
 
@@ -712,12 +712,14 @@ export async function openTwin(o) {
     return (PEDGE = [...m.values()]); };
   const bpWrap = (t, n) => { const out = []; let cur = ''; String(t).split(/(\s+)/).forEach(w => { if ((cur + w).length > n && cur.trim()) { out.push(cur.trim()); cur = w.trimStart(); while (cur.length > n) { out.push(cur.slice(0, n)); cur = cur.slice(n); } } else cur += w; }); if (cur.trim()) out.push(cur.trim()); return out; };
   const bpRnd = (i, t, s) => { const v = Math.sin(i * 127.1 + t * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); };
+  const isPlant = gr => gr.k === 'tree' || gr.k === 'garden' || (gr.k === 'yard' && gr.items.some(y => y.surf !== 'deck'));
   function bpSheet(o) {
     const pl = o.pl, h = pl.h, id = 'bp' + (++BPN), mode = o.mode, out = [];
     const W = 1260, H = 891, FL = 60, FT = 30, FR = 30, FB = 30, TBW = 250, TX = W - FR - TBW;
     const DX0 = FL + 6, DX1 = TX - 6, DY0 = FT + 6, DY1 = H - FB - 6, DW = DX1 - DX0, DH = DY1 - DY0;
     let pts = [];
     if (mode === 'loc') { for (let i = 0; i < N; i++) pts.push([CX[i], CY[i]]); }
+    else if (mode === 'pv') { pts = [[h.x - 25, h.y - 25], [h.x + 25, h.y + 25]]; pl.G.filter(isPlant).forEach(g => g.items.forEach(t => pts.push([t.x, t.y]))); }
     else { pts = [[h.x - 48, h.y - 48], [h.x + 48, h.y + 48]]; if (mode === 'pl') pl.G.forEach(g => g.items.forEach(t => pts.push([t.x, t.y]))); }
     let ex0 = 1e9, ex1 = -1e9, ey0 = 1e9, ey1 = -1e9; pts.forEach(q => { ex0 = Math.min(ex0, q[0]); ex1 = Math.max(ex1, q[0]); ey0 = Math.min(ey0, q[1]); ey1 = Math.max(ey1, q[1]); });
     const pad = mode === 'loc' ? 30 : 10; ex0 -= pad; ex1 += pad; ey0 -= pad; ey1 += pad;
@@ -766,26 +768,26 @@ export async function openTwin(o) {
     if (mode !== 'loc') g.push('<circle cx="' + X(h.x) + '" cy="' + Y(h.y) + '" r="' + (STAY_R * S).toFixed(1) + '" fill="none" stroke="#000" stroke-width="' + L(.18) + '" stroke-dasharray="6 4"/><text class="bp-s" x="' + X(h.x) + '" y="' + (+Y(h.y + STAY_R) - 4) + '" text-anchor="middle">체류공간 범위 R=40m</text>');
     // ── 계획 시설(굵은 선)
     const lg = [], tags = [];
-    if (mode === 'pl') {
-      if (pl.shift && pl.shift.to) { const s = pl.shift; g.push('<polyline points="' + s.pts.map(q => X(q[0]) + ',' + Y(q[1])).join(' ') + '" fill="none" stroke="#000" stroke-width="' + L(.35) + '" stroke-dasharray="10 4 2 4" marker-end="url(#bpa)"/>'); }
-      pl.yards.forEach((y, k) => { g.push('<polygon points="' + poly(Q[y.cell]) + '" fill="url(#' + (y.surf === 'deck' ? 'bpk' : 'bpl') + ')" stroke="#000" stroke-width="' + L(.5) + '"/>'); if (!k) { const r = Q[y.cell]; g.push(dim(r[0], r[1], 16, '20,000')); } });
+    if (mode === 'pl' || mode === 'pv') { const PV = mode === 'pv', gp = x => g.push(PV ? '<g opacity=".22">' + x + '</g>' : x);
+      if (pl.shift && pl.shift.to) { const s = pl.shift; gp('<polyline points="' + s.pts.map(q => X(q[0]) + ',' + Y(q[1])).join(' ') + '" fill="none" stroke="#000" stroke-width="' + L(.35) + '" stroke-dasharray="10 4 2 4" marker-end="url(#bpa)"/>'); }
+      pl.yards.forEach((y, k) => { (y.surf === 'deck' ? gp : x => g.push(x))('<polygon points="' + poly(Q[y.cell]) + '" fill="url(#' + (y.surf === 'deck' ? 'bpk' : 'bpl') + ')" stroke="#000" stroke-width="' + L(.5) + '"/>'); if (!k) { const r = Q[y.cell]; g.push(dim(r[0], r[1], 16, '20,000')); } });
       pl.shade.forEach((t, k) => {
-        if (t.k === 'sail') { g.push(rotG(t, R(8, 8, 'fill="#fff" fill-opacity=".55" stroke="#000" stroke-width="' + L(.5) + '"') + '<path d="M' + (-4 * S) + ',' + (-4 * S) + 'L' + (4 * S) + ',' + (4 * S) + 'M' + (4 * S) + ',' + (-4 * S) + 'L' + (-4 * S) + ',' + (4 * S) + '" stroke="#000" stroke-width="' + L(.13) + '" stroke-dasharray="4 3"/>' + [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(c => '<circle cx="' + (c[0] * 4 * S).toFixed(1) + '" cy="' + (c[1] * 4 * S).toFixed(1) + '" r="' + Math.max(1.6, .2 * S).toFixed(1) + '" fill="#000"/>').join('')));
-          if (!pl.shade.slice(0, k).some(u => u.k === 'sail')) { const c = Math.cos(t.rot || 0), s2 = Math.sin(t.rot || 0), P = (u, v) => [t.x + u * c - v * s2, t.y + u * s2 + v * c]; g.push(dim(P(-4, -4), P(4, -4), -14, '8,000')); } }
+        if (t.k === 'sail') { gp(rotG(t, R(8, 8, 'fill="#fff" fill-opacity=".55" stroke="#000" stroke-width="' + L(.5) + '"') + '<path d="M' + (-4 * S) + ',' + (-4 * S) + 'L' + (4 * S) + ',' + (4 * S) + 'M' + (4 * S) + ',' + (-4 * S) + 'L' + (-4 * S) + ',' + (4 * S) + '" stroke="#000" stroke-width="' + L(.13) + '" stroke-dasharray="4 3"/>' + [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(c => '<circle cx="' + (c[0] * 4 * S).toFixed(1) + '" cy="' + (c[1] * 4 * S).toFixed(1) + '" r="' + Math.max(1.6, .2 * S).toFixed(1) + '" fill="#000"/>').join('')));
+          if (!pl.shade.slice(0, k).some(u => u.k === 'sail')) { const c = Math.cos(t.rot || 0), s2 = Math.sin(t.rot || 0), P = (u, v) => [t.x + u * c - v * s2, t.y + u * s2 + v * c]; if (!PV) g.push(dim(P(-4, -4), P(4, -4), -14, '8,000')); } }
         else g.push('<g stroke="#000"><circle cx="' + X(t.x) + '" cy="' + Y(t.y) + '" r="' + (4.5 * S).toFixed(1) + '" fill="#fff" fill-opacity=".6" stroke-width="' + L(.4) + '"/>' + Array.from({ length: 10 }, (_, j) => { const a = j * Math.PI / 5, r1 = 4.5 * S, r2 = 3.3 * S; return '<line x1="' + (+X(t.x) + Math.cos(a) * r1).toFixed(1) + '" y1="' + (+Y(t.y) + Math.sin(a) * r1).toFixed(1) + '" x2="' + (+X(t.x) + Math.cos(a) * r2).toFixed(1) + '" y2="' + (+Y(t.y) + Math.sin(a) * r2).toFixed(1) + '" stroke-width="' + L(.13) + '"/>'; }).join('') + '<circle cx="' + X(t.x) + '" cy="' + Y(t.y) + '" r="1.6" fill="#000"/></g>');
       });
-      pl.benches.forEach(t => g.push(rotG(t, '<g fill="#000"><rect x="' + (-2.1 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/><rect x="' + (.3 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/></g>')));
-      if (pl.shift && pl.shift.sign) { const t = pl.shift.sign; g.push('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><rect x="-6" y="-6" width="12" height="12" fill="#000"/><text class="bp-i" y="3.6" text-anchor="middle">S</text></g>'); }
+      pl.benches.forEach(t => gp(rotG(t, '<g fill="#000"><rect x="' + (-2.1 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/><rect x="' + (.3 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/></g>')));
+      if (pl.shift && pl.shift.sign) { const t = pl.shift.sign; gp('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><rect x="-6" y="-6" width="12" height="12" fill="#000"/><text class="bp-i" y="3.6" text-anchor="middle">S</text></g>'); }
       pl.extra.forEach(t => {
         if (t.k === 'garden') g.push(rotG(t, R(7, 3.4, 'fill="url(#bpf)" stroke="#000" stroke-width="' + L(.4) + '"')));
-        else if (t.k === 'toilet') g.push(rotG(t, R(4, 2.6, 'fill="url(#bpb)" stroke="#000" stroke-width="' + L(.5) + '"') + '<text class="bp-i2" y="3" text-anchor="middle">WC</text>'));
-        else g.push('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><circle r="' + Math.max(5, 1.2 * S).toFixed(1) + '" fill="#fff" stroke="#000" stroke-width="' + L(.4) + '"/><text class="bp-i2" y="3" text-anchor="middle">P</text></g>');
+        else if (t.k === 'toilet') gp(rotG(t, R(4, 2.6, 'fill="url(#bpb)" stroke="#000" stroke-width="' + L(.5) + '"') + '<text class="bp-i2" y="3" text-anchor="middle">WC</text>'));
+        else gp('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><circle r="' + Math.max(5, 1.2 * S).toFixed(1) + '" fill="#fff" stroke="#000" stroke-width="' + L(.4) + '"/><text class="bp-i2" y="3" text-anchor="middle">P</text></g>');
       });
       // 단면 지시선 A–A′
       const ax = +X(h.x - 70), bx = +X(h.x + 70), yy = +Y(h.y);
-      g.push('<line x1="' + ax + '" y1="' + yy + '" x2="' + bx + '" y2="' + yy + '" stroke="#000" stroke-width="' + L(.25) + '" stroke-dasharray="16 4 3 4"/>' + [[ax, 'A'], [bx, 'A′']].map(q => '<path d="M' + q[0] + ',' + yy + 'v-14" stroke="#000" stroke-width="' + L(.5) + '" marker-end="url(#bpa)"/><circle cx="' + q[0] + '" cy="' + (yy + 13) + '" r="9" fill="#fff" stroke="#000" stroke-width="' + L(.25) + '"/><text class="bp-n" x="' + q[0] + '" y="' + (yy + 17) + '" text-anchor="middle">' + q[1] + '</text>').join(''));
+      if (!PV) g.push('<line x1="' + ax + '" y1="' + yy + '" x2="' + bx + '" y2="' + yy + '" stroke="#000" stroke-width="' + L(.25) + '" stroke-dasharray="16 4 3 4"/>' + [[ax, 'A'], [bx, 'A′']].map(q => '<path d="M' + q[0] + ',' + yy + 'v-14" stroke="#000" stroke-width="' + L(.5) + '" marker-end="url(#bpa)"/><circle cx="' + q[0] + '" cy="' + (yy + 13) + '" r="9" fill="#fff" stroke="#000" stroke-width="' + L(.25) + '"/><text class="bp-n" x="' + q[0] + '" y="' + (yy + 17) + '" text-anchor="middle">' + q[1] + '</text>').join(''));
       // 번호 꼬리표(수량표 번호)
-      pl.G.forEach((gr, i) => { const ox = +X(gr.at[0]), oy = +Y(gr.at[1]), tx = ox + 26, ty = oy - 26; tags.push('<line x1="' + ox + '" y1="' + oy + '" x2="' + (tx - 7) + '" y2="' + (ty + 7) + '" stroke="#000" stroke-width="' + L(.13) + '"/><circle cx="' + ox + '" cy="' + oy + '" r="1.5" fill="#000"/><circle cx="' + tx + '" cy="' + ty + '" r="10" fill="#fff" stroke="#000" stroke-width="' + L(.3) + '"/><text class="bp-n" x="' + tx + '" y="' + (ty + 4.5) + '" text-anchor="middle">' + (i + 1) + '</text>'); });
+      (PV ? pl.G.filter(isPlant) : pl.G).forEach((gr, i) => { const ox = +X(gr.at[0]), oy = +Y(gr.at[1]), tx = ox + 26, ty = oy - 26; tags.push('<line x1="' + ox + '" y1="' + oy + '" x2="' + (tx - 7) + '" y2="' + (ty + 7) + '" stroke="#000" stroke-width="' + L(.13) + '"/><circle cx="' + ox + '" cy="' + oy + '" r="1.5" fill="#000"/><circle cx="' + tx + '" cy="' + ty + '" r="10" fill="#fff" stroke="#000" stroke-width="' + L(.3) + '"/><text class="bp-n" x="' + tx + '" y="' + (ty + 4.5) + '" text-anchor="middle">' + (i + 1) + '</text>'); });
     }
     // 거점 표시
     if (mode === 'loc') g.push('<circle cx="' + X(h.x) + '" cy="' + Y(h.y) + '" r="' + Math.max(9, STAY_R * S).toFixed(1) + '" fill="none" stroke="#000" stroke-width="' + L(.7) + '"/><line x1="' + (+X(h.x) + Math.max(9, STAY_R * S) * .7).toFixed(1) + '" y1="' + (+Y(h.y) - Math.max(9, STAY_R * S) * .7).toFixed(1) + '" x2="' + (+X(h.x) + 70) + '" y2="' + (+Y(h.y) - 60) + '" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-h" x="' + (+X(h.x) + 74) + '" y="' + (+Y(h.y) - 62) + '">대상지: ' + esc(h.name) + '</text>');
@@ -812,16 +814,19 @@ export async function openTwin(o) {
       bn: ['(계획) 벤치 2개 1조', s => '<rect x="8" y="5" width="9" height="4" fill="#000"/><rect x="19" y="5" width="9" height="4" fill="#000"/>'], sg: ['(계획) 분산 유도 안내판', s => '<rect x="12" y="1" width="12" height="12" fill="#000"/><text class="bp-i" x="18" y="10.6" text-anchor="middle">S</text>'],
       rt: ['(계획) 분산 유도 동선', s => '<line x1="2" y1="7" x2="32" y2="7" stroke="#000" stroke-width="1" stroke-dasharray="8 3 2 3" marker-end="url(#bpa)"/>'], gd: ['(계획) 계절 정원', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpf)" stroke="#000" stroke-width="1.2"/>'],
       wc: ['(계획) 모듈형 화장실', s => '<rect x="6" y="1" width="24" height="12" fill="url(#bpb)" stroke="#000" stroke-width="1.5"/>'], ph: ['(계획) 포토존', s => '<circle cx="18" cy="7" r="6" fill="#fff" stroke="#000" stroke-width="1.2"/><text class="bp-i2" x="18" y="10" text-anchor="middle">P</text>'],
+      pf: ['(참고) 시설물 — 흐린 선', s => '<rect x="6" y="2" width="24" height="10" fill="#fff" stroke="#000" stroke-width="1.2" opacity=".25"/>'],
       sc: ['단면 위치', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width=".8" stroke-dasharray="9 2 2 2"/>'] };
-    const ks = mode === 'loc' ? ['bd', 'rd', 'wt', 'bl', 'hb'] : ['bd', 'rd', 'et', 'lw0', 'wt', 'bl', 'st'].concat(mode === 'pl' ? [].concat(pl.yards.some(y => y.surf === 'deck') ? ['dk'] : [], pl.yards.some(y => y.surf !== 'deck') ? ['lw'] : [], pl.shade.some(t => t.k === 'sail') ? ['sl'] : [], pl.shade.some(t => t.k === 'tree') ? ['tr'] : [], pl.benches.length ? ['bn'] : [], pl.shift && pl.shift.sign ? ['sg'] : [], pl.shift && pl.shift.to ? ['rt'] : [], pl.extra.some(t => t.k === 'garden') ? ['gd'] : [], pl.extra.some(t => t.k === 'toilet') ? ['wc'] : [], pl.extra.some(t => t.k === 'photo') ? ['ph'] : [], ['sc']) : []);
+    const ks = mode === 'loc' ? ['bd', 'rd', 'wt', 'bl', 'hb'] : mode === 'pv' ? ['bd', 'rd', 'et', 'lw0', 'wt', 'st'].concat(pl.yards.some(y => y.surf !== 'deck') ? ['lw'] : [], pl.shade.some(t => t.k === 'tree') ? ['tr'] : [], pl.extra.some(t => t.k === 'garden') ? ['gd'] : [], ['pf']) : ['bd', 'rd', 'et', 'lw0', 'wt', 'bl', 'st'].concat(mode === 'pl' ? [].concat(pl.yards.some(y => y.surf === 'deck') ? ['dk'] : [], pl.yards.some(y => y.surf !== 'deck') ? ['lw'] : [], pl.shade.some(t => t.k === 'sail') ? ['sl'] : [], pl.shade.some(t => t.k === 'tree') ? ['tr'] : [], pl.benches.length ? ['bn'] : [], pl.shift && pl.shift.sign ? ['sg'] : [], pl.shift && pl.shift.to ? ['rt'] : [], pl.extra.some(t => t.k === 'garden') ? ['gd'] : [], pl.extra.some(t => t.k === 'toilet') ? ['wc'] : [], pl.extra.some(t => t.k === 'photo') ? ['ph'] : [], ['sc']) : []);
     hd('범 례'); ks.forEach(k => { tb.push('<g transform="translate(' + (TX + 10) + ',' + (ty + 3) + ')">' + LEG[k][1]() + '</g><text class="bp-s" x="' + (TX + 54) + '" y="' + (ty + 13) + '">' + LEG[k][0] + '</text>'); ty += 15; }); ty += 4;
     tb.push('<line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#000" stroke-width="' + L(.18) + '"/>');
     // 수량표
-    if (mode === 'pl' && pl.G.length) { hd('시설물 수량표'); const rows = planRows(pl);
-      tb.push('<text class="bp-th2" x="' + (TX + 13) + '" y="' + (ty + 12) + '" text-anchor="middle">번호</text><text class="bp-th2" x="' + (TX + 110) + '" y="' + (ty + 12) + '" text-anchor="middle">시설 · 규격</text><text class="bp-th2" x="' + (TX + 226) + '" y="' + (ty + 12) + '" text-anchor="middle">수량</text>'); ty += 17;
+    const pvRows = () => { const out = []; pl.G.filter(isPlant).forEach((gr, i) => { const n = String(i + 1); if (gr.k === 'tree') out.push([n, (shadeSpecies() || '활엽 교목') + ' (H4.5×R15~R20, 녹음수)', gr.items.length + '주']); else if (gr.k === 'garden') out.push([n, '계절 초화 (' + GARDEN_M2 + '㎡×' + gr.items.length + '곳, 40~64본/㎡)', (40 * GARDEN_M2 * gr.items.length).toLocaleString() + '~' + (64 * GARDEN_M2 * gr.items.length).toLocaleString() + '본']); else { const m = gr.items.filter(y => y.surf !== 'deck').length; out.push([n, '잔디 평떼 (20×20m 칸 ' + m + '곳)', (CELL_M2 * m).toLocaleString() + '㎡']); } });
+      const ti = treeInfo(h); if (ti) out.push(['—', '기존 수목 보존 (위성 추정, 매목조사 필요)', '약 ' + ti.est + '주']); return out; };
+    if ((mode === 'pl' && pl.G.length) || mode === 'pv') { hd(mode === 'pv' ? '수목·지피 수량표' : '시설물 수량표'); const rows = mode === 'pv' ? pvRows() : planRows(pl).map(rw => [rw[0], rw[1] + ' (' + rw[2] + ')', rw[3]]);
+      tb.push('<text class="bp-th2" x="' + (TX + 13) + '" y="' + (ty + 12) + '" text-anchor="middle">번호</text><text class="bp-th2" x="' + (TX + 110) + '" y="' + (ty + 12) + '" text-anchor="middle">' + (mode === 'pv' ? '수종 · 규격' : '시설 · 규격') + '</text><text class="bp-th2" x="' + (TX + 226) + '" y="' + (ty + 12) + '" text-anchor="middle">수량</text>'); ty += 17;
       tb.push('<line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#000" stroke-width="' + L(.13) + '"/>');
-      rows.forEach(rw => { const ls = bpWrap(rw[1] + ' (' + rw[2] + ')', 18), y0 = ty; ls.forEach((l, j) => tb.push('<text class="bp-s" x="' + (TX + 30) + '" y="' + (ty + 12 + j * 12) + '">' + esc(l) + '</text>')); ty += ls.length * 12 + 6;
-        tb.push('<text class="bp-s" x="' + (TX + 13) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + rw[0] + '</text><text class="bp-s" x="' + (TX + 226) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + esc(rw[3]) + '</text><line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#999" stroke-width=".4"/>'); });
+      rows.forEach(rw => { const ls = bpWrap(rw[1], 18), y0 = ty; ls.forEach((l, j) => tb.push('<text class="bp-s" x="' + (TX + 30) + '" y="' + (ty + 12 + j * 12) + '">' + esc(l) + '</text>')); ty += ls.length * 12 + 6;
+        tb.push('<text class="bp-s" x="' + (TX + 13) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + rw[0] + '</text><text class="bp-s" x="' + (TX + 226) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + esc(rw[2]) + '</text><line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#999" stroke-width=".4"/>'); });
       tb.push('<line x1="' + (TX + 26) + '" y1="' + (ty - 0) + '" x2="' + (TX + 26) + '" y2="' + (ty - 0) + '"/>'); ty += 4; }
     // 비고
     const TBH = 238, notes = (o.notes || []).map((t, i) => (i + 1) + '. ' + t);
@@ -1830,6 +1835,7 @@ export async function openTwin(o) {
     keys.forEach((k, n) => {
       const pl = set[k], no = 'L-1' + String(n + 1).padStart(2, '0'), b = bpSheet({ mode: 'pl', rel: 'L-002, L-2' + String(n + 1).padStart(2, '0') + ', D-001', pl, no, title: (keys.length > 1 ? k + '안 ' : '') + '시설물배치도', date: dt, notes: NOTE0.concat(['번호 = 수량표 번호', 'A–A′ = 단면도 L-2' + String(n + 1).padStart(2, '0') + ' 위치', '치수 단위 mm']) });
       sheets.push({ full: true, no, name: ALT[k].name + ' 시설물배치도', svg: b.svg, scale: A3(b.scale) });
+      if (pl.G.some(isPlant)) { const vno = 'L-3' + String(n + 1).padStart(2, '0'), v = bpSheet({ mode: 'pv', rel: no + ', D-001', pl, no: vno, title: (keys.length > 1 ? k + '안 ' : '') + '식재평면도', date: dt, notes: ['기본구상(개략) 도면 — 실시설계 아님', '수종·규격: 단가 조사 규격 — 생육 여건 현장 확인', '초화 밀도 40~64본/㎡(수원시 저관리형 숲 조성 매뉴얼 표3-4)', '기존 수목 보존 — 위성 추정(매목조사 필요)', '흐린 선 = 시설물(' + no + ' 참조)'] }); sheets.push({ full: true, no: vno, name: ALT[k].name + ' 식재평면도', svg: v.svg, scale: A3(v.scale) }); }
       const sno = 'L-2' + String(n + 1).padStart(2, '0'), sv = bpSectionSheet(pl, sno, no + ', D-001', dt);
       sheets.push({ more: true, full: true, no: sno, name: ALT[k].name + ' 단면도 A–A′', svg: sv.svg, scale: sv.scale });
     });
@@ -1987,7 +1993,7 @@ export async function openTwin(o) {
       '<section class="tw-doc fm-doc"><p class="fm-draft">※ 초안 — 결재 전 작성 부서·직위·성명·연락처 기입 · 서식: 「행정업무의 운영 및 혁신에 관한 규정 시행규칙」 제4조·별지 제1호서식(행정안전부령 제408호, 2023. 6. 28. 시행)</p><div class="fm-org">서울특별시</div>' +
       '<table class="fm-hd"><tr><th>수신</th><td>내부결재</td></tr><tr><th>(경유)</th><td></td></tr><tr><th>제목</th><td>' + esc(d.subj) + '</td></tr></table><div class="fm-rule"></div>' +
       '<div class="fm-bd"><p>1. 관련: ' + esc(d.rel) + '</p><p>2. ' + esc(d.subj.replace(/ 검토 보고$/, '')) + '에 대하여 아래와 같이 검토 결과를 보고합니다.</p>' + d.body.map((x, q) => '<p class="sub">' + '가나다라마'[q] + '. ' + esc(x) + '</p>').join('') + '</div>' +
-      '<p class="fm-att">붙임&nbsp;&nbsp;1. 검토 보고서 1부.<br><span class="fm-att2">2. 현황·대안 비교 화면(현장 사진 대체) 1부.</span><br><span class="fm-att2">3. 기본설계 도면(위치도·현황도·시설물배치도·단면도·상세도) 1부.</span><br><span class="fm-att2">4. 소관부서 검토 의견서 1부.&nbsp;&nbsp;끝.</span></p>' +
+      '<p class="fm-att">붙임&nbsp;&nbsp;1. 검토 보고서 1부.<br><span class="fm-att2">2. 현황·대안 비교 화면(현장 사진 대체) 1부.</span><br><span class="fm-att2">3. 기본설계 도면(위치도·현황도·시설물배치도·식재평면도·단면도·상세도) 1부.</span><br><span class="fm-att2">4. 소관부서 검토 의견서 1부.&nbsp;&nbsp;끝.</span></p>' +
       '<table class="fm-gy"><tr><th>기안자</th><th>검토자</th><th>검토자</th><th>결재권자</th></tr><tr><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + ' 주무관<br>○○○</td><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + '장<br>○○○</td><td>서울숲관리사무소장<br>○○○</td><td>' + esc(DOC.to) + '<br>(서명)</td></tr>' +
       '<tr><th>협조자</th><td colspan="3">' + esc(DOC.cc) + '</td></tr></table>' +
       '<table class="fm-ft"><tr><th>시행</th><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + '-0000 (' + fd.d + ')</td><th>접수</th><td></td></tr>' +
@@ -1998,7 +2004,7 @@ export async function openTwin(o) {
       '<div class="fm-sum"><b>검토 요지</b>' + fl(d.body.slice(0, 2)) + '</div>' +
       chap +
       (apx.length ? '<h4 class="fm-h1 fm-ref">참고 자료</h4>' + apx.map(sx => '<h5 class="fm-h2">' + esc(sx.h) + '</h5>' + body(sx)).join('') : '') +
-      '<p class="tw-n fm-end">모형 예상 점수와 개략 단가로 만든 검토 보고서로, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 함. 항목 기호(□ ○ -)는 같은 시행규칙 제2조제1항 단서에 따름. 글꼴(제목 고딕·본문 명조)은 공식 규정이 아닌 관행.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터임.' : '') + '</p></section>' +
+      '<p class="tw-n fm-end">모형 예상 점수와 개략 단가로 만든 검토 보고서로, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 함. 항목 기호(□ ○ -)는 같은 시행규칙 제2조제1항 단서에 따름. 글꼴은 맑은 고딕 한 가지로 통일(공식 글꼴 규정 없음).' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터임.' : '') + '</p></section>' +
       // 붙임 1: 지금/개선 후 비교 그림
       '<section class="tw-dwg"><header><span>붙임 2 · 현황 / 대안 적용 비교 화면</span><span>' + r.date + '</span></header><h1>디지털트윈 비교 (좌: 현황 · 우: 대안 적용)</h1>' +
       KS.map(k => shots[k] ? '<h4>' + ALT[k].name + '</h4><img class="tw-shot" src="' + shots[k] + '" alt="' + ALT[k].name + ' 지금과 개선 후 3D 비교">' : '').join('') +
