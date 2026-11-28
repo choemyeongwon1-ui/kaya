@@ -718,7 +718,7 @@ const mixTxt = s => [...(s ?? '').matchAll(/([a-z])(\d+)/g)].map(([, g, p]) => `
 const ZONE_OF = Object.fromEntries(ZONE_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const BLDG_OF = Object.fromEntries(BLDG_GROUPS.flatMap(g => g.items.map(([k, t, c, d]) => [k, { k, t, c, d, g: g.key }])));
 const JIMOK = { 대: '대지', 전: '밭', 답: '논', 임: '임야', 잡: '잡종지', 학: '학교용지', 종: '종교용지', 창: '창고용지', 장: '공장용지', 차: '주차장', 주: '주유소용지', 체: '체육용지', 원: '유원지', 사: '사적지', 묘: '묘지', 목: '목장용지', 과: '과수원', 광: '광천지', 염: '염전', 양: '양어장', 도: '도로', 철: '철도용지', 천: '하천', 구: '구거', 유: '유지', 제: '제방', 수: '수도용지', 공: '공원' };
-let ZONES = null, ZP = null, ZB = null, ZZ = null, zoneOpen = false, zoneOnly = null, zonePlans = true, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
+let ZONES = null, ZP = null, ZB = null, ZZ = null, zoneOpen = false, zoneOnly = null, zonePlans = false, zoneMode = 'zone', zoneLayer = null, zoneLoading = {};
 const pctTxt = p => p >= .995 ? '100%' : p >= .01 ? `${Math.round(p * 100)}%` : p > 0 ? '1% 미만' : '';
 
 // 위경도 → 줌 0 픽셀(웹 메르카토르)
@@ -980,11 +980,10 @@ function zonePaint(fly = false) {
   ]).addTo(map);
   map.on('mousemove click', zoneMove); map.on('mouseout', zoneOut); map.on('zoomend', zoneZoom);
   zoneFilter();
-  // 동 경계(점선) + 동 이름. 서울숲에 붙은 4개 동만 진하게
-  L.geoJSON(ZONES.dongs, { pane: 'zone', interactive: false, style: f => ({ fill: false, color: '#ffffff', weight: f.properties.near ? 1.8 : 1.1, opacity: f.properties.near ? .95 : .5, dashArray: '2 5', lineCap: 'round' }) }).addTo(layers.zone);
+  // 동 이름만(경계 점선은 지저분해 뺌). 서울숲에 붙은 4개 동만 진하게
   for (const f of ZONES.dongs.features)
     L.marker(f.properties.at, { interactive: false, zIndexOffset: 800, icon: L.divIcon({ className: '', html: `<div class="tr-zone-dong${f.properties.near ? ' near' : ''}">${esc(f.properties.n)}</div>`, iconSize: [0, 0] }) }).addTo(layers.zone);
-  if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#3f5a5e', weight: 2, opacity: .9, dashArray: '8 5' },
+  if (zonePlans) L.geoJSON(ZONES.plans, { pane: 'zone', style: { fill: false, color: '#eef3f4', weight: 1.4, opacity: .85 },
     onEachFeature: (f, l) => l.bindTooltip(`<b>${esc(f.properties.n)}</b><small>지구단위계획구역 · ${f.properties.ha}ha</small>`, { sticky: true, direction: 'top', className: 'tr-zone-tip' }) }).addTo(layers.zone);
   // 필지가 보이게 서울숲 둘레를 가까이(넓은 화면은 왼쪽 카드 칸까지 비킴). 더 넓게는 손으로 줄여서
   const sideW = desk() && !el.side.hidden ? el.side.getBoundingClientRect().right + 20 : 0;
