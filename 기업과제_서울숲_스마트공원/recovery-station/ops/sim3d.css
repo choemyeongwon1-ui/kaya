@@ -456,3 +456,182 @@
 .tw-pop .tw-ct{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}.tw-pop .tw-ct th,.tw-pop .tw-ct td{padding:4px 5px;border-bottom:1px solid rgba(241,247,243,.08);text-align:left;vertical-align:top}
 .tw-rvn{margin:14px 0 0;font-size:12px;color:rgba(241,247,243,.45)}.tw-rvn .tw-edbtn{margin-left:4px}
 @media(max-width:899px){.tw-pop{width:auto;right:14px;top:auto;height:52%}.tw-top .tw-vsw button small{display:none}}
+/* 검토 자료 인쇄: 고른 안이 있을 때만, 아이콘 붙은 주 버튼 + 고른 안 창 아래 큰 버튼 */
+.tw .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tw-top .tw-prt{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;font-size:13.5px;box-shadow:0 6px 18px -6px rgba(106,245,176,.75)}
+.tw-top .tw-prt[hidden]{display:none!important}
+.tw-popcta{padding:12px 14px 14px;border-top:1px solid rgba(241,247,243,.12);background:rgba(6,14,10,.6)}
+.tw-cta{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border:0;border-radius:14px;background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a;text-align:left;cursor:pointer;box-shadow:0 10px 26px -10px rgba(106,245,176,.8);transition:transform .15s,box-shadow .15s}
+.tw-cta .ico{width:24px;height:24px}
+.tw-cta span{flex:1;display:grid;gap:2px}.tw-cta b{font-size:15.5px;font-weight:900}.tw-cta small{font-size:12px;font-weight:600;color:rgba(4,38,26,.72)}
+.tw-cta i{font-style:normal;font-size:20px;font-weight:900}
+.tw-cta:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(106,245,176,.95)}
+/* 자료 도구줄: 화면 아래에 붙어 있고, 인쇄가 맨 앞 주 버튼 */
+.tw-rabar{position:sticky;bottom:-26px;z-index:2;margin:18px -40px -26px;padding:12px 20px;background:#fff;border-top:1px solid #dfe6e2;border-radius:0 0 14px 14px;justify-content:flex-start;align-items:center;box-shadow:0 -8px 20px -12px rgba(0,0,0,.25)}
+.tw-rabar .sp{flex:1}
+.tw-rabar{flex-wrap:nowrap;gap:6px}.tw-rabar button{white-space:nowrap;padding:8px 12px;flex:none}
+.tw-rabar button:first-child{background:#fff;border-color:#c9d3ce;color:#14201a!important}
+.tw-rabar button.pri{display:inline-flex;align-items:center;gap:7px;background:#0b7a45!important;border-color:#0b7a45!important;color:#fff!important;font-size:14px;padding:10px 20px}
+@media(max-width:899px){.tw-rabar{margin:18px -18px -22px;bottom:-22px;padding:10px 12px}.tw-rabar .sp{display:none}}
+/* 검토 화면: 상황 하나(붐비는 여름 주말) — 통합 만족도 크게, 붐빌 때·더울 때는 아래 작게 */
+.tw-kpm{grid-column:1/-1}
+.tw-kpm>span{font-size:15px}.tw-kpm>span b.up,.tw-kpm>span b{font-size:24px}
+.tw-kpm p{margin:6px 0 0;font-size:12.5px;color:rgba(241,247,243,.7)}.tw-kpm p b{font-size:13px;color:#f1f7f3}.tw-kpm p b.up{color:#6af5b0}
+.tw-kpm p small{display:block;margin-top:2px;font-size:11px;color:rgba(241,247,243,.45)}
+
+/* 고른 안 창: 핵심 먼저(효과 → 비용·기간 → 하는 일 → 장단점 한 줄), 나머지는 「자세히 보기」 */
+.tw-hero{padding:14px 14px 12px;border-radius:14px;background:linear-gradient(150deg,rgba(106,245,176,.16),rgba(106,245,176,.03));border:1px solid rgba(106,245,176,.3)}
+.tw-hero small{font-size:12px;color:rgba(241,247,243,.6)}
+.tw-hero .n{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px}
+.tw-hero .n span{font-size:22px;font-weight:700;color:rgba(241,247,243,.55)}.tw-hero .n i{font-style:normal;color:rgba(241,247,243,.45)}
+.tw-hero .n b{font-size:40px;font-weight:900;line-height:1;color:#f1f7f3}.tw-hero .n em{font-style:normal;font-size:14px;color:rgba(241,247,243,.7)}
+.tw-hero .n u{margin-left:auto;text-decoration:none;font-size:18px;font-weight:900;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.08)}.tw-hero .n u.up{background:#6af5b0;color:#04261a}
+.tw-hero p{margin:6px 0 8px;font-size:14px;font-weight:700;color:#f1f7f3}
+.tw-hero .two{display:flex;gap:6px}.tw-hero .two span{flex:1;font-size:12.5px;color:rgba(241,247,243,.65);padding:6px 9px;border-radius:9px;background:rgba(0,0,0,.2)}.tw-hero .two b{margin-left:4px;color:#f1f7f3}.tw-hero .two b.up{color:#6af5b0}
+.tw-facts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.tw-facts span{padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(241,247,243,.08)}.tw-facts small{display:block;font-size:11.5px;color:rgba(241,247,243,.5)}.tw-facts b{font-size:15px}
+.tw-popb .tw-h4{margin:16px 0 6px}
+.tw-do{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.tw-do li{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.tw-do .no{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#0b7a45;color:#fff;font-size:13px;flex:none}
+.tw-pc1{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
+.tw-pc1 li{font-size:12.5px;line-height:1.45;padding-left:20px;position:relative;color:rgba(241,247,243,.82)}
+.tw-pc1 li::before{position:absolute;left:0;font-weight:900}.tw-pc1 .pro::before{content:'\2714';color:#6af5b0}.tw-pc1 .con::before{content:'\2716';color:#ff9d5c}
+.tw-deep{margin-top:16px;border-top:1px solid rgba(241,247,243,.1);padding-top:10px}
+.tw-deep>summary{cursor:pointer;font-size:13px;font-weight:800;color:rgba(241,247,243,.85);list-style:none}
+.tw-deep>summary::-webkit-details-marker{display:none}
+.tw-deep>summary::after{content:' \25BE';color:rgba(241,247,243,.5)}.tw-deep[open]>summary::after{content:' \25B4'}
+.tw-deep>summary small{display:block;font-size:11.5px;font-weight:500;color:rgba(241,247,243,.45);margin-top:2px}
+.tw-deep[open]>summary{margin-bottom:10px}
+
+/* 얼마 드나: 항목별 금액 */
+.tw-cost{border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(241,247,243,.08);overflow:hidden}
+.tw-cost ul{list-style:none;margin:0;padding:6px 12px}
+.tw-cost li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;font-size:12.5px;border-bottom:1px dashed rgba(241,247,243,.08)}
+.tw-cost li:last-child{border-bottom:0}
+.tw-cost li span small{color:rgba(241,247,243,.5);margin-left:3px}
+.tw-cost li b{text-align:right;font-weight:800;white-space:nowrap}.tw-cost li b small{display:block;font-weight:500;font-size:11px;color:rgba(241,247,243,.5)}
+.tw-cost em.q{font-style:normal;color:#ffc861}
+.tw-cost .tot,.tw-cost .per{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:9px 12px;background:rgba(255,255,255,.04);border-top:1px solid rgba(241,247,243,.08)}
+.tw-cost .tot span,.tw-cost .per span{font-size:12px;color:rgba(241,247,243,.6)}.tw-cost .tot b{font-size:15px}.tw-cost .per b{font-size:14px;margin-left:auto}.tw-cost .per small{font-size:11px;color:rgba(241,247,243,.45)}
+.tw-cost .ref{padding:0 12px 8px;font-size:11.5px;color:rgba(241,247,243,.55);background:rgba(255,255,255,.04)}
+.tw-pc3{margin-top:14px}.tw-pc3 li{font-size:12.5px}
+.tw-cost li b,.tw-cost li b em.q{font-size:12.5px!important;font-weight:800}.tw-cost li b em.q{color:#ffc861}
+
+/* 스크롤 렉: 고른 안 창을 따로 한 겹(레이어)으로 올려, 내릴 때 3D 캔버스까지 다시 칠하지 않게 */
+.tw-pop{will-change:transform;contain:layout paint}
+.tw-popb{will-change:scroll-position;overscroll-behavior:contain}
+.tw-report{will-change:scroll-position;overscroll-behavior:contain}
+
+/* 왜 이 안을 냈나: 기준 점검 */
+.tw-crit{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.tw-crit li{display:grid;grid-template-columns:62px 1fr auto;gap:2px 8px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.035);border-left:3px solid rgba(241,247,243,.2)}
+.tw-crit li.over{border-left-color:#ff9d5c;background:rgba(255,157,92,.06)}
+.tw-crit .k{font-size:12px;font-weight:800;color:rgba(241,247,243,.75)}
+.tw-crit .v b{display:block;font-size:13px}.tw-crit .v small{font-size:11px;color:rgba(241,247,243,.5)}
+.tw-crit .j{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(106,245,176,.14);color:#6af5b0;white-space:nowrap}
+.tw-crit li.over .j{background:rgba(255,157,92,.18);color:#ff9d5c}
+.tw-crit .put{grid-column:2/4;font-size:12.5px;font-weight:700;color:#6af5b0}.tw-crit .put:empty{display:none}
+.tw-crit .src{grid-column:1/-1;font-size:10.5px;color:rgba(241,247,243,.4);line-height:1.4}
+.tw-crit .put.none{color:#ffc861}.tw-crit .put.extra{color:rgba(241,247,243,.6);font-weight:600}
+
+/* 왜 만족도가 오르나 */
+.tw-parts{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tw-parts span{padding:7px 6px;border-radius:9px;background:rgba(255,255,255,.04);text-align:center}.tw-parts small{display:block;font-size:10.5px;color:rgba(241,247,243,.5)}.tw-parts b{font-size:14px}.tw-parts .up b{color:#6af5b0}
+.tw-fx{margin:5px 0 8px;font-size:10.5px;color:rgba(241,247,243,.45)}
+.tw-mech{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tw-mech>li{padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.035)}
+.tw-mech>li>b{display:flex;align-items:center;gap:7px;font-size:13px}
+.tw-mech .no,.tw-int .no{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#0b7a45;color:#fff;font-size:12px;flex:none}
+.tw-mech .ch{margin:5px 0 4px;font-size:12px;font-weight:700;color:#6af5b0;line-height:1.45}
+.tw-mech .ev{margin:0;padding-left:16px;display:grid;gap:3px}.tw-mech .ev li{font-size:11.5px;line-height:1.45;color:rgba(241,247,243,.75)}
+.tw-mech .lim{margin:4px 0 0;font-size:11px;color:#ffc861;line-height:1.45}
+.tw cite{font-style:normal;font-size:10.5px;color:rgba(159,216,255,.85);border-bottom:1px dotted rgba(159,216,255,.5);cursor:help;white-space:nowrap}
+/* 대상지 의도 점검 */
+.tw-int{padding:10px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(241,247,243,.08)}
+.tw-int p{margin:0 0 6px;font-size:12px;line-height:1.5;color:rgba(241,247,243,.8)}
+.tw-int .it b{display:block;font-size:11.5px;color:#9fd8ff;margin-bottom:2px}
+.tw-int .all{font-size:11px;color:rgba(241,247,243,.55)}
+.tw-int ul{list-style:none;margin:6px 0;padding:0;display:grid;gap:4px}
+.tw-int li{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.18)}
+.tw-int .n{font-size:12.5px;font-weight:700}.tw-int .n small{display:block;font-size:11px;font-weight:500;color:rgba(241,247,243,.6);line-height:1.4}
+.tw-int .s{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tw-int li.ok .s{background:rgba(106,245,176,.15);color:#6af5b0}.tw-int li.warn .s{background:rgba(255,200,97,.16);color:#ffc861}.tw-int li.no .s{background:rgba(255,120,100,.2);color:#ff8a78}
+.tw-int .sum{font-weight:800;font-size:12.5px;margin-top:4px}.tw-int .sum.ok{color:#6af5b0}.tw-int .sum.warn{color:#ffc861}.tw-int .sum.no{color:#ff8a78}
+.tw-int .law{font-size:10.5px;color:rgba(241,247,243,.45);margin:0}
+.tw-mech .ev li{display:list-item;padding:0;background:none;border-radius:0}
+.tw-cost li{flex-wrap:wrap}.tw-cost li .src{flex-basis:100%;margin:2px 0 0;font-size:10.5px;line-height:1.4;color:rgba(241,247,243,.42)}
+.tw-cost li>span{flex:1;min-width:0}
+
+/* 고른 안 창: 결론 → 문제 → 수단마다 [왜·효과·근거·비용·의도] → 남는 문제 */
+.tw-hero .meta{display:flex;gap:6px;margin-top:6px}.tw-hero .meta span{flex:1;font-size:12px;color:rgba(241,247,243,.6);padding:6px 9px;border-radius:9px;background:rgba(0,0,0,.2)}.tw-hero .meta b{display:block;font-size:13.5px;color:#f1f7f3}
+.tw-prob{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.tw-prob li{padding:7px 10px;border-radius:9px;background:rgba(255,157,92,.07);border-left:3px solid #ff9d5c}
+.tw-prob li b{display:block;font-size:13px}.tw-prob li small{display:block;font-size:11px;color:rgba(241,247,243,.5);margin-top:1px}
+.tw-prob.left li{background:rgba(255,200,97,.06);border-left-color:#ffc861}
+.tw-steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tw-steps>li{padding:10px 11px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(241,247,243,.09)}
+.tw-steps .hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tw-steps .hd .no{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#0b7a45;color:#fff;font-size:13px;flex:none}
+.tw-steps .hd b{flex:1;font-size:13.5px;line-height:1.35}.tw-steps .hd em{font-style:normal;font-size:12px;font-weight:800;color:#f1f7f3;white-space:nowrap;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08)}
+.tw-steps dl{display:grid;grid-template-columns:52px 1fr;gap:4px 8px;margin:0}
+.tw-steps dt{font-size:11px;font-weight:800;color:rgba(241,247,243,.45);padding-top:1px}
+.tw-steps dd{margin:0;font-size:12px;line-height:1.45;color:rgba(241,247,243,.85)}.tw-steps dd b{color:#6af5b0}
+.tw-steps .weak{color:rgba(241,247,243,.55)}
+.tw-steps .st{font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px}.tw-steps .st.ok{background:rgba(106,245,176,.15);color:#6af5b0}.tw-steps .st.warn{background:rgba(255,200,97,.16);color:#ffc861}.tw-steps .st.no{background:rgba(255,120,100,.2);color:#ff8a78}
+.tw-steps.supp>li{border-style:dashed}.tw-steps.supp .hd .no{background:rgba(255,255,255,.14)}
+
+/* ===== 공문서 양식(.fm-on): 명조 본문 · 고딕 제목 · 검은 괘선 · 색·둥근 모서리 없음 ===== */
+.tw-sheet.fm-on{border-radius:0;color:#000;padding:56px 60px 40px;font-family:'Batang','바탕','BatangChe','Nanum Myeongjo','Noto Serif KR',serif}
+.fm-on *{border-radius:0!important}
+.fm-on p,.fm-on li{font-size:13.5px;line-height:1.75;color:#000}
+.fm-on .tw-tw table,.fm-on .tw-tblk{font-family:'Malgun Gothic','맑은 고딕','Dotum',sans-serif;font-size:11.5px;color:#000}
+.fm-on .tw-tw th,.fm-on .tw-tw td,.fm-on .tw-tblk th,.fm-on .tw-tblk td{border:1px solid #000!important;padding:5px 7px}
+.fm-on .tw-tw thead th{background:#e9e9e9!important;text-align:center;font-weight:700}
+.fm-on .tw-tw tbody th{background:#f4f4f4!important;font-weight:700}
+.fm-on .tw-tw table{border-top:2px solid #000!important}
+.fm-on header{border-bottom:1px solid #000!important;color:#000!important;font-family:'Malgun Gothic',sans-serif}
+.fm-on h1{color:#000}
+.fm-on .tw-n{font-size:12px!important;color:#000}.fm-on .tw-n::before{content:'※ '}
+.fm-on .tw-warn2{color:#000}
+/* 기안문 */
+.fm-doc{border:0!important;padding:0!important;margin-bottom:40px}
+.fm-draft{font-size:11px!important;color:#666!important;margin:0 0 6px!important;font-family:'Malgun Gothic',sans-serif}
+.fm-org{text-align:center;font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:27px;font-weight:700;letter-spacing:.35em;margin:6px 0 26px}
+.fm-hd{border-collapse:collapse;font-size:14px;margin-bottom:6px}.fm-hd th{text-align:left;width:70px;padding:3px 0;font-weight:700;vertical-align:top}.fm-hd td{padding:3px 0}
+.fm-rule{border-top:2px solid #000;margin:6px 0 14px}
+.fm-bd p{margin:0 0 6px!important}.fm-bd p.sub{padding-left:2em;text-indent:-1.3em}
+.fm-att{margin:14px 0 30px!important}.fm-att2{display:inline-block;padding-left:3.2em}
+.fm-gy,.fm-ft{width:100%;border-collapse:collapse;font-family:'Malgun Gothic',sans-serif;font-size:11.5px}
+.fm-gy th,.fm-gy td{border:1px solid #000;padding:5px;text-align:center}.fm-gy th{background:#f4f4f4;font-weight:700;width:25%}.fm-gy td{height:46px;line-height:1.5}
+.fm-gy tr:last-child td{height:auto;text-align:left}
+.fm-ft{margin-top:8px;border-top:2px solid #000}.fm-ft th,.fm-ft td{padding:4px 6px;text-align:left;border-bottom:1px solid #999}.fm-ft th{width:44px;font-weight:700}
+/* 검토 보고서 */
+.fm-rep{counter-reset:fmsec}
+.fm-title{border:2px solid #000;padding:14px 10px;text-align:center;margin:4px 0 8px}
+.fm-title h1{margin:0!important;font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:21px!important;font-weight:800;letter-spacing:-.01em}
+.fm-by{text-align:right;font-family:'Malgun Gothic',sans-serif;font-size:12.5px!important;margin:0 0 16px!important}
+.fm-sum{border:1px solid #000;padding:10px 14px;margin-bottom:8px}.fm-sum>b{display:block;font-family:'Malgun Gothic',sans-serif;font-size:13px;margin-bottom:2px}
+.fm-h1{counter-increment:fmsec;font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:16px!important;font-weight:800;color:#000!important;margin:26px 0 8px!important;padding-bottom:3px;border-bottom:1px solid #000}
+.fm-h1::before{content:counter(fmsec,upper-roman) '. '}
+.fm-h1.fm-ref::before{content:''}
+.fm-h2{font-family:'Malgun Gothic',sans-serif;font-size:14px;font-weight:700;margin:14px 0 6px;color:#000}.fm-h2::before{content:'□ '}
+.fm-ul{list-style:none;margin:0 0 6px!important;padding:0 0 0 1.6em!important}
+.fm-ul li{text-indent:-1.3em;padding-left:0;margin-bottom:3px}.fm-ul li::before{content:'○ '}
+.fm-end{margin-top:22px!important;border-top:1px solid #000;padding-top:8px}
+@media print{.tw-sheet.fm-on{padding:0}.fm-doc{break-after:page}}
+
+/* 기본설계 도면(A3 한 장) · 공문서 양식 보조 */
+.tw-dwg.fm-full .tw-dwgf{padding:0;background:#fff;border:0}
+.tw-dwgf svg.bp-sheet{display:block;width:100%;height:auto;border:0}
+.fm-on .tw-rabar,.fm-on .tw-rabar button{font-family:Pretendard,'Malgun Gothic',sans-serif}
+.fm-on .tw-dwg header{font-family:'Malgun Gothic',sans-serif}
+.fm-on .tw-dwg h1{font-family:'Malgun Gothic',sans-serif;font-size:17px!important;font-weight:800}
+.fm-on .tw-dwg h4{color:#000!important;font-family:'Malgun Gothic',sans-serif}
+.fm-on .tw-warn2{background:none!important;border:1px solid #000;font-weight:400}
+@media print{.fm-on .tw-dwg{break-before:page}}
+
+/* 구청 계획(안) 기호 체계: 1. → □ → ○ → - (로마숫자 대신) */
+.fm-h1::before{content:counter(fmsec) '. '}
+.fm-op th{background:#f4f4f4!important;width:110px;text-align:center}.fm-op td{font-size:12px}
+.fm-on .tw-dwgf svg:not(.bp-sheet){filter:grayscale(1) contrast(1.2)}

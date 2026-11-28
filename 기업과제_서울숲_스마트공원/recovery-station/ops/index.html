@@ -195,6 +195,11 @@ body>*:not(.tw){transition:filter .9s var(--ease),opacity .9s var(--ease)}
 body.tw-go>*:not(.tw){filter:blur(10px) saturate(.8);opacity:.55;pointer-events:none}
 body.tw-full>*:not(.tw){visibility:hidden}
 .abc{margin-top:14px;padding:13px 13px 12px;border-radius:var(--r-md);background:var(--glass-2);border:1px solid var(--line)}
+.abc-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:10px 0 8px;padding:4px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.abc-tab{display:grid;gap:1px;justify-items:center;padding:7px 4px;border:0;border-radius:9px;background:none;color:var(--mute);font:inherit;cursor:pointer;transition:background .15s,color .15s}
+.abc-tab b{font-size:13px;font-weight:900}.abc-tab small{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.abc-tab:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.abc-tab[aria-selected=true]{background:linear-gradient(140deg,#3fd896,#6af5b0);color:#04261a;box-shadow:0 4px 12px -4px rgba(106,245,176,.6)}
 .abc h4{margin:0 0 9px;font-size:13px;font-weight:700}.abc h4 small{display:block;margin-top:3px;font-size:10.5px;font-weight:500;color:var(--mute);line-height:1.45}
 .abc-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .abc-c{position:relative;display:grid;gap:4px;align-content:start;text-align:left;padding:9px 9px 8px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:inherit;cursor:pointer;transition:border-color .15s,transform .15s}
@@ -789,6 +794,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   }
   function frame(now) {
     A.raf = 0; if (!HOME || !CAM) return;
+    if (document.body.classList.contains('tw-full')) return;   // 3D가 화면을 다 덮는 동안 뒤 2D 지도는 그리지 않음(렉 원인) — 나오면 kick()
     var c = ctx, dt = A.last ? Math.min(64, now - A.last) : 16; A.last = now;
     if (REDUCE) { A.intro = 1; A.fade = 1; }
     A.intro = Math.min(1, A.intro + dt / 1400); A.fade = Math.min(1, A.fade + dt / 450);
@@ -1022,14 +1028,14 @@ body.tw-full>*:not(.tw){visibility:hidden}
     var base = location.pathname; if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(h.id));
     document.body.classList.add('tw-go'); $('tip').style.opacity = 0;
     var hr0 = S.hour >= 7 && S.hour <= 19 ? S.hour : 14, coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=39').then(function (m) {
+    import('./sim3d.js?v=68').then(function (m) {
       return m.openTwin({ hub: h, hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: hr0, predict: predict, auto: !!auto, alt: alt, review: !!review,
         model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat },
         mobile: W < 760 || coarse, low: W < 760 || coarse || (navigator.hardwareConcurrency || 8) <= 4,
         onReady: function () { document.body.classList.add('tw-full'); },
-        onLeave: function () { document.body.classList.remove('tw-go', 'tw-full'); },
+        onLeave: function () { document.body.classList.remove('tw-go', 'tw-full'); kick(); },
         onHub: function (id) { if (review && history.replaceState) history.replaceState(null, '', base + '?review=' + encodeURIComponent(id)); },
-        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); if (review && history.replaceState) history.replaceState(null, '', base); if (ENG) { ENG.reset(); ENG.done = {}; engNext(); left(); side(); } } });
+        onExit: function () { TW = null; document.body.classList.remove('tw-go', 'tw-full'); kick(); if (review && history.replaceState) history.replaceState(null, '', base); if (ENG) { ENG.reset(); ENG.done = {}; engNext(); left(); side(); } } });
     }).catch(function (e) { TW = null; document.body.classList.remove('tw-go'); twinOpen.err = '디지털트윈 실행 실패 (' + ((e && e.message) || e) + ')'; side(); left(); });
   }
   function twinHTML(h) {
@@ -1039,6 +1045,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   // 개요 화면: 평가가 낮은 곳을 3D에서 고르므로, 예상 점수가 가장 낮은 격자 안 거점으로 들어간다
   function twinDefault() { var L = (left.low || []).filter(function (h) { return h.envN; }); return L[0] || S.hubs.filter(function (h) { return h.envN; }).sort(function (a, b) { return a.s.all - b.s.all; })[0] || S.hubs[0]; }
   $('side').addEventListener('click', function (e) {
+    var tab = e.target.closest('[data-abc]'); if (tab) { e.stopPropagation(); ABCSEL[tab.dataset.hub] = tab.dataset.abc; side(); return; }
     var t = e.target.closest('[data-tw]'); if (!t) return; e.stopPropagation();
     var id = t.dataset.tw, h = id === 'auto' ? twinDefault() : S.hubs.filter(function (o) { return o.id === id; })[0]; twinOpen(h, false, t.dataset.alt, true);   // 디지털트윈 = 구청 검토 화면(A·B·C)
   }, true);
@@ -1049,7 +1056,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
   function engStart() {
     if (ENG || engStart.busy) return; engStart.busy = true;
     var coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
-    import('./sim3d.js?v=39').then(function (m) {
+    import('./sim3d.js?v=68').then(function (m) {
       return m.openTwin({ headless: true, hub: S.hubs[0], hubs: S.hubs, xy: xy, toLL: toLL, city: CITY, rings: RINGS, hour: 14, predict: predict, model: { tp: tp, wxf: wxf, densScore: densScore, wxScore: wxScore, sat: sat }, low: true, mobile: W < 760 || coarse });
     }).then(function (e) {
       ENG = e; ENG.done = {};
@@ -1064,6 +1071,7 @@ body.tw-full>*:not(.tw){visibility:hidden}
     engNext.run = true;
     setTimeout(function () { engNext.run = false; try { ENG.done[h.id] = ENG.setOf(h.id) || null; } catch (e) { ENG.done[h.id] = null; console.warn('[A·B·C]', h.id, e); } if (h.id === S.sel) side(); left(); engNext(); }, 30);
   }
+  var ABCSEL = {};   // 만족도 화면에서 거점별로 고른 안(A·B·C 중 하나만 보여 줌)
   function abcOf(id) { return ENG && ENG.done && id in ENG.done ? ENG.done[id] : undefined; }
   function f1s(v) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1); }
   function abcBadge(id) {
@@ -1108,10 +1116,12 @@ body.tw-full>*:not(.tw){visibility:hidden}
       '<p>추정 주요 수종: ' + ti.top.map(function (t) { return '<b>' + esc(t.name) + '</b> ' + Math.round(t.share * 100) + '%' + (t.spot ? '(' + esc(t.spot.name) + ')' : '') + (ENG.PET.has(t.name) ? ' <span class="pet">반려동물 유의</span>' : ''); }).join(' · ') + '</p>' +
       (nt && sp ? '<p>C안 녹음수 ' + nt + '주 권장 수종: <b>' + sp + '</b>(서울숲 기존 식재 수종)</p>' : '') +
       '<p class="warn">⚠ ' + esc(ENG.TREE_NOTE) + '</p><small>위성 수목 피복(ESA WorldCover 10m) × 400㎡ ÷ 주당 수관 64㎡(가정) · 수종은 서울시 2020 서울숲 수종 집계 비율 + 인근 명소 기록. 위성 자료로 수종 직접 판별 불가.</small></div>' : '';
-    return '<section class="abc"><h4>대안 비교(A·B·C) — 선택 주체: 구청 <small>항목 선택 시 3D 표시 · 14시 모형 예측치</small></h4>' +
-      ENG.gradeBox(gr, 'abc-grade') +
-      ENG.rowsHTML(set, '2d', h.id) +
-      '<div class="note">' + (gC < .5 ? 'C안 적용 시에도 0.5점 미만 — 개선 효과 미미. ' : '') + '3개 대안 일괄 제출, 선택 주체는 구청 · 비용은 출처 있는 단가만 더한 개략값(빈칸은 견적 필요) · 기간은 가정 · 점수 범위는 분산 비율·쉼터 사용률·그늘 효과·환경 계수·가중치 가정을 바꿔 본 결과(3D 「점수 상승 근거」에 단계별 근거) · 3D 화면에서 제안서·개략설계도 생성</div>' + tree + '</section>';
+    var k1 = ABCSEL[h.id] || 'A';
+    var tabs = '<div class="abc-tabs" role="tablist" aria-label="개선안 고르기">' + ['A', 'B', 'C'].map(function (k) { return '<button type="button" role="tab" class="abc-tab k' + k + '" data-abc="' + k + '" data-hub="' + h.id + '" aria-selected="' + (k === k1) + '"><b>' + k + '안</b><small>' + esc(ENG.ALT[k].short) + '</small></button>'; }).join('') + '</div>';
+    return '<section class="abc"><h4>개선안 — 하나씩 골라 보기 <small>안을 누르면 그 안만 보임 · 아래 카드를 누르면 3D 검토 화면 · 14시 모형 예측치</small></h4>' +
+      ENG.gradeBox(gr, 'abc-grade') + tabs +
+      ENG.rowsHTML(set, '2d', h.id, k1, [k1]) +
+      '<div class="note">' + (gC < .5 ? 'C안 적용 시에도 0.5점 미만 — 개선 효과 미미. ' : '') + '선택 주체는 구청 · 비용은 출처 있는 단가만 더한 개략값(빈칸은 견적 필요) · 기간은 가정 · 점수 범위는 분산 비율·쉼터 사용률·그늘 효과·환경 계수·가중치 가정을 바꿔 본 결과(3D 「점수 상승 근거」에 단계별 근거) · 3D 화면에서 제안서·개략설계도 생성</div>' + tree + '</section>';
   }
 
   // ---------- 계산·갱신 ----------

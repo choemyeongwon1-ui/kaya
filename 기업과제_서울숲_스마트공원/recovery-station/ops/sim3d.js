@@ -1,6 +1,6 @@
 // 디지털트윈 개선 시뮬레이션 (관리자용) — [만족도] 화면(ops/index.html)의 「디지털트윈에서 개선안 만들기」로 들어온다.
 // 개선안 = 대시보드 만족도 식(index.html sat: 붐빔 .35 · 날씨 .30 · 환경 .35)의 세 갈래를 각각 고치는 '공간 패키지'
-//   붐빔 → 혼잡 시나리오(쾌적한 토요일) 혼잡률이 70%를 넘으면: 옆 칸으로 체류 체류공간 확충(수용 인원↑) + 여유 있는 거점으로 분산 유도 안내(사람↓)
+//   붐빔 → 혼잡 시나리오(쾌적한 토요일) 혼잡률이 70%를 넘으면: 옆 칸으로 체류공간 확충(수용 인원↑) + 여유 있는 거점으로 분산 유도 안내(사람↓)
 //   더위 → 폭염 시나리오(2026-08-07 체감 36.3℃, ERA5 재분석값) 체류공간 그늘 비율이 50%가 될 때까지 가장 효과 큰 자리에 그늘막·녹음수(햇빛 광선으로 계산)
 //   환경 → 팀 20m 칸 점수(analysis/02_vulnerability.py 식)로 식재·잔디·쉴 곳 효과 → envScore(80m)
 // 장면: Sky·하늘빛 환경광, 자료로 그린 바닥(숲·잔디·포장·길·나무 그늘), 창이 있는 건물, 나무 3종(가까우면 자세히), 사람(혼잡을 눈으로). three.js r170(vendor, MIT)
@@ -25,7 +25,7 @@ const STAY_R = 40, ENV_R = 80, NB_R = 450;
 const CROWD_CUT = .7, NB_FREE = .55, SHIFT = .15, YARD_USE = .85, MAX_YARD = 6, SHADE_TARGET = .5, MAX_SHADE = 8;   // 가정값(패널·보고서에 표시)
 
 const FAC = {
-  yard: { label: '체류 체류공간 확충' }, sign: { label: '혼잡 분산 유도 안내' },
+  yard: { label: '체류공간 확충' }, sign: { label: '혼잡 분산 유도 안내' },
   sail: { label: '대형 차양(그늘막)', roof: { hx: 4, hy: 4, h: 4 } }, tree: { label: '녹음수' }, bench: { label: '쉼터 벤치' },
   garden: { label: '계절 정원' }, photo: { label: '포토존' }, toilet: { label: '화장실' }
 };
@@ -73,20 +73,21 @@ const GRADE = {
 //   inc: 단가에 들어간 범위(자재만/노무비만/설치 포함) · ref: 참고만 하는 유사 품목(합계에 넣지 않음)
 const GARDEN_M2 = 24;   // 계절 정원 한 곳 넓이 — 3D 모형 화단 7.0×3.4m(약 24㎡)
 const COST = {
-  deck: { where: '조달청 나라장터 종합쇼핑몰(데크재)', label: '데크 쉼터', unit: '㎡', lo: null, hi: null, src: '공공 단가 못 찾음 — 조달청 나라장터 종합쇼핑몰 품목정보 API(데크재)로 조회 예정' },
+  deck: { label: '데크 쉼터', unit: '㎡', lo: 120000, hi: 120000, inc: '데크재 자재비만 — 설치비 별도(설치 포함 단가는 못 찾음)', src: '대전 대덕구 2026 본예산 세출예산사업명세서(공원녹지과) 「목재(판재,데크재) 120,000원×220㎡」 — https://www.daedeok.go.kr/document/ftp/ftp02/2026/00/3/21.pdf' },
   lawn: { label: '잔디 쉼터(평떼 붙임)', unit: '㎡', lo: 5406, hi: 5406, inc: '노무비만, 잔디 재료비 별도', src: '국토교통부·한국건설기술연구원 「2025년 상반기 건설공사 표준시장단가」 DK520 잔디붙임(평떼)' },
-  bench: { where: '조달청 나라장터 종합쇼핑몰(벤치)', label: '벤치(등의자)', unit: '개', lo: null, hi: null, src: '공공 단가 못 찾음 — 나라장터 종합쇼핑몰 품목정보 API(벤치)로 조회 예정' },
-  signS: { where: '조달청 나라장터 종합쇼핑몰(안내판)', label: '분산 유도 안내(정적 안내판·앱 알림)', unit: '식', lo: null, hi: null, src: '1개 단가 못 찾음' },
-  signD: { where: '조달청 나라장터 종합쇼핑몰(디지털사이니지)', label: '분산 유도 안내(디지털 안내판)', unit: '대', lo: null, hi: null, src: '공공 단가 못 찾음 — 나라장터 종합쇼핑몰 품목정보 API(디지털사이니지)로 조회 예정' },
-  sail: { where: '조달청 나라장터 종합쇼핑몰(그늘막)', label: '대형 차양(그늘막)(8×8m)', unit: '개', lo: null, hi: null, refLo: 7420000, refHi: 7680000, src: '8×8m 구조물 단가 못 찾음', ref: '참고: 스마트 그늘막(다기능) 1대 낙찰 기준 약 742만~768만원 — 2026 나라장터(제천시 R26BK01612182 4대 낙찰 2,968만원, 대구 수성구 R26BK01617679 19대 낙찰 1억4,600만원; 공고 단가 제천 850만원/대), 집계사이트(sankun.com) 기준, 부가세·기초공사 포함 여부 확인 필요' },
+  bench: { label: '벤치(등의자)', unit: '개', lo: 475000, hi: 1000000, inc: '예산·기부 단가(설치 포함 여부 원문에 없음)', src: '대구 북구 2023 본예산(공원녹지과) 「의자(등의자,평의자) 475,000원×20개소」 · 강남구 「우리동네 초록기부 챌린지」 2026-01-09 「2인용 벤치 100만원」' },
+  signS: { label: '분산 유도 안내(정적 안내판·앱 알림)', unit: '식', lo: 11400000, hi: 12000000, inc: '지주식 종합안내판 1,400×2,320 기준(업체 견적 1곳) — 작은 유도 사인이면 더 낮음, 앱 알림은 0원', src: '부산 남구의회 제342회 기획행정위원회 회의록 2025-12-05(오륙도 종합안내판 견적 1,140만·1,200만원)' },
+  signD: { label: '분산 유도 안내(디지털 안내판)', unit: '대', lo: 12000000, hi: 12950000, inc: '지자체 실제 취득가(화면 크기 미상)', src: '부산 남구의회 제342회 기획행정위원회 회의록 2025-12-05(디지털 안내판 11개소 1억4,250만원 → 대당 약 1,295만원, 답변 「1,200만원 정도」)' },
+  sail: { label: '대형 차양(그늘막)(8×8m)', unit: '개', lo: 9500000, hi: 32000000, inc: '근거 약함 — 낮은 값은 파고라 1개소 교체 예산, 높은 값은 막구조 그늘막 30㎡ 1,500만원을 64㎡로 늘린 값', src: '대구 북구 2023 본예산 「파고라 9,500,000원×2개소」 · 부산시 주민참여예산 제안 「도심 속 테마공원 조성」 2021-03-31 「그늘막 15백만원(30㎡)」(제안자 산정)' },
   tree: { label: '녹음수(느티나무 H4.5×R15~R20)', unit: '주', lo: 499000, hi: 867000, inc: '수목값만(유통가), 식재 품 별도: 1주당 조경공 0.25인·보통인부 0.083인·굴착기 0.083대(2025 건설공사 표준품셈 4-3-5)', src: '한국농촌경제연구원(KREI) 임업관측 2025.12 조경수 가격조사 — 설계 가격으로는 부적절하다고 원문에 명시' },
-  garden: { where: '조달청 시설자재가격(초화류)', label: '계절 정원(초화)', unit: '㎡', lo: null, hi: null, src: '㎡ 단가 못 찾음' },
-  photo: { where: '제작 업체 견적', label: '포토존', unit: '식', lo: null, hi: null, src: '견적 필요' },
-  toilet: { where: '조달청 나라장터 종합쇼핑몰(이동식 화장실)', label: '모듈형 화장실', unit: '동', lo: null, hi: null, src: '구매 단가 못 찾음', ref: '참고: 이동식 화장실 임대용역 낙찰 1,670만원(2026, 한국농어촌공사 충북, 검색 요약값 — 공고 원문 확인 필요)' }
+  garden: { label: '계절 정원(초화)', unit: '㎡', lo: 40000, hi: 128000, inc: '초화 자재비만(1,000~2,000원/본 × 40~64본/㎡), 식재 품 별도', src: '대구 북구 2023 본예산 「초화구입 1,000원/본」 · 대덕구 2026 본예산 「경관조성용초화류 2,000원/본」 · 수원시 저관리형 도시공원 숲 조성 매뉴얼(2021.12) 표3-4 식재밀도 40~64본/㎡' },
+  photo: { label: '포토존', unit: '식', lo: 13360000, hi: 56070000, inc: '조형물 제작·설치 계약·예산 범위', src: '나주시 영산강 정원 조형물(뉴시스 2024-10-28, 1,336만~4,100만원) · 목포시 2023 추경 「평화광장 포토존 30,000,000원×1식」 · 평창군 겨울축제 포토존 제작·설치 계약 56,070,000원(2023-12-14)' },
+  toilet: { label: '모듈형 화장실', unit: '동', lo: 77600000, hi: 200000000, inc: '관급자재 구입·제작 사례 범위(수량·유형 일부 불명확)', src: '고성군 거진체육공원 이동식화장실 관급자재 구입 77,600,000원(2021-12-20, 쇼핑몰 주문) · 당진시 차량형 공중화장실 2억원(중부매일 2025-05-18)' },
 };
 // 공문 머리·끝 — 학생팀은 행정기관이 아니므로 결재란·생산등록번호 없이 공문 형식을 빌린 '협조 요청'으로 쓴다
 //   수신: 서울숲은 2022년부터 서울시 직영(서울신문 2021-11-21) → 서울특별시 동부공원여가센터(공원여가과)·서울숲관리사무소
-const DOC = { from: '카야팀 (상명대 그린스마트시티학과)', to: '서울특별시 동부공원여가센터(서울숲관리사무소)', cc: '성동구청 공원녹지과', contact: '담당자 ○○○ · 연락처 ○○○-○○○○-○○○○ · 전자우편 ○○○@○○○' };
+const DOC = { from: '서울숲관리사무소 ○○팀', to: '동부공원여가센터장', cc: '성동구청 공원녹지과(협의)',   // 대시보드를 쓰는 공원 관리 담당자가 올리는 내부 검토 보고(부서명·담당자는 빈칸)
+  contact: '담당자 ○○○ · 연락처 ○○○-○○○○-○○○○ · 전자우편 ○○○@○○○' };
 // 법적 근거 — 「도시공원 및 녹지 등에 관한 법률」(법률 제21039호, 2026.8.27 시행) 국가법령정보센터 현행 본문 대조(2026-11-28)
 const LAW = {
   rel: '「도시공원 및 녹지 등에 관한 법률」 제10조의2(공원녹지정보체계 구축·운영), 제19조(도시공원의 설치 및 관리)',
@@ -104,6 +105,83 @@ const REFS = [
   '서울특별시 푸른도시국·서울기록원 (2020). 「시민의 숲을 기록하다, 서울숲」 전시 — 서울숲의 식물(수종별 그루 수·키)',
   '서울특별시 (2026). 2027년 시민참여예산 사업제안서 양식(작성요령 포함) — https://news.seoul.go.kr/gov/archives/575588'
 ];
+// ---------- 만족도가 오르는 이유·대상지 의도 근거 (원문 확인, 2026-11-28 조사) ----------
+// CITE: 근거 목록. 화면에는 짧은 이름(s), 검토 보고서 참고문헌에는 전체(f)
+const CITE = {
+  zhan: { s: 'Zhan 외 2024', f: 'Zhan, P., Guo, Q., Chen, H.-L., Wu, Y. (2024). Landscape and Urban Planning 245, 105015. doi:10.1016/j.landurbplan.2024.105015' },
+  np: { s: '국립공원 혼잡지각 연구 2016', f: '「국립공원 탐방객의 혼잡지각이 감정, 만족, 태도 및 행동의도에 미치는 영향」 관광연구저널 30(11):121–134, 2016 (치악산, 400명) — 저자·DOI 검증 필요' },
+  lin09: { s: 'Lin 2009', f: 'Lin, T.-P. (2009). Building and Environment 44(10), 2017–2026. doi:10.1016/j.buildenv.2009.02.004' },
+  lin13: { s: 'Lin 외 2013', f: 'Lin, T.-P., Tsai, K.-T., Liao, C.-C., Huang, Y.-C. (2013). Building and Environment 59, 599–611. doi:10.1016/j.buildenv.2012.10.005' },
+  colter: { s: 'Colter 외 2019', f: 'Colter, K.R., Middel, A.C., Martin, C.A. (2019). Urban Forestry & Urban Greening 44, 126429. doi:10.1016/j.ufug.2019.126429' },
+  cho22: { s: '조현민·권태경 2022(서울숲 실측)', f: '조현민·권태경 (2022). Effects of Urban Park on Thermal Comfort in Summer(서울숲 미기후). 한국조경학회지 50(6), 30–41. doi:10.9715/KILA.2022.50.6.030' },
+  whyte: { s: 'Whyte 1980', f: 'Whyte, W.H. (1980). The Social Life of Small Urban Spaces. Conservation Foundation (2장 Sitting Space)' },
+  ottoni: { s: 'Ottoni 외 2016', f: 'Ottoni, C.A. et al. (2016). "Benches become like porches". Social Science & Medicine 169, 33–41. doi:10.1016/j.socscimed.2016.08.044' },
+  chv: { s: 'Chvirova 외 2026', f: 'Chvirova, D., Menke, F., Buchwald, A., Keller, R., Niemeijer, C. (2026). Electronic Markets 36, 26. doi:10.1007/s12525-026-00874-3' },
+  yang: { s: 'Yang 외 2020', f: 'Yang, G., Han, Y., Gong, H., Zhang, T. (2020). Sustainability 12(8), 3478. doi:10.3390/su12083478' },
+  brown: { s: 'Brown 외 2013', f: 'Brown, A., Kappes, J., Marks, J. (2013). Journal of Travel Research 52(4), 426–436. doi:10.1177/0047287512475216' },
+  hassall: { s: 'Hassall 외 2024', f: 'Hassall, C. et al. (2024). Land 13(3), 290. doi:10.3390/land13030290' },
+  felappi: { s: 'Felappi 외 2024', f: 'Felappi, J.F. et al. (2024). Scientific Reports 14, 4856. doi:10.1038/s41598-024-55357-2' },
+  ulrich: { s: 'Ulrich 1984', f: 'Ulrich, R.S. (1984). Science 224(4647), 420–421. doi:10.1126/science.6143402' },
+  dsw: { s: '동심원조경 설계 설명', f: '(주)동심원조경기술사사무소, 「서울숲 현상 및 실시설계」 — https://www.dongsimwon.com/blog/portfolio_page/서울숲-현상-및-실시설계-2005/' },
+  tour: { s: '설계자 투어 2018', f: '서울숲컨서번시, 「[리뷰] 설계자와 함께하는 서울숲 투어」 2018.7.13 — https://seoulforest.or.kr/12784' },
+  s04: { s: '서울시 2004 개장 준비 기사', f: '서울시 내 손안에 서울, 「내년 4월 개장 앞둔 서울숲 마무리 공사 한창」 2004.12.22 — https://mediahub.seoul.go.kr/archives/147141' },
+  s24: { s: '서울시 2024 서울숲 소개', f: '서울시 내 손안에 서울, 2024.4.24 — https://mediahub.seoul.go.kr/archives/2010950' },
+  s26: { s: '서울시 2026 물놀이 명소', f: '서울시 내 손안에 서울, 「무료 물놀이 명소 10선」 2026.7.27 — https://mediahub.seoul.go.kr/archives/2018803' },
+  expo: { s: '2026 정원박람회 공지', f: '서울시 2026 서울국제정원박람회 공지(군마상·잔디마당 일대 출입 제한) — https://www.seoul.go.kr/festa/garden/y2026/news-resources/notice?article=41356' },
+  law: { s: '도시공원법 제16조의2③', f: '「도시공원 및 녹지 등에 관한 법률」 제16조의2제3항 — 공원의 주제·특색을 바꾸지 않는 소규모 공원시설 설치 등은 위원회 심의·주민의견 청취 생략 가능(2009 판본 확인, 현행 문언 확인 필요)' }
+};
+// 수단마다: 무엇이 바뀌어 → 어느 요인이 → 왜 만족도가 오르나(근거)
+const WHY = {
+  sign: { chain: '붐비는 시간에 안내 → 일부가 옆 거점·다른 시간으로 → 이곳 혼잡률 ↓ → 「붐빔」 점수 ↑', ev: [['실시간 분산 안내를 받으면 66.5%가 행동을 바꾸겠다고 답함(이화원 시뮬레이션)', 'yang'], ['테마파크 현장조사 2회에서 다수가 모바일 안내에 따라 동선을 바꿀 의향', 'brown']], lim: ['도시형 관광지에서는 온라인 정보가 오히려 혼잡을 더 느끼게 한 결과도 있어, 설치 뒤 평가로 확인', 'chv'] },
+  yard: { chain: '앉고 머물 공간을 넓힘 → 같은 인원이어도 혼잡률 ↓ → 「붐빔」 점수 ↑', ev: [['느끼는 혼잡이 클수록 만족·재방문 의향이 낮아짐(도시공원)', 'zhan'], ['사람 수보다 「공간이 비좁다」는 느낌이 부정적 감정을 키움(치악산 400명)', 'np']] },
+  sail: { chain: '체류공간 그늘 ↑ → 폭염일 체감 열부담 ↓ → 「날씨」 점수 ↑', ev: [['더운 계절엔 더울수록 공원 방문이 줄어듦', 'lin09'], ['그늘 수준에 따른 열쾌적 범위가 계절별 방문자 수를 크게 바꿈', 'lin13'], ['서울숲 실측: 한낮(10~16시) 광장부가 공원 밖 도로보다 5.5℃ 낮음', 'cho22']] },
+  tree: { chain: '그늘 + 땅 온도 ↓ + 초록 경관 → 「날씨」·「환경」 점수 ↑', ev: [['일사를 잘 막는 나무 그늘은 차양 구조물보다 체감온도(PET)를 2.9~4.3℃ 더 낮춤', 'colter'], ['나무가 늘수록 회복감이 커지지만 빽빽하면 포화', 'hassall'], ['수관이 많을수록 회복 효과, 단 안전감이 함께 중요', 'felappi']] },
+  bench: { chain: '쉴 곳까지 거리 ↓ → 오래 머물 수 있음 → 「환경」 점수 ↑', ev: [['사람은 앉을 곳이 있는 곳에 머묾 — 광장 관찰 연구', 'whyte'], ['벤치가 고령자의 공원 이용·이동·만남을 가능하게 함', 'ottoni']] },
+  garden: { chain: '「볼거리 부족」 불만 대응 — 점수 계산에는 넣지 않음', ev: [['자연 경관을 보는 것만으로 회복이 빨라짐(병원 연구)', 'ulrich']] },
+  photo: { chain: '「볼거리 부족」 불만 대응 — 점수 계산에는 넣지 않음', ev: [] },
+  toilet: { chain: '「편의시설 부족」 불만 대응 — 점수 계산에는 넣지 않음', ev: [] }
+};
+// 대상지 의도: 장소별 원래 용도·경관 의도와, 수단별 맞음(ok)·주의(warn)·충돌(no)
+const INTENT_ALL = { t: '설계 원안은 「고정적인 시설이 아닌 참여를 통해 변화할 수 있는 가변적인 공간」을 내세움 → 고정 구조물보다 탈착·이동식을 먼저', src: 'dsw' };
+const INTENT_ZONE = {
+  '문화예술공원': { t: '서울숲광장·야외무대 등 시민 여가활동 공간', src: 's04' },
+  '자연생태숲': { t: '야생동물 서식처 재현 — 일부는 사람 출입 통제가 조성 의도, 동물은 보행가교에서 관찰', src: 's04', rule: { bench: ['warn', '출입 가능한 동선·가교에만'], yard: ['no', '숲 안쪽 쉼터 확장은 서식처 교란'], sign: ['warn', '밝은 안내판은 동선 입구에만'], sail: ['warn', '숲 안 구조물 대신 기존 수관 활용'], tree: ['ok', '자생 수종으로 보식'] } },
+  '체험학습원': { t: '옛 정수장 시설을 고쳐 쓴 식물 학습·감상 공간', src: 's04' },
+  '습지생태원': { t: '유수지 기능을 유지하며 서울숲과 중랑천 생태를 잇는 공간', src: 's04', rule: { yard: ['no', '포장·성토는 빗물 담는 기능을 해침'], sail: ['warn', '탈착식만'], bench: ['warn', '관찰대·환경놀이터 주변만'] } }
+};
+const INTENT = {
+  'mirror-pond': { t: '수심 3cm 거울연못에 메타세쿼이아 길이 비치는 반영 경관(서울숲 대표 포토존) + 여름 가족 물놀이 바닥분수(2026년 8/30까지, 12~16:30), 쿨링포그 쉼터 이미 있음', src: ['s24', 's26'],
+    rule: { sail: ['warn', '수면·분수 위 고정 구조물은 물놀이 동선·반영 경관을 가림 → 바깥 테두리, 운영 기간 탈착식'], tree: ['warn', '반영되는 메타세쿼이아 길 시야 밖, 가장자리에'], yard: ['warn', '포장 확장 대신 잔디 쉼터로'], bench: ['ok', '연못·분수 바깥 테두리에'], sign: ['ok', '낮은 높이로'], photo: ['warn', '이미 대표 포토존 — 조형물 중복은 불필요'], garden: ['ok', '테두리 화단'] } },
+  'family-lawn': { t: '「다양한 문화 행사가 열리는 탁 트인 잔디밭」 — 2026 정원박람회 때도 행사장으로 씀', src: ['s24', 'expo'],
+    rule: { sail: ['no', '잔디 중앙 고정 그늘막은 행사 면적·시야를 막음 → 탈착식만'], tree: ['warn', '가장자리에만'], yard: ['warn', '잔디 면적을 줄이지 않게'], bench: ['ok', '이동식 의자'], sign: ['ok', ''] } },
+  'stage': { t: '야외무대 — 공연·행사 공간', src: ['s04'],
+    rule: { sail: ['warn', '무대 시야를 막지 않는 객석 가장자리, 탈착식'], tree: ['warn', '무대 조망축 밖'], yard: ['warn', '객석 잔디 유지'], bench: ['ok', '이동식'] } },
+  'horse-plaza': { t: '경마장의 기억을 담은 군마상(「START」, 새로운 도약) — 정문 진입부 상징', src: ['tour', 's24'],
+    rule: { sign: ['warn', '상징물 조망을 가리지 않게 낮게·측면에, 디지털 안내 우선'], sail: ['warn', '군마상 조망 축 밖'], tree: ['warn', '조망 축 밖'], bench: ['ok', '광장 가장자리'], yard: ['warn', '진입부 개방감 유지'] } },
+  'deer': { t: '사슴 방사 서식처 — 방문객은 보행가교 위에서 관찰', src: ['s04'] },
+  'wetland': { t: '유수지 기능 유지 + 조류관찰대·환경놀이터', src: ['s04'] }
+};
+// 안마다 최선: 계산 수단이 못 다루는 문제를 그 안의 성격(A 운영 · B 소규모 시설 · C 공간)에 맞는 보완 수단으로 채움 — 점수 계산 밖, 설치 후 평가로 확인
+const SUPP = {
+  A: {
+    '더위': { t: '폭염 시간대 실내 시원한 곳 안내 + 그늘 쪽 길 안내', d: '체감 31℃ 넘는 시간에 안내판·앱으로 곤충식물원·나비정원(실내) 위치와 그늘 따라 걷는 길을 알림', cost: 0, costT: '0원 — 분산 안내 화면·앱에 함께 표시', ev: ['더운 계절엔 더울수록 공원 방문이 줄어듦 — 시원한 대안을 알려 이탈을 줄임', 'lin09'], intent: ['ok', '시설 설치 없음'] },
+    '쉴 곳': { t: '혼잡 시간 이동식 의자 배치', d: '주말 피크 시간에만 접이식 의자를 꺼내 두고 저녁에 거둠', cost: 'bench2', costT: '', ev: ['사람은 앉을 곳이 있는 곳에 머묾', 'whyte'], intent: ['ok', '쓰지 않을 땐 치움 — 가변적 공간'] },
+    '볼거리': { t: '계절 해설·체험 프로그램 연계', d: '서울숲 기존 숲 해설·체험 프로그램 집결지를 이곳으로 잡아 붐비지 않는 시간대에 운영', cost: 0, costT: '0원 — 기존 프로그램 장소 조정', ev: ['자연 경관을 보는 것만으로 회복이 빨라짐', 'ulrich'], intent: ['ok', '설계 원안 「참여의 숲」과 맞음'] },
+    '편의': { t: '가까운 화장실 길 안내', d: '안내판·앱에 가장 가까운 화장실 방향과 거리 표시', cost: 0, costT: '0원 — 분산 안내 화면에 함께 표시', ev: null, intent: ['ok', '설치 없음'] }
+  },
+  B: {
+    '쉴 곳': { t: '그늘막 아래 벤치 보강', d: '그늘막 아래·가장자리에 벤치 추가', cost: 'bench2', costT: '', ev: ['사람은 앉을 곳이 있는 곳에 머묾', 'whyte'], intent: ['ok', '가장자리에'] },
+    '볼거리': { t: '이동식 계절 화분(플랜터) 20㎡', d: '광장 가장자리에 계절 초화 플랜터를 놓고 철마다 바꿔 심음', cost: 'garden20', costT: '', ev: ['자연 경관을 보는 것만으로 회복이 빨라짐', 'ulrich'], intent: ['ok', '옮길 수 있어 행사 때 치움'] },
+    '편의': { t: '화장실 방향 안내 추가', d: '분산 안내판에 가장 가까운 화장실 방향·거리 표시', cost: 0, costT: '0원 — 안내판 문안에 포함', ev: null, intent: ['ok', '설치 없음'] },
+    '혼잡': { t: '혼잡 시간 이동식 의자·동선 정리', d: '붐비는 시간 동선을 줄 세워 병목을 풀고 대기 공간에 이동식 의자', cost: 'bench2', costT: '', ev: ['사람 수보다 「공간이 비좁다」는 느낌이 부정적 감정을 키움', 'np'], intent: ['ok', '가변적'] }
+  },
+  C: {
+    '쉴 곳': { t: '쉼터 둘레 벤치 보강', d: '넓힌 쉼터와 거점 사이 먼 쪽에 벤치 추가', cost: 'bench2', costT: '', ev: ['사람은 앉을 곳이 있는 곳에 머묾', 'whyte'], intent: ['ok', '가장자리에'] },
+    '더위': { t: '쉼터 둘레 녹음수 3주 보식', d: '넓힌 쉼터 남·서쪽에 녹음수 3주(수목값, 식재 품 별도)', cost: 'tree3', costT: '', ev: ['일사를 잘 막는 나무 그늘은 차양 구조물보다 체감온도를 더 낮춤', 'colter'], intent: ['warn', '조망 축 밖에'] },
+    '편의': { t: '가까운 화장실 길 안내', d: '안내판에 가장 가까운 화장실 방향·거리 표시', cost: 0, costT: '0원 — 안내판 문안에 포함', ev: null, intent: ['ok', ''] },
+    '볼거리': { t: '계절 정원 확대', d: '쉼터 가장자리를 계절 정원으로', cost: 'garden20', costT: '', ev: ['자연 경관을 보는 것만으로 회복이 빨라짐', 'ulrich'], intent: ['ok', ''] }
+  }
+};
 const NEED = {
   crowd: ['테마파크 현장연구 2회(910명·1,370명)에서 방문객 다수가 모바일 정보·인센티브에 따라 동선을 바꿀 의향을 보였고, 저자들은 이런 안내가 혼잡 분포를 실시간으로 완화할 수 있다고 결론지었다 [3]. 대상 거점은 이용자 「혼잡」 응답과 예상 혼잡률이 함께 높아 분산 유도 안내·쉼터 확장이 필요하다.'],
   heat: ['나무 그늘은 햇빛을 받는 콘크리트·잔디보다 최고 표면온도를 최대 19℃, 흑구온도를 5~7℃ 낮췄다(영국 맨체스터 현장 측정) [1]. 국내(제주 가로수 5종) 여름 측정에서도 수목 그늘은 양지보다 체감 열환경지수 PET를 21.2~31.3% 낮췄다 [2]. 폭염일 체류공간 그늘 비율이 목표(50%)에 못 미치면 그늘막·녹음수가 필요하다.'],
@@ -229,7 +307,7 @@ function glowTex() {
 export async function openTwin(o) {
   applyAltEdits(loadAltEdits());
   const xy = o.xy, low = !!o.low, M = o.model;
-  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=28'; document.head.appendChild(l); }
+  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=48'; document.head.appendChild(l); }
   const root = document.createElement('div'); root.className = 'tw'; root.innerHTML = '<div class="tw-load"><i></i><span>디지털트윈을 불러오는 중…</span></div>'; if (!o.headless) document.body.appendChild(root);
   if (!M || !M.sat) { root.remove(); throw new Error('만족도 모형(model) 수신 실패'); }
 
@@ -621,6 +699,138 @@ export async function openTwin(o) {
     const css = '<style>.pl{font:700 13px Pretendard,sans-serif;fill:#1f7a5a;paint-order:stroke;stroke:#fff;stroke-width:3px}.hn{font:800 14px Pretendard,sans-serif;fill:#0d1a14;paint-order:stroke;stroke:#fff;stroke-width:4px}.nb{font:800 12px Pretendard,sans-serif;fill:#fff}.sy{font:800 11px Pretendard,sans-serif;fill:#fff}.sm{font:700 11px Pretendard,sans-serif;fill:#0d1a14}.ab2{font:900 16px Pretendard,sans-serif;fill:#b4541a;paint-order:stroke;stroke:#fff;stroke-width:3px}</style>';
     return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + VW + ' ' + VH + '" width="' + VW + '" height="' + VH + '" font-family="Pretendard, sans-serif">' + css + out.join('') + '</svg>', scale: sc, span: Math.round(span) };
   }
+  // ---------- 기본설계(기본구상) 도면: A3 가로 한 장에 도곽·표제란·범례·수량표·비고 — 흑백 선 굵기·해치로 구분 ----------
+  //   위치도(공원 전체) · 현황평면도 · 시설배치평면도. 1u = 1/3mm(A3 420×297mm = 1260×891u), 축척은 표준 축척 중 들어가는 가장 큰 것
+  let BPN = 0, PEDGE = null;
+  const BP_SC = [200, 250, 300, 400, 500, 600, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 6000];
+  const bpEdge = () => { if (PEDGE) return PEDGE; const m = new Map(), f = q => q[0].toFixed(1) + ',' + q[1].toFixed(1);
+    for (let i = 0; i < N; i++) { const r = Q[i]; for (let j = 0; j < r.length; j++) { const a = r[j], b = r[(j + 1) % r.length], p = f(a), q = f(b); if (p === q) continue; const k = p < q ? p + '|' + q : q + '|' + p; if (m.has(k)) m.delete(k); else m.set(k, [a, b]); } }
+    return (PEDGE = [...m.values()]); };
+  const bpWrap = (t, n) => { const out = []; let cur = ''; String(t).split(/(\s+)/).forEach(w => { if ((cur + w).length > n && cur.trim()) { out.push(cur.trim()); cur = w.trimStart(); while (cur.length > n) { out.push(cur.slice(0, n)); cur = cur.slice(n); } } else cur += w; }); if (cur.trim()) out.push(cur.trim()); return out; };
+  const bpRnd = (i, t, s) => { const v = Math.sin(i * 127.1 + t * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); };
+  function bpSheet(o) {
+    const pl = o.pl, h = pl.h, id = 'bp' + (++BPN), mode = o.mode, out = [];
+    const W = 1260, H = 891, FL = 60, FT = 30, FR = 30, FB = 30, TBW = 250, TX = W - FR - TBW;
+    const DX0 = FL + 6, DX1 = TX - 6, DY0 = FT + 6, DY1 = H - FB - 6, DW = DX1 - DX0, DH = DY1 - DY0;
+    let pts = [];
+    if (mode === 'loc') { for (let i = 0; i < N; i++) pts.push([CX[i], CY[i]]); }
+    else { pts = [[h.x - 48, h.y - 48], [h.x + 48, h.y + 48]]; if (mode === 'pl') pl.G.forEach(g => g.items.forEach(t => pts.push([t.x, t.y]))); }
+    let ex0 = 1e9, ex1 = -1e9, ey0 = 1e9, ey1 = -1e9; pts.forEach(q => { ex0 = Math.min(ex0, q[0]); ex1 = Math.max(ex1, q[0]); ey0 = Math.min(ey0, q[1]); ey1 = Math.max(ey1, q[1]); });
+    const pad = mode === 'loc' ? 30 : 10; ex0 -= pad; ex1 += pad; ey0 -= pad; ey1 += pad;
+    const sc = BP_SC.find(s => (mode !== 'ex' || s >= 600) && (ex1 - ex0) * 3000 / s <= DW - 20 && (ey1 - ey0) * 3000 / s <= DH - 90) || 8000;
+    const S = 3000 / sc, cx = (ex0 + ex1) / 2, cy = (ey0 + ey1) / 2 - 30 / S;   // 아래쪽 도면명 자리 확보
+    const X = x => (DX0 + DW / 2 + (x - cx) * S).toFixed(1), Y = y => (DY0 + DH / 2 - (y - cy) * S).toFixed(1);
+    const vx0 = cx - DW / 2 / S, vx1 = cx + DW / 2 / S, vy0 = cy - DH / 2 / S, vy1 = cy + DH / 2 / S, inV = (x, y, m) => x > vx0 - m && x < vx1 + m && y > vy0 - m && y < vy1 + m;
+    const poly = r => r.map(q => X(q[0]) + ',' + Y(q[1])).join(' '), L = mm => (mm * 3).toFixed(2);
+    const rotG = (t, inner) => '<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ') rotate(' + (-(t.rot || 0) * 180 / Math.PI).toFixed(1) + ')">' + inner + '</g>';
+    const R = (w, hh, a) => '<rect x="' + (-w * S / 2).toFixed(1) + '" y="' + (-hh * S / 2).toFixed(1) + '" width="' + (w * S).toFixed(1) + '" height="' + (hh * S).toFixed(1) + '" ' + a + '/>';
+    // 치수선(종이 좌표): a→b 선분과 나란히 off만큼 띄워 그림, 끝은 사선 틱, 글자는 mm
+    const dim = (a, b, off, txt) => { const ax = +X(a[0]), ay = +Y(a[1]), bx = +X(b[0]), by = +Y(b[1]), dx = bx - ax, dy = by - ay, l = Math.hypot(dx, dy) || 1, nx = -dy / l * off, ny = dx / l * off;
+      const p = [ax + nx, ay + ny], q = [bx + nx, by + ny]; let ang = Math.atan2(dy, dx) * 180 / Math.PI; if (ang > 90) ang -= 180; if (ang <= -90) ang += 180;
+      const tk = (u, v) => '<line x1="' + (u - 3).toFixed(1) + '" y1="' + (v + 3).toFixed(1) + '" x2="' + (u + 3).toFixed(1) + '" y2="' + (v - 3).toFixed(1) + '"/>';
+      return '<g stroke="#000" stroke-width="' + L(.13) + '"><line x1="' + ax + '" y1="' + ay + '" x2="' + (p[0] + nx * .15).toFixed(1) + '" y2="' + (p[1] + ny * .15).toFixed(1) + '"/><line x1="' + bx + '" y1="' + by + '" x2="' + (q[0] + nx * .15).toFixed(1) + '" y2="' + (q[1] + ny * .15).toFixed(1) + '"/><line x1="' + p[0].toFixed(1) + '" y1="' + p[1].toFixed(1) + '" x2="' + q[0].toFixed(1) + '" y2="' + q[1].toFixed(1) + '"/>' + tk(p[0], p[1]) + tk(q[0], q[1]) + '</g><text class="bp-d" text-anchor="middle" transform="translate(' + ((p[0] + q[0]) / 2 + nx * .35).toFixed(1) + ',' + ((p[1] + q[1]) / 2 + ny * .35 + 3).toFixed(1) + ') rotate(' + ang.toFixed(1) + ')">' + txt + '</text>'; };
+    out.push('<defs><clipPath id="' + id + 'c"><rect x="' + DX0 + '" y="' + DY0 + '" width="' + DW + '" height="' + DH + '"/></clipPath>' +
+      '<pattern id="bpo" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#f1f1f1"/><circle cx="1.5" cy="1.5" r=".55" fill="#9a9a9a"/></pattern>' +
+      '<pattern id="bpl" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".6" fill="#555"/><circle cx="6.5" cy="5.5" r=".6" fill="#555"/><circle cx="3" cy="7.6" r=".45" fill="#777"/></pattern>' +
+      '<pattern id="bpw" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><line x1="0" y1="4" x2="5" y2="4" stroke="#444" stroke-width=".45"/></pattern>' +
+      '<pattern id="bpb" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#fff"/><line x1="0" y1="0" x2="0" y2="5" stroke="#000" stroke-width=".5"/></pattern>' +
+      '<pattern id="bpk" width="' + Math.max(3, S * .9).toFixed(1) + '" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#fff"/><line x1="0" y1="0" x2="0" y2="40" stroke="#000" stroke-width=".55"/></pattern>' +
+      '<pattern id="bpg" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#fff"/><circle cx="2.5" cy="2.5" r=".75" fill="#000"/></pattern>' +
+      '<pattern id="bpf" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><circle cx="4" cy="4" r="1.7" fill="none" stroke="#000" stroke-width=".5"/></pattern>' +
+      '<marker id="bpa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,1L10,5L0,9z" fill="#000"/></marker></defs>');
+    out.push('<rect width="' + W + '" height="' + H + '" fill="#fff"/>');
+    // ── 도면 내용(도곽 안으로 자름)
+    const g = ['<g clip-path="url(#' + id + 'c)"><rect x="' + DX0 + '" y="' + DY0 + '" width="' + DW + '" height="' + DH + '" fill="url(#bpo)"/>'];
+    const cl = []; for (let i = 0; i < N; i++) if (inV(CX[i], CY[i], 20)) cl.push('<polygon points="' + poly(Q[i]) + '"/>');
+    g.push('<g fill="#fff" stroke="#fff" stroke-width=".8">' + cl.join('') + '</g>');
+    CWATER.forEach(r => { if (r.some(q => inV(q[0], q[1], 200))) g.push('<polygon points="' + poly(r) + '" fill="url(#bpw)" stroke="#000" stroke-width="' + L(.18) + '"/>'); });
+    FE.forEach(f => { if (!f.ring.some(q => inV(q[0], q[1], 80))) return;
+      g.push('<polygon points="' + poly(f.ring) + '" ' + (f.k === 'water' ? 'fill="url(#bpw)" stroke="#000" stroke-width="' + L(.25) + '"' : f.k === 'building' ? 'fill="url(#bpb)" stroke="#000" stroke-width="' + L(.3) + '"' : f.k === 'lawn' ? 'fill="url(#bpl)" stroke="#555" stroke-width="' + L(.1) + '" stroke-dasharray="4 3"' : 'fill="none" stroke="#555" stroke-width="' + L(.1) + '" stroke-dasharray="1.5 3"') + '/>'); });
+    const es = NE.filter(e => inV(NX[e[0]][0], NX[e[0]][1], 40) || inV(NX[e[1]][0], NX[e[1]][1], 40)).map(e => '<line x1="' + X(NX[e[0]][0]) + '" y1="' + Y(NX[e[0]][1]) + '" x2="' + X(NX[e[1]][0]) + '" y2="' + Y(NX[e[1]][1]) + '"/>').join('');
+    if (mode === 'loc') g.push('<g stroke="#000" stroke-width="' + L(.18) + '" stroke-linecap="round">' + es + '</g>');
+    else g.push('<g stroke="#000" stroke-width="' + (4 * S + 1.4).toFixed(1) + '" stroke-linecap="round" stroke-linejoin="round">' + es + '</g><g stroke="#fff" stroke-width="' + (4 * S - .4).toFixed(1) + '" stroke-linecap="round" stroke-linejoin="round">' + es + '</g>');
+    // 기존 수목(위성 수관 피복으로 추정한 위치 — 실측 아님)
+    if (mode !== 'loc') { const tr = []; for (let i = 0; i < N; i++) { if (TR[i] < .05 || !inV(CX[i], CY[i], 15)) continue; const n = Math.max(1, Math.round(TR[i] * CELL_M2 / CANOPY_M2));
+      for (let t = 0; t < n; t++) { const px = CX[i] + (bpRnd(i, t, 1) - .5) * 15, py = CY[i] + (bpRnd(i, t, 2) - .5) * 15, r = (2.6 + bpRnd(i, t, 3) * 1.4) * S; tr.push('<circle cx="' + X(px) + '" cy="' + Y(py) + '" r="' + r.toFixed(1) + '"/><path d="M' + (+X(px) - 1.6) + ',' + Y(py) + 'h3.2M' + X(px) + ',' + (+Y(py) - 1.6) + 'v3.2"/>'); } }
+      g.push('<g fill="#fff" fill-opacity=".35" stroke="#6a6a6a" stroke-width="' + L(.1) + '">' + tr.join('') + '</g>'); }
+    // 공원 경계(1점 쇄선)
+    g.push('<g stroke="#000" stroke-width="' + L(mode === 'loc' ? .5 : .6) + '" stroke-dasharray="18 4 3 4" fill="none">' + bpEdge().filter(e => inV(e[0][0], e[0][1], 30)).map(e => '<line x1="' + X(e[0][0]) + '" y1="' + Y(e[0][1]) + '" x2="' + X(e[1][0]) + '" y2="' + Y(e[1][1]) + '"/>').join('') + '</g>');
+    // 체류공간 범위
+    if (mode !== 'loc') g.push('<circle cx="' + X(h.x) + '" cy="' + Y(h.y) + '" r="' + (STAY_R * S).toFixed(1) + '" fill="none" stroke="#000" stroke-width="' + L(.18) + '" stroke-dasharray="6 4"/><text class="bp-s" x="' + X(h.x) + '" y="' + (+Y(h.y + STAY_R) - 4) + '" text-anchor="middle">체류공간 범위 R=40m</text>');
+    // ── 계획 시설(굵은 선)
+    const lg = [], tags = [];
+    if (mode === 'pl') {
+      if (pl.shift && pl.shift.to) { const s = pl.shift; g.push('<polyline points="' + s.pts.map(q => X(q[0]) + ',' + Y(q[1])).join(' ') + '" fill="none" stroke="#000" stroke-width="' + L(.35) + '" stroke-dasharray="10 4 2 4" marker-end="url(#bpa)"/>'); }
+      pl.yards.forEach((y, k) => { g.push('<polygon points="' + poly(Q[y.cell]) + '" fill="url(#' + (y.surf === 'deck' ? 'bpk' : 'bpl') + ')" stroke="#000" stroke-width="' + L(.5) + '"/>'); if (!k) { const r = Q[y.cell]; g.push(dim(r[0], r[1], 16, '20,000')); } });
+      pl.shade.forEach((t, k) => {
+        if (t.k === 'sail') { g.push(rotG(t, R(8, 8, 'fill="#fff" fill-opacity=".55" stroke="#000" stroke-width="' + L(.5) + '"') + '<path d="M' + (-4 * S) + ',' + (-4 * S) + 'L' + (4 * S) + ',' + (4 * S) + 'M' + (4 * S) + ',' + (-4 * S) + 'L' + (-4 * S) + ',' + (4 * S) + '" stroke="#000" stroke-width="' + L(.13) + '" stroke-dasharray="4 3"/>' + [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(c => '<circle cx="' + (c[0] * 4 * S).toFixed(1) + '" cy="' + (c[1] * 4 * S).toFixed(1) + '" r="' + Math.max(1.6, .2 * S).toFixed(1) + '" fill="#000"/>').join('')));
+          if (!pl.shade.slice(0, k).some(u => u.k === 'sail')) { const c = Math.cos(t.rot || 0), s2 = Math.sin(t.rot || 0), P = (u, v) => [t.x + u * c - v * s2, t.y + u * s2 + v * c]; g.push(dim(P(-4, -4), P(4, -4), -14, '8,000')); } }
+        else g.push('<g stroke="#000"><circle cx="' + X(t.x) + '" cy="' + Y(t.y) + '" r="' + (4.5 * S).toFixed(1) + '" fill="#fff" fill-opacity=".6" stroke-width="' + L(.4) + '"/>' + Array.from({ length: 10 }, (_, j) => { const a = j * Math.PI / 5, r1 = 4.5 * S, r2 = 3.3 * S; return '<line x1="' + (+X(t.x) + Math.cos(a) * r1).toFixed(1) + '" y1="' + (+Y(t.y) + Math.sin(a) * r1).toFixed(1) + '" x2="' + (+X(t.x) + Math.cos(a) * r2).toFixed(1) + '" y2="' + (+Y(t.y) + Math.sin(a) * r2).toFixed(1) + '" stroke-width="' + L(.13) + '"/>'; }).join('') + '<circle cx="' + X(t.x) + '" cy="' + Y(t.y) + '" r="1.6" fill="#000"/></g>');
+      });
+      pl.benches.forEach(t => g.push(rotG(t, '<g fill="#000"><rect x="' + (-2.1 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/><rect x="' + (.3 * S).toFixed(1) + '" y="' + (-Math.max(1.2, .3 * S)).toFixed(1) + '" width="' + (1.8 * S).toFixed(1) + '" height="' + Math.max(2.4, .6 * S).toFixed(1) + '"/></g>')));
+      if (pl.shift && pl.shift.sign) { const t = pl.shift.sign; g.push('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><rect x="-6" y="-6" width="12" height="12" fill="#000"/><text class="bp-i" y="3.6" text-anchor="middle">S</text></g>'); }
+      pl.extra.forEach(t => {
+        if (t.k === 'garden') g.push(rotG(t, R(7, 3.4, 'fill="url(#bpf)" stroke="#000" stroke-width="' + L(.4) + '"')));
+        else if (t.k === 'toilet') g.push(rotG(t, R(4, 2.6, 'fill="url(#bpb)" stroke="#000" stroke-width="' + L(.5) + '"') + '<text class="bp-i2" y="3" text-anchor="middle">WC</text>'));
+        else g.push('<g transform="translate(' + X(t.x) + ',' + Y(t.y) + ')"><circle r="' + Math.max(5, 1.2 * S).toFixed(1) + '" fill="#fff" stroke="#000" stroke-width="' + L(.4) + '"/><text class="bp-i2" y="3" text-anchor="middle">P</text></g>');
+      });
+      // 단면 지시선 A–A′
+      const ax = +X(h.x - 70), bx = +X(h.x + 70), yy = +Y(h.y);
+      g.push('<line x1="' + ax + '" y1="' + yy + '" x2="' + bx + '" y2="' + yy + '" stroke="#000" stroke-width="' + L(.25) + '" stroke-dasharray="16 4 3 4"/>' + [[ax, 'A'], [bx, 'A′']].map(q => '<path d="M' + q[0] + ',' + yy + 'v-14" stroke="#000" stroke-width="' + L(.5) + '" marker-end="url(#bpa)"/><circle cx="' + q[0] + '" cy="' + (yy + 13) + '" r="9" fill="#fff" stroke="#000" stroke-width="' + L(.25) + '"/><text class="bp-n" x="' + q[0] + '" y="' + (yy + 17) + '" text-anchor="middle">' + q[1] + '</text>').join(''));
+      // 번호 꼬리표(수량표 번호)
+      pl.G.forEach((gr, i) => { const ox = +X(gr.at[0]), oy = +Y(gr.at[1]), tx = ox + 26, ty = oy - 26; tags.push('<line x1="' + ox + '" y1="' + oy + '" x2="' + (tx - 7) + '" y2="' + (ty + 7) + '" stroke="#000" stroke-width="' + L(.13) + '"/><circle cx="' + ox + '" cy="' + oy + '" r="1.5" fill="#000"/><circle cx="' + tx + '" cy="' + ty + '" r="10" fill="#fff" stroke="#000" stroke-width="' + L(.3) + '"/><text class="bp-n" x="' + tx + '" y="' + (ty + 4.5) + '" text-anchor="middle">' + (i + 1) + '</text>'); });
+    }
+    // 거점 표시
+    if (mode === 'loc') g.push('<circle cx="' + X(h.x) + '" cy="' + Y(h.y) + '" r="' + Math.max(9, STAY_R * S).toFixed(1) + '" fill="none" stroke="#000" stroke-width="' + L(.7) + '"/><line x1="' + (+X(h.x) + Math.max(9, STAY_R * S) * .7).toFixed(1) + '" y1="' + (+Y(h.y) - Math.max(9, STAY_R * S) * .7).toFixed(1) + '" x2="' + (+X(h.x) + 70) + '" y2="' + (+Y(h.y) - 60) + '" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-h" x="' + (+X(h.x) + 74) + '" y="' + (+Y(h.y) - 62) + '">대상지: ' + esc(h.name) + '</text>');
+    else g.push('<g transform="translate(' + X(h.x) + ',' + Y(h.y) + ')"><circle r="4.5" fill="#fff" stroke="#000" stroke-width="' + L(.3) + '"/><path d="M-8,0h16M0,-8v16" stroke="#000" stroke-width="' + L(.13) + '"/></g><text class="bp-h" x="' + (+X(h.x) + 10) + '" y="' + (+Y(h.y) + 16) + '">' + esc(h.name) + '</text>');
+    g.push(tags.join('') + '</g>');
+    out.push(g.join(''));
+    // ── 방위표 · 도면명 · 축척 막대
+    out.push('<g transform="translate(' + (DX1 - 34) + ',' + (DY0 + 40) + ')"><circle r="20" fill="#fff" stroke="#000" stroke-width="' + L(.25) + '"/><path d="M0,-18L7,8L0,3L-7,8Z" fill="#000"/><text class="bp-n" y="-24" text-anchor="middle">N</text></g>');
+    const sbm = [5, 10, 20, 50, 100, 200, 500].filter(m => m * S <= 150).pop() || 5, sbx = DX0 + 16, sby = DY1 - 18;
+    out.push('<rect x="' + DX0 + '" y="' + (DY1 - 70) + '" width="430" height="70" fill="#fff"/><line x1="' + DX0 + '" y1="' + (DY1 - 70) + '" x2="' + (DX0 + 430) + '" y2="' + (DY1 - 70) + '" stroke="#000" stroke-width="' + L(.13) + '"/><line x1="' + (DX0 + 430) + '" y1="' + (DY1 - 70) + '" x2="' + (DX0 + 430) + '" y2="' + DY1 + '" stroke="#000" stroke-width="' + L(.13) + '"/>' +
+      '<text class="bp-t" x="' + (DX0 + 16) + '" y="' + (DY1 - 42) + '">' + esc(o.title) + '</text><line x1="' + (DX0 + 16) + '" y1="' + (DY1 - 35) + '" x2="' + (DX0 + 250) + '" y2="' + (DY1 - 35) + '" stroke="#000" stroke-width="' + L(.5) + '"/><text class="bp-s" x="' + (DX0 + 260) + '" y="' + (DY1 - 42) + '">SCALE : A3 1/' + sc.toLocaleString() + '</text>' +
+      '<g><rect x="' + sbx + '" y="' + sby + '" width="' + (sbm * S / 2).toFixed(1) + '" height="4" fill="#000"/><rect x="' + (sbx + sbm * S / 2).toFixed(1) + '" y="' + sby + '" width="' + (sbm * S / 2).toFixed(1) + '" height="4" fill="#fff" stroke="#000" stroke-width=".6"/><text class="bp-s" x="' + sbx + '" y="' + (sby - 3) + '">0</text><text class="bp-s" x="' + (sbx + sbm * S).toFixed(1) + '" y="' + (sby - 3) + '" text-anchor="middle">' + sbm + 'm</text></g>');
+    // ── 도곽 · 표제란(오른쪽 세로 띠)
+    out.push('<rect x="' + FL + '" y="' + FT + '" width="' + (W - FL - FR) + '" height="' + (H - FT - FB) + '" fill="none" stroke="#000" stroke-width="' + L(.7) + '"/><rect x="' + (FL - 6) + '" y="' + (FT - 6) + '" width="' + (W - FL - FR + 12) + '" height="' + (H - FT - FB + 12) + '" fill="none" stroke="#000" stroke-width="' + L(.13) + '"/><line x1="' + TX + '" y1="' + FT + '" x2="' + TX + '" y2="' + (H - FB) + '" stroke="#000" stroke-width="' + L(.5) + '"/>');
+    let ty = FT; const tb = [], hd = t => { tb.push('<rect x="' + TX + '" y="' + ty + '" width="' + TBW + '" height="20" fill="#eee" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-th" x="' + (TX + TBW / 2) + '" y="' + (ty + 14) + '" text-anchor="middle">' + t + '</text>'); ty += 20; };
+    // 범례
+    const LEG = { bd: ['공원 경계', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width="1.5" stroke-dasharray="9 2 2 2"/>'], rd: ['원로(폭 4m 가정)', s => '<rect x="2" y="3" width="32" height="8" fill="#fff" stroke="#000" stroke-width=".9"/>'],
+      et: ['기존 수목(위성 추정)', s => '<circle cx="18" cy="7" r="6" fill="#fff" stroke="#6a6a6a" stroke-width=".4"/><path d="M16.4,7h3.2M18,5.4v3.2" stroke="#6a6a6a" stroke-width=".4"/>'], lw0: ['잔디·초지', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpl)" stroke="#555" stroke-width=".4" stroke-dasharray="3 2"/>'],
+      wt: ['수면', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpw)" stroke="#000" stroke-width=".6"/>'], bl: ['건축물', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpb)" stroke="#000" stroke-width=".8"/>'],
+      st: ['체류공간 범위(R40m)', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width=".6" stroke-dasharray="5 3"/>'], hb: ['대상지', s => '<circle cx="18" cy="7" r="6" fill="none" stroke="#000" stroke-width="2"/>'],
+      dk: ['(계획) 데크 쉼터', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpk)" stroke="#000" stroke-width="1.5"/>'], lw: ['(계획) 잔디 쉼터', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpl)" stroke="#000" stroke-width="1.5"/>'],
+      sl: ['(계획) 그늘막 8×8m', s => '<rect x="12" y="1" width="12" height="12" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M12,1L24,13M24,1L12,13" stroke="#000" stroke-width=".4" stroke-dasharray="2 1.5"/>'],
+      tr: ['(계획) 녹음수', s => '<circle cx="18" cy="7" r="6" fill="#fff" stroke="#000" stroke-width="1.2"/><circle cx="18" cy="7" r="1.3" fill="#000"/>' + Array.from({ length: 8 }, (_, j) => { const a = j * Math.PI / 4; return '<line x1="' + (18 + Math.cos(a) * 6).toFixed(1) + '" y1="' + (7 + Math.sin(a) * 6).toFixed(1) + '" x2="' + (18 + Math.cos(a) * 4.3).toFixed(1) + '" y2="' + (7 + Math.sin(a) * 4.3).toFixed(1) + '" stroke="#000" stroke-width=".4"/>'; }).join('')],
+      bn: ['(계획) 벤치 2개 1조', s => '<rect x="8" y="5" width="9" height="4" fill="#000"/><rect x="19" y="5" width="9" height="4" fill="#000"/>'], sg: ['(계획) 분산 유도 안내판', s => '<rect x="12" y="1" width="12" height="12" fill="#000"/><text class="bp-i" x="18" y="10.6" text-anchor="middle">S</text>'],
+      rt: ['(계획) 분산 유도 동선', s => '<line x1="2" y1="7" x2="32" y2="7" stroke="#000" stroke-width="1" stroke-dasharray="8 3 2 3" marker-end="url(#bpa)"/>'], gd: ['(계획) 계절 정원', s => '<rect x="2" y="2" width="32" height="10" fill="url(#bpf)" stroke="#000" stroke-width="1.2"/>'],
+      wc: ['(계획) 모듈형 화장실', s => '<rect x="6" y="1" width="24" height="12" fill="url(#bpb)" stroke="#000" stroke-width="1.5"/>'], ph: ['(계획) 포토존', s => '<circle cx="18" cy="7" r="6" fill="#fff" stroke="#000" stroke-width="1.2"/><text class="bp-i2" x="18" y="10" text-anchor="middle">P</text>'],
+      sc: ['단면 위치', s => '<line x1="2" y1="7" x2="34" y2="7" stroke="#000" stroke-width=".8" stroke-dasharray="9 2 2 2"/>'] };
+    const ks = mode === 'loc' ? ['bd', 'rd', 'wt', 'bl', 'hb'] : ['bd', 'rd', 'et', 'lw0', 'wt', 'bl', 'st'].concat(mode === 'pl' ? [].concat(pl.yards.some(y => y.surf === 'deck') ? ['dk'] : [], pl.yards.some(y => y.surf !== 'deck') ? ['lw'] : [], pl.shade.some(t => t.k === 'sail') ? ['sl'] : [], pl.shade.some(t => t.k === 'tree') ? ['tr'] : [], pl.benches.length ? ['bn'] : [], pl.shift && pl.shift.sign ? ['sg'] : [], pl.shift && pl.shift.to ? ['rt'] : [], pl.extra.some(t => t.k === 'garden') ? ['gd'] : [], pl.extra.some(t => t.k === 'toilet') ? ['wc'] : [], pl.extra.some(t => t.k === 'photo') ? ['ph'] : [], ['sc']) : []);
+    hd('범 례'); ks.forEach(k => { tb.push('<g transform="translate(' + (TX + 10) + ',' + (ty + 3) + ')">' + LEG[k][1]() + '</g><text class="bp-s" x="' + (TX + 54) + '" y="' + (ty + 13) + '">' + LEG[k][0] + '</text>'); ty += 15; }); ty += 4;
+    tb.push('<line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#000" stroke-width="' + L(.18) + '"/>');
+    // 수량표
+    if (mode === 'pl' && pl.G.length) { hd('시설물 수량표'); const rows = planRows(pl);
+      tb.push('<text class="bp-th2" x="' + (TX + 13) + '" y="' + (ty + 12) + '" text-anchor="middle">번호</text><text class="bp-th2" x="' + (TX + 110) + '" y="' + (ty + 12) + '" text-anchor="middle">시설 · 규격</text><text class="bp-th2" x="' + (TX + 226) + '" y="' + (ty + 12) + '" text-anchor="middle">수량</text>'); ty += 17;
+      tb.push('<line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#000" stroke-width="' + L(.13) + '"/>');
+      rows.forEach(rw => { const ls = bpWrap(rw[1] + ' (' + rw[2] + ')', 18), y0 = ty; ls.forEach((l, j) => tb.push('<text class="bp-s" x="' + (TX + 30) + '" y="' + (ty + 12 + j * 12) + '">' + esc(l) + '</text>')); ty += ls.length * 12 + 6;
+        tb.push('<text class="bp-s" x="' + (TX + 13) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + rw[0] + '</text><text class="bp-s" x="' + (TX + 226) + '" y="' + (y0 + 12) + '" text-anchor="middle">' + esc(rw[3]) + '</text><line x1="' + TX + '" y1="' + ty + '" x2="' + (W - FR) + '" y2="' + ty + '" stroke="#999" stroke-width=".4"/>'); });
+      tb.push('<line x1="' + (TX + 26) + '" y1="' + (ty - 0) + '" x2="' + (TX + 26) + '" y2="' + (ty - 0) + '"/>'); ty += 4; }
+    // 비고
+    const TBH = 238, notes = (o.notes || []).map((t, i) => (i + 1) + '. ' + t);
+    hd('비 고'); notes.forEach(t => bpWrap(t, 21).forEach((l, j) => { if (ty + 14 > H - FB - TBH - 10) return; tb.push('<text class="bp-s" x="' + (TX + (j ? 18 : 8)) + '" y="' + (ty + 12) + '">' + esc(l) + '</text>'); ty += 12.5; }));
+    // 표제란(아래 고정)
+    const pn = bpWrap('서울숲 「' + h.name + '」 거점 휴게환경 개선 기본구상', 14); let by = H - FB - TBH - (pn.length * 14 + 8 - 44); const row = (lab, val, hh, cls) => { tb.push('<rect x="' + TX + '" y="' + by + '" width="' + TBW + '" height="' + hh + '" fill="none" stroke="#000" stroke-width="' + L(.18) + '"/><rect x="' + TX + '" y="' + by + '" width="58" height="' + hh + '" fill="#eee" stroke="#000" stroke-width="' + L(.18) + '"/><text class="bp-th2" x="' + (TX + 29) + '" y="' + (by + hh / 2 + 4) + '" text-anchor="middle">' + lab + '</text>');
+      const ls = Array.isArray(val) ? val : [val]; ls.forEach((l, j) => tb.push('<text class="' + (cls || 'bp-s') + '" x="' + (TX + 66) + '" y="' + (by + hh / 2 + 4 - (ls.length - 1) * 7 + j * 14) + '">' + esc(l) + '</text>')); by += hh; };
+    tb.push('<line x1="' + TX + '" y1="' + by + '" x2="' + (W - FR) + '" y2="' + by + '" stroke="#000" stroke-width="' + L(.5) + '"/>');
+    row('사 업 명', pn, pn.length * 14 + 8, 'bp-v');
+    row('작    성', DOC.from, 24); row('작성·검토', '작성 ○○○ / 검토 ○○○ / 책임 ○○○', 24); row('관련도면', o.rel || '—', 24); row('일    자', o.date, 24);
+    row('도 면 명', bpWrap(o.title, 13), 40, 'bp-v'); row('축    척', 'A3 1/' + sc.toLocaleString() + '  (A4 출력 시 1/' + (sc * 1.414).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ')', 24);
+    row('도면번호', o.no, 34, 'bp-no');
+    out.push(tb.join(''));
+    const css = '<style>.bp-s{font:400 10px "Malgun Gothic","맑은 고딕",sans-serif;fill:#000}.bp-d{font:400 9px "Malgun Gothic",sans-serif;fill:#000}.bp-h{font:700 12px "Malgun Gothic",sans-serif;fill:#000;paint-order:stroke;stroke:#fff;stroke-width:3px}.bp-n{font:700 11px "Malgun Gothic",sans-serif;fill:#000}.bp-i{font:700 9px Arial,sans-serif;fill:#fff}.bp-i2{font:700 8px Arial,sans-serif;fill:#000}.bp-t{font:700 19px "Malgun Gothic",sans-serif;fill:#000;letter-spacing:.12em}.bp-th{font:700 11px "Malgun Gothic",sans-serif;fill:#000;letter-spacing:.3em}.bp-th2{font:700 10px "Malgun Gothic",sans-serif;fill:#000}.bp-v{font:700 11px "Malgun Gothic",sans-serif;fill:#000}.bp-no{font:800 17px Arial,"Malgun Gothic",sans-serif;fill:#000}</style>';
+    return { svg: '<svg xmlns="http://www.w3.org/2000/svg" class="bp-sheet" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">' + css + out.join('') + '</svg>', scale: sc };
+  }
   function planRows(pl) {
     const h = pl.h, spec = { yard: k => '20×20m 칸 · ' + k.items.map(y => y.surf === 'deck' ? '데크' : '잔디').join('/'), sign: () => '안내판 1 · 앱 알림', sail: () => '8×8m · 높이 4m', tree: () => '수관 지름 9m(성목 기준) · ' + (shadeSpecies() || '활엽 교목'), bench: () => '등의자 2개 1조', garden: () => GARDEN_M2 + '㎡(가정)', photo: () => '1식', toilet: () => '모듈형 1동' };
     return pl.G.map((g, i) => [String(i + 1), groupText(g, pl).t, (spec[g.k] || (() => ''))(g), String(g.k === 'bench' ? g.items.length * 2 : g.k === 'yard' ? g.items.length + '칸' : g.items.length), dirOf(h, g.at[0], g.at[1])]);
@@ -665,10 +875,10 @@ export async function openTwin(o) {
   }
 
   // 패널용: 한 안 = 한 줄(폭 전체). 핵심 ✔ 2개 · ✖ 2개만, 나머지는 제안서에
-  function rowsHTML(set, mode, id, on) {
+  function rowsHTML(set, mode, id, on, keys) {
     const G = glanceData(set), mx = Math.max(1, ...KS0.map(k => Math.max(Math.abs(G[k].dc), Math.abs(G[k].dh))));
     const bar = (lab, v) => '<span class="ro-b"><i>' + lab + '</i><s><b style="width:' + Math.max(0, v / mx * 100).toFixed(0) + '%"></b></s><em>' + f1(v) + '</em></span>';
-    return '<div class="ro">' + KS0.map(k => { const g = G[k], at = mode === '2d' ? 'data-tw="' + id + '" data-alt="' + k + '"' : 'data-t="alt" data-a="' + k + '"';
+    return '<div class="ro">' + (keys || KS0).map(k => { const g = G[k], at = mode === '2d' ? 'data-tw="' + id + '" data-alt="' + k + '"' : 'data-t="alt" data-a="' + k + '"';
       return '<button type="button" class="ro-r ro-' + k + (on === k ? ' on' : '') + '" ' + at + ' aria-pressed="' + (on === k) + '">' +
         '<span class="ro-k">' + k + '</span><span class="ro-t"><b>' + ALT[k].short + '</b>' + g.badges.slice(0, 2).map(t => '<em>' + esc(t) + '</em>').join('') + '</span><span class="ro-n" title="예측 만족도 변화 · 가정에 따른 범위(기준 가정 ' + f1(g.g) + '점)">' + f1(g.lo) + '~' + f1(g.hi).replace('+', '') + '<small>점</small></span>' +
         '<span class="ro-bs">' + bar('혼잡 시나리오', g.dc) + bar('폭염 시나리오', g.dh) + '</span>' +
@@ -910,7 +1120,12 @@ export async function openTwin(o) {
   if (o.auto) { const lo = hubs.filter(h => h.n >= 5).sort((a, b) => a.pct - b.pct)[0]; if (lo) sel = lo; }
   // 구청 검토 화면(?review=거점id): 팀원 화면 틀 — 오른쪽 위 A·B·C, 누르면 왼쪽 자세히 창 + 3D 현황/대안 적용 분할
   const REVIEW = !!o.review; let picked = null;
-  const PRINT_ICO = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
+  // 검토 화면은 상황을 하나로: 「붐비는 여름 주말」 = 사람·혼잡은 혼잡 시나리오, 해·그늘은 폭염 시나리오, 만족도는 두 시나리오 평균(평균 효과와 같은 식)
+  const MIX = Object.assign({}, SCN.crowd, { key: 'mix', label: '붐비는 여름 주말', date: '혼잡·폭염 시나리오 평균', doy: SCN.heat.doy });
+  if (REVIEW) scn = MIX;
+  function evalMix(pl, hr) { const c = evalHub(pl, SCN.crowd, hr), x = evalHub(pl, SCN.heat, hr), m = k => Object.assign({}, c[k], { raw: (c[k].raw + x[k].raw) / 2, s: x[k].s, rawC: c[k].raw, rawH: x[k].raw }); return { b: m('b'), a: m('a') }; }
+  const evNow = (pl, hr) => scn === MIX ? evalMix(pl, hr) : evalHub(pl, scn, hr);
+  const PRINT_ICO = '<svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
   if (REVIEW && o.onHub) o.onHub(sel.id);
 
   // ---------- 해 ----------
@@ -948,7 +1163,7 @@ export async function openTwin(o) {
   if (REVIEW) root.classList.add('tw-review');
   ui.innerHTML = REVIEW ?
     '<header class="tw-top tw-g"><button type="button" class="tw-home" data-t="exit">← 만족도 화면</button><b>디지털트윈 개선안</b><span class="tw-tag gov">구청 검토용</span><span class="tw-hubchip"></span>' + (rat.demo ? '<span class="tw-demo">시연용 가상 평가</span>' : '') +
-    '<span class="tw-sp"></span><span class="tw-vsw" role="group" aria-label="대안 선택"></span><span class="tw-seg tw-scn" role="group" aria-label="상황"><button type="button" data-t="crowd" aria-pressed="true">혼잡 시나리오</button><button type="button" data-t="heat" aria-pressed="false">폭염 시나리오</button></span>' +
+    '<span class="tw-sp"></span><span class="tw-vsw" role="group" aria-label="대안 선택"></span>' +
     '<button type="button" data-t="hq" aria-pressed="false" title="카메라 정지 시 GTAO 적용 재렌더링">고품질</button><span class="tw-q" hidden></span>' +
     '<button type="button" class="tw-exit tw-prt" data-t="report" hidden>' + PRINT_ICO + '<span>검토 자료 인쇄</span></button></header>' +
     '<aside class="tw-pop tw-g" role="dialog" aria-label="대안 자세히" hidden></aside>' +
@@ -990,7 +1205,7 @@ export async function openTwin(o) {
   // 갈래별 설명: 문제 → 처방 → 효과
   function groupText(g, pl) {
     const h = pl.h, n = g.items.length;
-    if (g.k === 'yard') { const nd = g.items.filter(y => y.surf === 'deck').length, nl = n - nd; return { t: '체류 체류공간 확충 ' + n + '칸(' + (n * CELL_M2).toLocaleString() + '㎡)', d: '거점에 붙은 ' + [nd ? '포장 광장 ' + nd + '칸 → 그늘 데크' : '', nl ? '빈 땅 ' + nl + '칸 → 잔디 쉼터' : ''].filter(Boolean).join(', ') + ' · 앉음벽·벤치 · 수용 +' + Math.round(pl.added) + '명' }; }
+    if (g.k === 'yard') { const nd = g.items.filter(y => y.surf === 'deck').length, nl = n - nd; return { t: '체류공간 확충 ' + n + '칸(' + (n * CELL_M2).toLocaleString() + '㎡)', d: '거점에 붙은 ' + [nd ? '포장 광장 ' + nd + '칸 → 그늘 데크' : '', nl ? '빈 땅 ' + nl + '칸 → 잔디 쉼터' : ''].filter(Boolean).join(', ') + ' · 앉음벽·벤치 · 수용 +' + Math.round(pl.added) + '명' }; }
     if (g.k === 'sign') { const s = pl.shift, how = pl.sign === 'digital' ? '디지털 혼잡 안내판' : '안내판·앱 알림'; if (!s.to) return { t: '혼잡 시간대 분산 안내(' + how + ')', d: '450m 안 여유 거점 없음 → 혼잡 예보로 피크(14시 전후) 방문 ' + pc(s.share) + '를 다른 시간대로 분산(가정) · 약 ' + Math.round(s.n) + '명' }; return { t: '혼잡 분산 유도 안내(' + how + ')', d: '붐빌 때 ' + s.to.name + '(같은 시각 ' + pc(s.rTo) + ', 길 따라 ' + Math.round(s.len) + 'm)에 ' + pc(s.share) + ' 안내 → ' + Math.round(s.n) + '명 이동 · 그곳은 ' + pc(s.rTo) + ' → ' + pc(s.rTo1) }; }
     if (g.k === 'sail') return { t: '대형 차양(그늘막) ' + n + '개', d: '8×8m · ' + g.items.map(t => dirOf(h, t.x, t.y)).slice(0, 3).join(', ') + ' · 아래 벤치' };
     if (g.k === 'tree') return { t: '녹음수 ' + n + '그루', d: '수관 지름 9m로 자랐을 때 · ' + g.items.map(t => dirOf(h, t.x, t.y)).slice(0, 3).join(', ') };
@@ -1105,6 +1320,58 @@ export async function openTwin(o) {
   function evalNow(pl) { return { crowd: evalHub(pl, SCN.crowd, hour), heat: evalHub(pl, SCN.heat, hour) }; }
   const SHORT = { shift: '분산 안내', bench: '벤치', sail: '차양', tree: '녹음수', yard: '쉼터 확충', extra: '편의' };
   const hintOf = k => ['yard', 'tree', 'sail', 'bench', 'shift', 'extra'].filter(m => ALT[k].use[m]).slice(0, 3).map(m => SHORT[m]).join(' + ') || '추가 수단 없음';
+  // ---------- 왜 만족도가 오르나 · 대상지 의도 점검 ----------
+  const evS = k => CITE[k] ? CITE[k].s : k;
+  function whyHTML(pl) {
+    const bc = basisRows(pl, SCN.crowd), bh = basisRows(pl, SCN.heat), avg = i => ((parseFloat(bc.rows[i][3].replace('−', '-')) || 0) + (parseFloat(bh.rows[i][3].replace('−', '-')) || 0)) / 2;
+    const parts = [['붐빔', avg(0)], ['날씨', avg(1)], ['환경', avg(2)], ['가장 낮은 요인 보정', avg(3)]];
+    const ks = [...new Set(pl.G.map(g => g.k))];
+    return '<h4 class="tw-h4">왜 만족도가 오르나 <small>수단 → 바뀌는 것 → 만족도, 그리고 근거</small></h4>' +
+      '<div class="tw-parts">' + parts.map(([n, v]) => '<span class="' + (v > .05 ? 'up' : '') + '"><small>' + n + '</small><b>' + f1(v) + '</b></span>').join('') + '</div>' +
+      '<p class="tw-fx">만족도 = .75 × (붐빔 .35 + 날씨 .30 + 환경 .35) + .25 × 가장 낮은 요인 · 두 상황(붐빌 때·더울 때) 평균</p>' +
+      '<ul class="tw-mech">' + ks.map(k => { const w = WHY[k]; if (!w) return ''; const g = pl.G.find(x => x.k === k), i = pl.G.indexOf(g);
+        return '<li><b><span class="no">' + NUM[i] + '</span>' + esc(groupText(g, pl).t) + '</b><p class="ch">' + esc(w.chain) + '</p>' +
+          (w.ev.length ? '<ul class="ev">' + w.ev.map(([t, c]) => '<li>' + esc(t) + ' <cite title="' + esc(CITE[c] ? CITE[c].f : '') + '">' + esc(evS(c)) + '</cite></li>').join('') + '</ul>' : '') +
+          (w.lim ? '<p class="lim">한계: ' + esc(w.lim[0]) + ' <cite title="' + esc(CITE[w.lim[1]].f) + '">' + esc(evS(w.lim[1])) + '</cite></p>' : '') + '</li>'; }).join('') + '</ul>';
+  }
+  function intentOf(h) {
+    const z = INTENT_ZONE[h.zone] || null, me = INTENT[h.id] || null;
+    return { t: me ? me.t : z ? z.t : '이 장소의 설계 의도 자료를 찾지 못함(검증 필요) — 설계도서 열람으로 확인', src: me ? me.src : z ? [z.src] : [], zone: z, rule: Object.assign({}, z && z.rule, me && me.rule) };
+  }
+  function intentRows(pl) {
+    const it = intentOf(pl.h), ks = [...new Set(pl.G.map(g => g.k))];
+    const def = { sail: ['warn', '고정 구조물 — 경관·동선 확인 후 탈착식 우선'], tree: ['ok', '서울숲 기존 수종으로'], yard: ['warn', '공원 면적 구성(포장·잔디) 변화 — 조성계획 변경 해당 여부 확인'], bench: ['ok', ''], sign: ['ok', ''], garden: ['ok', ''], photo: ['ok', ''], toilet: ['warn', '건축물 — 조성계획 변경 확인'] };
+    return { it, rows: ks.map(k => { const r = it.rule[k] || def[k] || ['ok', '']; const g = pl.G.find(x => x.k === k); return { k, i: pl.G.indexOf(g), name: groupText(g, pl).t, st: r[0], t: r[1] }; }) };
+  }
+  function intentHTML(pl) {
+    const { it, rows } = intentRows(pl), bad = rows.filter(r => r.st === 'no').length, warn = rows.filter(r => r.st === 'warn').length;
+    const lab = { ok: '맞음', warn: '조건부', no: '충돌' };
+    return '<h4 class="tw-h4">대상지 의도를 해치지 않나 <small>원래 용도·경관과 맞는지</small></h4>' +
+      '<div class="tw-int"><p class="it"><b>이곳의 원래 의도</b>' + esc(it.t) + (it.src.length ? ' <cite title="' + esc(it.src.map(c => CITE[c].f).join(' / ')) + '">' + esc(it.src.map(evS).join(' · ')) + '</cite>' : '') + '</p>' +
+      '<p class="all">' + esc(INTENT_ALL.t) + ' <cite title="' + esc(CITE.dsw.f) + '">' + esc(evS('dsw')) + '</cite></p>' +
+      (rows.length ? '<ul>' + rows.map(r => '<li class="' + r.st + '"><span class="no">' + NUM[r.i] + '</span><span class="n">' + esc(r.name) + (r.t ? '<small>' + esc(r.t) + '</small>' : '') + '</span><span class="s">' + lab[r.st] + '</span></li>').join('') + '</ul>' : '') +
+      '<p class="sum ' + (bad ? 'no' : warn ? 'warn' : 'ok') + '">' + (bad ? '⚠ 원래 의도와 부딪히는 수단 ' + bad + '개 — 위치를 옮기거나 탈착식으로 바꿔야 함' : warn ? '조건을 지키면 원래 의도를 유지할 수 있음(조건부 ' + warn + '개)' : '원래 의도와 맞음') + '</p>' +
+      '<p class="law">원래 주제·특색을 바꾸지 않는 소규모 시설이면 공원조성계획 변경 절차를 간단히 할 수 있음 <cite title="' + esc(CITE.law.f) + '">' + esc(evS('law')) + '</cite></p></div>';
+  }
+  // ---------- 왜 이 안을 냈나: 거점 진단 기준(지금 값 vs 기준) → 그래서 넣은 수단 ----------
+  function critRows(pl) {
+    const h = pl.h, p = P[h.id], pct = satPct(p), rs = (p && p.reasons) || {}, c14 = pl.d14.crowd.b, h14 = pl.d14.heat.b, rest = pl.cmp.b.rest;
+    const evC = hubEv(h.id).find(e => e.key === 'crowded'), proven = !!(evC && evC.park.v === 'yes' && evC.n >= 2), cut = proven ? NB_FREE : CROWD_CUT;
+    const has = k => pl.G.some(g => g.k === k), names = ks => ks.filter(has).map(k => ({ sign: '분산 안내', yard: '쉼터 확충', sail: '그늘막', tree: '녹음수', bench: '벤치', garden: '계절 정원', photo: '포토존', toilet: '화장실' })[k]).join(' · ');
+    const R = [];
+    R.push({ k: '혼잡', now: '14시 혼잡률 ' + pc(c14.ratio), cut: pc(cut) + ' 넘으면' + (proven ? ' (「혼잡」 불만이 실시간 측정과 일치해 55%로 낮춤)' : ''), over: c14.ratio > cut, put: names(['sign', 'yard']), src: '혼잡률 = 예상 인원 ÷ 수용 인원(수용은 대시보드 가정값) · 기준 70%는 팀 가정, 55%는 이웃 거점 「여유」 기준' });
+    if (h.type === 'outdoor') R.push({ k: '더위', now: '폭염일 14시 그늘 ' + pc(h14.s), cut: pc(SHADE_TARGET) + ' 안 되면', over: h14.s < SHADE_TARGET, put: names(['sail', 'tree']), src: '그늘 비율 = 체류공간(거점 40m) 중 그늘 진 비율, 태양 위치(NOAA 식)로 계산 · 목표 50%는 팀 가정' });
+    R.push({ k: '쉴 곳', now: '쉼터까지 평균 ' + Math.round(rest) + 'm', cut: '60m 넘으면', over: rest > 60, put: names(['bench']), src: '휴게시설 위치: OpenStreetMap(벤치·쉼터) · 60m는 팀 가정' });
+    if (p && p.n) R.push({ k: '이용자 평가', now: '만족 ' + Math.round(pct) + '% (' + p.n + '건)', cut: SAT_CUT + '% 안 되면 개선 대상', over: pct < SAT_CUT, put: '', src: (rat.demo ? '시연용 가상 평가' : '대시보드 도착 평가, 최근 90일') + (Object.keys(rs).length ? ' · 아쉬운 이유: ' + Object.keys(BAD).filter(k => rs[k]).map(k => BAD[k] + ' ' + rs[k]).join(', ') : '') });
+    if (rs.boring) R.push({ k: '볼거리', now: '「' + BAD.boring + '」 ' + rs.boring + '건', cut: '불만이 있으면', over: true, put: names(['garden', 'photo']), src: '이용자 선택 응답 · 점수 계산에는 넣지 않음' });
+    if (rs.far || rs.facility) R.push({ k: '편의', now: '「' + (rs.facility ? BAD.facility : BAD.far) + '」 ' + (rs.facility || rs.far) + '건', cut: '화장실 250m 밖이면', over: has('toilet'), put: names(['toilet']), src: '화장실 위치: OSM·서울시 공중화장실 위치정보' });
+    return R;
+  }
+  function critHTML(pl) {
+    const R = critRows(pl);
+    return '<h4 class="tw-h4">왜 이 안을 냈나 <small>이 장소를 기준과 비교한 결과</small></h4><ul class="tw-crit">' + R.map(r => '<li class="' + (r.over ? 'over' : 'ok') + '"><span class="k">' + r.k + '</span><span class="v"><b>' + esc(r.now) + '</b><small>기준: ' + esc(r.cut) + '</small></span><span class="j">' + (r.over ? '기준 넘음' : '괜찮음') + '</span>' +
+      (r.k === '이용자 평가' ? '' : r.over && r.put ? '<span class="put">→ 넣은 것: ' + esc(r.put) + '</span>' : r.over ? '<span class="put none">→ 이 안에는 대응 수단 없음' + (picked !== 'C' ? ' (더 큰 안에서 다룸)' : '') + '</span>' : r.put ? '<span class="put extra">→ ' + esc(r.put) + ': 기준은 괜찮지만 이 안의 기본 구성이라 넣음 — 효과 작음</span>' : '') + '<small class="src">' + esc(r.src) + '</small></li>').join('') + '</ul>';
+  }
   function reviewHTML() {
     const set = SETS[sel.id], pop = $('.tw-pop'), chip = $('.tw-hubchip'); if (chip) chip.textContent = sel.name;
     $('.tw-vsw').innerHTML = '<span class="lb">' + (picked ? '대안' : '대안을<br>선택하세요') + '</span>' + ['A', 'B', 'C'].map(k => '<button type="button" data-t="pick" data-v="' + k + '" aria-pressed="' + (k === picked) + '"' + (set ? '' : ' disabled') + '><b>' + k + '안</b><small>' + esc(hintOf(k)) + '</small></button>').join('');
@@ -1115,18 +1382,55 @@ export async function openTwin(o) {
     if (!set) { pop.innerHTML = bar + '<div class="tw-popb"><p class="tw-note">' + (set === null ? '분석 범위 밖' : '대안 산정 중…') + '</p></div>'; return; }
     const pl = set[picked], E = evalNow(pl), c = costOf(pl), sv = sensOf(pl), tb = t => '<table class="tw-ct"><tr>' + t.head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr>' + t.rows.map(r => '<tr>' + r.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</table>';
     const sat = (lbl, e) => '<div class="tw-kp"><small>' + lbl + '</small><span>' + e.b.raw.toFixed(0) + '<i>→</i><b class="' + (e.a.raw - e.b.raw > .5 ? 'up' : '') + '">' + e.a.raw.toFixed(0) + '</b><em>점</em></span></div>';
+    const M = evalMix(pl, hour), dC = E.crowd.a.raw - E.crowd.b.raw, dH = E.heat.a.raw - E.heat.b.raw, dM = M.a.raw - M.b.raw, sg = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1);
+    const verdict = dC > .5 && dC > dH * 2 ? '붐빌 때 효과가 크고, 더위에는 효과가 작아요' : dH > .5 && dH > dC * 2 ? '더울 때 효과가 크고, 붐빌 때는 효과가 작아요' : dM > .5 ? '붐빌 때도, 더울 때도 좋아져요' : '눈에 띄는 개선은 없어요';
+    const gl = glanceData(set)[picked];
+    // 이야기 순서: 결론 → 이곳의 문제 → 수단마다 [왜 → 효과 → 근거 → 비용 → 원래 의도] → 남는 문제 → (자세히)
+    const R = critRows(pl), PROB = { '혼잡': ['sign', 'yard'], '더위': ['sail', 'tree'], '쉴 곳': ['bench', 'yard'], '볼거리': ['garden', 'photo'], '편의': ['toilet'] };
+    const gk = [...new Set(pl.G.map(g => g.k))], probOf = k => Object.keys(PROB).find(q => PROB[q].includes(k)), rowOf = n => R.find(r => r.k === n);
+    const costKeys = k => ({ sign: ['signS', 'signD'], yard: ['deck', 'lawn', 'bench'], bench: gk.includes('yard') ? [] : ['bench'], sail: ['sail'], tree: ['tree'], garden: ['garden'], photo: ['photo'], toilet: ['toilet'] })[k] || [];
+    const costG = k => { const ls = c.lines.filter(l => costKeys(k).includes(l.k) && l.lo != null); return ls.length ? wonR(ls.reduce((a, l) => a + l.lo, 0), ls.reduce((a, l) => a + l.hi, 0)) : '0원'; };
+    const ec = pl.d14.crowd, eh = pl.d14.heat, both = (a, b) => gk.includes(a) && gk.includes(b);
+    const effOf = k => k === 'sign' || k === 'yard' ? '14시 혼잡률 <b>' + pc(ec.b.ratio) + ' → ' + pc(ec.a.ratio) + '</b>' + (both('sign', 'yard') ? ' (분산 안내·쉼터 확충 합친 효과)' : '') : k === 'sail' || k === 'tree' ? '폭염일 14시 그늘 <b>' + pc(eh.b.s) + ' → ' + pc(eh.a.s) + '</b>' + (both('sail', 'tree') ? ' (그늘막·녹음수 합친 효과)' : '') : k === 'bench' ? '쉼터까지 평균 <b>' + Math.round(pl.cmp.b.rest) + ' → ' + Math.round(pl.cmp.a.rest) + 'm</b>' : '점수 계산 밖 — 불만 대응';
+    const IR = intentRows(pl), irOf = k => IR.rows.find(r => r.k === k), ST = { ok: '맞음', warn: '조건부', no: '충돌' };
+    const cite = k => '<cite title="' + esc(CITE[k] ? CITE[k].f : '') + '">' + esc(CITE[k] ? CITE[k].s : k) + '</cite>';
+    const probs = R.filter(r => r.over && r.k !== '이용자 평가'), rate = rowOf('이용자 평가');
+    const left = probs.filter(r => !(PROB[r.k] || []).some(k => gk.includes(k)));
+    const tot = c.lines.length ? wonR(c.lo, c.hi) : '0원';
     pop.innerHTML = bar + '<div class="tw-popb">' +
-      '<p class="tw-why2"><b>적용 조건</b>' + esc(A.pick) + '</p>' +
-      '<div class="tw-kps"><div class="tw-kp big"><small>개략 비용</small><b class="sm">' + esc(costTxt(c).split(' + ')[0]) + '</b></div><div class="tw-kp big"><small>기간</small><b class="sm">' + esc(A.period.replace('(가정)', '').trim()) + '</b></div>' +
-      sat('혼잡 시나리오 · ' + hm(hour), E.crowd) + sat('폭염 시나리오 · ' + hm(hour), E.heat) + '</div>' + '<p class="tw-rng">가정을 바꿔 보면 <b>+' + sv.lo.toFixed(1).replace('-', '−') + ' ~ +' + sv.hi.toFixed(1) + '점</b> 오름<small>14시 두 시나리오 평균 · 기준 가정 +' + sv.g0.toFixed(1) + '점 · 실측 아닌 모형값 · 근거는 「점수 상승 근거」</small></p>' +
-      '<h4>구성 수단<small>번호는 오른쪽 「대안 적용」 화면의 번호와 같음</small></h4>' +
-      (pl.G.length ? '<ol class="tw-plan">' + pl.G.map((g, i) => { const t = groupText(g, pl); return '<li><span class="no">' + NUM[i] + '</span><span><b>' + esc(t.t) + '</b><small>' + esc(t.d) + '</small></span></li>'; }).join('') + '</ol>' : '<p class="tw-note">기준 초과 문제 없음 — 변경 없음</p>') +
-      '<div class="tw-pc2"><section class="pro"><h5>장점</h5><ul>' + A.pros.slice(0, 2).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section><section class="con"><h5>단점</h5><ul>' + A.cons.slice(0, 2).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section></div>' +
-      '<details class="tw-more"><summary>사업비 산출</summary>' + tb(budTable(pl)) + '</details>' +
-      '<details class="tw-more"><summary>점수 상승 근거</summary>' + tb(basisTable(pl)) + '<h6 class="tw-h6">가정을 바꾸면 (영향 큰 순)</h6><ul class="tw-sens">' + sv.rows.map(r => '<li><b>' + esc(r.f.label) + '</b> (지금 ' + esc(r.f.base) + ') → ' + esc(r.lo.n) + ' ' + f1(r.lo.g) + ' ~ ' + esc(r.hi.n) + ' ' + f1(r.hi.g) + '점<small>' + esc(r.f.why) + '</small></li>').join('') + '</ul></details>' +
+      // ① 결론
+      '<section class="tw-hero"><small>예측 만족도 · 붐비는 여름 주말 ' + hm(hour) + '</small><div class="n"><span>' + M.b.raw.toFixed(0) + '</span><i>→</i><b>' + M.a.raw.toFixed(0) + '</b><em>점</em><u class="' + (dM > .5 ? 'up' : '') + '">' + sg(dM) + '</u></div>' +
+      '<p>' + verdict + '</p><div class="two"><span>붐빌 때 <b class="' + (dC > .5 ? 'up' : '') + '">' + sg(dC) + '</b></span><span>더울 때 <b class="' + (dH > .5 ? 'up' : '') + '">' + sg(dH) + '</b></span></div>' +
+      '<div class="meta"><span>비용 <b>' + esc(tot) + '</b></span><span>기간 <b>' + esc(A.period.replace('(가정)', '').trim()) + '</b></span></div></section>' +
+      // ② 이곳의 문제
+      '<h4 class="tw-h4">이곳의 문제</h4><ul class="tw-prob">' + (rate ? '<li><b>이용자 만족 ' + esc(rate.now.replace('만족 ', '')) + '</b><small>기준 ' + SAT_CUT + '% · ' + esc(rate.src.split(' · ').slice(1).join(' · ') || rate.src) + '</small></li>' : '') +
+      (probs.length ? probs.map(r => '<li><b>' + r.k + ' — ' + esc(r.now) + '</b><small>기준: ' + esc(r.cut) + '</small></li>').join('') : '<li><b>기준을 넘는 문제 없음</b></li>') + '</ul>' +
+      // ③ 그래서 이렇게 — 수단마다 한 덩어리
+      '<h4 class="tw-h4">그래서 이렇게 고칩니다 <small>번호 = 오른쪽 화면 번호</small></h4>' +
+      (pl.G.length ? '<ol class="tw-steps">' + gk.map(k => { const g = pl.G.find(x => x.k === k), n = pl.G.indexOf(g), pr = rowOf(probOf(k)), w = WHY[k], ir = irOf(k) || { st: 'ok', t: '' };
+        const why = pr && pr.over ? esc(pr.now + ' — 기준 ' + pr.cut) : pr ? '<span class="weak">' + esc(pr.k) + '는 기준 안 — 이 안의 기본 구성이라 넣음, 효과 작음</span>' : '불만 응답 대응';
+        return '<li><div class="hd"><span class="no">' + NUM[n] + '</span><b>' + esc(groupText(g, pl).t) + '</b><em>' + esc(costG(k)) + '</em></div><dl>' +
+          '<dt>왜</dt><dd>' + why + '</dd>' +
+          '<dt>효과</dt><dd>' + effOf(k) + '</dd>' +
+          (w && w.ev.length ? '<dt>근거</dt><dd>' + esc(w.ev[0][0]) + ' ' + cite(w.ev[0][1]) + '</dd>' : '') +
+          '<dt>원래 의도</dt><dd><span class="st ' + ir.st + '">' + ST[ir.st] + '</span>' + (ir.t ? ' ' + esc(ir.t) : '') + '</dd></dl></li>'; }).join('') + '</ol>' : '<p class="tw-note">바꾸지 않음</p>') +
+      // ④ 같은 안 범위의 보완 수단(계산 수단이 못 다룬 문제) — 다른 안으로 넘기지 않음
+      (left.length ? '<h4 class="tw-h4">함께 하는 보완 수단 <small>' + ({ A: '운영으로', B: '작은 시설로', C: '공간으로' })[picked] + ' 남은 문제까지 · 점수 계산 밖, 설치 후 평가로 확인</small></h4><ol class="tw-steps supp">' + left.map(r => { const sp = (SUPP[picked] || {})[r.k]; if (!sp) return '<li><div class="hd"><span class="no">+</span><b>' + esc(r.k) + ' — 이 안의 수단으로는 기준 아래로 못 내림</b></div><dl><dt>왜</dt><dd>' + esc(r.now + ' — 기준 ' + r.cut) + '</dd><dt>다음</dt><dd>현장 조사로 원인 확인 후 별도 검토</dd></dl></li>';
+        const cst = sp.cost === 0 ? sp.costT : sp.cost === 'garden20' ? wonR(COST.garden.lo * 20, COST.garden.hi * 20) : sp.cost === 'bench2' ? wonR(COST.bench.lo * 2, COST.bench.hi * 2) : sp.cost === 'tree3' ? wonR(COST.tree.lo * 3, COST.tree.hi * 3) : sp.costT;
+        return '<li><div class="hd"><span class="no">+</span><b>' + esc(sp.t) + '</b><em>' + esc(cst.split(' — ')[0]) + '</em></div><dl><dt>왜</dt><dd>' + esc(r.k + ' — ' + r.now + ' (기준 ' + r.cut + ')') + '</dd><dt>하는 일</dt><dd>' + esc(sp.d) + (cst.includes(' — ') ? ' <span class="weak">(' + esc(cst.split(' — ')[1]) + ')</span>' : '') + '</dd>' +
+          (sp.ev ? '<dt>근거</dt><dd>' + esc(sp.ev[0]) + ' ' + cite(sp.ev[1]) + '</dd>' : '') + '<dt>원래 의도</dt><dd><span class="st ' + sp.intent[0] + '">' + ST[sp.intent[0]] + '</span>' + (sp.intent[1] ? ' ' + esc(sp.intent[1]) : '') + '</dd></dl></li>'; }).join('') + '</ol>' : '') +
+      // ⑤ 자세히
+      '<details class="tw-deep"><summary>자세히 보기<small>장점·단점 · 점수 계산 · 근거 전체 · 단가 출처 · 대상지 의도 · 왜 이곳인가</small></summary>' +
+      '<p class="tw-why2"><b>이럴 때 고르세요</b>' + esc(A.pick) + '</p>' +
+      '<div class="tw-pc2 tw-pc3"><section class="pro"><h5>장점</h5><ul>' + gl.pros.slice(0, 4).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section><section class="con"><h5>단점</h5><ul>' + gl.cons.slice(0, 4).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section></div>' +
+      whyHTML(pl) +
+      '<p class="tw-rng">가정을 바꿔 보면 <b>' + sg(sv.lo) + ' ~ ' + sg(sv.hi) + '점</b><small>14시 두 시나리오 평균 · 기준 가정 ' + sg(sv.g0) + '점 · 실측 아닌 모형값</small></p>' +
+      '<details class="tw-more"><summary>단가와 출처</summary>' + tb(budTable(pl)) + '</details>' +
+      '<details class="tw-more"><summary>대상지 의도 점검 전체</summary>' + intentHTML(pl) + '</details>' +
+      '<details class="tw-more"><summary>점수 상승 근거 표</summary>' + tb(basisTable(pl)) + '<h6 class="tw-h6">가정을 바꾸면 (영향 큰 순)</h6><ul class="tw-sens">' + sv.rows.map(r => '<li><b>' + esc(r.f.label) + '</b> (지금 ' + esc(r.f.base) + ') → ' + esc(r.lo.n) + ' ' + f1(r.lo.g) + ' ~ ' + esc(r.hi.n) + ' ' + f1(r.hi.g) + '점<small>' + esc(r.f.why) + '</small></li>').join('') + '</ul></details>' +
       '<details class="tw-more"><summary>왜 이곳인가</summary>' + gradeBox(gradeOf(sel.id), 'tw-grade') + evHub(sel.id) + '</details>' +
-      '<p class="tw-rvn">그림·점수·수목 현황은 알고리즘 추정치 — 실측 필요. 단가 미확인 항목은 견적 필요. <button type="button" class="tw-edbtn" data-t="ed-open">✎ 대안 구성 편집</button></p></div>' +
-      '<div class="tw-popcta"><button type="button" class="tw-cta" data-t="report">' + PRINT_ICO + '<span><b>' + picked + '안 검토 자료 인쇄</b><small>공문 · 제안서 · 설계도 · 회신서 — ' + picked + '안만 담김</small></span><i aria-hidden="true">→</i></button></div>';
+      '<p class="tw-rvn">그림·점수·수목 현황은 알고리즘 추정치 — 실측 필요. 단가는 지자체 예산·계약 사례 범위(설계·견적으로 확정). <button type="button" class="tw-edbtn" data-t="ed-open">✎ 대안 구성 편집</button></p></details></div>' +
+      '<div class="tw-popcta"><button type="button" class="tw-cta" data-t="report">' + PRINT_ICO + '<span><b>' + picked + '안 검토 자료 인쇄</b><small>보고 공문 · 검토 보고서 · 설계도 · 의견서 — ' + picked + '안만 담김</small></span><i aria-hidden="true">→</i></button></div>';
   }
   function pickAlt(k) {
     picked = k && ALT[k] ? k : null; if (picked) alt = picked; split = !!picked; root.classList.toggle('tw-picked', !!picked);
@@ -1175,7 +1479,7 @@ export async function openTwin(o) {
     if (moreOpen) { const d = ui.querySelector('.tw-pred .tw-more'); if (d) d.open = true; }
   }
   function labelsHTML() { labs.innerHTML = hubs.map(h => '<button type="button" class="tw-lab' + (h.id === sel.id ? ' on' : '') + '" data-h="' + h.id + '">' + esc(h.name) + ' <em style="color:' + (h.pct == null ? '#aab' : pctCss(h.pct)) + '">' + (h.pct == null ? '평가 없음' : '😊' + Math.round(h.pct) + '%') + '</em> <b></b></button>').join(''); }
-  function labelScores() { [...labs.children].forEach((el, k) => { const h = hubs[k], pl = plans[h.id]; let t = ''; if (h.id === sel.id && pl && !bare()) { const e = evalHub(pl, scn, hour); t = e.b.raw.toFixed(0) + '→' + e.a.raw.toFixed(0) + '점'; } else t = baseSat(h, scn, hour).toFixed(0) + '점'; el.querySelector('b').textContent = t; el._w = 0; }); }
+  function labelScores() { [...labs.children].forEach((el, k) => { const h = hubs[k], pl = plans[h.id]; let t = ''; if (h.id === sel.id && pl && !bare()) { const e = evNow(pl, hour); t = e.b.raw.toFixed(0) + '→' + e.a.raw.toFixed(0) + '점'; } else t = (scn === MIX ? (baseSat(h, SCN.crowd, hour) + baseSat(h, SCN.heat, hour)) / 2 : baseSat(h, scn, hour)).toFixed(0) + '점'; el.querySelector('b').textContent = t; el._w = 0; }); }
   function numsHTML() { const pl = plans[sel.id]; nums.innerHTML = pl && !bare() ? pl.G.map((g, k) => '<span class="tw-num' + (['garden', 'photo', 'toilet'].includes(g.k) ? ' ex' : '') + '">' + NUM[k] + '</span>').join('') : ''; }
   let blocks = [];
   function layoutBlocks() { blocks = (REVIEW ? ['.tw-pop:not([hidden])', '.tw-top', '.tw-time'] : ['.tw-left', '.tw-right', '.tw-top', '.tw-time']).map(s => ui.querySelector(s)).filter(Boolean).map(e => e.getBoundingClientRect()); layoutViews(); }
@@ -1218,7 +1522,7 @@ export async function openTwin(o) {
   // 시각·상황이 바뀌면: 사람 수 · 패널 · 숫자 · 칸 불편도
   function refresh() {
     const pl = plans[sel.id];
-    if (pl) { const e = evalHub(pl, scn, hour); setCount('L', e.b.ppl); setCount('R', bare() ? e.b.ppl : e.a.ppl); }
+    if (pl) { const e = evNow(pl, hour); setCount('L', e.b.ppl); setCount('R', bare() ? e.b.ppl : e.a.ppl); }
     panelHTML(); updStats(); labelScores(); if (glow.visible) paintGlow(cellScores()); dirty = labDirty = true;
   }
   function cellScores() {
@@ -1314,7 +1618,7 @@ export async function openTwin(o) {
   // ---------- 제안서(구청 제출용): 공문 + 사업제안서(A·B·C안 모두) + 개략 설계도 + 선택 회신서 ----------
   // 우리 팀은 안을 고르지 않는다. 같은 자료·같은 식으로 만든 세 안과 근거를 내고, 선택은 구청(관리 주체)이 회신서로 한다.
   const ymd = () => { const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-  const KS = ['A', 'B', 'C'];
+  let KS = ['A', 'B', 'C'];   // 검토 자료에 담을 안: 검토 화면에서 고른 안 하나, 안 골랐으면 세 안
   const kwon = v => Math.round(v / 1000).toLocaleString();
   const budTxtOf = c => !c.lines.length ? '0천원(설치 없음)' : c.unknown === c.lines.length ? '견적 필요' : kwon(c.lo) + (c.hi > c.lo ? '~' + kwon(c.hi) : '') + '천원' + (c.unknown ? ' + 견적 필요 ' + c.unknown + '건' : '');
   // 단계별 점수 근거(두 상황을 한 표로)
@@ -1326,7 +1630,7 @@ export async function openTwin(o) {
   function budTable(pl) {
     const c = costOf(pl);
     const rows = c.lines.map(l => { const u = COST[l.k] || {}; return [l.label, Math.round(l.q).toLocaleString() + l.unit, u.lo == null ? '견적 필요' : wonR(u.lo, u.hi) + '/' + l.unit, wonR(l.lo, l.hi), l.src]; });
-    rows.push(['최소 금액(확인된 단가만)', '', '', c.lo ? wonR(c.lo, c.hi) : '없음', '확인된 단가만 더한 최소 금액' + (c.unknown ? ' — 견적 필요 ' + c.unknown + '건(그늘막·벤치·안내판 등) 제외' : '')]);
+    rows.push(['합계', '', '', c.lo ? wonR(c.lo, c.hi) : '없음', '항목별 사례 단가 범위를 더한 값(설치비 별도 항목은 각 줄 참고)' + (c.unknown ? ' — 견적 필요 ' + c.unknown + '건(그늘막·벤치·안내판 등) 제외' : '')]);
     if (c.refLo) rows.push(['참고 총액(그늘막 참고값 포함)', '', '', wonR(c.lo + c.refLo, c.hi + c.refHi), '그늘막 1개 약 742만~768만원(스마트 그늘막 2026 나라장터 낙찰 기준)을 더한 참고값 — 8×8m 구조물 단가는 견적 필요']);
     return { head: ['항목', '수량', '단가(범위)', '금액(범위)', '단가 출처'], rows };
   }
@@ -1383,7 +1687,7 @@ export async function openTwin(o) {
     sign: { t: '분산 유도 안내판', spec: '기둥 높이 2.3m · 안내판 1.5×1.0m(화면 1.36×0.86m) · 전체 높이 약 2.55m · 실시간 혼잡·우회 안내', draw: () => '<line x1="20" y1="150" x2="300" y2="150" stroke="#3b3227" stroke-width="2"/><rect x="155" y="70" width="10" height="80" fill="#333"/><rect x="110" y="40" width="100" height="62" fill="#1f7a5a"/><rect x="116" y="46" width="88" height="50" fill="#0c1714"/><text x="160" y="76" class="sy" text-anchor="middle">혼잡 안내</text><text x="218" y="74" class="dm">1.5×1.0m</text><text x="172" y="130" class="dm">2.3m</text>' },
     garden: { t: '계절 정원(화단)', spec: '화단 7.0×3.4m(약 24㎡) · 높이 0.45m · 계절 초화', draw: () => '<line x1="20" y1="140" x2="300" y2="140" stroke="#3b3227" stroke-width="2"/><rect x="60" y="112" width="200" height="28" fill="#f7d6e6" stroke="#c0568a"/>' + Array.from({ length: 14 }, (_, i) => '<circle cx="' + (70 + i * 14) + '" cy="108" r="5" fill="' + ['#e0567a', '#f2b632', '#9a6bd1', '#ffffff'][i % 4] + '" stroke="#c0568a"/>').join('') + '<text x="160" y="160" class="dm" text-anchor="middle">7.0m</text><text x="266" y="130" class="dm">0.45m</text>' },
     toilet: { t: '모듈형 화장실', spec: '본체 4.0×2.6m · 높이 2.8m · 지붕 4.6×3.2m · 출입문 2', draw: () => '<line x1="20" y1="150" x2="300" y2="150" stroke="#3b3227" stroke-width="2"/><rect x="90" y="60" width="140" height="90" fill="#e8eef5" stroke="#4a6a8a" stroke-width="2"/><rect x="80" y="54" width="160" height="8" fill="#555"/><rect x="118" y="86" width="28" height="64" fill="#c79a66"/><rect x="174" y="86" width="28" height="64" fill="#c79a66"/><text x="160" y="166" class="dm" text-anchor="middle">4.0m</text><text x="238" y="108" class="dm">2.8m</text>' },
-    photo: { t: '포토존', spec: '기단 2.4×1.4m · 원형 조형물(모형 개략) · 규격은 견적 필요', draw: () => '<line x1="20" y1="150" x2="300" y2="150" stroke="#3b3227" stroke-width="2"/><rect x="118" y="142" width="84" height="8" fill="#bdb8ad"/><circle cx="160" cy="96" r="42" fill="none" stroke="#f2b632" stroke-width="10"/><text x="214" y="146" class="dm">기단 2.4×1.4m</text>' }
+    photo: { t: '포토존', spec: '기단 2.4×1.4m · 원형 조형물(모형 개략) · 규격은 실시설계에서 확정', draw: () => '<line x1="20" y1="150" x2="300" y2="150" stroke="#3b3227" stroke-width="2"/><rect x="118" y="142" width="84" height="8" fill="#bdb8ad"/><circle cx="160" cy="96" r="42" fill="none" stroke="#f2b632" stroke-width="10"/><text x="214" y="146" class="dm">기단 2.4×1.4m</text>' }
   };
   function detailSVG(keys) {
     const n = keys.length, cols = 2, rows = Math.ceil(n / cols), CW = 500, CH = 250, VW = CW * cols, VH = CH * rows;
@@ -1396,15 +1700,21 @@ export async function openTwin(o) {
     return ['sail', 'tree', 'deck', 'lawn', 'bench', 'sign', 'garden', 'toilet', 'photo'].filter(k => ks.has(k));
   }
   // 도면 묶음: 도면 목록 → 안별 배치도·단면도 → 시설 상세도
-  function drawingSet(set, date, keys, pick) {
+  function drawingSet(set, date, keys) {
     keys = keys || KS;
-    const sheets = [], LG = { dk: '데크 쉼터', lw: '잔디 쉼터', sl: '대형 차양(그늘막) 8×8m', tr: '녹음수(수관 9m)', bn: '벤치', sg: '분산 유도 안내판', gd: '계절 정원', wc: '화장실', ph: '포토존', rt: '분산 유도 안내 동선', cv: '기존 수관 피복(위성)', st: '체류공간 40m · 점선 원 80m' };
-    keys.forEach(k => {
-      const pl = set[k], pv = planSVG(pl), sv = sectionSVG(pl);
-      sheets.push({ more: k !== pick, no: 'L-' + k + '01', name: ALT[k].name + (k === pick ? ' 대안 위치도' : ' 배치도'), svg: pv.svg, scale: 'A4 가로 약 1:' + pv.scale.toLocaleString() + ' (도면 폭 ' + pv.span + 'm)', legend: kindsOf(pl).map(x => [x, LG[x]]), rows: planRows(pl), note: '시설 번호는 수량표와 같음. 굵은 동서선 A–A′는 단면도 위치.' });
-      sheets.push({ more: true, no: 'L-' + k + '02', name: ALT[k].name + ' 단면도 A–A′', svg: sv.svg, scale: 'A4 가로 약 1:' + sv.scale + ' (가로·세로 같은 축척, 폭 ' + sv.span + 'm)', note: '거점을 지나는 동서 단면(앞뒤 12m 안 시설을 투영). 기존 수목 높이는 자료가 없어 10m로 가정한 점선, 녹음수는 심을 때 H4.5m와 자란 뒤 수관 9m(점선).' });
+    const sheets = [], dt = date.split('-').map(Number).join('. ') + '.', p0 = set[keys[0]], A3 = v => 'A3 1/' + v.toLocaleString();
+    const NOTE0 = ['기본구상(개략) 도면 — 측량·실시설계 도면 아님', '기존 수목: 위성 피복 추정(매목조사 필요)', '원로 폭 4m 가정(실측 필요)'];
+    const loc = bpSheet({ mode: 'loc', rel: 'L-002', pl: p0, no: 'L-001', title: '위치도', date: dt, notes: ['서울숲 전체에서 대상지 위치 표시', '공원 경계는 분석 격자(20m) 외곽선으로 지적 경계와 다를 수 있음'] });
+    sheets.push({ full: true, no: 'L-001', name: '위치도', svg: loc.svg, scale: A3(loc.scale) });
+    const ex = bpSheet({ mode: 'ex', rel: 'L-001, L-101', pl: p0, no: 'L-002', title: '현황도', date: dt, notes: NOTE0.concat(['수면·건축물·잔디: OpenStreetMap', '도면 명칭·축척: 서울시 건설기술용역 관리편람(조경편, 2014)']) });
+    sheets.push({ full: true, no: 'L-002', name: '현황도', svg: ex.svg, scale: A3(ex.scale) });
+    keys.forEach((k, n) => {
+      const pl = set[k], no = 'L-1' + String(n + 1).padStart(2, '0'), b = bpSheet({ mode: 'pl', rel: 'L-002, L-2' + String(n + 1).padStart(2, '0') + ', D-001', pl, no, title: (keys.length > 1 ? k + '안 ' : '') + '시설물배치도', date: dt, notes: NOTE0.concat(['번호 = 수량표 번호', 'A–A′ = 단면도 L-2' + String(n + 1).padStart(2, '0') + ' 위치', '치수 단위 mm']) });
+      sheets.push({ full: true, no, name: ALT[k].name + ' 시설물배치도', svg: b.svg, scale: A3(b.scale) });
+      const sv = sectionSVG(pl);
+      sheets.push({ more: true, no: 'L-2' + String(n + 1).padStart(2, '0'), name: ALT[k].name + ' 단면도 A–A′', svg: sv.svg, scale: 'A4 가로 약 1:' + sv.scale + ' (가로·세로 같은 축척, 폭 ' + sv.span + 'm)', note: '거점을 지나는 동서 단면(앞뒤 12m 안 시설을 투영). 기존 수목 높이는 자료가 없어 10m로 가정한 점선, 녹음수는 심을 때 H4.5m와 자란 뒤 수관 9m(점선).' });
     });
-    const ds = detailKeys(set); if (ds.length) sheets.push({ more: true, no: 'D-01', name: '시설 상세도 (세 안 공통)', svg: detailSVG(ds).svg, scale: '축척 없음(치수 표기)', note: '치수는 디지털트윈 3D 모형에 쓴 값과 단가 조사 규격이며, 구조 계산·재료 사양은 실시설계에서 정한다.' });
+    const ds = detailKeys(set); if (ds.length) sheets.push({ more: true, no: 'D-001', name: KS.length === 1 ? '시설물 상세도' : '시설물 상세도 (세 안 공통)', svg: detailSVG(ds).svg, scale: '축척 없음(치수 표기)', note: '치수는 디지털트윈 3D 모형에 쓴 값과 단가 조사 규격이며, 구조 계산·재료 사양은 실시설계에서 정한다.' });
     return sheets;
   }
 
@@ -1413,7 +1723,8 @@ export async function openTwin(o) {
     const reasons = p ? Object.keys(BAD).filter(k => (p.reasons || {})[k]).sort((a, b) => p.reasons[b] - p.reasons[a]).map(k => BAD[k] + ' ' + p.reasons[k] + '건') : [];
     const C = base && base.d14.crowd, Hh = base && base.d14.heat, ti = treeInfo(sel);
     const name = '서울숲 ' + sel.name + ' 이용 환경 개선';
-    const title = '서울숲 「' + sel.name + '」 이용 환경 개선안(A·B·C)';
+    const one = KS.length === 1, K1 = KS[0], lab = one ? '' : '대안별 ';
+    const title = '서울숲 「' + sel.name + '」 이용 환경 개선안(' + KS.join('·') + ')';
     const loc = '서울숲 ' + (sel.zone || '') + ' 「' + sel.name + '」 일대 (서울 성동구 뚝섬로 273)';
     // 1. 현황 및 문제점(세 안 공통의 '지금')
     const tech = [];
@@ -1456,7 +1767,7 @@ export async function openTwin(o) {
     // 안별 시설 목록
     const facOf = k => { const pl = set[k], fac = pl.G.map((g, i) => { const t = groupText(g, pl); return NUM[i] + ' ' + t.t + ' — ' + t.d; }), sp = shadeSpecies();
       if (sp && pl.shade.some(t => t.k === 'tree')) fac.push('녹음수 수종 안: ' + sp + ' (서울숲 기존 식재 수종, 반려견 주의 목록 제외) — 현장 생육 여건 확인 필요');
-      return (fac.length ? fac : ['공간을 바꾸지 않음(기준을 넘지 않음)']).concat(['도면: L-' + k + '01 배치도 · L-' + k + '02 단면도 (붙임 2)']); };
+      return (fac.length ? fac : ['공간을 바꾸지 않음(기준을 넘지 않음)']).concat(['도면: 시설물배치도 L-1' + String(KS.indexOf(k) + 1).padStart(2, '0') + ' · 단면도 L-2' + String(KS.indexOf(k) + 1).padStart(2, '0') + ' (붙임 3)']); };
     // ⑥ 새로 생기는 그늘 면적(폭염 시나리오 14시, 체류공간 기준 — 기존 나무 그늘 포함한 면적의 증가분)
     const shadeArea = pl => { const e = evalHub(pl, SCN.heat, 14), a0 = pl.stay0.length * CELL_M2, a1 = pl.stay.length * CELL_M2; return { b: e.b.s * a0, a: e.a.s * a1, d: e.a.s * a1 - e.b.s * a0 }; };
     const effT = set ? { head: ['', ...KS.map(k => ALT[k].name)], rows: [
@@ -1480,25 +1791,28 @@ export async function openTwin(o) {
     const lead = (p && p.n ? '이용자 만족도 ' + Math.round(pct) + '%(' + p.n + '건)' : '이용자 평가 부족') + (C ? ', 혼잡 시나리오 예상 혼잡률 ' + pc(C.b.ratio) : '') + (Hh && sel.type === 'outdoor' ? ', 폭염 시나리오 체류공간 그늘 비율 ' + pc(Hh.b.s) : '');
     return {
       title, date, hub: sel.name, grade: gr, sheets, glance: set ? glanceData(set) : null,
-      doc: { org: DOC.from, to: DOC.to, cc: DOC.cc, subj: '서울숲 「' + sel.name + '」 거점 휴게환경 개선 제안', contact: DOC.contact,
+      doc: { org: DOC.from, to: DOC.to, cc: DOC.cc, subj: '서울숲 「' + sel.name + '」 거점 휴게환경 개선 검토 보고', contact: DOC.contact,
         rel: LAW.rel,
         body: [
           '서울숲 「' + sel.name + '」 거점은 ' + lead + ' 등으로 휴게환경 개선이 필요합니다.',
-          '디지털트윈으로 같은 조건에서 A 운영 개선·B 시설 보강·C 공간 재조성 세 안을 만들어 예측 만족도(평균 ' + gainsTxt + '점), 비용, 기간, 설계도를 비교했습니다.',
-          '검토하시어 적합한 안을 선택(제안서 마지막 장 회신서)해 주시기 바랍니다.'],
-        att: '붙임  제안서 1부.  끝.' },
+          one ? '디지털트윈으로 ' + ALT[K1].name + '을 만들어 예측 만족도(평균 ' + (set ? f1(gainOf(set[K1])) : '—') + '점), 비용, 기간, 설계도를 정리했습니다.' : '디지털트윈으로 같은 조건에서 A 운영 개선·B 시설 보강·C 공간 재조성 세 안을 만들어 예측 만족도(평균 ' + gainsTxt + '점), 비용, 기간, 설계도를 비교했습니다.',
+          one ? '검토하시어 추진 여부를 결정(붙임 마지막 장 검토 의견서)해 주시기 바랍니다.' : '검토하시어 추진할 안을 결정(붙임 마지막 장 검토 의견서)해 주시기 바랍니다.'],
+        att: '붙임  검토 보고서 1부.  끝.' },
       sections: [
-        { h: '제안 개요', table: { head: ['항목', '내용'], rows: [['제안명', '서울숲 「' + sel.name + '」 거점 휴게환경 개선'], ['대상지', loc], ['제안자', DOC.from], ['제안 내용', '디지털트윈 기반 개선 대안 3건(A 운영 개선 · B 시설 보강 · C 공간 재조성) — 구청 선택'], ['대안별 개략 사업비', set ? KS.map(k => k + '안 ' + costTxt(costOf(set[k]))).join(' / ') : '—'], ['대안별 사업기간', KS.map(k => k + '안 ' + ALT[k].period).join(' / ')], ['대안별 예측 효과', set ? KS.map(k => k + '안 ' + f1(gainOf(set[k])) + '점').join(' / ') + ' (만족도 모형 예측치)' : '—']] } },
+        { h: '검토 개요', table: { head: ['항목', '내용'], rows: [['사업명', '서울숲 「' + sel.name + '」 거점 휴게환경 개선'], ['사업 위치', loc], ['작성 부서', DOC.from], ['사업 내용', one ? '디지털트윈 기반 개선안 — ' + ALT[K1].name : '디지털트윈 기반 개선 대안 3건(A 운영 개선 · B 시설 보강 · C 공간 재조성) — 구청 선택'], [lab + '개략 사업비', set ? KS.map(k => k + '안 ' + costTxt(costOf(set[k]))).join(' / ') : '—'], [lab + '사업기간', KS.map(k => k + '안 ' + ALT[k].period).join(' / ')], [lab + '예측 효과', set ? KS.map(k => k + '안 ' + f1(gainOf(set[k])) + '점').join(' / ') + ' (만족도 모형 예측치)' : '—']] } },
         { h: '① 현황 및 문제점', table: stat },
         { h: '①-1 문제점', list: probs.concat(['객관 근거 판정(참고): ' + gr.label + ' — ' + gr.act + ' (세부 내용은 부록)']) },
-        set && { h: '② 개선방안 — 디지털트윈 대안 A·B·C (선택 주체: 구청)', html: glanceHTML(set, 'doc'), nx: '세 안은 같은 거점·같은 자료·같은 계산식에서 쓸 수 있는 수단만 달리해 만들었습니다. 팀은 안을 고르지 않습니다.' + (KS.some(k => ALT[k].edited) ? ' 세 안의 수단 구성은 팀이 조정했습니다: ' + KS.map(k => k + '안 ' + MEAS.filter(([m]) => ALT[k].use[m]).map(([, t]) => t.replace(/\(.*\)/, '')).join('·')).join(' / ') + '.' : '') },
-        sum && { h: '②-1 대안 비교표', table: sum },
+        set && { h: one ? '② 개선방안 — ' + ALT[K1].name : '② 개선방안 — 디지털트윈 대안 A·B·C (선택: 결재권자)', html: glanceHTML(set, 'doc', KS), nx: one ? '같은 거점·같은 자료·같은 계산식으로 만든 A·B·C 세 안 가운데 검토 화면에서 고른 안입니다.' : '세 안은 같은 거점·같은 자료·같은 계산식에서 쓸 수 있는 수단만 달리해 만들었습니다. 안 선택은 결재권자가 합니다.' + (KS.some(k => ALT[k].edited) ? ' 세 안의 수단 구성은 담당 부서가 조정했습니다: ' + KS.map(k => k + '안 ' + MEAS.filter(([m]) => ALT[k].use[m]).map(([, t]) => t.replace(/\(.*\)/, '')).join('·')).join(' / ') + '.' : '') },
+        sum && !one && { h: '②-1 대안 비교표', table: sum },
+        one && set && { h: '①-2 이 안을 낸 기준', table: { head: ['항목', '지금', '기준', '판정', '대응'], rows: critRows(set[K1]).map(r => [r.k, r.now, r.cut, r.over ? '기준 넘음' : '괜찮음', r.k === '이용자 평가' ? '—' : r.over && r.put ? r.put : r.over ? (((SUPP[K1] || {})[r.k] || {}).t ? SUPP[K1][r.k].t + '(보완 수단, 점수 밖)' : '현장 조사 후 별도 검토') : r.put ? r.put + '(기본 구성, 효과 작음)' : '—']) }, note: '기준값(혼잡 70%·그늘 50%·쉼터 60m·만족 60%)은 팀 가정이며 현장 계수·설문으로 보정 필요.' },
+        one && set && { h: '②-2 만족도가 오르는 이유', list: [...new Set(set[K1].G.map(g => g.k))].filter(k => WHY[k]).map(k => { const w = WHY[k]; return groupText(set[K1].G.find(g => g.k === k), set[K1]).t + ': ' + w.chain + (w.ev.length ? ' — 근거: ' + w.ev.map(([t, c]) => t + '(' + CITE[c].s + ')').join('; ') : '') + (w.lim ? ' — 한계: ' + w.lim[0] + '(' + CITE[w.lim[1]].s + ')' : ''); }) },
+        one && set && (() => { const R = intentRows(set[K1]); return { h: '②-3 대상지 의도 점검', table: { head: ['수단', '판정', '조건'], rows: R.rows.map(r => [r.name, { ok: '맞음', warn: '조건부', no: '충돌' }[r.st], r.t || '—']) }, note: '이곳의 원래 의도: ' + R.it.t + (R.it.src.length ? ' (' + R.it.src.map(c => CITE[c].s).join(', ') + ')' : '') + ' · ' + INTENT_ALL.t + '(' + CITE.dsw.s + ') · ' + CITE.law.f }; })(),
         ...(set ? KS.map(k => ({ apx: 1, h: k + '안 사업 내용 — ' + ALT[k].name, list: facOf(k) })) : []),
         { h: '③ 필요성', list: need.slice(0, 3).concat(LAW.lines.slice(0, 1)) },
         { apx: 1, h: '필요성 상세 — 선행연구 · 법적 근거', list: need.concat(LAW.lines, set && set.C.yards.length ? [LAW.c] : []) },
-        set && { h: '④ 소요예산', table: { head: ['대안', '개략 사업비'], rows: KS.map(k => [ALT[k].name, costTxt(costOf(set[k]))]) }, note: '단가는 출처가 확인된 값만 넣었고, 못 찾은 항목은 「견적 필요」로 남겼습니다. 항목별 내역은 부록.' },
+        set && { h: '④ 소요예산', table: { head: ['대안', '개략 사업비'], rows: KS.map(k => [ALT[k].name, costTxt(costOf(set[k]))]) }, note: '단가는 출처가 확인된 값만 넣었고, 단가마다 지자체 예산서·계약·회의록 출처를 붙였습니다(대부분 1건 기준이라 범위로 표시). 항목별 내역은 부록.' },
         ...(set ? KS.map(k => ({ apx: 1, h: k + '안 소요예산 내역 — ' + ALT[k].name + ' : ' + costTxt(costOf(set[k])), table: budTable(set[k]) })) : []),
-        { apx: 1, h: '소요예산 공통 기준', list: ['단가는 출처가 확인된 값만 넣었고(표의 「단가 출처」), 못 찾은 항목은 「견적 필요」로 남겼습니다.', '실제 사업비는 설계·조달(나라장터 종합쇼핑몰 품목정보 API 등)로 확정합니다.'] },
+        { apx: 1, h: '소요예산 공통 기준', list: ['단가는 출처가 확인된 값만 넣었고(표의 「단가 출처」), 단가는 지자체 예산서·계약정보·의회 회의록에서 원문을 확인한 값이며, 대부분 1건 기준이라 범위로 표시했습니다.', '실제 사업비는 설계·조달(나라장터 종합쇼핑몰 품목정보 API 등)로 확정합니다.'] },
         { h: '⑤ 추진 일정 — 설치 · 평가 · 재점검', table: sched },
         effT && { h: '⑥ 기대효과 — 예측 만족도 변화 · 신규 그늘 면적', table: effT, note: '점수는 대시보드 만족도 모형의 예상 점수(실제 이용자 평가 아님). 그늘 면적 = 체류공간(거점 40m 안 + 넓힌 쉼터)의 14시 그늘 비율 × 넓이, 햇빛 광선 계산.' },
         ...(set ? KS.map(k => ({ apx: 1, h: k + '안 점수 상승 근거 — ' + ALT[k].name, table: basisTable(set[k]) })) : []),
@@ -1506,7 +1820,7 @@ export async function openTwin(o) {
         
         { apx: 1, h: '분석 방법 및 근거 검증', list: gradeLines(gr).concat(tech, ['혼잡 시나리오: 5월 토요일 14시(날씨 감점 없는 날, 가정) · 폭염 시나리오: 체감 ' + SCN.heat.w.feels + '℃(2026-08-07 15시, Open-Meteo ERA5 재분석값)', '그늘 비율: 태양 위치(NOAA 식)와 햇빛 광선 4×4 표본으로 체류공간(거점 ' + STAY_R + 'm 이내) 계산', '주변 환경 점수: 팀 20m 격자(Landsat 지표온도·ESA WorldCover·OSM) 취약도 식 재현(최대 오차 0.015)']) },
         { apx: 1, h: '한계 및 확인 사항', list: check },
-        { apx: 1, h: '참고문헌·자료', list: REFS.map((x, i) => '[' + (i + 1) + '] ' + x) }
+        { apx: 1, h: '참고문헌·자료', list: REFS.map((x, i) => '[' + (i + 1) + '] ' + x).concat(Object.values(CITE).map((x, i) => '[' + (REFS.length + i + 1) + '] ' + x.s + ' — ' + x.f)) }
       ].filter(Boolean)
     };
   }
@@ -1521,42 +1835,72 @@ export async function openTwin(o) {
     alt = keep; split = keepSplit; camera.position.copy(camP); controls.target.copy(camT); controls.update(); layoutViews(); showPlan();
   }
   function report() {
+    KS = REVIEW && picked ? [picked] : ['A', 'B', 'C'];
     captureShots();
     const r = reportData(), el = $('.tw-report'), ul = a => '<ul>' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     const tb = t => '<div class="tw-tw"><table><thead><tr>' + t.head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr></thead><tbody>' + t.rows.map(rw => '<tr>' + rw.map((x, j) => (j ? '<td>' : '<th>') + esc(x) + (j ? '</td>' : '</th>')).join('') + '</tr>').join('') + '</tbody></table></div>';
     const d = r.doc;
     const lg = s => s.legend ? '<div class="tw-lg2">' + s.legend.map(x => '<span class="lg-' + x[0] + '"><i></i>' + x[1] + '</span>').join('') + '</div>' : '';
-    el.innerHTML = '<div class="tw-sheet">' +
-      // 1. 공문(겉장, 한 장)
-      '<section class="tw-doc"><p class="tw-draft">초안 — 제출 전 담당자·연락처 기입 필요(민간 제안이므로 결재란·시행번호 미기재)</p><h2>' + esc(d.org) + '</h2>' +
-      '<dl><dt>수신</dt><dd>' + esc(d.to) + ' (참조: ' + esc(d.cc) + ')</dd><dt>제목</dt><dd><b>' + esc(d.subj) + '</b></dd></dl>' +
-      '<div class="tw-bd"><p>1. 관련: ' + esc(d.rel) + '</p><p>2. 내용</p>' + d.body.map(x => '<p class="sub">' + esc(x) + '</p>').join('') + '</div><p class="tw-att">' + esc(d.att) + '</p>' +
-      '<p class="tw-sig">' + esc(d.org) + '</p><p class="tw-ct">' + esc(d.contact) + ' · ' + r.date + '</p></section>' +
-      // 2. 제안서 ①~⑥
-      '<section class="tw-prop"><header><span>붙임 · 제안서</span><span>' + r.date + '</span></header><h1>' + esc(d.subj) + '</h1>' +
-      '<div class="tw-toc"><b>목차</b> 개요 · ① 현황 및 문제점 · ② 개선방안 · ③ 필요성 · ④ 소요예산 · ⑤ 추진 일정 · ⑥ 기대효과 · 부록 · 붙임</div>' +
-      (() => { const one = s => '<h4>' + esc(s.h) + '</h4>' + (s.html || '') + (s.list ? ul(s.list) : '') + (s.table ? tb(s.table) : '') + (s.tables ? s.tables.map(tb).join('') : '') + (s.note ? '<p class="tw-n">' + esc(s.note) + '</p>' : ''), A = r.sections.filter(s => s.apx);
-        return r.sections.filter(s => !s.apx).map(one).join('') + (A.length ? '<details class="tw-apx"><summary>부록 펼치기 — 안별 사업 내용·예산 내역·점수 근거·분석 방법·참고문헌</summary>' + A.map(one).join('') + '</details>' : ''); })() +
-      '<footer>모형 예상 점수와 개략 단가로 만든 제안서이며, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 합니다.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터입니다.' : '') + '</footer></section>' +
+    // 공문서 양식: 기안문(내부결재) + 검토보고서(Ⅰ·Ⅱ 장, □ ○ - 단계 기호) — 「행정업무의 운영 및 혁신에 관한 규정」 기안문 서식 구성을 따름
+    const fd = (() => { const [y, m, dd] = r.date.split('-').map(Number), w = '일월화수목금토'[new Date(y, m - 1, dd).getDay()]; return { d: y + '. ' + m + '. ' + dd + '.', w: y + '. ' + m + '. ' + dd + '.(' + w + ')' }; })();
+    // 구청 사업제안서 서식 순서(주민참여예산 제안사업 신청서·소관부서 검토의견서 항목 참고)로 장을 다시 묶음
+    const CH = ['사업 개요', '사업 필요성 (현행 문제점 및 추진 배경)', '사업 내용', '소요 예산 (산출 기초)', '추진 일정', '기대 효과 (시행 전후 비교)', '행정 사항'];
+    const one1 = KS.length === 1, chOf = sx => { const h = sx.h; if (/^검토 개요/.test(h)) return 0; if (/^①|^③ 필요성/.test(h)) return 1; if (/^②-3/.test(h)) return 6; if (/^②/.test(h) || (one1 && /안 사업 내용 — /.test(h))) return 2; if (/^④/.test(h) || (one1 && (/안 소요예산 내역/.test(h) || /^소요예산 공통/.test(h)))) return 3; if (/^⑤/.test(h)) return 4; if (/^⑥/.test(h)) return 5; return -1; };
+    const ren = h => h === '검토 개요' ? '' : h === '① 현황 및 문제점' ? '현황' : h === '①-1 문제점' ? '문제점' : /^①-2/.test(h) ? '개선 기준 (기준값 대비 현황)' : h === '③ 필요성' ? '추진 배경' : /^② 개선방안 — /.test(h) ? (one1 ? '주요 내용 — ' + h.replace(/^② 개선방안 — /, '') : '대안 구성 (선택: 결재권자)') : /^②-1/.test(h) ? '대안 비교표' : /^②-2/.test(h) ? '만족도가 오르는 이유' : /^②-3/.test(h) ? '대상지 설계 의도 부합 여부' : /안 사업 내용 — /.test(h) ? '세부 내용' : h === '④ 소요예산' ? '총괄' : /안 소요예산 내역/.test(h) ? '산출 기초 (수량 × 단가)' : /^소요예산 공통/.test(h) ? '단가 적용 기준' : /^[⑤⑥]/.test(h) ? '' : h;
+    const fl = a => '<ul class="fm-ul">' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+    const setR = SETS[sel.id], G = setR ? glanceData(setR) : null;
+    const altT = G ? { head: ['구분'].concat(KS.map(k => k + '안 · ' + ALT[k].short)), rows: [
+      ['하는 일'].concat(KS.map(k => G[k].does)), ['예측 만족도 변화'].concat(KS.map(k => f1(G[k].lo) + ' ~ ' + f1(G[k].hi) + '점 (기준 가정 ' + f1(G[k].g) + '점)')),
+      ['붐빌 때 · 더울 때'].concat(KS.map(k => f1(G[k].dc) + '점 · ' + f1(G[k].dh) + '점')), ['개략 사업비'].concat(KS.map(k => G[k].cost)), ['사업 기간'].concat(KS.map(k => G[k].period)),
+      ['장점'].concat(KS.map(k => G[k].pros.slice(0, 3).join(' / '))), ['단점'].concat(KS.map(k => G[k].cons.slice(0, 3).join(' / '))), ['적용 조건'].concat(KS.map(k => G[k].pick))] } : null;
+    const body = sx => (sx.html && altT ? tb(altT) : sx.html || '') + (sx.list ? fl(sx.list) : '') + (sx.table ? tb(sx.table) : '') + (sx.tables ? sx.tables.map(tb).join('') : '') + (sx.note ? '<p class="tw-n">' + esc(sx.note) + '</p>' : '');
+    const sec = sx => { const t = ren(sx.h); return (t ? '<h5 class="fm-h2">' + esc(t) + '</h5>' : '') + body(sx); };
+    const law = { h: '관련 법령 및 협조', list: ['「도시공원 및 녹지 등에 관한 법률」 제16조의2제3항 — 공원의 주제·특색을 바꾸지 않는 소규모 공원시설 설치는 도시공원위원회 심의·주민의견 청취 생략 가능(2009 판본 확인, 현행 조문 확인 필요)', '협조: ' + DOC.cc + ' — 시설 설치 위치·규격 협의', '설치 후 같은 거점 이용자 평가로 효과 확인(5. 추진 일정 참조), 결과에 따라 다음 단계 시설 검토'] };
+    const tagged = r.sections.map((sx, ix) => ({ sx, ix, c: chOf(sx) }));
+    const chap = CH.map((t, c) => { const xs = tagged.filter(x => x.c === c); if (c === 6) xs.push({ sx: law, ix: 999 }); return xs.length ? '<h4 class="fm-h1">' + esc(t) + '</h4>' + xs.map(x => sec(x.sx)).join('') : ''; }).join('');
+    const apx = tagged.filter(x => x.c < 0).map(x => x.sx);
+    const main = null;
+    el.innerHTML = '<div class="tw-sheet fm-on">' +
+      // 1. 기안문(내부결재)
+      '<section class="tw-doc fm-doc"><p class="fm-draft">※ 초안 — 결재 전 작성 부서·직위·성명·연락처 기입</p><div class="fm-org">서울특별시</div>' +
+      '<table class="fm-hd"><tr><th>수신</th><td>내부결재</td></tr><tr><th>(경유)</th><td></td></tr><tr><th>제목</th><td>' + esc(d.subj) + '</td></tr></table><div class="fm-rule"></div>' +
+      '<div class="fm-bd"><p>1. 관련: ' + esc(d.rel) + '</p><p>2. ' + esc(d.subj.replace(/ 검토 보고$/, '')) + '에 대하여 아래와 같이 검토 결과를 보고합니다.</p>' + d.body.map((x, q) => '<p class="sub">' + '가나다라마'[q] + '. ' + esc(x) + '</p>').join('') + '</div>' +
+      '<p class="fm-att">붙임&nbsp;&nbsp;1. 검토 보고서 1부.<br><span class="fm-att2">2. 현황·대안 비교 화면(현장 사진 대체) 1부.</span><br><span class="fm-att2">3. 기본설계 도면(위치도·현황도·시설물배치도·단면도·상세도) 1부.</span><br><span class="fm-att2">4. 소관부서 검토 의견서 1부.&nbsp;&nbsp;끝.</span></p>' +
+      '<table class="fm-gy"><tr><th>기안자</th><th>검토자</th><th>검토자</th><th>결재권자</th></tr><tr><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + ' 주무관<br>○○○</td><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + '장<br>○○○</td><td>서울숲관리사무소장<br>○○○</td><td>' + esc(DOC.to) + '<br>(서명)</td></tr>' +
+      '<tr><th>협조자</th><td colspan="3">' + esc(DOC.cc) + '</td></tr></table>' +
+      '<table class="fm-ft"><tr><th>시행</th><td>' + esc(DOC.from.replace(/^서울숲관리사무소 /, '')) + '-0000 (' + fd.d + ')</td><th>접수</th><td></td></tr>' +
+      '<tr><td colspan="4">우 ○○○○○ &nbsp;서울특별시 성동구 뚝섬로 273 서울숲관리사무소 &nbsp;/ 홈페이지 ○○○</td></tr>' +
+      '<tr><td colspan="4">전화번호 ○○-○○○○-○○○○ &nbsp;/ 팩스번호 ○○-○○○○-○○○○ &nbsp;/ ○○○@seoul.go.kr &nbsp;/ 공개</td></tr></table></section>' +
+      // 2. 검토 보고서
+      '<section class="tw-prop fm-rep"><div class="fm-title"><h1>' + esc(d.subj) + '</h1></div><p class="fm-by">' + fd.w + '&nbsp;&nbsp;' + esc(DOC.from) + '</p>' +
+      '<div class="fm-sum"><b>검토 요지</b>' + fl(d.body.slice(0, 2)) + '</div>' +
+      chap +
+      (apx.length ? '<h4 class="fm-h1 fm-ref">참고 자료</h4>' + apx.map(sx => '<h5 class="fm-h2">' + esc(sx.h) + '</h5>' + body(sx)).join('') : '') +
+      '<p class="tw-n fm-end">모형 예상 점수와 개략 단가로 만든 검토 보고서로, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 함.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터임.' : '') + '</p></section>' +
       // 붙임 1: 지금/개선 후 비교 그림
-      '<section class="tw-dwg"><header><span>붙임 1 · 현황 / 대안 적용 비교도</span><span>' + r.date + '</span></header><h1>디지털트윈 비교 (좌: 현황 · 우: 대안 적용)</h1>' +
+      '<section class="tw-dwg"><header><span>붙임 2 · 현황 / 대안 적용 비교 화면</span><span>' + r.date + '</span></header><h1>디지털트윈 비교 (좌: 현황 · 우: 대안 적용)</h1>' +
       KS.map(k => shots[k] ? '<h4>' + ALT[k].name + '</h4><img class="tw-shot" src="' + shots[k] + '" alt="' + ALT[k].name + ' 지금과 개선 후 3D 비교">' : '').join('') +
       '<p class="tw-warn2">※ 그림·점수·수목 현황은 알고리즘 추정값으로 실측이 필요함. 시뮬레이션 화면이며 설계 도면 아님.</p></section>' +
       // 붙임 2: 개략 설계도
-      (r.sheets.length ? '<section class="tw-dwg"><header><span>붙임 2 · 개략 설계도 (' + r.sheets.length + '매)</span><span>' + r.date + '</span></header><h1>도면 목록</h1><label class="tw-dwgt"><input type="checkbox" data-t="dwg-more"> 단면도·상세도 펼치기</label>' + tb({ head: ['도면번호', '도면명', '축척'], rows: r.sheets.map(s => [s.no, s.name, s.scale]) }) + '</section>' +
-        r.sheets.map(s => '<section class="tw-dwg' + (/^L-.01$/.test(s.no) ? '' : ' tw-dmore" hidden="') + '"><header><span>붙임 2 · ' + s.no + '</span><span>' + r.date + '</span></header><h1>' + esc(s.name) + '</h1><div class="tw-dwgf">' + s.svg + '</div>' + lg(s) + (s.rows ? tb({ head: ['번호', '시설', '규격', '수량', '위치(거점 기준)'], rows: s.rows }) : '') + titleBlock(s, r) + '</section>').join('') : '') +
+      (r.sheets.length ? '<section class="tw-dwg"><header><span>붙임 3 · 기본설계 도면 (' + r.sheets.length + '매)</span><span>' + r.date + '</span></header><h1>도면 목록</h1><label class="tw-dwgt"><input type="checkbox" data-t="dwg-more"> 단면도·상세도 펼치기</label>' + tb({ head: ['도면번호', '도면명', '축척'], rows: r.sheets.map(s => [s.no, s.name, s.scale]) }) + '</section>' +
+        r.sheets.map(s => '<section class="tw-dwg' + (s.more ? ' tw-dmore" hidden="' : s.full ? ' fm-full' : '') + '"><header><span>붙임 3 · ' + s.no + '</span><span>' + r.date + '</span></header><h1>' + esc(s.name) + '</h1><div class="tw-dwgf">' + s.svg + '</div>' + (s.full ? '' : lg(s) + (s.rows ? tb({ head: ['번호', '시설', '규격', '수량', '위치(거점 기준)'], rows: s.rows }) : '') + titleBlock(s, r)) + '</section>').join('') : '') +
       // 붙임 3: 선택 회신서
-      '<section class="tw-dwg tw-reply"><header><span>붙임 3 · 개선안 선택 회신서</span><span>' + r.date + '</span></header><h1>' + esc(d.subj) + ' — 선택 회신서</h1>' +
-      '<table class="tw-tblk"><tr><th>회신 기관·부서</th><td colspan="3"></td></tr><tr><th>담당자·연락처</th><td colspan="3"></td></tr>' +
-      '<tr><th>선택</th><td colspan="3">□ A안 · 운영 개선 &nbsp;&nbsp; □ B안 · 시설 보강 &nbsp;&nbsp; □ C안 · 공간 재조성 &nbsp;&nbsp; □ 보류(사유: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</td></tr>' +
-      '<tr><th>선택 이유·검토 의견</th><td colspan="3" style="height:90px"></td></tr><tr><th>조정 요청</th><td colspan="3" style="height:60px">(시설 위치·규모·수종·일정 등 바꿀 점)</td></tr><tr><th>추가 요청 자료</th><td colspan="3" style="height:40px"></td></tr><tr><th>회신일</th><td></td><th>회신 방법</th><td>' + esc(DOC.contact) + '</td></tr></table>' +
-      '<p class="tw-n">팀은 안을 고르지 않습니다. 선택된 안으로 실시설계 협의와 설치 전후 평가 계획을 이어서 준비합니다.</p></section>' +
-      '<div class="tw-ra"><button type="button" data-t="rp-edit">✎ 편집</button><button type="button" data-t="rp-save">편집 저장</button><button type="button" data-t="rp-reset">원래대로</button><button type="button" data-t="rp-doc">Word 저장</button><button type="button" data-t="print">인쇄·PDF</button><button type="button" data-t="png">PNG 저장</button><button type="button" data-t="svg">설계도 SVG 저장</button><button type="button" data-t="close-report">닫기</button></div><p class="tw-edn" hidden></p></div>';
+      '<section class="tw-dwg tw-reply"><header><span>붙임 4 · 소관부서 검토 의견서</span><span>' + fd.d + '</span></header><h1>소관부서 검토 의견서</h1>' +
+      '<table class="tw-tblk fm-op"><tr><th>사 업 명</th><td colspan="3">' + esc(d.subj.replace(/ 검토 보고$/, '')) + (KS.length === 1 ? ' (' + ALT[KS[0]].name + ')' : '') + '</td></tr><tr><th>검토 부서</th><td></td><th>검토자(직·성명)</th><td></td></tr>' +
+      '<tr><th>사업 개요</th><td colspan="3">' + (KS.length === 1 ? esc(G ? G[KS[0]].does : '') + ' · 기간 ' + esc(G ? G[KS[0]].period : '') : '□ A안 · 운영 개선 &nbsp; □ B안 · 시설 보강 &nbsp; □ C안 · 공간 재조성') + '</td></tr>' +
+      '<tr><th>적정 소요예산</th><td colspan="3">제안 ' + esc(G ? KS.map(k => (KS.length > 1 ? k + '안 ' : '') + G[k].cost).join(' / ') : '') + ' → 검토 ( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 원)</td></tr>' +
+      '<tr><th>사업 기간</th><td colspan="3">제안 ' + esc(G ? KS.map(k => (KS.length > 1 ? k + '안 ' : '') + G[k].period).join(' / ') : '') + ' → 검토 ( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )</td></tr>' +
+      '<tr><th>법률·조례 적합 여부</th><td colspan="3">□ 적합 &nbsp; □ 부적합 &nbsp; □ 확인 필요</td></tr>' +
+      '<tr><th rowspan="4">사업성 평가</th><th>타당성</th><td colspan="2">□ 상 &nbsp; □ 중 &nbsp; □ 하</td></tr><tr><th>시급성</th><td colspan="2">□ 상 &nbsp; □ 중 &nbsp; □ 하</td></tr><tr><th>사업 효과</th><td colspan="2">□ 상 &nbsp; □ 중 &nbsp; □ 하</td></tr><tr><th>수혜 범위</th><td colspan="2">□ 상 &nbsp; □ 중 &nbsp; □ 하</td></tr>' +
+      '<tr><th>종합 검토 결과</th><td colspan="3">□ 채택 &nbsp;&nbsp; □ 조정 후 채택 &nbsp;&nbsp; □ 보류 &nbsp;&nbsp; □ 불채택</td></tr>' +
+      '<tr><th>검토 의견</th><td colspan="3" style="height:80px"></td></tr><tr><th>조정 요청</th><td colspan="3" style="height:50px">(시설 위치·규모·수종·일정 등)</td></tr><tr><th>검 토 일</th><td></td><th>문의</th><td>' + esc(DOC.contact) + '</td></tr></table>' +
+      '<p class="tw-n">항목은 자치구 「주민참여예산 소관부서 검토의견서」 구성(사업개요·적정 소요예산·사업기간·법률·조례 적합여부·사업성평가·종합검토결과)을 따름.</p></section>' +
+      '<div class="tw-ra tw-rabar"><button type="button" class="pri" data-t="print">' + PRINT_ICO + '인쇄 · PDF 저장</button><button type="button" data-t="rp-doc">Word 저장</button><button type="button" data-t="png">PNG 저장</button><button type="button" data-t="svg">설계도 SVG</button><span class="sp"></span><button type="button" data-t="rp-edit">✎ 편집</button><button type="button" data-t="rp-save">편집 저장</button><button type="button" data-t="rp-reset">원래대로</button><button type="button" data-t="close-report">닫기</button></div><p class="tw-edn" hidden></p></div>';
     el.hidden = false; el.scrollTop = 0;
     rpRestore();
   }
   // ---------- 제안서 바로 편집: 공문·본문·회신서 글을 직접 고치고 이 브라우저에 거점별 저장 ----------
-  const RP_KEY = () => 'seoulforest-proposal-' + sel.id, RP_SEL = ['.tw-doc', '.tw-prop', '.tw-reply'];
+  const RP_KEY = () => 'seoulforest-proposal2-' + sel.id + (KS.length === 1 ? '-' + KS[0] : ''), RP_SEL = ['.tw-doc', '.tw-prop', '.tw-reply'];
   function rpNote(t) { const n = ui.querySelector('.tw-edn'); if (n) { n.hidden = !t; n.textContent = t || ''; } }
   function rpRestore() {
     let sv = null; try { sv = JSON.parse(localStorage.getItem(RP_KEY()) || 'null'); } catch (e) {}
@@ -1600,7 +1944,7 @@ export async function openTwin(o) {
     const tl = t => { const hd = t.head; t.rows.forEach(rw => push('· ' + rw[0] + ' — ' + rw.slice(1).map((v, j) => v ? (hd[j + 1] ? hd[j + 1] + ': ' : '') + v : '').filter(Boolean).join(' | '), 19, 500, '#1d2a24', 4)); };
     r.sections.forEach(s => { push(s.h, 25, 800, '#0b7a45', 8); if (s.html && r.glance) KS.forEach(k => { const g = r.glance[k]; push(ALT[k].name + ' — ' + g.badges.join(' · ') + ' · 평균 ' + f1(g.g) + '점 · ' + g.cost + ' · ' + g.period, 20, 800, '#1d2a24', 4); g.pros.forEach(t => push('  ✔ ' + t, 19, 500, '#1f7a5a', 2)); g.cons.forEach(t => push('  ✖ ' + t, 19, 500, '#b4541a', 2)); push('  적용 조건: ' + g.pick, 19, 600, '#1d2a24', 8); }); (s.list || []).forEach(t => push('· ' + t, 20, 500, '#1d2a24', 4)); if (s.table) tl(s.table); (s.tables || []).forEach(tl); if (s.note) push(s.note, 18, 500, '#5b6b63', 4); push('', 8, 400, '#000', 8); });
     push('붙임 3 · 개선안 선택 회신서: □ A안 □ B안 □ C안 □ 보류 — 선택 이유·검토 의견·조정 요청·회신일을 적어 회신', 20, 700, '#1d2a24', 10);
-    push('모형 예상 점수와 개략 단가로 만든 제안서이며, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 합니다.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터입니다.' : ''), 17, 500, '#6b7a73', 0);
+    push('모형 예상 점수와 개략 단가로 만든 검토 보고서이며, 실제 효과와 사업비는 현장 조사·설계·견적으로 확정해야 합니다.' + (rat.demo ? ' 이용자 평가는 시연용 가상 데이터입니다.' : ''), 17, 500, '#6b7a73', 0);
     const wrap = (t, s, w) => { x.font = w + ' ' + s + 'px ' + F; const out = []; let cur = ''; for (const chh of t) { if (x.measureText(cur + chh).width > Wc - 160 && cur) { out.push(cur); cur = chh; } else cur += chh; } out.push(cur); return out; };
     const img = new Image(); let dimg = null;
     const drawP = () => {
@@ -1650,7 +1994,7 @@ export async function openTwin(o) {
   function updStats() {
     const pl = plans[sel.id], L = $('.tw-vs[data-s="L"]'), Rr = $('.tw-vs[data-s="R"]');
     if (!pl) { L.innerHTML = Rr.innerHTML = ''; return; }
-    const e = evalHub(pl, scn, hour), cell = (k, v, df) => '<span><small>' + k + '</small><b>' + v + '</b>' + (df || '') + '</span>';
+    const e = evNow(pl, hour), cell = (k, v, df) => '<span><small>' + k + '</small><b>' + v + '</b>' + (df || '') + '</span>';
     const d = (v, u, good, dg) => '<em class="' + (good ? 'up' : '') + '">' + (Math.abs(v) < Math.pow(10, -dg) / 2 ? '±0' : (v > 0 ? '+' : '−') + Math.abs(v).toFixed(dg)) + u + '</em>';
     const ds = e.a.raw - e.b.raw, dr = Math.round(e.a.ratio * 100) - Math.round(e.b.ratio * 100), dsh = Math.round(e.a.s * 100) - Math.round(e.b.s * 100);
     L.innerHTML = cell('예측 만족도', e.b.raw.toFixed(1) + '점') + cell('혼잡률', pc(e.b.ratio)) + cell('체류공간 그늘 비율', pc(e.b.s)) + cell('사람', Math.round(e.b.ppl) + '명');
