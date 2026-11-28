@@ -1148,3 +1148,25 @@ ul.tr-rc-why li small em.mid{background:rgba(255,210,122,.14);color:#ffd27a}
 .tr-rc-common em{font-style:normal;font-size:10px;font-weight:600;color:var(--mute);margin-right:2px}
 .tr-rc-common span{display:inline-flex;align-items:center;gap:3px}.tr-rc-common svg{opacity:.6}
 .tr-rc-oh .tr-rc-min{flex:none;display:inline-flex;align-items:baseline;gap:1px}
+/* 나에게 맞춘 길: 기준 비중 + 후보들 사이 위치 */
+.tr-fit .tr-rc-h small{max-width:60%;text-align:right;line-height:1.35}
+.tr-opt-t{display:grid;margin-top:4px}
+.tr-opt-hd,.tr-opt-r{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px;gap:10px;align-items:center}
+.tr-opt-hd{padding:0 0 5px;border-bottom:1px solid var(--line);font-size:10px;color:var(--mute)}
+.tr-opt-hd span:nth-child(n+2){text-align:right}
+.tr-opt-r{padding:8px 0;border-bottom:1px solid var(--line)}
+.tr-opt-k>div{display:flex;align-items:center;gap:7px}
+.tr-opt-k b{flex:none;font-size:12.5px;font-weight:650}
+.tr-opt-w{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;max-width:90px}
+.tr-opt-w s{display:block;height:100%;background:var(--mint);opacity:.8;text-decoration:none}
+.tr-opt-k em{font-style:normal;font-size:10.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.tr-opt-k small{display:block;margin-top:3px;font-size:10.5px;color:var(--ink-2);line-height:1.4}
+.tr-opt-k small u{text-decoration:none;font-size:9.5px;font-weight:700;padding:1px 6px;margin-left:5px;border-radius:999px;cursor:help}
+.tr-opt-k small u.ok{background:rgba(94,242,166,.14);color:var(--mint)}
+.tr-opt-k small u.mid{background:rgba(255,210,122,.14);color:#ffd27a}
+.tr-opt-v{text-align:right;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.tr-opt-g{display:grid;gap:3px;justify-items:end}
+.tr-opt-g small{font-size:10px;color:var(--mute)}
+.tr-opt-g small.top{color:var(--mint);font-weight:700}
+.tr-opt-bar{position:relative;width:100%;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(106,245,176,.35))}
+.tr-opt-bar i{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:var(--mint);border:2px solid #0b1510;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(106,245,176,.6)}
