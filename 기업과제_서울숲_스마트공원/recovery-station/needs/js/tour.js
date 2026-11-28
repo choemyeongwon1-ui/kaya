@@ -1770,15 +1770,41 @@ let endNodes = null, endInfo = null;
 function exitWalk(ex) {
   ex.show();
   const { last, kiosk, meters, min, wc } = ex;
+  const cta = h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→'));
   mount('tr-s-exit', [
     h('div', { class: 'tr-panel-head' }, h('div', { class: 'tr-stepno' }, h('b', null, '영수증 기계로')),
       h('button', { type: 'button', class: 'tr-back', onclick: () => { layers.route.eachLayer(l => { if (l.options?.className === 'tr-exit-line') layers.route.removeLayer(l); }); mount('tr-s-result', endNodes); } }, '다른 기계 고르기')),
     h('h2', { class: 'tr-q' }, kiosk.at),
     h('p', { class: 'tr-exit-lead' }, `지도의 노란 길을 따라 걸어서 ${min}분(${fmtM(meters)})이에요.`),
-    h('p', { class: 'tr-exit-wc' }, '🧾', ' 기계에서 오늘 산책 영수증을 뽑으면 카페·주차장·동네 가게 중 고른 쿠폰이 같이 나와요.'),
     Number.isFinite(wc) && wc < 300 ? h('p', { class: 'tr-exit-wc' }, icon('pin', 12), `가까운 화장실 · ${fmtM(Math.round(wc))}`) : null,
-    h('button', { type: 'button', class: 'tr-cta tr-glow-on', onclick: goodbye }, '영수증 받았어요', h('span', { class: 'tr-cta-arrow' }, '→')),
+    couponPicker(cta),
+    cta,
   ]);
+}
+
+// 영수증과 함께 나올 쿠폰: 기계에서 뽑기 전에 폰에서 미리 하나 고름 (밥·커피를 이미 마친 사람도 쓸 수 있게). 제휴처는 모두 예시
+const GIFT_OPTS = [
+  { k: 'cafe', ico: '☕', t: '동네 카페', s: '10% 할인' },
+  { k: 'park', ico: '🅿️', t: '주변 주차장', s: '1시간 무료' },
+  { k: 'shop', ico: '🛍️', t: '동네 가게', s: '10% 할인' },
+];
+let giftPick = null;
+function couponPicker(cta) {
+  const sync = () => {
+    box.querySelectorAll('.tr-coupon-opt').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === giftPick)));
+    cta.disabled = !giftPick;
+    note.textContent = giftPick ? '이 쿠폰이 영수증 맨 아래에 같이 나와요.' : '하나를 고르면 영수증을 뽑을 수 있어요.';
+  };
+  const note = h('small', { class: 'tr-coupon-note' });
+  const box = h('div', { class: 'tr-coupon' },
+    h('b', null, '🎁 영수증과 함께 받을 쿠폰을 골라 주세요'),
+    h('div', { class: 'tr-coupon-opts' }, GIFT_OPTS.map(o => h('button', { type: 'button', class: 'tr-coupon-opt', 'data-k': o.k, 'aria-pressed': 'false', onclick: () => {
+      giftPick = o.k; sync();
+      try { const d = JSON.parse(localStorage.getItem(RECEIPT_KEY) || 'null'); if (d) { d.gift = o.k; localStorage.setItem(RECEIPT_KEY, JSON.stringify(d)); } } catch { /* 저장 안 돼도 영수증 페이지에서 다시 고름 */ }
+    } }, h('em', null, o.ico), h('span', null, o.t), h('small', null, o.s)))),
+    note);
+  sync();
+  return box;
 }
 
 // ── 마무리 5. 작별 화면: 코스 평가를 보내고, 다음에 오기 좋은 때를 알려 주고 끝 ──
@@ -1813,6 +1839,7 @@ const receiptHref = () => `../../영수증.html?from=${inFrame ? 'mobile' : 'tou
 const WHO_OF = { alone: '혼자', couple: '연인', friends: '친구', kids: '가족', elders: '어르신과', pet: '반려견과' };
 function saveReceipt(walkMin, meters) {
   if (!trip?.stops.length) return false;
+  giftPick = null;   // 새 산책마다 쿠폰은 다시 고름
   const h0 = app.wx.hourly[0] ?? {};
   const sky = h0.pty === 3 ? '눈' : h0.pty > 0 ? '비' : (h0.sky ?? 1) >= 4 ? '흐림' : h0.sky === 3 ? '구름' : '맑음';
   const short = n => n.replace(/\(.*?\)/g, '').split('·')[0].trim();
@@ -1848,8 +1875,8 @@ function courseAsk(walkMin, meters) {
   };
   const word = h('span', { class: 'rv-word' }, '표정을 눌러 주세요'), chips = h('div', { class: 'tr-flow-chips' });
   // 보상: 어떤 표정이든 똑같이 줌(좋은 답만 유도하지 않도록). 공원 곳곳 영수증 기계에서 영수증을 뽑으면 카페 할인·주차 1시간 무료·동네 가게 할인 중 고른 쿠폰이 함께 나옴
-  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 혜택 쿠폰'), h('span', null, '표정을 남기면 영수증과 함께 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라 받아요. 어떤 표정이든 괜찮아요.'));
-  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 쿠폰 준비 완료'), h('span', null, '지도에 🧾로 표시된 영수증 기계 어디서든 받아 가세요.')); };
+  const gift = h('div', { class: 'tr-gift' }, h('b', null, '🎁 혜택 쿠폰'), h('span', null, '표정을 남기면 나가는 길에 카페 할인·주차 1시간 무료·동네 가게 할인 중 하나를 골라 영수증과 함께 받아요. 어떤 표정이든 괜찮아요.'));
+  const giftDone = () => { if (gift.classList.contains('on')) return; gift.classList.add('on'); gift.replaceChildren(h('b', null, '🎁 쿠폰 준비 완료'), h('span', null, '나가는 길에 쿠폰을 고르고, 🧾 영수증 기계 어디서든 받아 가세요.')); };
   const paintChips = good => chips.replaceChildren(h('div', { class: 'rv-chips' }, (good ? FLOW_GOOD : FLOW_BAD).map((x, i) => h('button', { type: 'button', class: `rv-chip ${good ? 'good' : 'bad'}`, style: `--i:${i}`, 'aria-pressed': 'false', onclick: e => {
     const b = e.currentTarget, on = !api.tags.has(x.key);
     on ? api.tags.add(x.key) : api.tags.delete(x.key);
