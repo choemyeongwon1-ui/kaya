@@ -229,7 +229,7 @@ function glowTex() {
 export async function openTwin(o) {
   applyAltEdits(loadAltEdits());
   const xy = o.xy, low = !!o.low, M = o.model;
-  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=26'; document.head.appendChild(l); }
+  if (!o.headless && !document.getElementById('twCss')) { const l = document.createElement('link'); l.id = 'twCss'; l.rel = 'stylesheet'; l.href = './sim3d.css?v=28'; document.head.appendChild(l); }
   const root = document.createElement('div'); root.className = 'tw'; root.innerHTML = '<div class="tw-load"><i></i><span>디지털트윈을 불러오는 중…</span></div>'; if (!o.headless) document.body.appendChild(root);
   if (!M || !M.sat) { root.remove(); throw new Error('만족도 모형(model) 수신 실패'); }
 
@@ -482,11 +482,12 @@ export async function openTwin(o) {
   const KS0 = ['A', 'B', 'C'];
   // ---------- 점수 상승 근거: 단계별 분해 · 가정 민감도 · 사후 검증 기준 ----------
   const gainV = (pl, v) => { const c = evalHub(pl, SCN.crowd, 14, v), hh = evalHub(pl, SCN.heat, 14, v); return ((c.a.raw - c.b.raw) + (hh.a.raw - hh.b.raw)) / 2; };
+  const SHADE_EQ = .4 * Math.max(0, SCN.heat.w.feels - 26);   // 그늘 거점 계수(더위 감점 ×.6)를 폭염 시나리오 체감온도 감소로 환산: 1℃당 7점 × 40% ÷ 7 = .4℃/℃
   const WALT = [{ n: '같은 가중치(⅓씩)', w: { dens: 1 / 3, wx: 1 / 3, env: 1 / 3 } }, { n: '붐빔 중시(.45/.25/.30)', w: { dens: .45, wx: .25, env: .30 } }, { n: '날씨 중시(.25/.45/.30)', w: { dens: .25, wx: .45, env: .30 } }, { n: '환경 중시(.30/.25/.45)', w: { dens: .30, wx: .25, env: .45 } }];
   const SENS = [
     { k: 'shift', label: '분산 유도 안내를 따르는 비율', base: pc(SHIFT), alts: [{ n: '10%', v: { shift: .10 / SHIFT } }, { n: '20%', v: { shift: .20 / SHIFT } }], why: '팀 가정 — 테마파크 현장연구에서 다수가 안내에 따라 동선을 바꿀 의향을 보임(Brown 외 2013), 서울숲 실측 없음' },
     { k: 'yard', label: '새 쉼터 사용률', base: pc(YARD_USE), alts: [{ n: '70%', v: { yard: .70 / YARD_USE } }, { n: '100%', v: { yard: 1 / YARD_USE } }], why: '팀 가정 — 지금 거점의 수용 밀도를 새 칸에 적용' },
-    { k: 'shade', label: '그늘 효과 크기', base: '그늘 거점 계수(더위 감점 40%↓)', alts: [{ n: '절반', v: { shade: .5 } }, { n: '1.5배', v: { shade: 1.5 } }], why: '팀 가정 — 완전 그늘이면 체감 36.3℃에서 약 4.1℃ 낮춘 것과 같음. 문헌의 나무 그늘 흑구온도 5~7℃↓(Armson 외 2012)보다 작아 보수적' },
+    { k: 'shade', label: '그늘 효과 크기', base: '완전 그늘 = 체감 약 ' + SHADE_EQ.toFixed(1) + '℃↓(그늘 거점 계수)', alts: [{ n: '절반(약 ' + (SHADE_EQ / 2).toFixed(1) + '℃↓)', v: { shade: .5 } }, { n: '문헌 하한(5℃↓)', v: { shade: 5 / SHADE_EQ } }, { n: '문헌 상한(7℃↓)', v: { shade: 7 / SHADE_EQ } }], why: '문헌 범위로 점검 — 나무 그늘은 흑구온도를 5~7℃ 낮춤(Armson 외 2012), 수목 그늘은 PET를 21.2~31.3% 낮춤(조상만 외 2017). 흑구온도 감소를 체감온도 감소로 본 것은 근사(검증 필요). 팀 계수는 문헌 하한보다 작아 보수적' },
     { k: 'env', label: '환경 점수 변화', base: '트윈 지표온도 계수(수관 −0.839)', alts: [{ n: '절반', v: { env: .5 } }, { n: '팀 단순회귀 −1.61 적용(×1.9)', v: { env: 1.61 / .839 } }], why: '트윈 계수는 산출 스크립트가 저장소에 없어 확인 필요 · 팀 산출 단순회귀는 −1.61(R² 0.175)' },
     { k: 'w', label: '세 요인 가중치', base: '.35/.30/.35', alts: WALT.map(x => ({ n: x.n, v: { w: x.w } })), why: '대시보드 가정 — 방문객 중요도 조사(IPA)로 정할 값' }
   ];
@@ -654,7 +655,7 @@ export async function openTwin(o) {
     return '<div class="gl-g ' + (mode || '') + ' n' + keys.length + '">' + keys.map(k => { const g = G[k];
       return '<div class="gl-c gl-' + k + '"><div class="gl-h"><span class="k">' + k + '</span><b>' + ALT[k].short + '</b></div>' +
         '<div class="gl-bd">' + g.badges.map(t => '<em>' + esc(t) + '</em>').join('') + '</div>' +
-        '<div class="gl-n"><b>' + f1(g.g) + '점</b><small>평균 효과 · 가정 바꾸면 ' + f1(g.lo) + '~' + f1(g.hi) + '</small></div>' +
+        '<div class="gl-n"><b>' + f1(g.lo) + ' ~ ' + f1(g.hi) + '점</b><small>예측 만족도 변화(가정에 따른 범위) · 기준 가정 ' + f1(g.g) + '점 · 실측 아닌 모형값</small></div>' +
         bar('혼잡 시나리오', g.dc) + bar('폭염 시나리오', g.dh) +
         '<div class="gl-m"><span>사업비 ' + esc(g.cost) + '</span><span>기간 ' + esc(g.period) + '</span></div>' +
         '<p class="gl-d">' + esc(g.does) + '</p>' +
@@ -669,7 +670,7 @@ export async function openTwin(o) {
     const bar = (lab, v) => '<span class="ro-b"><i>' + lab + '</i><s><b style="width:' + Math.max(0, v / mx * 100).toFixed(0) + '%"></b></s><em>' + f1(v) + '</em></span>';
     return '<div class="ro">' + KS0.map(k => { const g = G[k], at = mode === '2d' ? 'data-tw="' + id + '" data-alt="' + k + '"' : 'data-t="alt" data-a="' + k + '"';
       return '<button type="button" class="ro-r ro-' + k + (on === k ? ' on' : '') + '" ' + at + ' aria-pressed="' + (on === k) + '">' +
-        '<span class="ro-k">' + k + '</span><span class="ro-t"><b>' + ALT[k].short + '</b>' + g.badges.slice(0, 2).map(t => '<em>' + esc(t) + '</em>').join('') + '</span><span class="ro-n">' + f1(g.g) + '<small>점</small></span>' +
+        '<span class="ro-k">' + k + '</span><span class="ro-t"><b>' + ALT[k].short + '</b>' + g.badges.slice(0, 2).map(t => '<em>' + esc(t) + '</em>').join('') + '</span><span class="ro-n" title="예측 만족도 변화 · 가정에 따른 범위(기준 가정 ' + f1(g.g) + '점)">' + f1(g.lo) + '~' + f1(g.hi).replace('+', '') + '<small>점</small></span>' +
         '<span class="ro-bs">' + bar('혼잡 시나리오', g.dc) + bar('폭염 시나리오', g.dh) + '</span>' +
         '<span class="ro-m">' + esc(g.cost) + ' · ' + esc(g.period) + '</span>' +
         '<span class="ro-p">' + g.pros.slice(0, 2).map(t => '<span>✔ ' + esc(t) + '</span>').join('') + '</span>' +
@@ -909,6 +910,7 @@ export async function openTwin(o) {
   if (o.auto) { const lo = hubs.filter(h => h.n >= 5).sort((a, b) => a.pct - b.pct)[0]; if (lo) sel = lo; }
   // 구청 검토 화면(?review=거점id): 팀원 화면 틀 — 오른쪽 위 A·B·C, 누르면 왼쪽 자세히 창 + 3D 현황/대안 적용 분할
   const REVIEW = !!o.review; let picked = null;
+  const PRINT_ICO = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
   if (REVIEW && o.onHub) o.onHub(sel.id);
 
   // ---------- 해 ----------
@@ -948,7 +950,7 @@ export async function openTwin(o) {
     '<header class="tw-top tw-g"><button type="button" class="tw-home" data-t="exit">← 만족도 화면</button><b>디지털트윈 개선안</b><span class="tw-tag gov">구청 검토용</span><span class="tw-hubchip"></span>' + (rat.demo ? '<span class="tw-demo">시연용 가상 평가</span>' : '') +
     '<span class="tw-sp"></span><span class="tw-vsw" role="group" aria-label="대안 선택"></span><span class="tw-seg tw-scn" role="group" aria-label="상황"><button type="button" data-t="crowd" aria-pressed="true">혼잡 시나리오</button><button type="button" data-t="heat" aria-pressed="false">폭염 시나리오</button></span>' +
     '<button type="button" data-t="hq" aria-pressed="false" title="카메라 정지 시 GTAO 적용 재렌더링">고품질</button><span class="tw-q" hidden></span>' +
-    '<button type="button" class="tw-exit" data-t="report">검토 자료 인쇄</button></header>' +
+    '<button type="button" class="tw-exit tw-prt" data-t="report" hidden>' + PRINT_ICO + '<span>검토 자료 인쇄</span></button></header>' +
     '<aside class="tw-pop tw-g" role="dialog" aria-label="대안 자세히" hidden></aside>' +
     '<div class="tw-hid" hidden><aside class="tw-left"><div class="tw-abcl"></div><div class="tw-lowl"></div><div class="tw-livebox"></div></aside><aside class="tw-right"><div class="tw-pred"></div><div class="tw-rate"></div></aside></div>' +
     '<div class="tw-time tw-g"><div class="t"><span class="tw-day"></span><b class="tw-hr">—</b><small class="tw-sun"></small></div><input class="tw-range" type="range" min="7" max="19" step="0.25" aria-label="시각"><div class="tw-ticks">' + [7, 10, 13, 16, 19].map(h => '<span>' + h + '시</span>').join('') + '</div></div>' +
@@ -1106,23 +1108,25 @@ export async function openTwin(o) {
   function reviewHTML() {
     const set = SETS[sel.id], pop = $('.tw-pop'), chip = $('.tw-hubchip'); if (chip) chip.textContent = sel.name;
     $('.tw-vsw').innerHTML = '<span class="lb">' + (picked ? '대안' : '대안을<br>선택하세요') + '</span>' + ['A', 'B', 'C'].map(k => '<button type="button" data-t="pick" data-v="' + k + '" aria-pressed="' + (k === picked) + '"' + (set ? '' : ' disabled') + '><b>' + k + '안</b><small>' + esc(hintOf(k)) + '</small></button>').join('');
+    const prt = $('.tw-prt'); if (prt) { prt.hidden = !picked || !set; prt.querySelector('span').textContent = (picked || '') + '안 검토 자료 인쇄'; }
     if (!picked) { pop.hidden = true; pop.innerHTML = ''; return; }
     const first = pop.hidden; pop.hidden = false; if (first) { pop.classList.remove('in'); void pop.offsetWidth; pop.classList.add('in'); }
     const A = ALT[picked], bar = '<div class="tw-popbar"><span class="k">' + picked + '안</span><b>' + esc(A.short) + '</b><button type="button" class="tw-x" data-t="unpick" aria-label="닫기" title="닫기">✕</button></div>';
     if (!set) { pop.innerHTML = bar + '<div class="tw-popb"><p class="tw-note">' + (set === null ? '분석 범위 밖' : '대안 산정 중…') + '</p></div>'; return; }
-    const pl = set[picked], E = evalNow(pl), c = costOf(pl), tb = t => '<table class="tw-ct"><tr>' + t.head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr>' + t.rows.map(r => '<tr>' + r.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</table>';
+    const pl = set[picked], E = evalNow(pl), c = costOf(pl), sv = sensOf(pl), tb = t => '<table class="tw-ct"><tr>' + t.head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr>' + t.rows.map(r => '<tr>' + r.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</table>';
     const sat = (lbl, e) => '<div class="tw-kp"><small>' + lbl + '</small><span>' + e.b.raw.toFixed(0) + '<i>→</i><b class="' + (e.a.raw - e.b.raw > .5 ? 'up' : '') + '">' + e.a.raw.toFixed(0) + '</b><em>점</em></span></div>';
     pop.innerHTML = bar + '<div class="tw-popb">' +
       '<p class="tw-why2"><b>적용 조건</b>' + esc(A.pick) + '</p>' +
       '<div class="tw-kps"><div class="tw-kp big"><small>개략 비용</small><b class="sm">' + esc(costTxt(c).split(' + ')[0]) + '</b></div><div class="tw-kp big"><small>기간</small><b class="sm">' + esc(A.period.replace('(가정)', '').trim()) + '</b></div>' +
-      sat('혼잡 시나리오 · ' + hm(hour), E.crowd) + sat('폭염 시나리오 · ' + hm(hour), E.heat) + '</div>' +
+      sat('혼잡 시나리오 · ' + hm(hour), E.crowd) + sat('폭염 시나리오 · ' + hm(hour), E.heat) + '</div>' + '<p class="tw-rng">가정을 바꿔 보면 <b>+' + sv.lo.toFixed(1).replace('-', '−') + ' ~ +' + sv.hi.toFixed(1) + '점</b> 오름<small>14시 두 시나리오 평균 · 기준 가정 +' + sv.g0.toFixed(1) + '점 · 실측 아닌 모형값 · 근거는 「점수 상승 근거」</small></p>' +
       '<h4>구성 수단<small>번호는 오른쪽 「대안 적용」 화면의 번호와 같음</small></h4>' +
       (pl.G.length ? '<ol class="tw-plan">' + pl.G.map((g, i) => { const t = groupText(g, pl); return '<li><span class="no">' + NUM[i] + '</span><span><b>' + esc(t.t) + '</b><small>' + esc(t.d) + '</small></span></li>'; }).join('') + '</ol>' : '<p class="tw-note">기준 초과 문제 없음 — 변경 없음</p>') +
       '<div class="tw-pc2"><section class="pro"><h5>장점</h5><ul>' + A.pros.slice(0, 2).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section><section class="con"><h5>단점</h5><ul>' + A.cons.slice(0, 2).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></section></div>' +
       '<details class="tw-more"><summary>사업비 산출</summary>' + tb(budTable(pl)) + '</details>' +
-      '<details class="tw-more"><summary>점수 상승 근거</summary>' + tb(basisTable(pl)) + '</details>' +
+      '<details class="tw-more"><summary>점수 상승 근거</summary>' + tb(basisTable(pl)) + '<h6 class="tw-h6">가정을 바꾸면 (영향 큰 순)</h6><ul class="tw-sens">' + sv.rows.map(r => '<li><b>' + esc(r.f.label) + '</b> (지금 ' + esc(r.f.base) + ') → ' + esc(r.lo.n) + ' ' + f1(r.lo.g) + ' ~ ' + esc(r.hi.n) + ' ' + f1(r.hi.g) + '점<small>' + esc(r.f.why) + '</small></li>').join('') + '</ul></details>' +
       '<details class="tw-more"><summary>왜 이곳인가</summary>' + gradeBox(gradeOf(sel.id), 'tw-grade') + evHub(sel.id) + '</details>' +
-      '<p class="tw-rvn">그림·점수·수목 현황은 알고리즘 추정치 — 실측 필요. 단가 미확인 항목은 견적 필요. <button type="button" class="tw-edbtn" data-t="ed-open">✎ 대안 구성 편집</button></p></div>';
+      '<p class="tw-rvn">그림·점수·수목 현황은 알고리즘 추정치 — 실측 필요. 단가 미확인 항목은 견적 필요. <button type="button" class="tw-edbtn" data-t="ed-open">✎ 대안 구성 편집</button></p></div>' +
+      '<div class="tw-popcta"><button type="button" class="tw-cta" data-t="report">' + PRINT_ICO + '<span><b>' + picked + '안 검토 자료 인쇄</b><small>공문 · 제안서 · 설계도 · 회신서 — ' + picked + '안만 담김</small></span><i aria-hidden="true">→</i></button></div>';
   }
   function pickAlt(k) {
     picked = k && ALT[k] ? k : null; if (picked) alt = picked; split = !!picked; root.classList.toggle('tw-picked', !!picked);
